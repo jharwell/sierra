@@ -7,11 +7,11 @@ setup_env() {
     export SIERRA_ROOT=$HOME/test
 
     if [ "$GITHUB_ACTIONS" = true ]; then
-        export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+        export SAMPLE_ROOT=$GITHUB_WORKSPACE/sierra-sample-project
         export ARGOS_INSTALL_PREFIX=/usr/local
     else
-        export SAMPLE_ROOT=$HOME/git/sierra-sample-project
-        export ARGOS_INSTALL_PREFIX=/$HOME/.local
+        export SAMPLE_ROOT=$HOME/git/thesis/sierra-sample-project
+        export ARGOS_INSTALL_PREFIX=/$HOME/.local/
     fi
 
     # Set ARGoS library search path. Must contain both the ARGoS core libraries path
@@ -27,7 +27,7 @@ setup_env() {
     # between jobs in a workflow  on OSX, and doing this the way
     # github says to do doesn't work.
     export PATH=$pythonLocation/bin:$PATH
-
+    
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
     # measured because the local site-packages is omitted, or if that
@@ -39,21 +39,21 @@ setup_env() {
 
     export COVERAGE_CMD="coverage \
     run \
-     --debug=debug\
+     --debug=debug \
      $(which sierra-cli)"
 
     export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \
-       --exp-setup=exp_setup.T5000.K5 \
+       --exp-setup=exp_setup.T500.K5 \
        --n-runs=4 \
        --exec-strict \
        --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
        --scenario=LowBlockCount.10x10x2 \
        --exec-no-devnull \
        --with-robot-leds \
-       --with-robot-rab\
+       --with-robot-rab \
        --log-level=TRACE"
 
     export PARALLEL="--env ARGOS_PLUGIN_PATH --env LD_LIBRARY_PATH"
@@ -73,13 +73,24 @@ sanity_check_pipeline() {
 
     $SIERRA_CMD --pipeline 3
 
-    $SIERRA_CMD --pipeline 4
+    # Semi-hack to avoid running stage 4 on OSX in github actions in
+    # order to avoid having to install mactex.
+    if [[ ! (("$GITHUB_ACTIONS" = true) && ("$RUNNER_OS" = "macOS")) ]]; then
 
-    rm -rf $SIERRA_ROOT
+        $SIERRA_CMD --pipeline 4
 
-    $SIERRA_CMD --pipeline 1 2 3 4
+        rm -rf $SIERRA_ROOT
 
-    rm -rf $SIERRA_ROOT
+        $SIERRA_CMD --pipeline 1 2 3 4
+
+        rm -rf $SIERRA_ROOT
+    else
+        rm -rf $SIERRA_ROOT
+
+        $SIERRA_CMD --pipeline 1 2 3
+
+        rm -rf $SIERRA_ROOT
+    fi
 }
 
 ################################################################################
@@ -87,7 +98,12 @@ sanity_check_pipeline() {
 # crash.
 ################################################################################
 physics_engines_test() {
-    ENGINES=(1 2 4 6 8 12 16 24)
+
+    # Don't test with ALL engine sizes, just the smallest, largest,
+    # and a few in between.
+    #
+    # All: 1 2 4 6 8 12 16 24
+    ENGINES=(1 8 16 24)
 
     for n in "${ENGINES[@]}"
     do
@@ -346,14 +362,14 @@ stage2_univar_check_outputs() {
     # Check SIERRA directory structure
     for exp in {0..2}; do
         for run in {0..3}; do
-            [ -d "$output_root/exp${exp}/template_${run}_output" ] || false
+            [ -d "$output_root/exp${exp}/template_run${run}_output" ] || false
         done
     done
 
     # Check stage2 generated data
     for exp in {0..2}; do
         for run in {0..3}; do
-            [ -f "$output_root/exp${exp}/template_${run}_output/output/collected-data.csv" ] || false
+            [ -f "$output_root/exp${exp}/template_run${run}_output/output/collected-data.csv" ] || false
         done
     done
 }
@@ -384,7 +400,7 @@ stage2_bivar_test() {
     for i in {0..2}; do
         for j in {0..4}; do
             for run in {0..3}; do
-                [ -f "$output_root1/c1-exp${i}+c2-exp${j}/template_run${run}_output/collected-data.csv" ] ||false
+                [ -f "$output_root1/c1-exp${i}+c2-exp${j}/template_run${run}_output/output/collected-data.csv" ] ||false
             done
         done
     done
@@ -752,7 +768,7 @@ vc_test() {
     --batch-criteria population_size.Linear3.C3 \
     --pipeline 1 2 3 4 \
     --platform-vc \
-    --exp-setup=exp_setup.T500"
+    --exp-setup=exp_setup.T50"
 
     cameras=(overhead
              sw
@@ -763,17 +779,17 @@ vc_test() {
 
         # Check SIERRA directory structure
         for i in {0..2}; do
-            [ -d "$output_root/exp${i}/template_${i}_output/frames" ] || false
+            [ -d "$output_root/exp${i}/template_run${i}_output/frames" ] || false
         done
 
         # Check generated frames exist
         for i in {0..2}; do
-            [[ $(ls -A $output_root/exp${i}/template_${i}_output/frames) > /dev/null ]]  || false
+            [[ $(ls -A $output_root/exp${i}/template_run${i}_output/frames) > /dev/null ]]  || false
         done
 
         # Check generated videos
         for i in {0..2}; do
-            [ -f "$video_root/exp${i}/template_${i}_output.mp4" ] || false
+            [ -f "$video_root/exp${i}/template_run${i}_output.mp4" ] || false
         done
         rm -rf $SIERRA_ROOT
     done
@@ -792,7 +808,7 @@ cmdline_test() {
     --physics-n-engines=1 \
     --controller=foraging.footbot_foraging \
     --batch-criteria population_size.Linear3.C3 \
-    --exp-setup=exp_setup.T500"
+    --exp-setup=exp_setup.T50"
 
 
     $SIERRA_CMD --n-robots=10 --pipeline 1

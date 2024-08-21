@@ -148,7 +148,7 @@ class ExpCreator:
                         run_exp_def: definition.XMLExpDef,
                         cmds_generator,
                         run_num: int) -> None:
-        run_output_dir = "{0}_{1}_output".format(self.template_stem, run_num)
+        run_output_dir = "{0}_run{1}_output".format(self.template_stem, run_num)
 
         # If the project defined per-run configuration, apply
         # it. Otherwise, just apply the configuration in the SIERRA core.

@@ -229,11 +229,11 @@ class ExpCSVGatherer:
 
         self.logger.info('Processing .csvs: %s...', exp_output_root.name)
 
-        pattern = "{}_{}_output".format(re.escape(self.gather_opts['template_input_leaf']),
-                                        r'\d+')
+        pattern = "{}_run{}_output".format(re.escape(self.gather_opts['template_input_leaf']),
+                                           r'\d+')
 
         runs = list(exp_output_root.iterdir())
-        assert(all(re.match(pattern, r.name) for r in runs)),\
+        assert (all(re.match(pattern, r.name) for r in runs)), \
             f"Extra files/not all dirs in '{exp_output_root}' are exp runs"
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
@@ -299,7 +299,7 @@ class ExpCSVGatherer:
             reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
             df = reader(item_path, index_col=False)
 
-            if df.dtypes[0] == 'object':
+            if df.dtypes.iloc[0] == 'object':
                 df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
 
             if item not in gathered:
@@ -373,7 +373,7 @@ class ExpCSVGatherer:
                                   str(path1))
                 continue
 
-            assert (utils.path_exists(path1) and utils.path_exists(path2)),\
+            assert (utils.path_exists(path1) and utils.path_exists(path2)), \
                 f"Either {path1} or {path2} does not exist"
 
             # Verify both dataframes have same # columns, and that
@@ -385,15 +385,15 @@ class ExpCSVGatherer:
             assert (len(df1.columns) == len(df2.columns)), \
                 (f"Dataframes from {path1} and {path2} do not have "
                  "the same # columns")
-            assert(sorted(df1.columns) == sorted(df2.columns)),\
+            assert (sorted(df1.columns) == sorted(df2.columns)), \
                 f"Columns from {path1} and {path2} not identical"
 
             # Verify the length of all columns in both dataframes is the same
             for c1 in df1.columns:
-                assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
+                assert (all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)), \
                     f"Not all columns from {path1} have same length"
 
-                assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
+                assert (all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)), \
                     (f"Not all columns from {path1} and {path2} have "
                      "the same length")
 

@@ -48,6 +48,7 @@ Basic Setup
               - ``pssh``
               - ``ffmpeg``
               - ``xvfb``
+              - ``psmisc``
 
            .. group-tab:: OSX
 

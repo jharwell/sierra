@@ -171,8 +171,6 @@ Bivariate Batch Criteria Example
 This example shows how to use ARGoS with a bivariate batch criteria (i.e., with
 TWO variables/things you want to vary jointly)::
 
-::
-
    sierra-cli \
    --sierra-root=$HOME/exp \
    --template-input-file=exp/your-experiment.argos \
@@ -354,8 +352,6 @@ Bivariate Batch Criteria Example
 This example shows how to use ROS1+gazebo with a bivariate batch criteria (i.e.,
 with TWO variables/things you want to vary jointly)::
 
-::
-
    sierra-cli \
    --sierra-root=$HOME/exp \
    --template-input-file=exp/your-experiment.argos \
@@ -389,8 +385,6 @@ Basic Example
 
 This examples shows the simplest way to use SIERRA with the ROS1+robot platform
 plugin::
-
-::
 
    sierra-cli \
    --platform=platform.ros1robot \

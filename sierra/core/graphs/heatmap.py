@@ -211,7 +211,7 @@ class DualHeatmap:
         # Scaffold graph. We can use either dataframe for setting the graph
         # size; we assume they have the same dimensions.
         #
-        fig, axes = plt.subplots(ncols=2)
+        fig, axes = plt.subplots(nrows=1, ncols=2)
         Heatmap.set_graph_size(dfs[0], fig)
 
         y = np.arange(len(dfs[0].columns))

@@ -1,7 +1,7 @@
 -e .
 
-sphinx==5.0.2
-docutils==0.18.1
+sphinx==6.0.0
+docutils==0.19
 sphinx-rtd-theme
 sphinx-argparse
 sphinx-tabs

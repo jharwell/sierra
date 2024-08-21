@@ -7,18 +7,26 @@ inputs:
   rosdistro:
     description: 'The version of ROS to test with'
     default: 'noetic'
-# outputs:
-#   time: # id of output
-#     description: 'The time we greeted you'
+
 runs:
   using: 'composite'
   steps:
+    ############################################################################
+    # Common setup
+    ############################################################################
+    - name: Setup python (all OSes)
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
     - name: Clone sample project
       shell: bash
-      working-directory: ../../
+      working-directory: ${{ github.workspace }} # Needed to match with scripts/argos-integration-tests.sh
+
       run: |
         if [ ! -d sierra-sample-project ]; then
-        git clone https://github.com/swarm-robotics/sierra-sample-project.git
+        git clone https://github.com/jharwell/sierra-sample-project.git
         cd sierra-sample-project
         else
         cd sierra-sample-project
@@ -30,46 +38,73 @@ runs:
       uses: SimenB/github-actions-cpu-cores@v1
       id: cpu-cores
 
+    - uses: kenchan0130/actions-system-info@master
+      id: system-info
+
+    - name: Cache build files
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ runner.os }}-${{ steps.system-info.outputs.release }}-build-objects
+        verbose: 0
+
     ############################################################################
     # ARGoS setup
     ############################################################################
-    - name: Install ARGoS dependencies
-      shell: bash
-      working-directory: ../../
-      run: |
-        # 2023/01/16: || true needed because homebrew installation of whatever
-        # dependencies these packages requires manual intervention to fix, and I
-        # don't have a mac.
-        if [ "${{ runner.os }}" == "macOS" ]; then
-          brew install pkg-config cmake libpng freeimage lua qt \
-          docbook asciidoc graphviz doxygen|| true
-        elif [ "${{ runner.os }}" == "Linux" ]; then
-          sudo apt-get update
-          sudo apt-get install cmake libfreeimage-dev libfreeimageplus-dev \
-          qt5-default freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev \
-          lua5.3 doxygen graphviz libgraphviz-dev asciidoc
-        fi
+    - uses: nick-fields/retry@v2
+      name: Install ARGoS deps (OSX)
+      if: runner.os == 'macOS'
+      with:
+        timeout_minutes: 10000
+        max_attempts: 3
+        shell: bash
+        command: |
+          # 2023/01/16: Caching doesn't work reliably, for reasons unknown :-(.
+          #
+          # The {xquartz, mactex, qt} deps are not required as long as the ARGoS
+          # integration tests for OSX don't run stage 4+ or try to do video
+          # capture. Installing them takes ~30 min in github actions, so cutting
+          # this particular corner saves a TON of time.
+          #
+          # Note that by omitting Xquartz you MUST also omit Qt, otherwise CI
+          # fails (I think ARGoS segfaults).
+          brew install pkg-config cmake libpng freeimage lua
+
+    - name: Install and cache ARGoS dependencies (Linux)
+      if: runner.os == 'Linux'
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache
+        version: ${{ runner.os }}
 
     - name: Install ARGoS
       if: inputs.platform == 'argos'
       shell: bash
-      working-directory: ../../
       run: |
         git clone https://github.com/ilpincy/argos3.git
         cd argos3
+
         mkdir -p build && cd build
-        cmake -DARGOS_DOCUMENTATION=OFF ../src
+        cmake \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DARGOS_DOCUMENTATION=OFF \
+          ../src
         make -j ${{ steps.cpu-cores.outputs.count }}
         sudo make install
 
     - name: Build SIERRA project for ARGoS
       if: inputs.platform == 'argos'
-      working-directory: ../../
       shell: bash
+      working-directory: ${{ github.workspace }} # Needed to match with scripts/argos-integration-tests.sh
+
       run: |
         cd sierra-sample-project/argos
         mkdir -p build && cd build
-        cmake -DARGOS_INSTALL_DIR=/usr/local ..
+        cmake \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DARGOS_INSTALL_DIR=/usr/local \
+          ..
         make -j ${{ steps.cpu-cores.outputs.count }}
 
     ############################################################################
@@ -77,43 +112,48 @@ runs:
     ############################################################################
     - name: Install ROS1 platform dependency
       if: inputs.platform == 'ros1gazebo'
-      uses: ros-tooling/setup-ros@v0.3
+      uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: ${{ inputs.rosdistro }}
 
-    - name: Install SIERRA ROSbridge dependencies
+    - name: Install SIERRA ROSbridge system dependencies (Linux)
       if: inputs.platform == 'ros1gazebo'
-      working-directory: ../..
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy
+        version: ${{ runner.os }}
+
+    - name: Install SIERRA ROSbridge python dependencies (Linux)
+      if: inputs.platform == 'ros1gazebo'
       shell: bash
       run: |
-        sudo apt-get install ros-${{ inputs.rosdistro }}-desktop-full
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-description
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-msgs
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-gazebo
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-bringup
-        sudo apt-get install python${{ matrix.python-version }} python${{ matrix.python-version }}-dev
-        sudo apt-get install python${{ matrix.python-version }}-venv python3-apt
-        sudo apt-get install python3-pip python3-cairo intltool python3-wheel python3-rospkg python3-empy
-
         # 2023/1/18: You still need install these even after installing stuff
         # with apt AND if the sysem python matches your current python. I don't
         # know why.
-        pip3 install empy
-        pip3 install rospkg wheel pyparsing pyqt5
-        pip3 install  pyqt5 pysip numpy rospkg
-        pip3 install  matplotlib pyyaml psutil
-        pip3 install  pysip defusedxml pyparsing pydev
-        pip3 install  pyopengl opencv-python
+        pip3 install empy \
+                     rospkg \
+                     wheel \
+                     pyparsing \
+                     pyqt5 \
+                     pysip \
+                     numpy \
+                     matplotlib \
+                     pyyaml \
+                     psutil \
+                     defusedxml \
+                     pyparsing \
+                     pydev \
+                     pyopengl \
+                     opencv-python \
+                     catkin_tools
 
     - name: Install SIERRA ROSBridge dependency (ubuntu)
       if: inputs.platform == 'ros1gazebo'
-      working-directory: ../..
       shell: bash
       run: |
         source /opt/ros/${{ inputs.rosdistro }}/setup.bash
 
-        pip3 install catkin_tools
-        git clone https://github.com/swarm-robotics/sierra_rosbridge.git
+        git clone https://github.com/jharwell/sierra_rosbridge.git
         cd sierra_rosbridge
         git checkout devel
         catkin init

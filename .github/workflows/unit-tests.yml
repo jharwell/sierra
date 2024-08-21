@@ -2,19 +2,29 @@ name: Unit Tests
 
 on:
   workflow_call:
-    inputs:
-      os:
-        required: True
-        type: string
 
 jobs:
-  unit-tests:
-    runs-on: ${{ inputs.os }}
+  ci-unit-tests:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-22.04
+          - macos-13
+
+        # 2024/08/26: Test the earliest and latest supported version, to speed
+        # up CI.
         python-version:
           - 3.8
-          - 3.9
+          - 3.11
+
+        exclude:
+          - python-version: 3.11
+            os: ubuntu-20.04
+
+          - python-version: 3.8
+            os: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -29,7 +39,9 @@ jobs:
           which python3
           nox --pythons ${{ matrix.python-version }} --sessions unit_tests
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ci-unit-tests-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage
+          path: .coverage*
+          include-hidden-files: true
+          if-no-files-found: error

@@ -1,0 +1,117 @@
+name: Coverage Top-level
+
+# Run:
+#
+# - Every month.  Scheduling helps keep drift/issues with updates
+#   to runners at bay.
+# - On pushes.
+#
+on:
+  push:
+    paths:
+      - 'sierra/**'
+
+  schedule:
+    - cron: '0 0 1 * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 2024/08/27: We don't test the core with OSX, because if it works on linux,
+  # it should work on OSX. Plus, the plugin tests utilize a lot of "core"
+  # functionality, it the core is already largely tested on OSX via that
+  # route. Plugins are another story, and are explicitly tested on OSX where
+  # feasible.
+  core-ci-ubuntu-2004:
+    uses: ./.github/workflows/core.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  core-ci-ubuntu-2204:
+    uses: ./.github/workflows/core.yml
+    secrets: inherit
+    with:
+      os: ubuntu-22.04
+
+  plugin-ci:
+    uses: ./.github/workflows/plugin.yml
+    secrets: inherit
+
+  unit-tests:
+    uses: ./.github/workflows/unit-tests.yml
+    secrets: inherit
+
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+
+    needs:
+      - core-ci-ubuntu-2004
+      - core-ci-ubuntu-2204
+      - plugin-ci
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/publish
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+          testpypi-token: ${{ secrets.TEST_PYPI_API_TOKEN }}
+
+  coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+
+    needs:
+      - core-ci-ubuntu-2004
+      - plugin-ci
+      - unit-tests
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: actions/download-artifact@v4
+
+      - name: Generate coverage report
+        run: |
+          # ls -al . || true
+          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
+          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
+
+          echo HERE1
+          find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
+          echo HERE2
+          coverage \
+            combine \
+            $(find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*")
+
+          coverage report --fail-under=80
+          coverage xml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-integration-coverage
+
+          path: .coverage
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-integration-coverage-xml
+          path: coverage.xml
+
+      - name: Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+        run: |
+          coveralls

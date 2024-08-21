@@ -7,7 +7,7 @@ setup_env() {
     export SIERRA_ROOT=$HOME/test
 
     if [ "$GITHUB_ACTIONS" = true ]; then
-        export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+        export SAMPLE_ROOT=$GITHUB_WORKSPACE/sierra-sample-project
     else
         export SAMPLE_ROOT=$HOME/git/sierra-sample-project
     fi
@@ -45,11 +45,11 @@ setup_env() {
        --project=ros1gazebo_project \
        --exp-setup=exp_setup.T5.K5\
        --n-runs=4 \
-       --exec-strict\
+       --exec-strict \
        --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
        --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
-       --robot turtlebot3\
+       --robot turtlebot3 \
        --exec-no-devnull \
        --log-level=TRACE"
 
