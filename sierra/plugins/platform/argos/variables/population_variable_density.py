@@ -13,6 +13,7 @@ documentation.
 import typing as tp
 import logging
 import numpy as np
+import pathlib
 
 # 3rd party packages
 import implements
@@ -50,19 +51,19 @@ class PopulationVariableDensity(vd.VariableDensity):
             for density in self.densities:
                 # ARGoS won't start if there are 0 robots, so you always
                 # need to put at least 1.
-                n_robots = int(self.extent.area() * (density / 100.0))
-                if n_robots == 0:
-                    n_robots = 1
-                    self.logger.warning("n_robots set to 1 even though \
+                n_agents = int(self.extent.area() * (density / 100.0))
+                if n_agents == 0:
+                    n_agents = 1
+                    self.logger.warning("n_agents set to 1 even though \
                     calculated as 0 for area=%d,density=%s",
                                         self.extent.area(),
                                         density)
                 changeset = xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity",
                                                              "quantity",
-                                                             str(n_robots)))
+                                                             str(n_agents)))
                 self.attr_changes.append(changeset)
                 self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
-                                  n_robots,
+                                  n_agents,
                                   str(self.extent),
                                   density)
 
@@ -70,35 +71,38 @@ class PopulationVariableDensity(vd.VariableDensity):
 
         return self.attr_changes
 
-    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_names is None:
-            exp_names = self.gen_exp_names(cmdopts)
+            exp_names = self.gen_exp_names()
 
         return [p / self.extent.area() for p in self.populations(cmdopts, exp_names)]
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
+                          batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         return list(map(lambda x: str(round(x, 4)),
-                        self.graph_xticks(cmdopts, exp_names)))
+                        self.graph_xticks(cmdopts, batch_output_root, exp_names)))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Population Density"
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         return int(self.extent.area() * self.densities[exp_num] / 100.0)
 
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
+            batch_input_root: pathlib.Path,
             **kwargs) -> PopulationVariableDensity:
     """
     Create a :class:`PopulationVariableDensity` derived class.
@@ -118,7 +122,7 @@ def factory(cli_arg: str,
         PopulationVariableDensity.__init__(self,
                                            cli_arg,
                                            main_config,
-                                           cmdopts['batch_input_root'],
+                                           batch_input_root,
                                            densities,
                                            extent)
 

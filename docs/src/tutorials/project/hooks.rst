@@ -85,19 +85,18 @@ files. You can put those definitions in a single location and then add them to
 the ``.yaml`` graph definitions that are unique to the :term:`Project` as
 follows:
 
-#. Create ``pipeline/stage4/yaml_config_loader.py``.
+#. Create ``pipeline/stage4/graphs/loader.py``.
 
-#. Extend the
-   :class:`sierra.core.pipeline.stage4.yaml_config_loader.YAMLConfigLoader` class:
+#. Extend/override the
+   :func:`sierra.core.pipeline.stage4.graphs.loader.load_config()` function:
 
    .. code-block:: python
 
-      import sierra.core.pipeline.stage4.yaml_config_loader as ycl
+      import sierra.core.pipeline.stage4 import loader
       from sierra.core import types
 
-      class YAMLConfigLoader(ycl.YAMLConfigLoader):
-          def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
-              ...
+      def load_config(cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
+          ...
 
 Intra-Experiment Graph Generation
 ---------------------------------
@@ -109,7 +108,7 @@ reason. To do so:
 #. Create ``pipeline/stage4/graphs/intra/generate.py``.
 
 #. Override the
-   :ref:`sierra.core.pipeline.stage4.graphs.intra.generate.generate()`
+   :func:`sierra.core.pipeline.stage4.graphs.intra.generate.generate()`
    function:
 
    .. code-block:: python

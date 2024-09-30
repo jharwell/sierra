@@ -81,12 +81,12 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         with utils.utf8open(main_path) as f:
             main_config = yaml.load(f, yaml.FullLoader)
 
-        n_robots = utils.get_n_robots(main_config,
+        n_agents = utils.get_n_agents(main_config,
                                       self.cmdopts,
                                       self.launch_stem_path.parent,
                                       exp_def)
 
-        for i in range(0, n_robots):
+        for i in range(0, n_agents):
             prefix = main_config['ros']['robots'][self.cmdopts['robot']]['prefix']
             exp_def.write_config.add({
                 'src_parent': "./robot",

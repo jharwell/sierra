@@ -16,14 +16,12 @@ import pathlib
 
 # Project packages
 import sierra.core.cmdline as cmd
-from sierra.core import platform, plugin
+from sierra import version
+from sierra.core import platform, plugin, startup, batchroot
 from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
-import sierra.core.root_dirpath_generator as rdg
 import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: ignore
-import sierra.core.startup
-import sierra.version
 
 kIssuesURL = "https://github.com/jharwell/sierra/issues"
 
@@ -38,10 +36,10 @@ class SIERRA():
         # Setup logging customizations
         sierra.core.logging.initialize(bootstrap_args.log_level)
         self.logger = logging.getLogger(__name__)
-        self.logger.info("This is SIERRA %s.", sierra.version.__version__)
+        self.logger.info("This is SIERRA %s.", version.__version__)
 
         # Check SIERRA runtime environment
-        sierra.core.startup.startup_checks(not bootstrap_args.skip_pkg_checks)
+        startup.startup_checks(not bootstrap_args.skip_pkg_checks)
         self.logger.info("Using python=%s.", sys.version.replace('\n', ''))
 
         this_file = pathlib.Path(__file__)
@@ -116,10 +114,11 @@ class SIERRA():
             scenario = sgp.ScenarioGeneratorParser().to_scenario_name(self.args)
 
             self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
-            cmdopts = rdg.from_cmdline(self.args)
-            pipeline = Pipeline(self.args, controller, cmdopts)
+            pathset = batchroot.from_cmdline(self.args)
+
+            pipeline = Pipeline(self.args, controller, pathset)
         else:
-            pipeline = Pipeline(self.args, None, {})
+            pipeline = Pipeline(self.args, None)
 
         try:
             pipeline.run()

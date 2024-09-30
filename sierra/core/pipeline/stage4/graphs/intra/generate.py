@@ -19,7 +19,7 @@ import pathlib
 
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types, utils
+from sierra.core import types, utils, batchroot, exproot
 from sierra.core.pipeline.stage4.graphs.intra import line, heatmap
 
 _logger = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ _logger = logging.getLogger(__name__)
 
 def generate(main_config: types.YAMLDict,
              cmdopts: types.Cmdopts,
+             pathset: batchroot.PathSet,
              controller_config: types.YAMLDict,
              LN_config: types.YAMLDict,
              HM_config: types.YAMLDict,
@@ -49,36 +50,30 @@ def generate(main_config: types.YAMLDict,
 
         criteria:  The :term:`Batch Criteria` used for the batch
                    experiment.
-
     """
-    exp_to_gen = utils.exp_range_calc(cmdopts,
-                                      cmdopts['batch_output_root'],
+    exp_to_gen = utils.exp_range_calc(cmdopts["exp_range"],
+                                      pathset.output_root,
                                       criteria)
 
+    if not exp_to_gen:
+        return
+
+    module = pm.module_load_tiered(project=cmdopts['project'],
+                                   path='pipeline.stage4.graphs.intra.generate')
+
+    generator = module.IntraExpGraphGenerator(main_config,
+                                              controller_config,
+                                              LN_config,
+                                              HM_config,
+                                              cmdopts)
     for exp in exp_to_gen:
-        batch_output_root = pathlib.Path(cmdopts["batch_output_root"])
-        batch_stat_root = pathlib.Path(cmdopts["batch_stat_root"])
-        batch_input_root = pathlib.Path(cmdopts["batch_input_root"])
-        batch_graph_root = pathlib.Path(cmdopts["batch_graph_root"])
-        batch_model_root = pathlib.Path(cmdopts["batch_model_root"])
+        exproots = exproot.PathSet(pathset, exp.name)
 
-        cmdopts = copy.deepcopy(cmdopts)
-        cmdopts["exp_input_root"] = str(batch_input_root / exp.name)
-        cmdopts["exp_output_root"] = str(batch_output_root / exp.name)
-        cmdopts["exp_graph_root"] = str(batch_graph_root / exp.name)
-        cmdopts["exp_model_root"] = str(batch_model_root / exp.name)
-        cmdopts["exp_stat_root"] = str(batch_stat_root / exp.name)
-
-        if os.path.isdir(cmdopts["exp_stat_root"]):
-            generator = pm.module_load_tiered(project=cmdopts['project'],
-                                              path='pipeline.stage4.graphs.intra.generate')
-            generator.IntraExpGraphGenerator(main_config,
-                                             controller_config,
-                                             LN_config,
-                                             HM_config,
-                                             cmdopts)(criteria)
+        if os.path.isdir(exproots.stat_root):
+            generator(exproots, criteria)
         else:
-            _logger.warning("Skipping experiment '%s': %s does not exist",
+            _logger.warning("Skipping experiment '%s': % s does not exist, or "
+                            "isn't a directory",
                             exp,
                             cmdopts['exp_stat_root'])
 
@@ -133,9 +128,9 @@ class IntraExpGraphGenerator:
         self.controller_config = controller_config
         self.logger = logging.getLogger(__name__)
 
-        utils.dir_create_checked(self.cmdopts["exp_graph_root"], exist_ok=True)
-
-    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
+    def __call__(self,
+                 pathset: exproot.PathSet,
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Generate graphs.
 
@@ -147,13 +142,15 @@ class IntraExpGraphGenerator:
         #. :func:`~sierra.core.pipeline.stage4.graphs.intra.heatmap.generate()`
             to generate heatmaps for each experiment in the batch.
         """
+        utils.dir_create_checked(pathset.graph_root, exist_ok=True)
+
         LN_targets, HM_targets = self.calc_targets()
 
         if not self.cmdopts['project_no_LN']:
-            line.generate(self.cmdopts, LN_targets)
+            line.generate(self.cmdopts, pathset, LN_targets)
 
         if not self.cmdopts['project_no_HM']:
-            heatmap.generate(self.cmdopts, HM_targets)
+            heatmap.generate(self.cmdopts, pathset, HM_targets)
 
     def calc_targets(self) -> tp.Tuple[tp.List[types.YAMLDict],
                                        tp.List[types.YAMLDict]]:

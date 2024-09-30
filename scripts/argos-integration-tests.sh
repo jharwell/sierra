@@ -14,6 +14,10 @@ setup_env() {
         export ARGOS_INSTALL_PREFIX=/$HOME/.local/
     fi
 
+    # Since this is CI, we want to avoid being surprised by deprecated
+    # features, so treat them all as errors.
+    # export PYTHONWARNINGS=error
+
     # Set ARGoS library search path. Must contain both the ARGoS core libraries path
     # AND the sample project library path.
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
@@ -27,7 +31,7 @@ setup_env() {
     # between jobs in a workflow  on OSX, and doing this the way
     # github says to do doesn't work.
     export PATH=$pythonLocation/bin:$PATH
-    
+
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
     # measured because the local site-packages is omitted, or if that
@@ -186,7 +190,15 @@ bc_bivar_sanity_test() {
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root=$(python3 -c "${batch_root_cmd}")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT
@@ -219,11 +231,28 @@ stage1_univar_test() {
 }
 
 stage1_bivar_test() {
-    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root_cmd1="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root_cmd2="from sierra.core import batchroot;
+bc=[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root1=$(python3 -c "${batch_root_cmd1}")
 
     input_root1=$batch_root1/exp-inputs/
 
-    batch_root2=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root2=$(python3 -c"${batch_root_cmd2}")
 
     input_root2=$batch_root2/exp-inputs/
 
@@ -298,7 +327,16 @@ stage1_bivar_test() {
 # Check that stage 2 outputs what it is supposed to
 ################################################################################
 stage2_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+        batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     output_root=$batch_root/exp-outputs/
     scratch_root=$batch_root/scratch/
@@ -375,7 +413,15 @@ stage2_univar_check_outputs() {
 }
 
 stage2_bivar_test() {
-    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root_cmd1="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\", \"max_speed.1.9.C5\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root1=$(python3 -c"${batch_root_cmd1}")
 
     output_root1=$batch_root1/exp-outputs/
 
@@ -410,7 +456,15 @@ stage2_bivar_test() {
 # Check that stage 3 outputs what it is supposed to
 ################################################################################
 stage3_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     stat_root=$batch_root/statistics
     rm -rf $SIERRA_ROOT
@@ -460,7 +514,16 @@ stage3_univar_check_outputs() {
 }
 
 stage3_bivar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root_cmd1="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\", \"max_speed.1.9.C5\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd1}")
 
     output_root=$batch_root1/exp-outputs/
 
@@ -533,8 +596,15 @@ stage4_univar_test() {
         --physics-n-engines=1 \
         --batch-criteria ${bc}\
         --pipeline 1 2 3 4"
-
-        batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"${bc}\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+        batch_root_cmd="from sierra.core import batchroot;
+bc=[\"${bc}\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+        batch_root=$(python3 -c"${batch_root_cmd}")
 
         graph_root=$batch_root/graphs
 
@@ -756,7 +826,16 @@ stage5_bivar_check_cc_outputs() {
 # Visual capture test
 ################################################################################
 vc_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+        batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     output_root=$batch_root/exp-outputs
     video_root=$batch_root/videos
@@ -799,7 +878,16 @@ vc_test() {
 # Cmdline test
 ################################################################################
 cmdline_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     input_root=$batch_root/exp-inputs
     rm -rf $SIERRA_ROOT
@@ -811,7 +899,7 @@ cmdline_test() {
     --exp-setup=exp_setup.T50"
 
 
-    $SIERRA_CMD --n-robots=10 --pipeline 1
+    $SIERRA_CMD --n-agents=10 --pipeline 1
 
     for exp in {0..2}; do
         for run in {0..3}; do

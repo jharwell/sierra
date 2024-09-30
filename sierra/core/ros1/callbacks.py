@@ -21,7 +21,7 @@ def population_size_from_pickle(adds_def: tp.Union[xml.AttrChangeSet,
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     for add in adds_def:
-        if 'name' in add.attr and 'n_robots' in add.attr['name']:
+        if 'name' in add.attr and 'n_agents' in add.attr['name']:
             return int(add.attr['value'])
 
     return 0

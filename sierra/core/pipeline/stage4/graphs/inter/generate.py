@@ -14,13 +14,14 @@ import typing as tp
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, utils
+from sierra.core import types, utils, batchroot
 
 from sierra.core.pipeline.stage4.graphs.inter import line, heatmap
 
 
 def generate(main_config: types.YAMLDict,
              cmdopts: types.Cmdopts,
+             pathset: batchroot.PathSet,
              LN_targets: tp.List[types.YAMLDict],
              HM_targets: tp.List[types.YAMLDict],
              criteria: bc.IConcreteBatchCriteria) -> None:
@@ -58,17 +59,18 @@ def generate(main_config: types.YAMLDict,
     to get logging messages have unique logger names between this class and your
     derived class , in order to reduce confusion.
     """
-    utils.dir_create_checked(cmdopts['batch_graph_collate_root'],
-                             exist_ok=True)
+    utils.dir_create_checked(pathset.graph_collate_root, exist_ok=True)
 
     if criteria.is_univar():
         if not cmdopts['project_no_LN']:
             line.generate(cmdopts,
+                          pathset,
                           LN_targets,
                           criteria)
     else:
         if not cmdopts['project_no_HM']:
             heatmap.generate(cmdopts,
+                             pathset,
                              HM_targets,
                              criteria)
 

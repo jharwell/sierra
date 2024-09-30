@@ -11,6 +11,9 @@ setup_env() {
     else
         export SAMPLE_ROOT=$HOME/git/sierra-sample-project
     fi
+    # Since this is CI, we want to avoid being surprised by deprecated
+    # features, so treat them all as errors.
+    # export PYTHONWARNINGS=error
 
     export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 
@@ -77,7 +80,16 @@ bc_univar_sanity_test() {
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1robot_project\",[\"population_size.Linear3.C3\"],\"OutdoorWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"turtlebot3\";
+scenario=\"OutdoorWorld.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1robot_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT

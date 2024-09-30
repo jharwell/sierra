@@ -8,6 +8,7 @@ Reusable classes related to the homogeneous populations of agents.
 import typing as tp
 import re
 import math
+import pathlib
 
 # 3rd party packages
 
@@ -26,10 +27,11 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_names is None:
-            exp_names = self.gen_exp_names(cmdopts)
+            exp_names = self.gen_exp_names()
 
         ret = list(map(float, self.populations(cmdopts, exp_names)))
 
@@ -42,10 +44,11 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
+                          batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
         if exp_names is None:
-            exp_names = self.gen_exp_names(cmdopts)
+            exp_names = self.gen_exp_names()
 
         ret = map(float, self.populations(cmdopts, exp_names))
 
@@ -59,9 +62,7 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
 
 class Parser():
-    """A base parser for use in changing the # robots/agents.
-
-    """
+    """A base parser for use in changing the # robots/agents."""
 
     def __call__(self, arg: str) -> types.CLIArgSpec:
         ret = {
@@ -74,7 +75,7 @@ class Parser():
 
         # remove batch criteria variable name, leaving only the spec
         sections = sections[1:]
-        assert len(sections) >= 1 and len(sections) <= 2,\
+        assert len(sections) >= 1 and len(sections) <= 2, \
             ("Spec must have 1 or 2 sections separated by '.'; "
              f"have {len(sections)} from '{arg}'")
 

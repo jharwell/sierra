@@ -12,6 +12,10 @@ setup_env() {
         export SAMPLE_ROOT=$HOME/git/sierra-sample-project
     fi
 
+    # Since this is CI, we want to avoid being surprised by deprecated
+    # features, so treat them all as errors.
+    # export PYTHONWARNINGS=error
+
     export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
     export SIERRA_ROSBRIDGE_INSTALL_PREFIX=$HOME/.local
 
@@ -93,7 +97,16 @@ bc_bivar_sanity_test() {
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"turtlebot3_house\";
+scenario=\"HouseWorld.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT
@@ -125,11 +138,27 @@ stage1_univar_test() {
 }
 
 stage1_bivar_test() {
-    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root_cmd1="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"];
+template_stem=\"turtlebot3_house\";
+scenario=\"HouseWorld.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root_cmd2="from sierra.core import batchroot;
+bc=[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"];
+template_stem=\"turtlebot3_house\";
+scenario=\"HouseWorld.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root1=$(python3 -c"${batch_root_cmd1}")
 
     input_root1=$batch_root1/exp-inputs/
 
-    batch_root2=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root2=$(python3 -c"${batch_root_cmd2}")
 
     input_root2=$batch_root2/exp-inputs/
 
@@ -197,7 +226,16 @@ stage1_bivar_test() {
 # Check that stage 2 works for all exec envs
 ################################################################################
 stage2_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"turtlebot3_house\";
+scenario=\"HouseWorld.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     scratch_root=$batch_root/scratch/
 

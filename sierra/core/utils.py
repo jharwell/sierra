@@ -179,17 +179,15 @@ def get_primary_axis(criteria,
     return 1
 
 
-def exp_range_calc(cmdopts: types.Cmdopts,
+def exp_range_calc(exp_range: str,
                    root_dir: pathlib.Path,
                    criteria) -> types.PathList:
     """
     Get the range of experiments to run/do stuff with. SUPER USEFUL.
     """
-    exp_all = [root_dir / d for d in criteria.gen_exp_names(cmdopts)]
+    exp_all = [root_dir / d for d in criteria.gen_exp_names()]
 
-    exp_range = cmdopts['exp_range']
-
-    if cmdopts['exp_range'] is not None:
+    if exp_range is not None:
         min_exp = int(exp_range.split(':')[0])
         max_exp = int(exp_range.split(':')[1])
         assert min_exp <= max_exp, \
@@ -319,7 +317,7 @@ def exp_template_path(cmdopts: types.Cmdopts,
     return batch_input_root / dirname / template.stem
 
 
-def get_n_robots(main_config: types.YAMLDict,
+def get_n_agents(main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts,
                  exp_input_root: pathlib.Path,
                  exp_def: definition.XMLExpDef) -> int:
@@ -336,18 +334,18 @@ def get_n_robots(main_config: types.YAMLDict,
     #
     # 2. Getting it from the pickled experiment definition (i.e., from the
     #    batch criteria which was used for this experiment).
-    n_robots = module.population_size_from_def(exp_def,
+    n_agents = module.population_size_from_def(exp_def,
                                                main_config,
                                                cmdopts)
-    if n_robots <= 0:
+    if n_agents <= 0:
         pkl_def = definition.unpickle(exp_input_root / config.kPickleLeaf)
-        n_robots = module.population_size_from_pickle(pkl_def,
+        n_agents = module.population_size_from_pickle(pkl_def,
                                                       main_config,
                                                       cmdopts)
 
-    assert n_robots > 0, "n_robots must be > 0"
+    assert n_agents > 0, "n_agents must be > 0"
 
-    return n_robots
+    return n_agents
 
 
 def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
@@ -413,7 +411,7 @@ __api__ = [
     'apply_to_expdef',
     'pickle_modifications',
     'exp_template_path',
-    'get_n_robots',
+    'get_n_agents',
     'df_fill',
     'utf8open',
 ]

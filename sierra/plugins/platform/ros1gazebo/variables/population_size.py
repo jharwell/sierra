@@ -97,7 +97,7 @@ class PopulationSize(population_size.BasePopulationSize):
                 exp_adds.append(xml.TagAdd("./master/group/[@ns='sierra']",
                                            "param",
                                            {
-                                               'name': 'experiment/n_robots',
+                                               'name': 'experiment/n_agents',
                                                'value': str(s)
                                            },
                                            False))
@@ -153,18 +153,19 @@ class PopulationSize(population_size.BasePopulationSize):
 
         return self.tag_adds
 
-    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self) -> tp.List[str]:
         adds = self.gen_tag_addlist()
         return ['exp' + str(x) for x in range(0, len(adds))]
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         return int(len(self.tag_adds[exp_num]) / len(self.tag_adds[0]))
 
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
-            **kwargs) -> PopulationSize:
+            batch_input_root: pathlib.Path,
+            ** kwargs) -> PopulationSize:
     """Create a :class:`PopulationSize` derived class from the cmdline definition.
 
     """
@@ -189,7 +190,7 @@ def factory(cli_arg: str,
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,
-                                cmdopts['batch_input_root'],
+                                batch_input_root,
                                 cmdopts['robot'],
                                 max_sizes,
                                 positions)

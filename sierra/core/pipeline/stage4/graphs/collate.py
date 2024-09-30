@@ -16,7 +16,7 @@ import pandas as pd
 import psutil
 
 # Project packages
-from sierra.core import utils, config, types, storage
+from sierra.core import utils, config, types, storage, batchroot
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -60,22 +60,23 @@ class UnivarGraphCollator:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  criteria,
-                 target: dict,
-                 stat_collate_root: pathlib.Path) -> None:
+                 target: dict) -> None:
         self.logger.info("Univariate files from batch in %s for graph '%s'...",
-                         self.cmdopts['batch_output_root'],
+                         self.pathset.output_root,
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
-        exp_dirs = utils.exp_range_calc(self.cmdopts,
-                                        self.cmdopts['batch_output_root'],
+        exp_dirs = utils.exp_range_calc(self.cmdopts["exp_range"],
+                                        self.pathset.output_root,
                                         criteria)
 
         # Always do the mean, even if stats are disabled
@@ -98,12 +99,13 @@ class UnivarGraphCollator:
         for stat in stats:
             if stat.all_srcs_exist:
                 writer(stat.df,
-                       stat_collate_root / (target['dest_stem'] + stat.df_ext),
+                       self.pathset.stat_collate_root /
+                       (target['dest_stem'] + stat.df_ext),
                        index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
-                                    self.cmdopts['batch_output_root'],
+                                    self.pathset.output_root,
                                     target['src_stem'],
                                     stat.df_ext)
 
@@ -111,7 +113,7 @@ class UnivarGraphCollator:
                      target: dict,
                      exp_dir: str,
                      stats: tp.List[UnivarGraphCollationInfo]) -> None:
-        exp_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'], exp_dir)
+        exp_stat_root = self.pathset.stat_root / exp_dir
 
         for stat in stats:
             csv_ipath = pathlib.Path(exp_stat_root,
@@ -144,22 +146,23 @@ class BivarGraphCollator:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  criteria: bc.IConcreteBatchCriteria,
-                 target: dict,
-                 stat_collate_root: pathlib.Path) -> None:
+                 target: dict) -> None:
         self.logger.info("Bivariate files from batch in %s for graph '%s'...",
-                         self.cmdopts['batch_output_root'],
+                         self.pathset.output_root,
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
-        exp_dirs = utils.exp_range_calc(self.cmdopts,
-                                        self.cmdopts['batch_output_root'],
+        exp_dirs = utils.exp_range_calc(self.cmdopts["exp_range"],
+                                        self.pathset.output_root,
                                         criteria)
 
         xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
@@ -189,7 +192,7 @@ class BivarGraphCollator:
                                                row,
                                                stat.df_ext)
                     writer(df,
-                           stat_collate_root / name,
+                           self.pathset.stat_collate_root / name,
                            index=False)
 
                 # TODO: Don't write this for now, until I find a better way of
@@ -200,7 +203,7 @@ class BivarGraphCollator:
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
-                                    self.cmdopts['batch_output_root'],
+                                    self.pathset.output_root,
                                     target['src_stem'],
                                     stat.df_ext)
 
@@ -208,7 +211,7 @@ class BivarGraphCollator:
                      target: dict,
                      exp_dir: str,
                      stats: tp.List[BivarGraphCollationInfo]) -> None:
-        exp_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'], exp_dir)
+        exp_stat_root = self.pathset.stat_root / exp_dir
         for stat in stats:
             csv_ipath = pathlib.Path(exp_stat_root,
                                      target['src_stem'] + stat.df_ext)
@@ -238,11 +241,11 @@ class BivarGraphCollator:
             # in sequence, to generate a SEQUENCE of 2D dataframes.
             for row in data_df[target['col']].index:
                 if row in stat.df_seq.keys():
-                    stat.df_seq[row].loc[xlabel][ylabel] = data_df.loc[row,
+                    stat.df_seq[row].loc[xlabel, ylabel] = data_df.loc[row,
                                                                        target['col']]
                 else:
                     df = pd.DataFrame(columns=stat.ylabels, index=stat.xlabels)
-                    df.loc[xlabel][ylabel] = data_df.loc[row, target['col']]
+                    df.loc[xlabel, ylabel] = data_df.loc[row, target['col']]
                     stat.df_seq[row] = df
 
 
@@ -254,12 +257,13 @@ class ParallelCollator():
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
 
-        self.batch_stat_collate_root = self.cmdopts['batch_stat_collate_root']
-        utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
+        utils.dir_create_checked(pathset.stat_collate_root, exist_ok=True)
 
     def __call__(self,
                  criteria: bc.IConcreteBatchCriteria,
@@ -282,7 +286,7 @@ class ParallelCollator():
                            args=(q,
                                  self.main_config,
                                  self.cmdopts,
-                                 self.batch_stat_collate_root,
+                                 self.pathset,
                                  criteria))
             p.start()
 
@@ -292,21 +296,21 @@ class ParallelCollator():
     def _thread_worker(q: mp.Queue,
                        main_config: types.YAMLDict,
                        cmdopts: types.Cmdopts,
-                       stat_collate_root: pathlib.Path,
+                       pathset: batchroot.PathSet,
                        criteria) -> None:
 
         collator: tp.Union[UnivarGraphCollator, BivarGraphCollator]
 
         if criteria.is_univar():
-            collator = UnivarGraphCollator(main_config, cmdopts)
+            collator = UnivarGraphCollator(main_config, cmdopts, pathset)
         else:
-            collator = BivarGraphCollator(main_config, cmdopts)
+            collator = BivarGraphCollator(main_config, cmdopts, pathset)
 
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
                 graph = q.get(True, 3)
-                collator(criteria, graph, stat_collate_root)
+                collator(criteria, graph)
                 q.task_done()
             except queue.Empty:
                 break

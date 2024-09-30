@@ -20,7 +20,7 @@ import psutil
 # Project packages
 from sierra.core.graphs.heatmap import Heatmap
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, config, utils
+from sierra.core import types, config, utils, batchroot
 
 
 _logger = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ _logger = logging.getLogger(__name__)
 
 def proc_batch_exp(main_config: types.YAMLDict,
                    cmdopts: types.Cmdopts,
+                   pathset: batchroot.PathSet,
                    HM_config: types.YAMLDict,
                    criteria: bc.IConcreteBatchCriteria) -> None:
     """
@@ -37,18 +38,15 @@ def proc_batch_exp(main_config: types.YAMLDict,
     to serial if memory on the SIERRA host machine is limited via
     ``--processing-serial``.
     """
-
-    exp_to_imagize = utils.exp_range_calc(cmdopts,
-                                          cmdopts['batch_output_root'],
+    exp_to_imagize = utils.exp_range_calc(cmdopts["exp_range"],
+                                          pathset.output_root,
                                           criteria)
 
     q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
     for exp in exp_to_imagize:
-        leaf = exp.name
-        exp_stat_root = pathlib.Path(cmdopts['batch_stat_root']) / leaf
-        exp_imagize_root = pathlib.Path(
-            cmdopts['batch_imagize_root']) / leaf
+        exp_stat_root = pathset.stat_root / exp.name
+        exp_imagize_root = pathset.imagize_root / exp.name
         _enqueue_exp_for_proc(exp_stat_root, exp_imagize_root, q)
 
         if cmdopts['processing_serial']:

@@ -267,17 +267,16 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         action="store_true",
                                         default=False)
 
-        self.stage1_robots.add_argument("--n-robots",
+        self.stage1_robots.add_argument("--n-agents",
                                         help="""
-
-                                        The # robots that should be used in the
-                                        simulation. Can be used to override
-                                        batch criteria, or to supplement
-                                        experiments that do not set it so that
-                                        manual modification of input file is
-                                        unneccesary.
-
-                                        """ + self.stage_usage_doc([1]),
+                                             The # agents (robots) that should
+                                             be used in the simulation.  Can be
+                                             used to override batch criteria, or
+                                             to supplement experiments that do
+                                             not set it so that manual
+                                             modification of input file is
+                                             unneccesary.
+                                             """ + self.stage_usage_doc([1]),
                                         type=int,
                                         default=None)
 
@@ -287,10 +286,9 @@ class PlatformCmdline(cmd.BaseCmdline):
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
-
         updates = {
             # Stage 1
-            'n_robots': cli_args.n_robots,
+            'n_agents': cli_args.n_agents,
 
             'exp_setup': cli_args.exp_setup,
 

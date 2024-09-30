@@ -13,6 +13,7 @@ documentation.
 import typing as tp
 import logging
 import math
+import pathlib
 
 # 3rd party packages
 import implements
@@ -58,11 +59,11 @@ class PopulationConstantDensity(cd.ConstantDensity):
                             Vector3D(x, y, z))
                         # ARGoS won't start if there are 0 robots, so you always
                         # need to put at least 1.
-                        n_robots = int(extent.area() *
+                        n_agents = int(extent.area() *
                                        (self.target_density / 100.0))
-                        if n_robots == 0:
-                            n_robots = 1
-                            self.logger.warning(("n_robots set to 1 even though "
+                        if n_agents == 0:
+                            n_agents = 1
+                            self.logger.warning(("n_agents set to 1 even though "
                                                  "calculated as 0 for area=%s,"
                                                  "density=%s"),
                                                 str(extent.area()),
@@ -70,9 +71,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                         changeset.add(xml.AttrChange(".//arena/distribute/entity",
                                                      "quantity",
-                                                     str(n_robots)))
+                                                     str(n_agents)))
                         self.logger.debug("Calculated population size=%d for extent=%s,density=%s",
-                                          n_robots,
+                                          n_agents,
                                           str(extent), self.target_density)
                         break
 
@@ -80,16 +81,17 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.attr_changes
 
-    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_names is None:
-            exp_names = self.gen_exp_names(cmdopts)
+            exp_names = self.gen_exp_names()
 
         ret = list(map(float, self.populations(cmdopts, exp_names)))
 
@@ -102,9 +104,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
+                          batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         if exp_names is None:
-            exp_names = self.gen_exp_names(cmdopts)
+            exp_names = self.gen_exp_names()
 
         ret = map(float, self.populations(cmdopts, exp_names))
 
@@ -116,7 +119,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return r"Population Size"
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
 
 
@@ -148,6 +151,7 @@ def calc_dims(cmdopts: types.Cmdopts,
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
+            batch_input_root: pathlib.Path,
             **kwargs) -> PopulationConstantDensity:
     """Create a :class:`PopulationConstantDensity` derived class.
 
@@ -160,7 +164,7 @@ def factory(cli_arg: str,
         PopulationConstantDensity.__init__(self,
                                            cli_arg,
                                            main_config,
-                                           cmdopts['batch_input_root'],
+                                           batch_input_root,
                                            attr["target_density"],
                                            dims,
                                            kw['scenario_tag'])

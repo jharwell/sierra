@@ -5,24 +5,122 @@ SIERRA Runtime Directory Tree
 
 .. IMPORTANT:: SIERRA **NEVER** deletes directories for you.
 
-   Subsequent experiments using the same values for the following cmdline
-   arguments **WILL** result in the same calculated root directory for
-   experimental inputs and outputs, even if other parameters change (or if you
-   change the contents of the template input file):
-
-   - ``--controller``
-   - ``--scenario``
-   - ``--sierra-root``
-   - ``--template-input-file``
-   - ``--batch-criteria``
-
-   SIERRA will abort stage {1,2} processing when this occurs in order to
-   preserve data integrity; this behavior can be overwridden with
+   So, if a directory that SIERRA needs to create already exists during stage
+   {1,2}, it will abort processing in order to preserve data integrity; this is
+   not necessary to do for stages {3,4,5}, because those stages can be recreated
+   using the results of stages {1,2}.  This behavior can be overwridden with
    ``--exp-overwrite``, in which case the use assumes full responsibility for
    ensuring the integrity of the experiment.
 
    Always better to check the arguments before hitting ENTER. Measure twice, cut
    once, as the saying goes.
+
+
+Basic Structure
+---------------
+
+.. table::
+   :header-rows: 1
+
+   * - Directory
+
+     - Meaning
+
+     - Configurable?
+
+   * - SIERRA root
+
+     - The root directory that SIERRA outputs EVERYTHING to. SIERRA will *read*
+       configuration/inputs from where you tell it to, but all outputs generated
+       during at any pipeline stage will appear under here.
+
+     - `--sierra-root`. See :ref:`ln-sierra-usage-cli` for more details.
+
+   * - Batch root
+
+     - ALL files (generated experiment inputs, experiment outputs, deliverables,
+       etc.) are written to this directory, which will be under
+       ``--sierra-root``.  Named using a combination of:
+
+       - ``--controller``
+       - ``--scenario``
+       - ``--sierra-root``
+       - ``--template-input-file``
+       - ``--batch-criteria``
+
+       Subsequent experiments using the same values for these cmdline
+       arguments **WILL** result in the same calculated root directory for
+       experimental inputs and outputs, even if other parameters change (or if
+       you change the contents of the template input file). This WILL result in
+       SIERRA aborting processing during stages {1,2} if this occurs, as
+       described above.
+
+     - No.
+
+   * - Batch input root
+
+     - All experiment input files will be generated under this root
+       directory.
+
+     - No/named ``<batch experiment root>/exp-inputs``.
+
+   * - Batch output root
+
+     - All experiment output files in stage 2 will accrue under this root
+       directory. Each experiment will get their own subdirectory in this root
+       for its outputs to accrue into.
+
+     - No/named ``<batch experiment root>/exp-outputs``.
+
+  * - Batch graph root
+
+    - All generated graphs will acrrue under this root directory. Each
+      experiment will get their own subdirectory in this root for their graphs
+      to accrue into.
+
+    - No/named ``<batch experiment root>/graphs``.
+
+  * - Batch model root
+
+    - All model outputs will accrue under this root directory. Each experiment
+      will get their own subdirectory in this root for their model outputs to
+      accrue into.
+
+    - No/named ``<batch experiment root>/models``.
+
+  * - Batch statistics root
+
+    - All statistics generated during stage 3 will accrue under this root
+      directory. Each experiment will get their own directory in this root for
+      their statistics.
+
+    - No/named ``<batch experiment root>/statistics``.
+
+  * - Batch imagizing root
+
+    - All images generated during stage 3 from CSV files accrue under this root
+      directory. Each experiment will get their own subdirectory in this root for
+      their images.
+
+    - No/named ``<batch experiment root>/images``.
+
+  * - Batch video root.
+
+    - All videos rendered during stage 4 will accrue under this root
+      directory. Each experiment will get their own subdirectory in this root
+      for their videos.
+
+    - No/named ``<batch experiment root>/videos``.
+
+  * - Batch scratch root.
+
+    - All GNU parallel outputs, ``--exec-env`` artifacts will appear under
+      here. Each experiment will get their own directory in this root for their
+      own scratch. This root is separate from experiment inputs to make checking
+      for segfaults, tar-ing experiments, etc. easier.
+
+    - No/named ``<batch experiment root>/scratch``.
+
 
 Default Pipeline Directory Tree (Stages 1-4)
 --------------------------------------------
@@ -152,7 +250,8 @@ it runs:
           together in stage 4 to generated videos. Each experiment will get its
           own directory under here, with unique sub-directories for each
           different type of :term:`Experimental Run` data captured for
-          imagizing. See :ref:`ln-sierra-usage-rendering-project` for more details.
+          imagizing. See :ref:`ln-sierra-usage-rendering-project` for more
+          details.
 
         - ``videos`` - Root directory for holding rendered videos generated
           during stage 4 from either captured simulator frames for imagized

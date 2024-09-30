@@ -18,7 +18,7 @@ import yaml
 # Project packages
 from sierra.core.pipeline.stage3 import (imagize, collate, statistics)
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, utils
+from sierra.core import types, utils, batchroot
 
 
 class PipelineStage3:
@@ -40,14 +40,18 @@ class PipelineStage3:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
+    def __init__(self,
+                 main_config: dict,
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.logger = logging.getLogger(__name__)
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self._run_statistics(self.main_config, self.cmdopts, criteria)
-        self._run_run_collation(self.main_config, self.cmdopts, criteria)
+        self._run_statistics(criteria)
+        self._run_run_collation(criteria)
 
         if self.cmdopts['project_imagizing']:
             intra_HM_path = pathlib.Path(self.cmdopts['project_config_root']) \
@@ -70,27 +74,26 @@ class PipelineStage3:
 
     # Private functions
 
-    def _run_statistics(self,
-                        main_config: dict,
-                        cmdopts: types.Cmdopts, criteria:
-                        bc.IConcreteBatchCriteria):
+    def _run_statistics(self, criteria: bc.IConcreteBatchCriteria):
         self.logger.info("Generating statistics from experiment outputs in %s...",
-                         cmdopts['batch_output_root'])
+                         self.pathset.output_root)
         start = time.time()
-        statistics.BatchExpCalculator(main_config, cmdopts)(criteria)
+        statistics.BatchExpCalculator(self.main_config,
+                                      self.cmdopts,
+                                      self.pathset)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Statistics generation complete in %s", str(sec))
 
     def _run_run_collation(self,
-                           main_config: dict,
-                           cmdopts: types.Cmdopts, criteria:
-                           bc.IConcreteBatchCriteria):
+                           criteria: bc.IConcreteBatchCriteria):
         if not self.cmdopts['skip_collate']:
             self.logger.info("Collating experiment run outputs into %s...",
-                             cmdopts['batch_stat_collate_root'])
+                             self.pathset.stat_collate_root)
             start = time.time()
-            collate.ExpParallelCollator(main_config, cmdopts)(criteria)
+            collate.ExpParallelCollator(self.main_config,
+                                        self.cmdopts,
+                                        self.pathset)(criteria)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             self.logger.info(
@@ -101,10 +104,13 @@ class PipelineStage3:
                        intra_HM_config: dict,
                        cmdopts: types.Cmdopts,
                        criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("Imagizing .csvs in %s...",
-                         cmdopts['batch_output_root'])
+        self.logger.info("Imagizing .csvs in %s...", self.pathset.output_root)
         start = time.time()
-        imagize.proc_batch_exp(main_config, cmdopts, intra_HM_config, criteria)
+        imagize.proc_batch_exp(main_config,
+                               cmdopts,
+                               self.pathset,
+                               intra_HM_config,
+                               criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Imagizing complete: %s", str(sec))

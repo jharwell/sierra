@@ -16,7 +16,7 @@ import logging
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.pipeline.stage2.exp_runner import BatchExpRunner
-from sierra.core import types
+from sierra.core import types, batchroot
 
 
 class PipelineStage2:
@@ -30,13 +30,16 @@ class PipelineStage2:
 
     """
 
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.logger = logging.getLogger(__name__)
         self.cmdopts = cmdopts
+        self.pathset = pathset
 
     def run(self, criteria: bc.BatchCriteria) -> None:
         start = time.time()
-        BatchExpRunner(self.cmdopts, criteria)()
+        BatchExpRunner(self.cmdopts, self.pathset, criteria)()
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Execution complete in %s", str(sec))

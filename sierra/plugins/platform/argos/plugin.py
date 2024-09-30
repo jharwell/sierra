@@ -20,7 +20,7 @@ import packaging.version
 
 # Project packages
 from sierra.plugins.platform.argos import cmdline
-from sierra.core import hpc, config, types, utils, platform
+from sierra.core import hpc, config, types, utils, platform, batchroot
 from sierra.core.experiment import bindings, definition, xml
 import sierra.core.variables.batch_criteria as bc
 
@@ -102,7 +102,7 @@ class ParsedCmdlineConfigurer():
     def _hpc_local(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for LOCAL execution")
         if any(stage in args.pipeline for stage in [1, 2]):
-            assert args.physics_n_engines is not None,\
+            assert args.physics_n_engines is not None, \
                 '--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}'
 
         ppn_per_run_req = args.physics_n_engines
@@ -153,7 +153,7 @@ class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.BatchCriteria,
-                 n_robots: int,
+                 n_agents: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.display_port = -1
@@ -276,7 +276,7 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         version = packaging.version.parse(res.group(0))
         min_version = config.kARGoS['min_version']
 
-        assert version >= min_version,\
+        assert version >= min_version, \
             f"ARGoS version {version} < min required {min_version}"
 
         if self.cmdopts['platform_vc']:
@@ -302,7 +302,7 @@ def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaE
                 d = utils.Vector3D.from_str(c.value)
                 dims.append(utils.ArenaExtent(d))
 
-    assert len(dims) > 0,\
+    assert len(dims) > 0, \
         "Scenario dimensions not contained in batch criteria"
 
     return dims
@@ -328,10 +328,11 @@ def population_size_from_def(exp_def: definition.XMLExpDef,
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,
+                        pathset: batchroot.PathSet,
                         logger: logging.Logger) -> None:
     s = "batch_exp_root='%s',runs/exp=%s,threads/job=%s,n_jobs=%s"
     logger.info(s,
-                cmdopts['batch_root'],
+                pathset.root,
                 cmdopts['n_runs'],
                 cmdopts['physics_n_threads'],
                 cmdopts['exec_jobs_per_node'])

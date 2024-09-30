@@ -27,7 +27,7 @@ import pathlib
 # Project packages
 import sierra.core.generators.generator_factory as gf
 from sierra.core.experiment import spec, definition
-from sierra.core import types
+from sierra.core import types, batchroot
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -41,20 +41,6 @@ class BatchExpDefGenerator:
         batch_config_template: Absolute path to the root template XML
                                configuration file.
 
-        batch_input_root: Root directory for all generated XML input files all
-                               experiments should be stored (relative to current
-                               dir or absolute). Each experiment will get a
-                               directory within this root to store the xml input
-                               files for the set of :term:`Experimental Runs
-                               <Experimental Run>` comprising an
-                               :term:`Experiment`; directory name determined by
-                               the batch criteria used.
-
-        batch_output_root: Root directory for all experiment outputs (relative
-                           to current dir or absolute). Each experiment will get
-                           a directory 'exp<n>' in this directory for its
-                           outputs.
-
         criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
                   derived object instance created from cmdline definition.
 
@@ -66,6 +52,7 @@ class BatchExpDefGenerator:
 
     def __init__(self,
                  criteria: bc.IConcreteBatchCriteria,
+                 pathset: batchroot.PathSet,
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: types.Cmdopts) -> None:
@@ -77,8 +64,7 @@ class BatchExpDefGenerator:
         self.exp_template_stem = self.batch_config_template.stem
         self.batch_config_extension = None
 
-        self.batch_input_root = pathlib.Path(cmdopts['batch_input_root'])
-        self.batch_output_root = pathlib.Path(cmdopts['batch_output_root'])
+        self.pathset = pathset
 
         self.controller_name = controller_name
         self.scenario_basename = scenario_basename
@@ -118,7 +104,10 @@ class BatchExpDefGenerator:
             exp_num: Experiment number in the batch
         """
 
-        exp_spec = spec.ExperimentSpec(self.criteria, exp_num, self.cmdopts)
+        exp_spec = spec.ExperimentSpec(self.criteria,
+                                       self.pathset.input_root,
+                                       exp_num,
+                                       self.cmdopts)
         template_fpath = exp_spec.exp_input_root / self.exp_template_stem
         config_root = pathlib.Path(self.cmdopts['project_config_root'])
         scenario = gf.scenario_generator_create(controller=self.controller_name,

@@ -16,6 +16,10 @@ setup_env() {
 
     fi
 
+    # Since this is CI, we want to avoid being surprised by deprecated
+    # features, so treat them all as errors.
+    # export PYTHONWARNINGS=error
+
     # Set ARGoS library search path. Must contain both the ARGoS core libraries path
     # AND the sample project library path.
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
@@ -84,7 +88,15 @@ setup_env() {
 # Check usage of environment variables
 ################################################################################
 env_vars_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1robot_project\",[\"population_size.Linear3.C3\"],\"OutdoorWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3\"))")
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"turtlebot3\";
+scenario=\"OutdoorWorld.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1robot_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root=$(python3 -c"${batch_root_cmd}")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT

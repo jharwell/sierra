@@ -31,7 +31,7 @@ import psutil
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types, storage, utils, config
+from sierra.core import types, storage, utils, config, batchroot
 
 
 class ExpParallelCollator:
@@ -43,9 +43,13 @@ class ExpParallelCollator:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
+    def __init__(self,
+                 main_config: dict,
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet):
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
@@ -65,12 +69,12 @@ class ExpParallelCollator:
         gatherq = m.Queue()
         processq = m.Queue()
 
-        exp_to_proc = utils.exp_range_calc(self.cmdopts,
-                                           self.cmdopts['batch_output_root'],
+        exp_to_proc = utils.exp_range_calc(self.cmdopts["exp_range"],
+                                           self.pathset.output_root,
                                            criteria)
 
         for exp in exp_to_proc:
-            gatherq.put((self.cmdopts['batch_output_root'], exp.name))
+            gatherq.put((self.pathset.output_root, exp.name))
 
         self.logger.debug("Starting %d gatherers, method=%s",
                           n_gatherers,
@@ -89,7 +93,7 @@ class ExpParallelCollator:
         processed = [pool.apply_async(ExpParallelCollator._process_worker,
                                       (processq,
                                        self.main_config,
-                                       self.cmdopts['batch_stat_collate_root'],
+                                       self.pathset.stat_collate_root,
                                        self.cmdopts['storage_medium'],
                                        self.cmdopts['df_homogenize'])) for _ in range(0, n_processors)]
 

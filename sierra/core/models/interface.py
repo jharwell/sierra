@@ -16,7 +16,7 @@ import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types
+from sierra.core import types, exproot, batchroot
 
 
 class IConcreteIntraExpModel1D(implements.Interface):
@@ -34,7 +34,8 @@ class IConcreteIntraExpModel1D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
-            cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
+            cmdopts: types.Cmdopts,
+            pathset: exproot.PathSet) -> tp.List[pd.DataFrame]:
         """Run the model and generate a list of dataframes.
 
         Each dataframe can (potentially) target different graphs. All dataframes
@@ -97,7 +98,8 @@ class IConcreteIntraExpModel2D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
-            cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
+            cmdopts: types.Cmdopts,
+            pathset: exproot.PathSet) -> tp.List[pd.DataFrame]:
         """Run the model and generate a list of dataframes.
 
         Each dataframe can (potentially) target a different graph. Each
@@ -150,7 +152,8 @@ class IConcreteInterExpModel1D(implements.Interface):
 
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
-            cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
+            cmdopts: types.Cmdopts,
+            pathset: batchroot.PathSet) -> tp.List[pd.DataFrame]:
         """Run the model and generate list of dataframes.
 
         Each dataframe can (potentially) target a different graph. Each

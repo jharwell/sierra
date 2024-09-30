@@ -20,7 +20,7 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.ros1gazebo import cmdline
-from sierra.core import hpc, platform, config, ros1, types
+from sierra.core import hpc, platform, config, ros1, types, batchroot
 from sierra.core.experiment import bindings, definition, xml
 import sierra.core.variables.batch_criteria as bc
 
@@ -119,7 +119,7 @@ class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.BatchCriteria,
-                 n_robots: int,
+                 n_agents: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.gazebo_port = -1
@@ -278,15 +278,15 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         keys = ['ROS_DISTRO', 'ROS_VERSION']
 
         for k in keys:
-            assert k in os.environ,\
+            assert k in os.environ, \
                 f"Non-ROS+Gazebo environment detected: '{k}' not found"
 
         # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'],\
+        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
             "SIERRA only supports ROS1 kinetic,noetic"
 
         # Check ROS version
-        assert os.environ['ROS_VERSION'] == "1",\
+        assert os.environ['ROS_VERSION'] == "1", \
             "Wrong ROS version: this plugin is for ROS1"
 
         # Check we can find Gazebo
@@ -299,7 +299,7 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         version = packaging.version.parse(res.group(0))
         min_version = packaging.version.parse(config.kGazebo['min_version'])
 
-        assert version >= min_version,\
+        assert version >= min_version, \
             f"Gazebo version {version} < min required {min_version}"
 
 
@@ -326,10 +326,11 @@ def robot_prefix_extract(main_config: types.YAMLDict,
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,
+                        pathset: batchroot.PathSet,
                         logger: logging.Logger) -> None:
     s = "batch_exp_root='%s',runs/exp=%s,threads/job=%s,n_jobs=%s"
     logger.info(s,
-                cmdopts['batch_root'],
+                pathset.root,
                 cmdopts['n_runs'],
                 cmdopts['physics_n_threads'],
                 cmdopts['exec_jobs_per_node'])

@@ -33,7 +33,7 @@ class SimpleBatchScaffoldSpec():
         self.mods = []
         self.is_compound = False
 
-        assert len(self.rms) == 0,\
+        assert len(self.rms) == 0, \
             "Batch criteria cannot remove XML tags"
 
         if self.chgs:
@@ -79,7 +79,7 @@ class CompoundBatchScaffoldSpec():
         self.is_compound = True
         self.mods = []
 
-        assert len(self.rms) == 0,\
+        assert len(self.rms) == 0, \
             "Batch criteria cannot remove XML tags"
 
         if self.chgs and self.adds:
@@ -125,12 +125,13 @@ class ExperimentSpec():
 
     def __init__(self,
                  criteria: bc.IConcreteBatchCriteria,
+                 batch_input_root: pathlib.Path,
                  exp_num: int,
                  cmdopts: types.Cmdopts) -> None:
         self.exp_num = exp_num
-        exp_name = criteria.gen_exp_names(cmdopts)[exp_num]
+        exp_name = criteria.gen_exp_names()[exp_num]
 
-        self.exp_input_root = pathlib.Path(cmdopts['batch_input_root'], exp_name)
+        self.exp_input_root = batch_input_root / exp_name
         self.exp_def_fpath = self.exp_input_root / config.kPickleLeaf
 
         self.logger = logging.getLogger(__name__)

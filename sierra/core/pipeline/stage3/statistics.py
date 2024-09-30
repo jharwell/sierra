@@ -22,7 +22,7 @@ import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, utils, stat_kernels, storage, config
+from sierra.core import types, utils, stat_kernels, storage, config, batchroot
 
 
 class GatherSpec:
@@ -48,15 +48,16 @@ class BatchExpCalculator:
     In parallel for speed.
     """
 
-    def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts, pathset: batchroot.PathSet):
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
-        exp_to_avg = utils.exp_range_calc(self.cmdopts,
-                                          self.cmdopts['batch_output_root'],
+        exp_to_avg = utils.exp_range_calc(self.cmdopts["exp_range"],
+                                          self.pathset.output_root,
                                           criteria)
 
         template_input_leaf = pathlib.Path(self.cmdopts['template_input_file']).stem
@@ -113,7 +114,7 @@ class BatchExpCalculator:
         processed = [pool.apply_async(BatchExpCalculator._process_worker,
                                       (processq,
                                        self.main_config,
-                                       self.cmdopts['batch_stat_root'],
+                                       self.pathset.stat_root,
                                        avg_opts)) for i in range(0, n_processors)]
 
         # To capture the otherwise silent crashes when something goes wrong in

@@ -888,7 +888,7 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--render-cmd-opts",
                                help="""
 
-                               Specify the: program: `ffmpeg` options to appear
+                               Specify the :program:`ffmpeg` options to appear
                                between the specification of the input image
                                files and the specification of the output
                                file. The default is suitable for use with ARGoS
@@ -1129,11 +1129,11 @@ class CoreCmdlineValidator():
         self._check_bc(args)
         self._check_pipeline(args)
 
-        assert args.sierra_root is not None,\
+        assert args.sierra_root is not None, \
             '--sierra-root is required for all stages'
 
     def _check_bc(self, args: argparse.Namespace) -> None:
-        assert len(args.batch_criteria) <= 2,\
+        assert len(args.batch_criteria) <= 2, \
             "Too many batch criteria passed"
 
         if len(args.batch_criteria) == 2:
@@ -1145,29 +1145,29 @@ class CoreCmdlineValidator():
 
     def _check_pipeline(self, args: argparse.Namespace) -> None:
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
-            assert args.n_runs is not None,\
+            assert args.n_runs is not None, \
                 '--n-runs is required for running stage 1'
-            assert args.template_input_file is not None,\
+            assert args.template_input_file is not None, \
                 '--template-input-file is required for running stage 1'
             assert args.scenario is not None, \
                 '--scenario is required for running stage 1'
 
-        assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline),\
+        assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
             'Only 1-5 are valid pipeline stages'
 
         if any(stage in args.pipeline for stage in [1, 2, 3, 4]):
-            assert len(args.batch_criteria) > 0,\
+            assert len(args.batch_criteria) > 0, \
                 '--batch-criteria is required for running stages 1-4'
-            assert args.controller is not None,\
+            assert args.controller is not None, \
                 '--controller is required for running stages 1-4'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar, \
                 '--bc-univar or --bc-bivar is required for stage 5'
-            assert args.scenario_comparison or args.controller_comparison,\
+            assert args.scenario_comparison or args.controller_comparison, \
                 '--scenario-comparison or --controller-comparison required for stage 5'
             if args.scenario_comparison:
-                assert args.controller is not None,\
+                assert args.controller is not None, \
                     '--controller is required for --scenario-comparison'
 
 

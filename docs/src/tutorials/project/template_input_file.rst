@@ -165,7 +165,7 @@ Any of the following may be inserted:
                <param name="experiment/length" value="1234"/>
                <param name="experiment/random_seed" value="5678"/>
                <param name="experiment/param_file" value="/path/to/file"/>
-               <param name="experiment/n_robots" value="123"/>
+               <param name="experiment/n_agents" value="123"/>
                <param name="experiment/ticks_per_sec" value="5"/>
             </group>
             ...
@@ -189,7 +189,7 @@ Any of the following may be inserted:
                <param name="experiment/length" value="1234"/>
                <param name="experiment/random_seed" value="5678"/>
                <param name="experiment/param_file" value="/path/to/file"/>
-               <param name="experiment/n_robots" value="123"/>
+               <param name="experiment/n_agents" value="123"/>
                <param name="experiment/ticks_per_sec" value="5"/>
             </group>
             ...
@@ -224,7 +224,7 @@ Any of the following may be inserted:
                 <param name="experiment/length" value="1234"/>
                 <param name="experiment/random_seed" value="5678"/>
                 <param name="experiment/param_file" value="/path/to/file"/>
-                <param name="experiment/n_robots" value="123"/>
+                <param name="experiment/n_agents" value="123"/>
                 <param name="experiment/ticks_per_sec" value="5"/>
              </group>
              ...
@@ -247,7 +247,7 @@ Any of the following may be inserted:
                 <param name="experiment/length" value="1234"/>
                 <param name="experiment/random_seed" value="5678"/>
                 <param name="experiment/param_file" value="/path/to/file"/>
-                <param name="experiment/n_robots" value="123"/>
+                <param name="experiment/n_agents" value="123"/>
                 <param name="experiment/ticks_per_sec" value="5"/>
              </group>
              ...

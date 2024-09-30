@@ -7,13 +7,12 @@
 # Core packages
 import typing as tp
 import logging
-import pathlib
 
 # 3rd party packages
 import json
 
 # Project packages
-from sierra.core import types, config
+from sierra.core import types, config, batchroot
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
 from sierra.core.graphs.summary_line_graph import SummaryLineGraph
@@ -23,6 +22,7 @@ _logger = logging.getLogger(__name__)
 
 def generate(
         cmdopts: types.Cmdopts,
+        pathset: batchroot.PathSet,
         targets: tp.List[types.YAMLDict],
         criteria: bc.IConcreteBatchCriteria) -> None:
     """Generate linegraphs from :term:`Collated .csv` files.
@@ -31,9 +31,7 @@ def generate(
     option.
     """
 
-    _logger.info("LineGraphs from %s",
-                 cmdopts['batch_stat_collate_root'])
-    graph_root = pathlib.Path(cmdopts['batch_graph_collate_root'])
+    _logger.info("LineGraphs from %s", pathset.stat_collate_root)
 
     # For each category of linegraphs we are generating
     for category in targets:
@@ -43,41 +41,47 @@ def generate(
             _logger.trace('\n' +  # type: ignore
                           json.dumps(graph, indent=4))
             if graph.get('summary', False):
-                _gen_summary_linegraph(graph, cmdopts, criteria, graph_root)
+                _gen_summary_linegraph(graph,
+                                       pathset,
+                                       cmdopts,
+                                       criteria)
             else:
-                _gen_stacked_linegraph(graph, cmdopts, criteria, graph_root)
+                _gen_stacked_linegraph(graph,
+                                       pathset,
+                                       cmdopts,
+                                       criteria)
 
 
 def _gen_summary_linegraph(graph: types.YAMLDict,
-                           cmdopts:  types.Cmdopts,
-                           criteria: bc.IConcreteBatchCriteria,
-                           graph_root: pathlib.Path) -> None:
-    opath = graph_root / ('SM-' + graph['dest_stem'] + config.kImageExt)
-
-    ln = SummaryLineGraph(stats_root=cmdopts['batch_stat_collate_root'],
+                           pathset: batchroot.PathSet,
+                           cmdopts: types.Cmdopts,
+                           criteria: bc.IConcreteBatchCriteria) -> None:
+    opath = pathset.graph_collate_root / \
+        ('SM-' + graph['dest_stem'] + config.kImageExt)
+    ln = SummaryLineGraph(stats_root=pathset.stat_collate_root,
                           input_stem=graph['dest_stem'],
                           output_fpath=opath,
                           stats=cmdopts['dist_stats'],
-                          model_root=cmdopts['batch_model_root'],
+                          model_root=pathset.model_root,
                           title=graph['title'],
                           xlabel=criteria.graph_xlabel(cmdopts),
                           ylabel=graph.get('ylabel', None),
-                          xticks=criteria.graph_xticks(cmdopts),
-                          xtick_labels=criteria.graph_xticklabels(
-        cmdopts),
-        logyscale=cmdopts['plot_log_yscale'],
-        large_text=cmdopts['plot_large_text'])
+                          xticks=criteria.graph_xticks(cmdopts,
+                                                       pathset.output_root),
+                          xtick_labels=criteria.graph_xticklabels(cmdopts,
+                                                                  pathset.output_root),
+                          logyscale=cmdopts['plot_log_yscale'],
+                          large_text=cmdopts['plot_large_text'])
     ln.generate()
 
 
 def _gen_stacked_linegraph(graph: types.YAMLDict,
-                           cmdopts:  types.Cmdopts,
-                           criteria: bc.IConcreteBatchCriteria,
-                           graph_root: pathlib.Path) -> None:
-    opath = graph_root / ('SLN-' + graph['dest_stem'] +
-                          config.kImageExt)
-
-    ln = StackedLineGraph(stats_root=cmdopts['batch_stat_collate_root'],
+                           pathset: batchroot.PathSet,
+                           cmdopts: types.Cmdopts,
+                           criteria: bc.IConcreteBatchCriteria) -> None:
+    opath = pathset.graph_collate_root / ('SLN-' + graph['dest_stem'] +
+                                          config.kImageExt)
+    ln = StackedLineGraph(stats_root=pathset.stat_collate_root,
                           input_stem=graph['dest_stem'],
                           output_fpath=opath,
                           stats=cmdopts['dist_stats'],

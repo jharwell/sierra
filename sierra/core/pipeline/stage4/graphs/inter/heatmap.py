@@ -15,7 +15,7 @@ import glob
 import json
 
 # Project packages
-from sierra.core import types, config
+from sierra.core import types, config, batchroot
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.graphs.heatmap import Heatmap
 
@@ -23,6 +23,7 @@ _logger = logging.getLogger(__name__)
 
 
 def generate(cmdopts: types.Cmdopts,
+             pathset: batchroot.PathSet,
              targets: tp.List[types.YAMLDict],
              criteria: bc.IConcreteBatchCriteria) -> None:
     """Generate heatmaps from: term: `Collated .csv` files.
@@ -31,9 +32,7 @@ def generate(cmdopts: types.Cmdopts,
     option.
     """
 
-    stat_root = pathlib.Path(cmdopts['batch_stat_collate_root'])
-
-    _logger.info("Heatmaps from %s", stat_root)
+    _logger.info("Heatmaps from %s", pathlib.Path)
 
     # For each category of heatmaps we are generating
     for category in targets:
@@ -43,8 +42,8 @@ def generate(cmdopts: types.Cmdopts,
             _logger.trace('\n' +  # type: ignore
                           json.dumps(graph, indent=4))
 
-            pattern = str(stat_root / (graph['dest_stem'] + "*" +
-                                       config.kStats['mean'].exts['mean']))
+            pattern = str(pathset.stat_collate_root / (graph['dest_stem'] + "*" +
+                                                       config.kStats['mean'].exts['mean']))
             specs = {}
             for f in glob.glob(pattern):
                 if res := re.search('_[0-9]+', f):
@@ -52,17 +51,22 @@ def generate(cmdopts: types.Cmdopts,
                     specs[interval] = pathlib.Path(f)
 
             for interval, ipath in specs.items():
-                _generate_hm(graph, cmdopts, criteria, interval, ipath)
+                _generate_hm(graph=graph,
+                             graph_collate_root=pathset.graph_collate_root,
+                             cmdopts=cmdopts,
+                             criteria=criteria,
+                             interval=interval,
+                             ipath=ipath)
 
 
 def _generate_hm(graph: types.YAMLDict,
+                 graph_collate_root: pathlib.Path,
                  cmdopts: types.Cmdopts,
                  criteria: bc.IConcreteBatchCriteria,
                  interval: int,
                  ipath: pathlib.Path) -> None:
-    graph_root = pathlib.Path(cmdopts['batch_graph_collate_root'])
 
-    odir = graph_root / ("HM-" + graph['dest_stem'])
+    odir = graph_collate_root / ("HM-" + graph['dest_stem'])
     odir.mkdir(parents=True, exist_ok=True)
     opath = odir / ('HM-{0}_{1}{2}'.format(graph['dest_stem'],
                                            interval,
@@ -81,7 +85,7 @@ def _generate_hm(graph: types.YAMLDict,
                  zlabel=graph.get('zlabel', None),
                  large_text=cmdopts['plot_large_text'])
 
-    hm. generate()
+    hm.generate()
 
 
 __api__ = [

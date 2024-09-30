@@ -67,17 +67,18 @@ class PopulationSize(population_size.BasePopulationSize):
                 self.size_list)
         return self.attr_changes
 
-    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         return self.size_list[exp_num]
 
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
+            batch_input_root: pathlib.Path,
             **kwargs) -> PopulationSize:
     """Create a :class:`PopulationSize` derived class from the cmdline definition.
 
@@ -89,7 +90,7 @@ def factory(cli_arg: str,
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,
-                                cmdopts['batch_input_root'],
+                                batch_input_root,
                                 max_sizes)
 
     return type(cli_arg,  # type: ignore
