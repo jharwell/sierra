@@ -18,7 +18,7 @@ jobs:
         # 2024/08/26: Test the earliest and latest supported version, to speed
         # up CI.
         python-version:
-          - 3.8
+          - 3.9
           - 3.11
 
         session:
@@ -31,7 +31,7 @@ jobs:
           - python-version: 3.11
             os: ubuntu-20.04
 
-          - python-version: 3.8
+          - python-version: 3.9
             os: ubuntu-22.04
 
     steps:

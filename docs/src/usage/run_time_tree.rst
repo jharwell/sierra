@@ -19,7 +19,7 @@ SIERRA Runtime Directory Tree
 Basic Structure
 ---------------
 
-.. table::
+.. list-table::
    :header-rows: 1
 
    * - Directory
@@ -72,54 +72,54 @@ Basic Structure
 
      - No/named ``<batch experiment root>/exp-outputs``.
 
-  * - Batch graph root
+   * - Batch graph root
 
-    - All generated graphs will acrrue under this root directory. Each
-      experiment will get their own subdirectory in this root for their graphs
-      to accrue into.
+     - All generated graphs will acrrue under this root directory. Each
+       experiment will get their own subdirectory in this root for their graphs
+       to accrue into.
 
-    - No/named ``<batch experiment root>/graphs``.
+     - No/named ``<batch experiment root>/graphs``.
 
-  * - Batch model root
+   * - Batch model root
 
-    - All model outputs will accrue under this root directory. Each experiment
-      will get their own subdirectory in this root for their model outputs to
-      accrue into.
+     - All model outputs will accrue under this root directory. Each experiment
+       will get their own subdirectory in this root for their model outputs to
+       accrue into.
 
     - No/named ``<batch experiment root>/models``.
 
-  * - Batch statistics root
+   * - Batch statistics root
 
-    - All statistics generated during stage 3 will accrue under this root
-      directory. Each experiment will get their own directory in this root for
-      their statistics.
+     - All statistics generated during stage 3 will accrue under this root
+       directory. Each experiment will get their own directory in this root for
+       their statistics.
 
-    - No/named ``<batch experiment root>/statistics``.
+     - No/named ``<batch experiment root>/statistics``.
 
-  * - Batch imagizing root
+   * - Batch imagizing root
 
-    - All images generated during stage 3 from CSV files accrue under this root
-      directory. Each experiment will get their own subdirectory in this root for
-      their images.
+     - All images generated during stage 3 from CSV files accrue under this root
+       directory. Each experiment will get their own subdirectory in this root for
+       their images.
 
-    - No/named ``<batch experiment root>/images``.
+     - No/named ``<batch experiment root>/images``.
 
-  * - Batch video root.
+   * - Batch video root.
 
-    - All videos rendered during stage 4 will accrue under this root
-      directory. Each experiment will get their own subdirectory in this root
-      for their videos.
+     - All videos rendered during stage 4 will accrue under this root
+       directory. Each experiment will get their own subdirectory in this root
+       for their videos.
 
-    - No/named ``<batch experiment root>/videos``.
+     - No/named ``<batch experiment root>/videos``.
 
-  * - Batch scratch root.
+   * - Batch scratch root.
 
-    - All GNU parallel outputs, ``--exec-env`` artifacts will appear under
-      here. Each experiment will get their own directory in this root for their
-      own scratch. This root is separate from experiment inputs to make checking
-      for segfaults, tar-ing experiments, etc. easier.
+     - All GNU parallel outputs, ``--exec-env`` artifacts will appear under
+       here. Each experiment will get their own directory in this root for their
+       own scratch. This root is separate from experiment inputs to make
+       checking for segfaults, tar-ing experiments, etc. easier.
 
-    - No/named ``<batch experiment root>/scratch``.
+     - No/named ``<batch experiment root>/scratch``.
 
 
 Default Pipeline Directory Tree (Stages 1-4)

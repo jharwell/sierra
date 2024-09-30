@@ -193,7 +193,7 @@ def from_project_imagized(main_config: types.YAMLDict,
         if not exp_imagize_root.exists():
             continue
 
-        output_dir = pathset.videoroot / exp.name
+        output_dir = pathset.video_root / exp.name
 
         for candidate in exp_imagize_root.iterdir():
             if candidate.is_dir():

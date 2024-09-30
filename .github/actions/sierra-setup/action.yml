@@ -67,6 +67,7 @@ runs:
       shell: bash
       run: |
         cd docs && make man && cd ..
+
         python3 -m pip install .
         python3 -m pip install .[devel]
 

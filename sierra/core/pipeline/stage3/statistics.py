@@ -370,7 +370,7 @@ class ExpCSVGatherer:
 
             # .csvs for rendering that we don't verify (for now...)
             if path1.is_dir() or path2.is_dir():
-                self.logger.debug("Not verifying '%s': contains rendering data",
+                self.logger.debug("Not verifying '%s': contains data for imagizing",
                                   str(path1))
                 continue
 

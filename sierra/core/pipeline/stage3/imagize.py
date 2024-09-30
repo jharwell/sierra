@@ -42,32 +42,41 @@ def proc_batch_exp(main_config: types.YAMLDict,
                                           pathset.output_root,
                                           criteria)
 
-    q = mp.JoinableQueue()  # type: mp.JoinableQueue
+    m = mp.Manager()
+    q = m.Queue()
+
+    if cmdopts['processing_serial']:
+        parallelism = 1
+    else:
+        parallelism = psutil.cpu_count()
 
     for exp in exp_to_imagize:
         exp_stat_root = pathset.stat_root / exp.name
         exp_imagize_root = pathset.imagize_root / exp.name
         _enqueue_exp_for_proc(exp_stat_root, exp_imagize_root, q)
 
-        if cmdopts['processing_serial']:
-            parallelism = 1
-        else:
-            parallelism = psutil.cpu_count()
+    _logger.debug("Starting %s workers, method=%s",
+                  parallelism,
+                  mp.get_start_method())
 
-        for _ in range(0, parallelism):
-            p = mp.Process(target=_worker,
-                           args=(q, HM_config))
-            p.start()
+    with mp.Pool(processes=parallelism) as pool:
+        processed = [pool.apply_async(_worker,
+                                      (q, HM_config)) for i in range(parallelism)]
+        _logger.debug("Waiting for workers to finish")
 
-        q.join()
+        for p in processed:
+            p.get()
+
+        pool.close()
+        pool.join()
+
+    _logger.debug("All threads finished")
 
 
 def _enqueue_exp_for_proc(exp_stat_root: pathlib.Path,
                           exp_imagize_root: pathlib.Path,
-                          q: mp.JoinableQueue) -> None:
-    """
-    Add experiment to multiprocessing queue for processing.
-    """
+                          q: queue.Queue) -> None:
+    """Add experiment to multiprocessing queue for processing."""
     for candidate in exp_stat_root.iterdir():
         if candidate.is_dir():
             imagize_output_root = exp_imagize_root / candidate.name
@@ -109,7 +118,7 @@ def _proc_single_exp(HM_config: types.YAMLDict,
 
     path = imagize_opts['input_root'] / imagize_opts['graph_stem']
 
-    _logger.info("Imagizing CSVs in %s...", str(path))
+    _logger.info("Imagizing CSVs in experiment dir %s...", str(path))
 
     for csv in path.iterdir():
         # For each category of heatmaps we are generating
