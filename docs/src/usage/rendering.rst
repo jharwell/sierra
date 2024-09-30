@@ -62,10 +62,11 @@ that:
   needed to get ARGoS to "render" its simulation into an offscreen buffer which
   we can output to a file.
 
-During stage 4, ``--platform-vc`` causes frames captured during stage 2 to be
-stitched together into a unique video file using :program:`ffmpeg` (precise
-command configurable via ``--render-cmd-opts``), and output to
-``<batch_root>/videos/<exp>``.
+During stage 2, ARGoS outputs captured frames to ``frames/`` in each output
+directory (see :ref:`config.kRendering`).  During stage 4, ``--platform-vc``
+causes frames captured during stage 2 to be stitched together into a unique
+video file using :program:`ffmpeg` (precise command configurable via
+``--render-cmd-opts``), and output to ``<batch_root>/videos/<exp>``.
 
 .. _ln-sierra-usage-rendering-project:
 
@@ -86,8 +87,11 @@ To use, do the following:
    residing each subdirectory under the ``main.run_metrics_leaf`` directory (no
    recursive nesting is allowed) in each run are treated as snapshots of 2D or
    3D data over time, and will be averaged together across runs and then turn
-   into image files suitable for video rendering in stage 4. The following
-   restrictions apply:
+   into image files suitable for video rendering in stage 4. If you have
+   subdirectories which do `NOT` contain CSVs for imagizing, then passing this
+   option will cause an error.
+
+   The following restrictions apply:
 
    - A common stem with a unique numeric ID is required for each CSV must
      be present for each CSV.
@@ -109,9 +113,11 @@ To use, do the following:
 
 #. Pass ``--project-vc`` during stage 4 after running imagizing via
    ``--project-imagizing`` during stage 3, either on the same invocation or a
-   previous one. SIERRA will take the imagized CSV files previously created
-   and generate a set of a videos in ``<batch_root>/videos/<exp>`` for each
-   experiment in the batch which was run.
+   previous one. SIERRA will take the imagized CSV files previously created and
+   generate a set of a videos in ``<batch_root>/videos/<exp>/<subdir>`` for each
+   experiment in the batch which was run, where ``<subdir>`` is the name of a
+   subdirectory in ``main.run_metrics_leaf`` which contained the CSVs to
+   imagize.
 
    .. IMPORTANT::
 
@@ -133,10 +139,10 @@ affect some aspect of behavior over time.
 
 To use, do the following:
 
-#. Pass ``--bc-rendering`` during stage 4 when at least inter-experiment heatmap
-   is generated. SIERRA will take the generated PNG files previously created and
-   generate a set of a videos in ``<batch_root>/videos/<heatmap name>`` for each
-   heatmap.
+#. Pass ``--bc-rendering`` during stage 4 when inter-experiment heatmaps are
+   generated. SIERRA will take the generated PNG files previously created in
+   ``<batch_root>/graphs/collated`` and generate a set of a videos in
+   ``<batch_root>/videos/<heatmap name>`` for each heatmap.
 
    .. IMPORTANT::
 

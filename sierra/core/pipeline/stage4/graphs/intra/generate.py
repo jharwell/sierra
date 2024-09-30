@@ -49,7 +49,6 @@ def generate(main_config: types.YAMLDict,
 
         criteria:  The :term:`Batch Criteria` used for the batch
                    experiment.
-
     """
     exp_to_gen = utils.exp_range_calc(cmdopts,
                                       cmdopts['batch_output_root'],

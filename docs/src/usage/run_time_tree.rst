@@ -152,7 +152,8 @@ it runs:
           together in stage 4 to generated videos. Each experiment will get its
           own directory under here, with unique sub-directories for each
           different type of :term:`Experimental Run` data captured for
-          imagizing. See :ref:`ln-sierra-usage-rendering-project` for more details.
+          imagizing. See :ref:`ln-sierra-usage-rendering-project` for more
+          details.
 
         - ``videos`` - Root directory for holding rendered videos generated
           during stage 4 from either captured simulator frames for imagized

@@ -22,7 +22,7 @@ from sierra.core.pipeline.stage4.model_runner import IntraExpModelRunner
 from sierra.core.pipeline.stage4.model_runner import InterExpModelRunner
 import sierra.core.variables.batch_criteria as bc
 
-from sierra.core.pipeline.stage4 import rendering
+from sierra.core.pipeline.stage4 import render
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config, utils
 
@@ -102,8 +102,8 @@ class PipelineStage4:
 
         # Load YAML config
         loader = pm.module_load_tiered(project=self.cmdopts['project'],
-                                       path='pipeline.stage4.yaml_config_loader')
-        graphs_config = loader.YAMLConfigLoader()(self.cmdopts)
+                                       path='pipeline.stage4.graphs.loader')
+        graphs_config = loader.load_config(self.cmdopts)
         self.intra_LN_config = graphs_config['intra_LN']
         self.intra_HM_config = graphs_config['intra_HM']
         self.inter_HM_config = graphs_config['inter_HM']
@@ -142,14 +142,14 @@ class PipelineStage4:
 
         Video generation: The following is run:
 
-        #. :class:`~sierra.core.pipeline.stage4.rendering.PlatformFramesRenderer`,
+        #. :func:`~sierra.core.pipeline.stage4.render.from_platform()`,
            if ``--platform-vc`` was passed
 
-        #. :class:`~sierra.core.pipeline.stage4.rendering.ProjectFramesRenderer`,
+        #. :func:`~sierra.core.pipeline.stage4.render.from_project_imagized()`,
            if ``--project-imagizing`` was passed previously to generate frames,
            and ``--project-rendering`` is passed.
 
-        #. :class:`~sierra.core.pipeline.stage4.rendering.BivarHeatmapRenderer`,
+        #. :func:`~sierra.core.pipeline.stage4.render.from_bivar_heatmaps()`,
            if the batch criteria was bivariate and ``--HM-rendering`` was
            passed.
 
@@ -295,22 +295,19 @@ class PipelineStage4:
         start = time.time()
 
         if self.cmdopts['platform_vc']:
-            rendering.PlatformFramesRenderer(self.main_config,
-                                             self.cmdopts)(criteria)
+            render.from_platform(self.main_config, self.cmdopts, criteria)
         else:
             self.logger.debug(("--platform-vc not passed--skipping rendering "
                                "frames captured by the platform"))
 
         if self.cmdopts['project_rendering']:
-            rendering.ProjectFramesRenderer(self.main_config,
-                                            self.cmdopts)(criteria)
+            render.from_project_imagized(self.main_config, self.cmdopts, criteria)
         else:
             self.logger.debug(("--project-rendering not passed--skipping "
                                "rendering frames captured by the project"))
 
         if criteria.is_bivar() and self.cmdopts['bc_rendering']:
-            rendering.BivarHeatmapRenderer(self.main_config,
-                                           self.cmdopts)(criteria)
+            render.from_bivar_heatmaps(self.main_config, self.cmdopts, criteria)
         else:
             self.logger.debug(("--bc-rendering not passed or univariate batch "
                                "criteria--skipping rendering generated graphs"))
