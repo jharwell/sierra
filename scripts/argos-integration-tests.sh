@@ -873,6 +873,59 @@ print(path)
         rm -rf $SIERRA_ROOT
     done
 }
+################################################################################
+# Imagize test
+################################################################################
+imagize_test() {
+        batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
+
+    output_root=$batch_root/exp-outputs
+    video_root=$batch_root/videos
+    imagize_root=$batch_root/imagize
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --physics-n-engines=1 \
+    --controller=foraging.footbot_foraging \
+    --batch-criteria population_size.Linear3.C3 \
+    --pipeline 1 2 3 4 \
+    --project-imagizing \
+    --project-rendering \
+    --exp-setup=exp_setup.T50"
+
+    cameras=(overhead
+             sw
+             sw+interp)
+
+    for c in "${cameras[@]}"; do
+        $SIERRA_CMD --camera-config=${c}
+
+        # Check SIERRA directory structure
+        for i in {0..2}; do
+            [ -d "$output_root/exp${i}/template_run${i}_output/output/floor-state" ] || false
+        done
+
+        # Check generated images exist
+        for i in {0..2}; do
+            [[ $(ls -A $imagize_root/exp${i}/floor-state/*.png) > /dev/null ]]  || false
+        done
+
+        # Check generated videos
+        for i in {0..2}; do
+            [ -f "$video_root/exp${i}/floor-state.mp4" ] || false
+        done
+        rm -rf $SIERRA_ROOT
+    done
+}
 
 ################################################################################
 # Cmdline test

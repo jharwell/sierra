@@ -104,7 +104,8 @@ class PipelineStage3:
                        intra_HM_config: dict,
                        cmdopts: types.Cmdopts,
                        criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("Imagizing .csvs in %s...", self.pathset.output_root)
+        self.logger.info("Imagizing experiment outputs in %s...",
+                         self.pathset.output_root)
         start = time.time()
         imagize.proc_batch_exp(main_config,
                                cmdopts,

@@ -23,37 +23,43 @@ Create A New Graph Category
 Add a root level dictionary to one of the following YAML configuration files:
 
 - ``<project>/config/intra-graphs-line.yaml`` for intra-experiment line
-  graphs. Dictionaries must start with ``LN_``.
+  graphs. Graph category names must start with ``LN_`` and be at the root level
+  of the file.
 
-- ``<project>/config/intra-graphs-hm.yaml`` for intra-experiment
-  heatmaps. Dictionaries must start with ``HM_``.
+- ``<project>/config/intra-graphs-hm.yaml`` for intra-experiment heatmaps. Graph
+  category names must start with ``HM_`` and be at the root level of the
+  file. These dictionaries can describe heatmaps to be created from *averaged*
+  data across all runs within a single experiment (1 graph per experiment), *OR*
+  created from each experimental run (multiple graphs per experiment). The
+  former is generally used to generate graph deliverables, and the latter used
+  as part of imagizing/generating videos; see :ref:`ln-sierra-usage-rendering`
+  for more details.
 
 - ``<project>/config/inter-graphs-line.yaml`` for inter-experiment line
-  graphs. Dictionaries must start with ``LN_``.
+  graphs. Graph category names must start with ``LN_`` and be at the root level
+  of the file.
 
-- ``<project>/config/inter-graphs-hm.yaml`` for inter-experiment
-  heatmaps. Dictionaries must start with ``HM_``.
+- ``<project>/config/inter-graphs-hm.yaml`` for inter-experiment heatmaps. Graph
+  category names must start with ``HM_`` and be at the root level of the file.
 
 An example ``intra-graphs-line.yaml``, defining two categories of linegraphs:
 
 .. code-block:: YAML
 
-   graphs:
      LN_mycategory1:
-       - ...
-       - ...
-       - ...
+       graphs:
+         - ...
+         - ...
+         - ...
 
      LN_mycategory2:
-       - ...
-       - ...
-       - ...
+       graphs:
+         - ...
+         - ...
+         - ...
 
 ``intra-graphs-hm.yaml`` and ``inter-graphs-line.yaml`` have identical
 structures.
-
-.. IMPORTANT:: The ``graphs`` dictionary `must` be at the root of all ``.yaml``
-               files containing graph configuration.
 
 
 .. IMPORTANT:: Because SIERRA tells matplotlib to use LaTeX internally to
@@ -147,7 +153,8 @@ Unless stated otherwise, all keys are mandatory.
      - src_stem: 'fooCSV'
 
      # The title the graph should have. LaTeX syntax is supported (uses
-     # matplotlib after all). Optional.
+     # matplotlib after all). Optional for  all heatmaps except those created
+     # during imagizing.
      - title: 'My Title'
 
      # The type of interpolation to use. Defaults to 'nearest' if omitted.

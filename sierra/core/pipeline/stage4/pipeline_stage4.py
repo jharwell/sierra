@@ -302,8 +302,8 @@ class PipelineStage4:
                                  self.pathset,
                                  criteria)
         else:
-            self.logger.debug(("--platform-vc not passed--skipping rendering "
-                               "frames captured by the platform"))
+            self.logger.debug(("--platform-vc not passed--(possibly) skipping "
+                               "rendering frames captured by the platform"))
 
         if self.cmdopts['project_rendering']:
             render.from_project_imagized(self.main_config,
@@ -311,8 +311,9 @@ class PipelineStage4:
                                          self.pathset,
                                          criteria)
         else:
-            self.logger.debug(("--project-rendering not passed--skipping "
-                               "rendering frames captured by the project"))
+            self.logger.debug(("--project-rendering not passed--(possibly) "
+                               "skipping rendering frames captured by the "
+                               "project"))
 
         if criteria.is_bivar() and self.cmdopts['bc_rendering']:
             render.from_bivar_heatmaps(self.main_config,

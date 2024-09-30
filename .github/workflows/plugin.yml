@@ -27,6 +27,7 @@ jobs:
         function:
           - physics_engines_test
           - vc_test
+          - imagize_test
           - cmdline_test
           - bc_univar_sanity_test
           - stage1_univar_test
