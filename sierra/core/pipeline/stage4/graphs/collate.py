@@ -16,7 +16,7 @@ import pandas as pd
 import psutil
 
 # Project packages
-from sierra.core import utils, config, types, storage
+from sierra.core import utils, config, types, storage, batchroot
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -111,7 +111,7 @@ class UnivarGraphCollator:
                      target: dict,
                      exp_dir: str,
                      stats: tp.List[UnivarGraphCollationInfo]) -> None:
-        exp_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'], exp_dir)
+        exp_stat_root = self.pathset.stat_root / exp_dir
 
         for stat in stats:
             csv_ipath = pathlib.Path(exp_stat_root,
@@ -208,7 +208,7 @@ class BivarGraphCollator:
                      target: dict,
                      exp_dir: str,
                      stats: tp.List[BivarGraphCollationInfo]) -> None:
-        exp_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'], exp_dir)
+        exp_stat_root = self.pathset.stat_root / exp_dir
         for stat in stats:
             csv_ipath = pathlib.Path(exp_stat_root,
                                      target['src_stem'] + stat.df_ext)
@@ -254,12 +254,12 @@ class ParallelCollator():
 
     def __init__(self,
                  main_config: types.YAMLDict,
+                 pathset: batchroot.PathSet,
                  cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
-        self.batch_stat_collate_root = self.cmdopts['batch_stat_collate_root']
-        utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
+        utils.dir_create_checked(pathset.stat_collate_root, exist_ok=True)
 
     def __call__(self,
                  criteria: bc.IConcreteBatchCriteria,
@@ -282,7 +282,7 @@ class ParallelCollator():
                            args=(q,
                                  self.main_config,
                                  self.cmdopts,
-                                 self.batch_stat_collate_root,
+                                 self.pathset.stat_collate_root,
                                  criteria))
             p.start()
 

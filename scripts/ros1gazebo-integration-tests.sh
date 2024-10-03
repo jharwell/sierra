@@ -93,7 +93,7 @@ bc_bivar_sanity_test() {
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\").to_path())")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT
@@ -125,11 +125,11 @@ stage1_univar_test() {
 }
 
 stage1_bivar_test() {
-    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root1=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\").to_path())")
 
     input_root1=$batch_root1/exp-inputs/
 
-    batch_root2=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+    batch_root1=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\").to_path())")
 
     input_root2=$batch_root2/exp-inputs/
 

@@ -186,7 +186,7 @@ bc_bivar_sanity_test() {
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT
@@ -219,11 +219,11 @@ stage1_univar_test() {
 }
 
 stage1_bivar_test() {
-    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     input_root1=$batch_root1/exp-inputs/
 
-    batch_root2=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     input_root2=$batch_root2/exp-inputs/
 
@@ -298,7 +298,7 @@ stage1_bivar_test() {
 # Check that stage 2 outputs what it is supposed to
 ################################################################################
 stage2_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     output_root=$batch_root/exp-outputs/
     scratch_root=$batch_root/scratch/
@@ -375,7 +375,7 @@ stage2_univar_check_outputs() {
 }
 
 stage2_bivar_test() {
-    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root1=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     output_root1=$batch_root1/exp-outputs/
 
@@ -410,7 +410,7 @@ stage2_bivar_test() {
 # Check that stage 3 outputs what it is supposed to
 ################################################################################
 stage3_univar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     stat_root=$batch_root/statistics
     rm -rf $SIERRA_ROOT
@@ -460,7 +460,7 @@ stage3_univar_check_outputs() {
 }
 
 stage3_bivar_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     output_root=$batch_root1/exp-outputs/
 
@@ -533,8 +533,7 @@ stage4_univar_test() {
         --physics-n-engines=1 \
         --batch-criteria ${bc}\
         --pipeline 1 2 3 4"
-
-        batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"${bc}\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+        batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"${bc}\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
         graph_root=$batch_root/graphs
 
@@ -756,7 +755,7 @@ stage5_bivar_check_cc_outputs() {
 # Visual capture test
 ################################################################################
 vc_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\").to_path())")
 
     output_root=$batch_root/exp-outputs
     video_root=$batch_root/videos
@@ -799,7 +798,7 @@ vc_test() {
 # Cmdline test
 ################################################################################
 cmdline_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\", \"template\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x2\",\"foraging.footbot_foraging\",\"template\").to_path())")
 
     input_root=$batch_root/exp-inputs
     rm -rf $SIERRA_ROOT

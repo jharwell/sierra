@@ -77,7 +77,7 @@ bc_univar_sanity_test() {
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_test() {
-    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1robot_project\",[\"population_size.Linear3.C3\"],\"OutdoorWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3\"))")
+    batch_root=$(python3 -c"from sierra.core.batchroot import batchroot;print(batchroot.ExpRoot(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"OutdoorWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3\").to_path())")
 
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT

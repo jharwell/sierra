@@ -18,7 +18,7 @@ import yaml
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import types, config, utils
+from sierra.core import types, config, utils, batchroot
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -33,7 +33,7 @@ class Pipeline:
     def __init__(self,
                  args: argparse.Namespace,
                  controller: tp.Optional[str],
-                 rdg_opts: types.Cmdopts) -> None:
+                 pathset: batchroot.PathSet) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
 
@@ -106,9 +106,7 @@ class Pipeline:
                                        platform=self.cmdopts['platform'])
         module.PlatformCmdline.cmdopts_update(self.args, self.cmdopts)
 
-        if rdg_opts is not None:
-            self.cmdopts.update(rdg_opts)
-
+        if pathset is not None:
             # Load additional cmdline options from project. This is mandatory,
             # because all projects have to define --controller and --scenario
             # at a minimum.

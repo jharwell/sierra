@@ -13,13 +13,12 @@ import sys
 import datetime
 import logging
 import pathlib
-import typing as tp
 
 # 3rd party packages
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, config, platform, utils
+from sierra.core import types, config, platform, utils, batchroot
 import sierra.core.plugin_manager as pm
 
 
@@ -138,20 +137,17 @@ class BatchExpRunner:
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet,
                  criteria: bc.BatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
-
-        self.batch_exp_root = pathlib.Path(self.cmdopts['batch_input_root'])
-        self.batch_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'])
-        self.batch_stat_exec_root = pathlib.Path(self.batch_stat_root / 'exec')
-        self.batch_scratch_root = pathlib.Path(self.cmdopts['batch_scratch_root'])
+        self.pathset = pathset
         self.exec_exp_range = self.cmdopts['exp_range']
 
         self.logger = logging.getLogger(__name__)
 
-        utils.dir_create_checked(self.batch_stat_exec_root, exist_ok=True)
-        utils.dir_create_checked(self.batch_scratch_root, exist_ok=True)
+        utils.dir_create_checked(self.pathset.stat_exec_root, exist_ok=True)
+        utils.dir_create_checked(self.pathset.scratch_root, exist_ok=True)
 
     def __call__(self) -> None:
         """

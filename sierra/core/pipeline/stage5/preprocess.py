@@ -25,14 +25,14 @@ import pandas as pd
 from sierra.core import utils, config, storage
 
 
-class Preprocessor():
+class IntraExpPreparer():
     """
-    Basically, gather statistics generated from controllers for graph generation
-    in previous stages into the correct files(s) for comparison.
+    Collate generated stats from previous stages into files(s) for comparison.
 
     If the batch criteria is univariate, then only :func:`across_rows` is valid;
     for bivariate batch criteria, either :func:`across_rows` or
-    :func:`across_cols` is valid, depending on what the primary axis is.
+    :func:`across_cols` is valid, depending on what the primary axis is.  This
+    is NOT checked, because this class has no reference to a batch criteria.
     """
 
     def __init__(self,
@@ -56,7 +56,6 @@ class Preprocessor():
         take row `index` from a given dataframe and take the rows specified by
         the `inc_exps` and append them to a results dataframe column-wise, which
         we then write the file system.
-
         """
         exts = config.kStats['mean'].exts
         exts.update(config.kStats['conf95'].exts)
@@ -84,11 +83,10 @@ class Preprocessor():
                     inc_exps: tp.Optional[str]) -> None:
         """Prepare statistics in row-major batch criteria.
 
-        The criteria of interest varies across the columns of controller
-        CSVs. We take row `index` from a given dataframe and take the columns
+        The criteria of interest varies across the columns of controller CSVs.
+        We take row `index` from a given dataframe and take the columns
         specified by the `inc_exps` and append them to a results dataframe
         row-wise, which we then write the file system.
-
         """
         exts = config.kStats['mean'].exts
         exts.update(config.kStats['conf95'].exts)
