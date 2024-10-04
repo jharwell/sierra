@@ -56,7 +56,7 @@ class BatchExpCalculator:
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
-        exp_to_avg = utils.exp_range_calc(self.cmdopts,
+        exp_to_avg = utils.exp_range_calc(self.cmdopts["exp_range"],
                                           self.pathset.output_root,
                                           criteria)
 

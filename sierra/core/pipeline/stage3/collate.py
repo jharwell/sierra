@@ -31,7 +31,7 @@ import psutil
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types, storage, utils, config, pathset
+from sierra.core import types, storage, utils, config, batchroot
 
 
 class ExpParallelCollator:
@@ -69,12 +69,12 @@ class ExpParallelCollator:
         gatherq = m.Queue()
         processq = m.Queue()
 
-        exp_to_proc = utils.exp_range_calc(self.cmdopts,
+        exp_to_proc = utils.exp_range_calc(self.cmdopts["exp_range"],
                                            self.pathset.output_root,
                                            criteria)
 
         for exp in exp_to_proc:
-            gatherq.put((self.cmdopts['batch_output_root'], exp.name))
+            gatherq.put((self.pathset.output_root, exp.name))
 
         self.logger.debug("Starting %d gatherers, method=%s",
                           n_gatherers,

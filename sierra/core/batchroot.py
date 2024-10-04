@@ -94,18 +94,18 @@ class ExpRoot():
 
 class PathSet():
     def __init__(self, root: ExpRoot) -> None:
-        self.root = root
-        self.input_root = self.root.to_path() / "exp-inputs"
-        self.output_root = self.root.to_path() / "exp-outputs"
-        self.graph_root = self.root.to_path() / "graphs"
-        self.model_root = self.root.to_path() / "models"
-        self.stat_root = self.root.to_path() / "statistics"
+        self.input_root = root.to_path() / "exp-inputs"
+        self.output_root = root.to_path() / "exp-outputs"
+        self.graph_root = root.to_path() / "graphs"
+        self.model_root = root.to_path() / "models"
+        self.stat_root = root.to_path() / "statistics"
         self.stat_exec_root = self.stat_root.to_path() / "exec"
-        self.imagize_root = self.root.to_path() / "imagize"
-        self.video_root = self.root.to_path() / "videos"
-        self.stat_collate = self.stat_root.to_path() / "collated"
-        self.graph_collate = self.graph_root.to_path() / "collated"
-        self.scratch_root = self.root.to_path() / "scratch"
+        self.imagize_root = root.to_path() / "imagize"
+        self.video_root = root.to_path() / "videos"
+        self.stat_collate_root = self.stat_root.to_path() / "collated"
+        self.graph_collate_root = self.graph_root.to_path() / "collated"
+        self.scratch_root = root.to_path() / "scratch"
+        self.root = root.to_path()
 
 
 def from_cmdline(args: argparse.Namespace) -> PathSet:
@@ -128,7 +128,7 @@ def from_cmdline(args: argparse.Namespace) -> PathSet:
                     args.controller)
 
 
-def from_exp(sierra_rpath: str,
+def from_exp(sierra_root: str,
              project: str,
              batch_leaf: ExpRootLeaf,
              controller: str) -> PathSet:
@@ -150,7 +150,7 @@ def from_exp(sierra_rpath: str,
         controller: The name of the controller used.
 
     """
-    root = ExpRoot(sierra_rpath,
+    root = ExpRoot(sierra_root,
                    project,
                    controller,
                    batch_leaf)

@@ -38,7 +38,7 @@ def proc_batch_exp(main_config: types.YAMLDict,
     to serial if memory on the SIERRA host machine is limited via
     ``--processing-serial``.
     """
-    exp_to_imagize = utils.exp_range_calc(cmdopts,
+    exp_to_imagize = utils.exp_range_calc(cmdopts["exp_range"],
                                           pathset.output_root,
                                           criteria)
 

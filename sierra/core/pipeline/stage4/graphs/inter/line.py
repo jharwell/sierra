@@ -44,14 +44,12 @@ def generate(
                 _gen_summary_linegraph(graph,
                                        pathset,
                                        cmdopts,
-                                       criteria,
-                                       pathset.graph_collate_root)
+                                       criteria)
             else:
                 _gen_stacked_linegraph(graph,
-                                       pathset.stat_collate_root,
+                                       pathset,
                                        cmdopts,
-                                       criteria,
-                                       pathset.graph_collate_root)
+                                       criteria)
 
 
 def _gen_summary_linegraph(graph: types.YAMLDict,
@@ -68,9 +66,10 @@ def _gen_summary_linegraph(graph: types.YAMLDict,
                           title=graph['title'],
                           xlabel=criteria.graph_xlabel(cmdopts),
                           ylabel=graph.get('ylabel', None),
-                          xticks=criteria.graph_xticks(cmdopts),
-                          xtick_labels=criteria.graph_xticklabels(
-                              cmdopts),
+                          xticks=criteria.graph_xticks(cmdopts,
+                                                       pathset.output_root),
+                          xtick_labels=criteria.graph_xticklabels(cmdopts,
+                                                                  pathset.output_root),
                           logyscale=cmdopts['plot_log_yscale'],
                           large_text=cmdopts['plot_large_text'])
     ln.generate()

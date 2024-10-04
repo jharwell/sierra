@@ -17,7 +17,7 @@ import yaml
 
 # Project packages
 from sierra.plugins.platform.ros1robot import cmdline
-from sierra.core import platform, config, ros1, types, utils
+from sierra.core import platform, config, ros1, types, utils, batchroot
 from sierra.core.experiment import bindings, definition, xml
 import sierra.core.variables.batch_criteria as bc
 
@@ -37,7 +37,7 @@ class ParsedCmdlineConfigurer():
 
     def __call__(self, args: argparse.Namespace) -> None:
         if args.nodefile is None:
-            assert 'SIERRA_NODEFILE' in os.environ,\
+            assert 'SIERRA_NODEFILE' in os.environ, \
                 ("Non-ros1robot environment detected: --nodefile not "
                  "passed and 'SIERRA_NODEFILE' not found")
             args.nodefile = os.environ['SIERRA_NODEFILE']
@@ -46,7 +46,7 @@ class ParsedCmdlineConfigurer():
             f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
         self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
-        assert not args.platform_vc,\
+        assert not args.platform_vc, \
             "Platform visual capture not supported on ros1robot"
 
 
@@ -55,10 +55,10 @@ class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.BatchCriteria,
-                 n_robots: int,
+                 n_agents: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
-        self.n_robots = n_robots
+        self.n_agents = n_agents
         self.exp_num = exp_num
         self.criteria = criteria
         self.logger = logging.getLogger('platform.ros1robot')
@@ -90,7 +90,7 @@ class ExpRunShellCmdsGenerator():
 
         self.logger.debug("Generating pre-exec cmds for run%s slaves: %d robots",
                           run_num,
-                          self.n_robots)
+                          self.n_agents)
 
         script_yaml = main_config['ros']['robots'][self.cmdopts['robot']]
         script_file = script_yaml.get('setup_script', "$HOME/.bashrc")
@@ -123,7 +123,7 @@ class ExpRunShellCmdsGenerator():
                           run_num)
 
         # ROS master node
-        exp_dirname = self.criteria.gen_exp_names(self.cmdopts)[self.exp_num]
+        exp_dirname = self.criteria.gen_exp_names()[self.exp_num]
         exp_template_path = utils.exp_template_path(self.cmdopts,
                                                     self.criteria.batch_input_root,
                                                     exp_dirname)
@@ -152,20 +152,20 @@ class ExpRunShellCmdsGenerator():
 
         self.logger.debug("Generating exec cmds for run%s slaves: %d robots",
                           run_num,
-                          self.n_robots)
+                          self.n_agents)
 
         nodes = platform.ExecEnvChecker.parse_nodefile(self.cmdopts['nodefile'])
 
-        if len(nodes) < self.n_robots:
+        if len(nodes) < self.n_agents:
             self.logger.critical(("Need %d hosts to correctly generate launch "
                                   "cmds for run%s with %d robots; %d available"),
-                                 self.n_robots,
+                                 self.n_agents,
                                  run_num,
-                                 self.n_robots,
+                                 self.n_agents,
                                  len(nodes))
 
         ret = []  # type: tp.List[types.ShellCmdSpec]
-        for i in range(0, self.n_robots):
+        for i in range(0, self.n_agents):
             # --wait tells roslaunch to wait for the configured master to
             # come up before launch the robot code.
             cmd = '{0} --wait {1}_robot{2}{3} '
@@ -207,7 +207,7 @@ class ExpShellCmdsGenerator():
 
         self.logger.info("Using ROS_MASTER_URI=%s", master_uri)
 
-        return[
+        return [
             types.ShellCmdSpec(
                 # roscore will run on the SIERRA host machine.
                 cmd=f'export ROS_MASTER_URI={master_uri}',
@@ -335,11 +335,11 @@ class ExecEnvChecker():
                     k)
 
         # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'],\
+        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
             "SIERRA only supports ROS1 kinetic,noetic"
 
         # Check ROS version
-        assert os.environ['ROS_VERSION'] == "1",\
+        assert os.environ['ROS_VERSION'] == "1", \
             "Wrong ROS version: This plugin is for ROS1"
 
 
@@ -366,8 +366,9 @@ def robot_prefix_extract(main_config: types.YAMLDict,
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,
+                        pathset: batchroot.PathSet,
                         logger: logging.Logger) -> None:
     s = "batch_exp_root='%s',runs/exp=%s"
     logger.info(s,
-                cmdopts['batch_root'],
+                pathset.root,
                 cmdopts['n_runs'])

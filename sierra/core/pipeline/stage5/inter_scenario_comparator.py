@@ -25,7 +25,7 @@ from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.plugin_manager as pm
 from sierra.core import types, utils, config, storage, batchroot
-from sierra.core.pip.line.stage5 import outputroot
+from sierra.core.pipeline.stage5 import outputroot
 
 
 class UnivarInterScenarioComparator:
@@ -106,8 +106,9 @@ class UnivarInterScenarioComparator:
         # using data from all scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
-            for leaf in batch_leaves:
-                if self._leaf_select(leaf):
+            for l in batch_leaves:
+                if self._leaf_select(l):
+                    leaf = batchroot.ExpRootLeaf.from_name(l)
                     self._compare_across_scenarios(cmdopts=cmdopts,
                                                    graph=graph,
                                                    batch_leaf=leaf,
@@ -133,7 +134,7 @@ class UnivarInterScenarioComparator:
     def _compare_across_scenarios(self,
                                   cmdopts: types.Cmdopts,
                                   graph: types.YAMLDict,
-                                  batch_leaf: str,
+                                  batch_leaf: batchroot.ExpRootLeaf,
                                   legend: tp.List[str]) -> None:
 
         # We need to generate the root directory paths for each batch experiment
@@ -149,17 +150,19 @@ class UnivarInterScenarioComparator:
         # because they are all different.
         criteria = bc.factory(self.main_config,
                               cmdopts,
+                              pathset.input_root,
                               self.cli_args,
                               self.scenarios[0])
 
         self._gen_csvs(pathset=pathset,
-                       proect=self.cli_args.project,
+                       project=self.cli_args.project,
                        batch_leaf=batch_leaf,
                        src_stem=graph['src_stem'],
                        dest_stem=graph['dest_stem'])
 
         self._gen_graph(criteria=criteria,
                         cmdopts=cmdopts,
+                        batch_output_root=pathset.output_root,
                         dest_stem=graph['dest_stem'],
                         inc_exps=graph.get('include_exp', None),
                         title=graph.get('title', None),
@@ -169,6 +172,7 @@ class UnivarInterScenarioComparator:
     def _gen_graph(self,
                    criteria: bc.IConcreteBatchCriteria,
                    cmdopts: types.Cmdopts,
+                   batch_output_root: pathlib.Path,
                    dest_stem: str,
                    inc_exps: tp.Optional[str],
                    title: str,
@@ -181,8 +185,8 @@ class UnivarInterScenarioComparator:
         img_opath = pathlib.Path(self.stage5_roots.graph_root,
                                  dest_stem + '-' + self.controller + config.kImageExt)
 
-        xticks = criteria.graph_xticks(cmdopts)
-        xtick_labels = criteria.graph_xticklabels(cmdopts)
+        xticks = criteria.graph_xticks(cmdopts, batch_output_root)
+        xtick_labels = criteria.graph_xticklabels(cmdopts, batch_output_root)
 
         if inc_exps is not None:
             xtick_labels = utils.exp_include_filter(inc_exps,
@@ -208,7 +212,7 @@ class UnivarInterScenarioComparator:
     def _gen_csvs(self,
                   pathset: batchroot.PathSet,
                   project: str,
-                  batch_leaf: str,
+                  batch_leaf: batchroot.ExpRootLeaf,
                   src_stem: str,
                   dest_stem: str) -> None:
         """Generate a set of CSV files for use in inter-scenario graph generation.
@@ -231,9 +235,7 @@ class UnivarInterScenarioComparator:
 
         """
 
-        csv_ipath_stem = pathlib.Path(pathset.output_root,
-                                      pathset.stat_collate_root,
-                                      src_stem)
+        csv_ipath_stem = pathset.stat_collate_root / src_stem
 
         # Some experiments might not generate the necessary performance measure
         # CSVs for graph generation, which is OK.
@@ -269,8 +271,8 @@ class UnivarInterScenarioComparator:
         # Can't use with_suffix() for opath, because that path contains the
         # controller, which already has a '.' in it.
         model_istem = pathlib.Path(pathset.model_root, src_stem)
-        model_ostem = pathlib.Path(self.stage5_roots.model_root,
-                                   dest_stem + "-" + self.controller)
+        model_ostem = self.stage5_roots.model_root / \
+            (dest_stem + "-" + self.controller)
 
         model_ipath = model_istem.with_suffix(config.kModelsExt['model'])
         model_opath = model_ostem.with_name(
@@ -283,10 +285,9 @@ class UnivarInterScenarioComparator:
             writer(model_df, model_opath, index=False)
 
             with utils.utf8open(legend_opath, 'a') as f:
-                scenario = batchroot.ExpRootLeaf.from_name(batch_leaf).scenario
                 sgp = pm.module_load_tiered(project=project,
                                             path='generators.scenario_generator_parser')
-                kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
+                kw = sgp.ScenarioGeneratorParser().to_dict(batch_leaf.scenario)
                 f.write("{0} Prediction\n".format(kw['scenario_tag']))
 
     def _accum_df(self,

@@ -69,7 +69,7 @@ class PlatformExpDefGenerator():
                                        write_config=wr_config)
 
         # Generate # robots
-        self._generate_n_robots(exp_def)
+        self._generate_n_agents(exp_def)
 
         # Setup library
         self._generate_library(exp_def)
@@ -118,18 +118,18 @@ class PlatformExpDefGenerator():
                           n_engines,
                           engine_type)
         if cmdopts['physics_spatial_hash2D']:
-            assert hasattr(self.spec.criteria, 'n_robots'),\
+            assert hasattr(self.spec.criteria, 'n_agents'), \
                 ("When using the 2D spatial hash, the batch "
                  "criteria must implement bc.IQueryableBatchCriteria")
-            n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
+            n_agents = self.spec.criteria.n_agents(self.spec.exp_num)
         else:
-            n_robots = None
+            n_agents = None
 
         module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         robot_type = module.robot_type_from_def(exp_def)
         pe = physics_engines.factory(engine_type,
                                      n_engines,
-                                     n_robots,
+                                     n_agents,
                                      robot_type,
                                      cmdopts,
                                      extents)
@@ -149,19 +149,19 @@ class PlatformExpDefGenerator():
         _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_n_robots(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_n_agents(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generate XML changes to setup # robots (if specified on cmdline).
 
         Writes generated changes to the simulation definition pickle file.
         """
-        if self.cmdopts['n_robots'] is None:
+        if self.cmdopts['n_agents'] is None:
             return
 
         self.logger.trace(("Generating changes for # robots "   # type: ignore
                            "(all runs)"))
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
-            [self.cmdopts['n_robots']])
+            [self.cmdopts['n_agents']])
         for a in chgs[0]:
             exp_def.attr_change(a.path, a.attr, a.value, True)
 

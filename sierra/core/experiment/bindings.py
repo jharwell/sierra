@@ -135,7 +135,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
         cmdopts: Dictionary of parsed cmdline options.
 
-        n_robots: The configured # of robots for the experimental run.
+        n_agents: The configured # of robots for the experimental run.
 
         exp_num: The 0-based index of the experiment in the batch.
 
@@ -144,7 +144,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.BatchCriteria,
-                 n_robots: int,
+                 n_agents: int,
                  exp_num: int) -> None:
         raise NotImplementedError
 

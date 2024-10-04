@@ -78,7 +78,9 @@ class PipelineStage3:
         self.logger.info("Generating statistics from experiment outputs in %s...",
                          self.pathset.output_root)
         start = time.time()
-        statistics.BatchExpCalculator(self.main_config, self.cmdopts)(criteria)
+        statistics.BatchExpCalculator(self.main_config,
+                                      self.cmdopts,
+                                      self.pathset)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Statistics generation complete in %s", str(sec))
@@ -89,7 +91,9 @@ class PipelineStage3:
             self.logger.info("Collating experiment run outputs into %s...",
                              self.pathset.stat_collate_root)
             start = time.time()
-            collate.ExpParallelCollator(self.main_config, self.cmdopts)(criteria)
+            collate.ExpParallelCollator(self.main_config,
+                                        self.cmdopts,
+                                        self.pathset)(criteria)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             self.logger.info(
@@ -100,10 +104,13 @@ class PipelineStage3:
                        intra_HM_config: dict,
                        cmdopts: types.Cmdopts,
                        criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("Imagizing .csvs in %s...",
-                         cmdopts['batch_output_root'])
+        self.logger.info("Imagizing .csvs in %s...", self.pathset.output_root)
         start = time.time()
-        imagize.proc_batch_exp(main_config, cmdopts, intra_HM_config, criteria)
+        imagize.proc_batch_exp(main_config,
+                               cmdopts,
+                               self.pathset,
+                               intra_HM_config,
+                               criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Imagizing complete: %s", str(sec))

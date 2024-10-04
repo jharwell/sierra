@@ -62,7 +62,7 @@ class PhysicsEngines():
         # If we are given multiple extents to map, we need to divide the
         # specified # of engines among them.
         self.n_engines = int(self.n_engines / float(len(self.extents)))
-        assert self.layout == 'uniform_grid2D',\
+        assert self.layout == 'uniform_grid2D', \
             "Only uniform_grid2D physics engine layout currently supported"
 
         self.logger = logging.getLogger(__name__)
@@ -473,7 +473,7 @@ class PhysicsEngines3D(PhysicsEngines):
 
 def factory(engine_type: str,
             n_engines: int,
-            n_robots: tp.Optional[int],
+            n_agents: tp.Optional[int],
             robot_type: str,
             cmdopts: types.Cmdopts,
             extents: tp.List[ArenaExtent]) -> PhysicsEngines:
@@ -484,11 +484,11 @@ def factory(engine_type: str,
     # remain so in the future, so we employ a factory function to make
     # implementation of diverging functionality easier later.
     if '2d' in engine_type:
-        if n_robots and cmdopts['physics_spatial_hash2D']:
+        if n_agents and cmdopts['physics_spatial_hash2D']:
             spatial_hash = {
                 # Per ARGoS documentation in 'argos3 -q dynamics2d'
                 'cell_size': config.kARGoS['spatial_hash2D'][robot_type],
-                'cell_num': n_robots / float(n_engines) * 10
+                'cell_num': n_agents / float(n_engines) * 10
             }
             logging.debug(("Using 2D spatial hash for physics engines: "
                            "cell_size=%f,cell_num=%d"),

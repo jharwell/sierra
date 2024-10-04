@@ -50,9 +50,11 @@ class PipelineStage5:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 batch_roots: batchroot.PathSet) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
+        self.batch_roots = batch_roots
 
         path = pathlib.Path(self.cmdopts['project_config_root'],
                             config.kYAML.stage5)
@@ -72,7 +74,7 @@ class PipelineStage5:
         else:
             self.scenarios = []
 
-        self.output_roots = outputroot.PathSet(cmdopts,
+        self.stage5_roots = outputroot.PathSet(cmdopts,
                                                self.controllers,
                                                self.scenarios)
 
@@ -98,11 +100,11 @@ class PipelineStage5:
 
         """
         # Create directories for .csv files and graphs
-        utils.dir_create_checked(self.output_roots.graph_root, True)
-        utils.dir_create_checked(self.output_roots.csv_root, True)
+        utils.dir_create_checked(self.stage5_roots.graph_root, True)
+        utils.dir_create_checked(self.stage5_roots.csv_root, True)
 
-        if self.output_roots.model_root is not None:
-            utils.dir_create_checked(self.output_roots.model_root, True)
+        if self.stage5_roots.model_root is not None:
+            utils.dir_create_checked(self.stage5_roots.model_root, True)
 
         if self.cmdopts['controller_comparison']:
             self._run_cc(cli_args)
@@ -123,8 +125,8 @@ class PipelineStage5:
 
         if cli_args.bc_univar:
             univar = intrasc.UnivarIntraScenarioComparator(self.controllers,
-                                                           self.output_roots.csv_root,
-                                                           self.output_roots.graph_root,
+                                                           self.batch_roots,
+                                                           self.stage5_roots,
                                                            self.cmdopts,
                                                            cli_args,
                                                            self.main_config)
@@ -133,8 +135,7 @@ class PipelineStage5:
                    comp_type=self.cmdopts['comparison_type'])
         else:
             bivar = intrasc.BivarIntraScenarioComparator(self.controllers,
-                                                         self.output_roots.csv_root,
-                                                         self.output_roots.graph_root,
+                                                         self.stage5_roots,
                                                          self.cmdopts,
                                                          cli_args,
                                                          self.main_config)
@@ -160,7 +161,8 @@ class PipelineStage5:
 
         comparator = intersc.UnivarInterScenarioComparator(self.cmdopts['controller'],
                                                            self.scenarios,
-                                                           self.output_roots,
+                                                           self.batch_roots,
+                                                           self.stage5_roots,
                                                            self.cmdopts,
                                                            cli_args,
                                                            self.main_config)
@@ -182,14 +184,14 @@ class PipelineStage5:
         """
         for c1 in controllers:
             for item in (self.project_root / c1).iterdir():
-                leaf = batchroot.ExpRootLeaf.from_name(item.name).to_path()
+                leaf = batchroot.ExpRootLeaf.from_name(item.name)
 
                 for c2 in controllers:
                     opts1 = batchroot.from_exp(sierra_root=self.cmdopts['sierra_root'],
                                                project=self.cmdopts['project'],
                                                batch_leaf=leaf,
                                                controller=c1)
-                    opts2 = batchroot.from_exp(sierra_rot=self.cmdopts['sierra_root'],
+                    opts2 = batchroot.from_exp(sierra_root=self.cmdopts['sierra_root'],
                                                project=self.cmdopts['project'],
                                                batch_leaf=leaf,
                                                controller=c2)

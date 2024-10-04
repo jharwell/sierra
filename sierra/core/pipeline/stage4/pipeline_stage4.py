@@ -295,19 +295,28 @@ class PipelineStage4:
         start = time.time()
 
         if self.cmdopts['platform_vc']:
-            render.from_platform(self.main_config, self.cmdopts, criteria)
+            render.from_platform(self.main_config,
+                                 self.cmdopts,
+                                 self.pathset,
+                                 criteria)
         else:
             self.logger.debug(("--platform-vc not passed--skipping rendering "
                                "frames captured by the platform"))
 
         if self.cmdopts['project_rendering']:
-            render.from_project_imagized(self.main_config, self.cmdopts, criteria)
+            render.from_project_imagized(self.main_config,
+                                         self.cmdopts,
+                                         self.pathset,
+                                         criteria)
         else:
             self.logger.debug(("--project-rendering not passed--skipping "
                                "rendering frames captured by the project"))
 
         if criteria.is_bivar() and self.cmdopts['bc_rendering']:
-            render.from_bivar_heatmaps(self.main_config, self.cmdopts, criteria)
+            render.from_bivar_heatmaps(self.main_config,
+                                       self.cmdopts,
+                                       self.pathset,
+                                       criteria)
         else:
             self.logger.debug(("--bc-rendering not passed or univariate batch "
                                "criteria--skipping rendering generated graphs"))
@@ -321,8 +330,8 @@ class PipelineStage4:
                          len(self.models_intra))
         start = time.time()
         IntraExpModelRunner(self.cmdopts,
-                            self.models_intra)(self.main_config,
-                                               criteria)
+                            self.pathset,
+                            self.models_intra)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Intra-experiment models finished in %s", str(sec))
@@ -332,8 +341,9 @@ class PipelineStage4:
                          len(self.models_inter))
         start = time.time()
 
-        runner = InterExpModelRunner(self.cmdopts, self.models_inter)
-        runner(self.main_config, criteria)
+        InterExpModelRunner(self.cmdopts,
+                            self.pathset,
+                            self.models_inter)(criteria)
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
@@ -347,6 +357,7 @@ class PipelineStage4:
         start = time.time()
         graphs.intra.generate.generate(self.main_config,
                                        self.cmdopts,
+                                       self.pathset,
                                        self.controller_config,
                                        self.intra_LN_config,
                                        self.intra_HM_config,
@@ -367,8 +378,9 @@ class PipelineStage4:
         if not self.cmdopts['skip_collate']:
             self.logger.info("Collating inter-experiment CSV files...")
             start = time.time()
-            collator = graphs.collate.ParallelCollator(
-                self.main_config, self.cmdopts)
+            collator = graphs.collate.ParallelCollator(self.main_config,
+                                                       self.cmdopts,
+                                                       self.pathset)
             collator(criteria, LN_targets)
             collator(criteria, HM_targets)
             elapsed = int(time.time() - start)

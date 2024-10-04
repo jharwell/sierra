@@ -33,7 +33,7 @@ class Pipeline:
     def __init__(self,
                  args: argparse.Namespace,
                  controller: tp.Optional[str],
-                 pathset: batchroot.PathSet) -> None:
+                 pathset: tp.Optional[batchroot.PathSet] = None) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
 
@@ -145,11 +145,11 @@ class Pipeline:
                            self.batch_criteria).run()
 
         if 2 in self.args.pipeline:
-            PipelineStage2(self.cmdopts).run(self.batch_criteria)
+            PipelineStage2(self.cmdopts, self.pathset).run(self.batch_criteria)
 
         if 3 in self.args.pipeline:
             PipelineStage3(self.main_config,
-                           self.cmdopts).run(self.batch_criteria)
+                           self.cmdopts, self.pathset).run(self.batch_criteria)
 
         if 4 in self.args.pipeline:
             PipelineStage4(self.main_config,
@@ -158,7 +158,8 @@ class Pipeline:
         # not part of default pipeline
         if 5 in self.args.pipeline:
             PipelineStage5(self.main_config,
-                           self.cmdopts).run(self.args)
+                           self.cmdopts,
+                           self.pathset).run(self.args)
 
     def _load_config(self) -> None:
         self.logger.debug("Loading project config from '%s'",

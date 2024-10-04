@@ -16,7 +16,8 @@ import pathlib
 
 # Project packages
 import sierra.core.cmdline as cmd
-from sierra.core import platform, plugin, startup, version, batchroot
+from sierra import version
+from sierra.core import platform, plugin, startup, batchroot
 from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 import sierra.core.plugin_manager as pm
@@ -116,7 +117,7 @@ class SIERRA():
             pathset = batchroot.from_cmdline(self.args)
             pipeline = Pipeline(self.args, controller, pathset)
         else:
-            pipeline = Pipeline(self.args, None, None)
+            pipeline = Pipeline(self.args, None)
 
         try:
             pipeline.run()

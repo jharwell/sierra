@@ -43,10 +43,10 @@ class PathSet:
             # stage5 idempotent).
             self.graph_root = pathlib.Path(cmdopts['sierra_root'],
                                            cmdopts['project'],
-                                           '+'.join(scenarios) + "-sc-graphs"),
+                                           '+'.join(scenarios) + "-sc-graphs")
             self.csv_root = pathlib.Path(cmdopts['sierra_root'],
                                          cmdopts['project'],
-                                         '+'.join(scenarios) + "-sc-csvs"),
+                                         '+'.join(scenarios) + "-sc-csvs")
             self.model_root = pathlib.Path(cmdopts['sierra_root'],
                                            cmdopts['project'],
-                                           '+'.join(scenarios) + "-sc-models"),
+                                           '+'.join(scenarios) + "-sc-models")
