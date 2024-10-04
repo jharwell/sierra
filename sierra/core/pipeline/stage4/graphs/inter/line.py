@@ -44,14 +44,12 @@ def generate(
                 _gen_summary_linegraph(graph,
                                        pathset,
                                        cmdopts,
-                                       criteria,
-                                       pathset.graph_collate_root)
+                                       criteria)
             else:
                 _gen_stacked_linegraph(graph,
-                                       pathset.stat_collate_root,
+                                       pathset,
                                        cmdopts,
-                                       criteria,
-                                       pathset.graph_collate_root)
+                                       criteria)
 
 
 def _gen_summary_linegraph(graph: types.YAMLDict,

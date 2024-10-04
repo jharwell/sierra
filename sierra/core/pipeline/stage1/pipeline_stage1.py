@@ -15,7 +15,7 @@ import logging
 from sierra.core.generators.exp_generators import BatchExpDefGenerator
 from sierra.core.generators.exp_creator import BatchExpCreator
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types
+from sierra.core import types, batchroot
 
 
 class PipelineStage1:
@@ -30,6 +30,7 @@ class PipelineStage1:
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet,
                  controller: str,
                  criteria: bc.IConcreteBatchCriteria) -> None:
         self.generator = BatchExpDefGenerator(controller_name=controller,
@@ -37,6 +38,7 @@ class PipelineStage1:
                                               criteria=criteria,
                                               cmdopts=cmdopts)
         self.creator = BatchExpCreator(criteria=criteria, cmdopts=cmdopts)
+        self.pathset = pathset
 
         self.cmdopts = cmdopts
         self.criteria = criteria
@@ -69,7 +71,7 @@ class PipelineStage1:
         """
 
         self.logger.info("Generating input files for batch experiment in %s...",
-                         self.cmdopts['batch_root'])
+                         self.pathset.root)
         self.creator.create(self.generator)
 
         n_exp_in_batch = len(self.criteria.gen_attr_changelist()) + \

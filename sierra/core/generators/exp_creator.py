@@ -21,7 +21,7 @@ import pathlib
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import config, utils, types, platform
+from sierra.core import config, utils, types, platform, batchroot
 import sierra.core.plugin_manager as pm
 from sierra.core.generators.exp_generators import BatchExpDefGenerator
 from sierra.core.experiment import bindings, definition
@@ -118,13 +118,13 @@ class ExpCreator:
         if configurer.cmdfile_paradigm() == 'per-exp' and utils.path_exists(commands_fpath):
             commands_fpath.unlink()
 
-        n_robots = utils.get_n_robots(self.criteria.main_config,
+        n_agents = utils.get_n_agents(self.criteria.main_config,
                                       self.cmdopts,
                                       self.exp_input_root,
                                       exp_def)
         generator = platform.ExpRunShellCmdsGenerator(self.cmdopts,
                                                       self.criteria,
-                                                      n_robots,
+                                                      n_agents,
                                                       self.exp_num)
 
         # Create all experimental runs
@@ -229,7 +229,7 @@ class ExpCreator:
         pre_specs = cmds_generator.pre_run_cmds(for_host,
                                                 launch_stem_path,
                                                 run_num)
-        assert all(spec.shell for spec in pre_specs),\
+        assert all(spec.shell for spec in pre_specs), \
             "All pre-exp commands are run in a shell"
         pre_cmds = [spec.cmd for spec in pre_specs]
         self.logger.trace("Pre-experiment cmds: %s", pre_cmds)   # type: ignore
@@ -237,13 +237,13 @@ class ExpCreator:
         exec_specs = cmds_generator.exec_run_cmds(for_host,
                                                   launch_stem_path,
                                                   run_num)
-        assert all(spec.shell for spec in exec_specs),\
+        assert all(spec.shell for spec in exec_specs), \
             "All exec-exp commands are run in a shell"
         exec_cmds = [spec.cmd for spec in exec_specs]
         self.logger.trace("Exec-experiment cmds: %s", exec_cmds)   # type: ignore
 
         post_specs = cmds_generator.post_run_cmds(for_host)
-        assert all(spec.shell for spec in post_specs),\
+        assert all(spec.shell for spec in post_specs), \
             "All post-exp commands are run in a shell"
         post_cmds = [spec.cmd for spec in post_specs]
         self.logger.trace("Post-experiment cmds: %s", post_cmds)   # type: ignore
@@ -298,11 +298,12 @@ class BatchExpCreator:
 
     def __init__(self,
                  criteria: bc.BatchCriteria,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
 
         self.batch_config_template = pathlib.Path(cmdopts['template_input_file'])
-        self.batch_input_root = pathlib.Path(cmdopts['batch_input_root'])
-        self.batch_output_root = pathlib.Path(cmdopts['batch_output_root'])
+        self.batch_input_root = pathset.input_root
+        self.batch_output_root = pathset.output_root
         self.criteria = criteria
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
@@ -333,7 +334,7 @@ class BatchExpCreator:
             self.logger.debug(
                 "Applying generated scenario+controller changes to exp%s",
                 i)
-            expi = self.criteria.gen_exp_names(self.cmdopts)[i]
+            expi = self.criteria.gen_exp_names()[i]
             exp_output_root = self.batch_output_root / expi
             exp_input_root = self.batch_input_root / expi
 

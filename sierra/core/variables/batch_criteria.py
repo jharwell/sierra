@@ -31,9 +31,9 @@ class IQueryableBatchCriteria(implements.Interface):
 
     """
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         """
-        Return the # of robots used for a given :term:`Experiment`.
+        Return the # of agents used for a given :term:`Experiment`.
         """
         raise NotImplementedError
 
@@ -208,8 +208,8 @@ class BatchCriteria():
     def gen_files(self) -> None:
         pass
 
-    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
-        """
+    def gen_exp_names(self) -> tp.List[str]:
+         """
         Generate list of experiment names from the criteria.
 
         Used for creating unique directory names for each experiment in the
@@ -247,7 +247,7 @@ class BatchCriteria():
         scaffold_spec = spec.scaffold_spec_factory(self)
 
         for exp in range(0, scaffold_spec.n_exps):
-            exp_dirname = self.gen_exp_names(cmdopts)[exp]
+            exp_dirname = self.gen_exp_names()[exp]
             # Pickling of batch criteria experiment definitions is the FIRST set
             # of changes to be pickled--all other changes come after. We append
             # to the pickle file by default, which allows any number of
@@ -307,7 +307,7 @@ class BatchCriteria():
                        is_compound: bool,
                        i: int,
                        cmdopts: types.Cmdopts) -> None:
-        exp_dirname = self.gen_exp_names(cmdopts)[i]
+        exp_dirname = self.gen_exp_names()[i]
         exp_input_root = self.batch_input_root / exp_dirname
 
         utils.dir_create_checked(exp_input_root,
@@ -402,7 +402,7 @@ class UnivarBatchCriteria(BatchCriteria):
         if exp_names is not None:
             names = exp_names
         else:
-            names = self.gen_exp_names(cmdopts)
+            names = self.gen_exp_names()
 
         module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         for d in names:
@@ -489,7 +489,7 @@ class BivarBatchCriteria(BatchCriteria):
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
 
-    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self) -> tp.List[str]:
         """
         Generate a SORTED list of strings for all experiment names.
 
@@ -497,8 +497,8 @@ class BivarBatchCriteria(BatchCriteria):
         parents.
 
         """
-        list1 = self.criteria1.gen_exp_names(cmdopts)
-        list2 = self.criteria2.gen_exp_names(cmdopts)
+        list1 = self.criteria1.gen_exp_names()
+        list2 = self.criteria2.gen_exp_names()
         ret = []
 
         for l1 in list1:
@@ -514,10 +514,9 @@ class BivarBatchCriteria(BatchCriteria):
         `gen_exp_names()` for each criteria along each axis.
 
         """
-        names = self.gen_exp_names(cmdopts)
+        names = self.gen_exp_names()
 
-        sizes = [[0 for col in self.criteria2.gen_exp_names(
-            cmdopts)] for row in self.criteria1.gen_exp_names(cmdopts)]
+        sizes = [[0 for col in self.criteria2.gen_exp_names()] for row in self.criteria1.gen_exp_names()]
 
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
         n_adds2 = len(self.criteria2.gen_tag_addlist())
@@ -556,11 +555,11 @@ class BivarBatchCriteria(BatchCriteria):
                 "Bivariate batch criteria does not contain constant density")
 
     def graph_xticks(self,
-                     cmdopts: types.Cmdopts,
-                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_range: str,
+                     batch_output_root: pathlib.Path) -> tp.List[float]:
         names = []
-        all_dirs = utils.exp_range_calc(cmdopts,
-                                        cmdopts['batch_output_root'],
+        all_dirs = utils.exp_range_calc(exp_range,
+                                        batch_output_root,
                                         self)
 
         for c1 in self.criteria1.gen_exp_names(cmdopts):
@@ -573,14 +572,14 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria1.graph_xticks(cmdopts, names)
 
     def graph_yticks(self,
-                     cmdopts: types.Cmdopts,
-                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_range: str,
+                     batch_output_root: pathlib.Path) -> tp.List[float]:
         names = []
-        all_dirs = utils.exp_range_calc(cmdopts,
-                                        cmdopts['batch_output_root'],
+        all_dirs = utils.exp_range_calc(exp_range,
+                                        batch_output_root,
                                         self)
 
-        for c2 in self.criteria2.gen_exp_names(cmdopts):
+        for c2 in self.criteria2.gen_exp_names():
             for y in all_dirs:
                 leaf = y.name
                 if c2 in leaf.split('+')[1]:
@@ -590,37 +589,13 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria2.graph_xticks(cmdopts, names)
 
     def graph_xticklabels(self,
-                          cmdopts: types.Cmdopts,
-                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        names = []
-        all_dirs = utils.exp_range_calc(cmdopts,
-                                        cmdopts['batch_output_root'],
-                                        self)
-
-        for c1 in self.criteria1.gen_exp_names(cmdopts):
-            for x in all_dirs:
-                leaf = x.name
-                if c1 in leaf.split('+')[0]:
-                    names.append(leaf)
-                    break
-
+                          exp_range: str,
+                          batch_output_root: pathlib.Path) -> tp.List[str]:
         return self.criteria1.graph_xticklabels(cmdopts, names)
 
     def graph_yticklabels(self,
-                          cmdopts: types.Cmdopts,
-                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        names = []
-        all_dirs = utils.exp_range_calc(cmdopts,
-                                        cmdopts['batch_output_root'],
-                                        self)
-
-        for c2 in self.criteria2.gen_exp_names(cmdopts):
-            for y in all_dirs:
-                leaf = y.name
-                if c2 in leaf.split('+')[1]:
-                    names.append(leaf)
-                    break
-
+                          exp_range: str,
+                          batch_output_root: pathlib.Path) -> tp.List[str]:
         return self.criteria2.graph_xticklabels(cmdopts, names)
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
@@ -634,22 +609,23 @@ class BivarBatchCriteria(BatchCriteria):
         self.criteria1.batch_input_root = root
         self.criteria2.batch_input_root = root
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
         n_adds2 = len(self.criteria2.gen_tag_addlist())
         i = int(exp_num / (n_chgs2 + n_adds2))
         j = exp_num % (n_chgs2 + n_adds2)
 
-        if hasattr(self.criteria1, 'n_robots'):
-            return self.criteria1.n_robots(i)
-        elif hasattr(self.criteria2, 'n_robots'):
-            return self.criteria2.n_robots(j)
+        if hasattr(self.criteria1, 'n_agents'):
+            return self.criteria1.n_agents(i)
+        elif hasattr(self.criteria2, 'n_agents'):
+            return self.criteria2.n_agents(j)
 
         raise NotImplementedError
 
 
 def factory(main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
+            batch_input_root: pathlib.Path,
             args: argparse.Namespace,
             scenario: tp.Optional[str] = None) -> IConcreteBatchCriteria:
     if scenario is None:
@@ -658,6 +634,7 @@ def factory(main_config: types.YAMLDict,
     if len(args.batch_criteria) == 1:
         return __univar_factory(main_config,
                                 cmdopts,
+                                batch_input_root,
                                 args.batch_criteria[0],
                                 scenario)
     elif len(args.batch_criteria) == 2:
@@ -665,6 +642,7 @@ def factory(main_config: types.YAMLDict,
             "Duplicate batch criteria passed"
         return __bivar_factory(main_config,
                                cmdopts,
+                               batch_input_root,
                                args.batch_criteria,
                                scenario)
     else:
@@ -674,6 +652,7 @@ def factory(main_config: types.YAMLDict,
 
 def __univar_factory(main_config: types.YAMLDict,
                      cmdopts: types.Cmdopts,
+                     batch_input_root: pathlib.Path,
                      cli_arg: str,
                      scenario) -> IConcreteBatchCriteria:
     """
@@ -689,9 +668,10 @@ def __univar_factory(main_config: types.YAMLDict,
         ret = bcfactory(cli_arg,
                         main_config,
                         cmdopts,
+                        batch_input_root,
                         scenario=scenario)()
     else:
-        ret = bcfactory(cli_arg, main_config, cmdopts)()
+        ret = bcfactory(cli_arg, main_config, cmdopts, batch_input_root)()
 
     logging.info("Create univariate batch criteria '%s' from '%s'",
                  ret.__class__.__name__,
@@ -701,10 +681,20 @@ def __univar_factory(main_config: types.YAMLDict,
 
 def __bivar_factory(main_config: types.YAMLDict,
                     cmdopts: types.Cmdopts,
+                    batch_input_root: pathlib.Path,
                     cli_arg: tp.List[str],
                     scenario: str) -> IConcreteBatchCriteria:
-    criteria1 = __univar_factory(main_config, cmdopts, cli_arg[0], scenario)
-    criteria2 = __univar_factory(main_config, cmdopts, cli_arg[1], scenario)
+    criteria1 = __univar_factory(main_config,
+                                 cmdopts,
+                                 batch_input_root,
+                                 cli_arg[0],
+                                 scenario)
+
+    criteria2 = __univar_factory(main_config,
+                                 cmdopts,
+                                 batch_input_root,
+                                 cli_arg[1],
+                                 scenario)
 
     # Project hook
     bc = pm.module_load_tiered(project=cmdopts['project'],

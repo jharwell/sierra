@@ -82,15 +82,15 @@ class ControllerGenerator():
             # the platform relies on added tags to calculate population sizes,
             # then this won't work.
             controllers = config.kYAML.controllers
-            assert hasattr(self.spec.criteria, 'n_robots'),\
+            assert hasattr(self.spec.criteria, 'n_agents'), \
                 (f"When using __UUID__ and tag_add in {controllers}, the batch "
                  "criteria must implement bc.IQueryableBatchCriteria")
-            n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
+            n_agents = self.spec.criteria.n_agents(self.spec.exp_num)
 
-            assert n_robots > 0,\
+            assert n_agents > 0, \
                 "Batch criteria {self.spec.criteria} returned 0 robots?"
 
-            for robot_id in range(0, n_robots):
+            for robot_id in range(0, n_agents):
                 to_pp = copy.deepcopy(add)
                 pp_add = self._pp_for_tag_add(to_pp, robot_id)
                 exp_def.tag_add(pp_add.path,

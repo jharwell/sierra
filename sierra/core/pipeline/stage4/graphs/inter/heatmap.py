@@ -15,7 +15,7 @@ import glob
 import json
 
 # Project packages
-from sierra.core import types, config,
+from sierra.core import types, config, batchroot
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.graphs.heatmap import Heatmap
 

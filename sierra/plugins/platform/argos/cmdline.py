@@ -290,7 +290,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
         updates = {
             # Stage 1
-            'n_robots': cli_args.n_robots,
+            'n_agents': cli_args.n_agents,
 
             'exp_setup': cli_args.exp_setup,
 

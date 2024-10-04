@@ -29,7 +29,7 @@ import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, config, utils
+from sierra.core import types, config, utils, batchroot
 
 _logger = logging.getLogger(__name__)
 
@@ -118,6 +118,7 @@ def _worker(q: mp.Queue, main_config: types.YAMLDict) -> None:
 
 
 def from_platform(main_config: types.YAMLDict,
+                  pathset: batchroot.PathSet,
                   cmdopts: types.Cmdopts,
                   criteria: bc.IConcreteBatchCriteria) -> None:
     """Render frames (images) captured in by a platform into videos.
@@ -139,12 +140,12 @@ def from_platform(main_config: types.YAMLDict,
     .. note:: This currently only works with PNG images.
     """
     exp_to_render = utils.exp_range_calc(cmdopts,
-                                         cmdopts['batch_output_root'],
+                                         pathset.output_root,
                                          criteria)
 
     inputs = []
     for exp in exp_to_render:
-        output_dir = pathlib.Path(cmdopts['batch_video_root'], exp.name)
+        output_dir = pathset.video_root / exp.name
 
         for run in exp.iterdir():
             platform = cmdopts['platform'].split('.')[1]
@@ -161,6 +162,7 @@ def from_platform(main_config: types.YAMLDict,
 
 
 def from_project_imagized(main_config: types.YAMLDict,
+                          pathset: batchroot.PathSet,
                           cmdopts: types.Cmdopts,
                           criteria: bc.IConcreteBatchCriteria) -> None:
     """Render THINGS previously imagized in a project in stage 3 into videos.
@@ -182,17 +184,16 @@ def from_project_imagized(main_config: types.YAMLDict,
     .. note:: This currently only works with PNG images.
     """
     exp_to_render = utils.exp_range_calc(cmdopts,
-                                         cmdopts['batch_output_root'],
+                                         pathset.output_root,
                                          criteria)
 
     inputs = []
     for exp in exp_to_render:
-        exp_imagize_root = pathlib.Path(cmdopts['batch_imagize_root'],
-                                        exp.name)
+        exp_imagize_root = pathset.imagize_root / exp.name
         if not exp_imagize_root.exists():
             continue
 
-        output_dir = pathlib.Path(cmdopts['batch_video_root'], exp.name)
+        output_dir = pathset.videoroot / exp.name
 
         for candidate in exp_imagize_root.iterdir():
             if candidate.is_dir():
@@ -208,6 +209,7 @@ def from_project_imagized(main_config: types.YAMLDict,
 
 
 def from_bivar_heatmaps(main_config: types.YAMLDict,
+                        pathset: batchroot.PathSet,
                         cmdopts: types.Cmdopts,
                         criteria: bc.IConcreteBatchCriteria) -> None:
     """Render inter-experiment heatmaps into videos.
@@ -227,14 +229,12 @@ def from_bivar_heatmaps(main_config: types.YAMLDict,
 
     versionadded:: 1.2.20
     """
-    graph_root = pathlib.Path(cmdopts['batch_graph_collate_root'])
 
     inputs = []
 
-    for candidate in graph_root.iterdir():
+    for candidate in pathset.graph_collate_root.iterdir():
         if "HM-" in candidate.name and candidate.is_dir():
-            output_dir = pathlib.Path(cmdopts['batch_video_root'],
-                                      candidate.name)
+            output_dir = pathset.video_root / candidate.name
 
             opts = {
                 'input_dir': str(candidate),

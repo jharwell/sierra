@@ -165,7 +165,7 @@ class BatchExpRunner:
             module.pre_exp_diagnostics(self.cmdopts, self.logger)
 
         exp_all = [self.batch_exp_root / d
-                   for d in self.criteria.gen_exp_names(self.cmdopts)]
+                   for d in self.criteria.gen_exp_names()]
 
         exp_to_run = utils.exp_range_calc(self.cmdopts,
                                           self.batch_exp_root,
@@ -180,7 +180,8 @@ class BatchExpRunner:
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()
-        exec_times_fpath = self.batch_stat_exec_root / now.strftime("%Y-%m-%e-%H:%M")
+        exec_times_fpath = self.pathset.stat_exec_root / \
+            now.strftime("%Y-%m-%e-%H:%M")
 
         # Start a new process for the experiment shell so pre-run commands have
         # an effect (if they set environment variables, etc.).
@@ -197,11 +198,12 @@ class BatchExpRunner:
             for spec in generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
-            runner = ExpRunner(self.cmdopts,
+            runner = ExpRunner(self.pathset,
+                               self.cmdopts,
                                exec_times_fpath,
                                generator,
                                shell)
-            runner(exp, exp_num)
+            runner(exp.name, exp_num)
 
             # Run cmds to cleanup platform-specific things now that the experiment
             # is done (if needed).
@@ -219,6 +221,7 @@ class ExpRunner:
     """
 
     def __init__(self,
+                 pathset: batchroot.PathSet,
                  cmdopts: types.Cmdopts,
                  exec_times_fpath: pathlib.Path,
                  generator: platform.ExpShellCmdsGenerator,
@@ -228,14 +231,16 @@ class ExpRunner:
         self.shell = shell
         self.generator = generator
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 exp_input_root: pathlib.Path,
+                 exp_name: str,
                  exp_num: int) -> None:
         """Execute experimental runs for a single experiment.
         """
-
+        exp_input_root = self.pathset.input_root / exp_name
+        exp_scratch_root = self.pathset.scratch_root / exp_name
         self.logger.info("Running exp%s in '%s'",
                          exp_num,
                          exp_input_root)
@@ -244,8 +249,7 @@ class ExpRunner:
         wd = exp_input_root.relative_to(pathlib.Path().home())
         start = time.time()
 
-        scratch_root = self.cmdopts['batch_scratch_root'] / exp_input_root.name
-        utils.dir_create_checked(scratch_root, exist_ok=True)
+        utils.dir_create_checked(exp_scratch_root, exist_ok=True)
 
         assert self.cmdopts['exec_jobs_per_node'] is not None, \
             "# parallel jobs can't be None"
@@ -253,7 +257,7 @@ class ExpRunner:
         exec_opts = {
             'exp_input_root': str(exp_input_root),
             'work_dir': str(wd),
-            'scratch_dir': str(scratch_root),
+            'scratch_dir': str(exp_scratch_root),
             'cmdfile_stem_path': str(exp_input_root / config.kGNUParallel['cmdfile_stem']),
             'cmdfile_ext': config.kGNUParallel['cmdfile_ext'],
             'exec_resume': self.cmdopts['exec_resume'],

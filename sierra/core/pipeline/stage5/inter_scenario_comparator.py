@@ -25,7 +25,7 @@ from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.plugin_manager as pm
 from sierra.core import types, utils, config, storage, batchroot
-from sierra.core.pip.line.stage5 import outputroot
+from sierra.core.pipeline.stage5 import outputroot
 
 
 class UnivarInterScenarioComparator:
@@ -153,7 +153,7 @@ class UnivarInterScenarioComparator:
                               self.scenarios[0])
 
         self._gen_csvs(pathset=pathset,
-                       proect=self.cli_args.project,
+                       project=self.cli_args.project,
                        batch_leaf=batch_leaf,
                        src_stem=graph['src_stem'],
                        dest_stem=graph['dest_stem'])
@@ -231,9 +231,7 @@ class UnivarInterScenarioComparator:
 
         """
 
-        csv_ipath_stem = pathlib.Path(pathset.output_root,
-                                      pathset.stat_collate_root,
-                                      src_stem)
+        csv_ipath_stem = pathset.stat_collate_root / src_stem
 
         # Some experiments might not generate the necessary performance measure
         # CSVs for graph generation, which is OK.
@@ -269,8 +267,8 @@ class UnivarInterScenarioComparator:
         # Can't use with_suffix() for opath, because that path contains the
         # controller, which already has a '.' in it.
         model_istem = pathlib.Path(pathset.model_root, src_stem)
-        model_ostem = pathlib.Path(self.stage5_roots.model_root,
-                                   dest_stem + "-" + self.controller)
+        model_ostem = self.stage5_roots.model_root / \
+            (dest_stem + "-" + self.controller)
 
         model_ipath = model_istem.with_suffix(config.kModelsExt['model'])
         model_opath = model_ostem.with_name(

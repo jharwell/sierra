@@ -60,22 +60,23 @@ class UnivarGraphCollator:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  criteria,
-                 target: dict,
-                 stat_collate_root: pathlib.Path) -> None:
+                 target: dict) -> None:
         self.logger.info("Univariate files from batch in %s for graph '%s'...",
-                         self.cmdopts['batch_output_root'],
+                         self.pathset.output_root,
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
         exp_dirs = utils.exp_range_calc(self.cmdopts,
-                                        self.cmdopts['batch_output_root'],
+                                        self.pathset.output_root,
                                         criteria)
 
         # Always do the mean, even if stats are disabled
@@ -98,12 +99,13 @@ class UnivarGraphCollator:
         for stat in stats:
             if stat.all_srcs_exist:
                 writer(stat.df,
-                       stat_collate_root / (target['dest_stem'] + stat.df_ext),
+                       self.pathset.stat_collate_root /
+                       (target['dest_stem'] + stat.df_ext),
                        index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
-                                    self.cmdopts['batch_output_root'],
+                                    self.pathset.output_root,
                                     target['src_stem'],
                                     stat.df_ext)
 
@@ -144,22 +146,23 @@ class BivarGraphCollator:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  criteria: bc.IConcreteBatchCriteria,
-                 target: dict,
-                 stat_collate_root: pathlib.Path) -> None:
+                 target: dict) -> None:
         self.logger.info("Bivariate files from batch in %s for graph '%s'...",
-                         self.cmdopts['batch_output_root'],
+                         self.pathset.output_root,
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
         exp_dirs = utils.exp_range_calc(self.cmdopts,
-                                        self.cmdopts['batch_output_root'],
+                                        self.pathset.output_root,
                                         criteria)
 
         xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
@@ -189,7 +192,7 @@ class BivarGraphCollator:
                                                row,
                                                stat.df_ext)
                     writer(df,
-                           stat_collate_root / name,
+                           self.pathset.stat_collate_root / name,
                            index=False)
 
                 # TODO: Don't write this for now, until I find a better way of
@@ -200,7 +203,7 @@ class BivarGraphCollator:
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
-                                    self.cmdopts['batch_output_root'],
+                                    self.pathset.output_root,
                                     target['src_stem'],
                                     stat.df_ext)
 

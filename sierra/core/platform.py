@@ -61,7 +61,7 @@ class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.BatchCriteria,
-                 n_robots: int,
+                 n_agents: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
@@ -70,7 +70,7 @@ class ExpRunShellCmdsGenerator():
         if hasattr(module, 'ExpRunShellCmdsGenerator'):
             self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
                                                             self.criteria,
-                                                            n_robots,
+                                                            n_agents,
                                                             exp_num)
         else:
             self.platform = None
@@ -79,7 +79,7 @@ class ExpRunShellCmdsGenerator():
         if hasattr(module, 'ExpRunShellCmdsGenerator'):
             self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
                                                        self.criteria,
-                                                       n_robots,
+                                                       n_agents,
                                                        exp_num)
         else:
             self.env = None
