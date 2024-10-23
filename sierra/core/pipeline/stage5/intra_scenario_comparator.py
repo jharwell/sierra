@@ -114,7 +114,7 @@ class UnivarIntraScenarioComparator:
 
         """
         leaf = batchroot.ExpRootLeaf.from_name(candidate).to_path()
-        return leaf in candidate
+        return str(leaf) in candidate
 
     def _compare_in_scenario(self,
                              cmdopts: types.Cmdopts,
@@ -124,7 +124,8 @@ class UnivarIntraScenarioComparator:
 
         for controller in self.controllers:
             dirs = [d for d in os.listdir(
-                self.project_root / controller) if batch_leaf in d]
+                self.project_root / controller) if batch_leaf.to_str() in d]
+
             if len(dirs) == 0:
                 self.logger.warning("Controller %s was not run on experiment %s",
                                     controller,
@@ -198,7 +199,7 @@ class UnivarIntraScenarioComparator:
                                                ipath_leaf=src_stem,
                                                opath_stem=self.stage5_roots.csv_root,
                                                n_exp=criteria.n_exp())
-        opath_leaf = namecalc.for_output(batch_leaf.name, dest_stem, None)
+        opath_leaf = namecalc.for_output(batch_leaf, dest_stem, None)
         preparer.across_rows(opath_leaf=opath_leaf, index=0, inc_exps=inc_exps)
 
     def _gen_graph(self,
@@ -324,8 +325,8 @@ class BivarIntraScenarioComparator:
         cause file not found errors.
 
         """
-        leaf = batchroot.ExpRootLeaf.from_name(candidate).to_path()
-        return leaf in candidate
+        leaf = batchroot.ExpRootLeaf.from_name(candidate)
+        return leaf.to_str() in candidate
 
     def _compare_in_scenario(self,
                              cmdopts: types.Cmdopts,
@@ -339,7 +340,7 @@ class BivarIntraScenarioComparator:
         """
         for controller in self.controllers:
             dirs = [d for d in os.listdir(
-                self.project_root / controller) if batch_leaf in d]
+                self.project_root / controller) if batch_leaf.to_str() in d]
 
             if len(dirs) == 0:
                 self.logger.warning("Controller '%s' was not run on scenario '%s'",
@@ -398,6 +399,7 @@ class BivarIntraScenarioComparator:
             self._gen_graphs2D(batch_leaf=batch_leaf,
                                criteria=criteria,
                                cmdopts=cmdopts,
+                               batch_output_root=pathset.output_root,
                                dest_stem=graph['dest_stem'],
                                title=graph.get('title', ''),
                                label=graph.get('label', ''),
@@ -408,6 +410,7 @@ class BivarIntraScenarioComparator:
             self._gen_graph3D(batch_leaf=batch_leaf,
                               criteria=criteria,
                               cmdopts=cmdopts,
+                              batch_output_root=pathset.output_root,
                               dest_stem=graph['dest_stem'],
                               title=graph.get('title', ''),
                               zlabel=graph.get('label', ''),
@@ -485,7 +488,7 @@ class BivarIntraScenarioComparator:
                           controller, src_stem, dest_stem)
 
         csv_ipath = pathset.stat_collate_root / \
-            src_stem + config.kStats['mean'].exts['mean']
+            (src_stem + config.kStats['mean'].exts['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
@@ -566,24 +569,26 @@ class BivarIntraScenarioComparator:
 
             if primary_axis == 0:
                 n_exp = criteria.criteria1.n_exp()
-                xticks = utils.exp_include_filter(inc_exps,
-                                                  criteria.graph_yticks(
-                                                      cmdopts),
-                                                  n_exp)
+                yticks = criteria.graph_yticks(cmdopts,
+                                               pathset.output_root)
+                xticks = utils.exp_include_filter(inc_exps, yticks, n_exp)
+
+                ytick_labels = criteria.graph_yticklabels(cmdopts,
+                                                          pathset.output_root)
                 xtick_labels = utils.exp_include_filter(inc_exps,
-                                                        criteria.graph_yticklabels(
-                                                            cmdopts),
+                                                        ytick_labels,
                                                         n_exp)
                 xlabel = criteria.graph_ylabel(cmdopts)
             else:
                 n_exp = criteria.criteria2.n_exp()
-                xticks = utils.exp_include_filter(inc_exps,
-                                                  criteria.graph_xticks(
-                                                      cmdopts),
-                                                  n_exp)
+                yticks = criteria.graph_xticks(cmdopts,
+                                               pathset.output_root)
+                xticks = utils.exp_include_filter(inc_exps, yticks, n_exp)
+
+                ytick_labels = criteria.graph_xticklabels(cmdopts,
+                                                          pathset.output_root)
                 xtick_labels = utils.exp_include_filter(inc_exps,
-                                                        criteria.graph_xticklabels(
-                                                            cmdopts),
+                                                        ytick_labels,
                                                         n_exp)
                 xlabel = criteria.graph_xlabel(cmdopts)
 
@@ -606,6 +611,7 @@ class BivarIntraScenarioComparator:
                       batch_leaf: batchroot.ExpRootLeaf,
                       criteria: bc.BivarBatchCriteria,
                       cmdopts: types.Cmdopts,
+                      batch_output_root: pathlib.Path,
                       dest_stem: str,
                       title: str,
                       label: str,
@@ -615,6 +621,7 @@ class BivarIntraScenarioComparator:
             self._gen_paired_heatmaps(batch_leaf,
                                       criteria,
                                       cmdopts,
+                                      batch_output_root,
                                       dest_stem,
                                       title,
                                       label,
@@ -623,6 +630,7 @@ class BivarIntraScenarioComparator:
             self._gen_dual_heatmaps(batch_leaf,
                                     criteria,
                                     cmdopts,
+                                    batch_output_root,
                                     dest_stem,
                                     title,
                                     label,
@@ -633,6 +641,7 @@ class BivarIntraScenarioComparator:
                              batch_leaf: batchroot.ExpRootLeaf,
                              criteria: bc.BivarBatchCriteria,
                              cmdopts: types.Cmdopts,
+                             batch_output_root: pathlib.Path,
                              dest_stem: str,
                              title: str,
                              label: str,
@@ -694,13 +703,16 @@ class BivarIntraScenarioComparator:
                     zlabel=self._gen_zaxis_label(label, comp_type),
                     xlabel=criteria.graph_xlabel(cmdopts),
                     ylabel=criteria.graph_ylabel(cmdopts),
-                    xtick_labels=criteria.graph_xticklabels(cmdopts),
-                    ytick_labels=criteria.graph_yticklabels(cmdopts)).generate()
+                    xtick_labels=criteria.graph_xticklabels(cmdopts,
+                                                            batch_output_root),
+                    ytick_labels=criteria.graph_yticklabels(cmdopts,
+                                                            batch_output_root)).generate()
 
     def _gen_dual_heatmaps(self,
                            batch_leaf: batchroot.ExpRootLeaf,
                            criteria: bc.BivarBatchCriteria,
                            cmdopts: types.Cmdopts,
+                           batch_output_root: pathlib.Path,
                            dest_stem: str,
                            title: str,
                            label: str,
@@ -736,13 +748,16 @@ class BivarIntraScenarioComparator:
                     xlabel=criteria.graph_xlabel(cmdopts),
                     ylabel=criteria.graph_ylabel(cmdopts),
                     legend=legend,
-                    xtick_labels=criteria.graph_xticklabels(cmdopts),
-                    ytick_labels=criteria.graph_yticklabels(cmdopts)).generate()
+                    xtick_labels=criteria.graph_xticklabels(cmdopts,
+                                                            batch_output_root),
+                    ytick_labels=criteria.graph_yticklabels(cmdopts,
+                                                            batch_output_root)).generate()
 
     def _gen_graph3D(self,
                      batch_leaf: batchroot.ExpRootLeaf,
                      criteria: bc.BivarBatchCriteria,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      dest_stem: str,
                      title: str,
                      zlabel: str,
@@ -775,8 +790,10 @@ class BivarIntraScenarioComparator:
                             ylabel=criteria.graph_xlabel(cmdopts),
                             xlabel=criteria.graph_ylabel(cmdopts),
                             zlabel=self._gen_zaxis_label(zlabel, comp_type),
-                            xtick_labels=criteria.graph_yticklabels(cmdopts),
-                            ytick_labels=criteria.graph_xticklabels(cmdopts),
+                            xtick_labels=criteria.graph_yticklabels(cmdopts,
+                                                                    batch_output_root),
+                            ytick_labels=criteria.graph_xticklabels(cmdopts,
+                                                                    batch_output_root),
                             legend=legend,
                             comp_type=comp_type).generate()
 

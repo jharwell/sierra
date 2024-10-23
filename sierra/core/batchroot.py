@@ -39,7 +39,8 @@ class ExpRootLeaf():
                         scenario: str) -> 'ExpRootLeaf':
         return ExpRootLeaf(bc, template_stem, scenario)
 
-    def __init__(self, bc: tp.List[str],
+    def __init__(self,
+                 bc: tp.List[str],
                  template_stem: str,
                  scenario: str) -> None:
         self.bc = bc
@@ -47,11 +48,14 @@ class ExpRootLeaf():
         self.scenario = scenario
 
     def to_path(self) -> pathlib.Path:
-        root = pathlib.Path(f"{0}-{1}+{2}" % (self.template_stem,
-                                              self.scenario,
-                                              '+'.join(self.bc)))
-        logging.debug("Generated batch leaf %s", root)
+        root = pathlib.Path("{0}-{1}+{2}".format(
+                            self.template_stem,
+                            self.scenario,
+                            '+'.join(self.bc)))
         return root
+
+    def to_str(self) -> str:
+        return str(self.to_path())
 
 
 class ExpRoot():
@@ -91,6 +95,9 @@ class ExpRoot():
     def to_path(self) -> pathlib.Path:
         return self.sierra_root / self.project / self.controller / self.leaf.to_path()
 
+    def to_str(self) -> str:
+        return str(self.to_path())
+
 
 class PathSet():
     def __init__(self, root: ExpRoot) -> None:
@@ -99,13 +106,26 @@ class PathSet():
         self.graph_root = root.to_path() / "graphs"
         self.model_root = root.to_path() / "models"
         self.stat_root = root.to_path() / "statistics"
-        self.stat_exec_root = self.stat_root.to_path() / "exec"
+        self.stat_exec_root = self.stat_root / "exec"
         self.imagize_root = root.to_path() / "imagize"
         self.video_root = root.to_path() / "videos"
-        self.stat_collate_root = self.stat_root.to_path() / "collated"
-        self.graph_collate_root = self.graph_root.to_path() / "collated"
+        self.stat_collate_root = self.stat_root / "collated"
+        self.graph_collate_root = self.graph_root / "collated"
         self.scratch_root = root.to_path() / "scratch"
         self.root = root.to_path()
+
+    def __str__(self) -> str:
+        return (f"Batch root: {self.root}\n" +
+                f"Input root: <batch root>/{self.input_root.name}\n" +
+                f"Output root: <batch root>/{self.output_root.name}\n" +
+                f"Graph root: <batch root>/{self.graph_root.name}\n" +
+                f"Model root: <batch root>/{self.model_root.name}\n" +
+                f"Statistics root: <batch root>/{self.stat_root.name}\n" +
+                f"Execution statistics root: <batch root>/{self.stat_exec_root.name}\n" +
+                f"Imagizing root: <batch root>/{self.imagize_root.name}\n" +
+                f"Video root: <batch root>/{self.video_root.name}\n" +
+                f"Statistics collate root: <batch root>/{self.stat_collate_root.name}\n" +
+                f"Experiment scratch root: <batch root>/{self.scratch_root.name}")
 
 
 def from_cmdline(args: argparse.Namespace) -> PathSet:
@@ -154,5 +174,5 @@ def from_exp(sierra_root: str,
                    project,
                    controller,
                    batch_leaf)
-    logging.info('Generated batch root %s', root)
+    logging.info('Generated batch root %s', root.to_path())
     return PathSet(root)

@@ -28,7 +28,7 @@ class PathSet:
         if controllers:
             self.graph_root = pathlib.Path(cmdopts['sierra_root'],
                                            cmdopts['project'],
-                                           '+'.join(controllers) + "-cc-graphs"),
+                                           '+'.join(controllers) + "-cc-graphs")
 
             self.csv_root = pathlib.Path(cmdopts['sierra_root'],
                                          cmdopts['project'],

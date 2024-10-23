@@ -18,12 +18,12 @@ class PathSet():
                  batch: batchroot.PathSet,
                  exp_name: str,
                  exp0_name: tp.Optional[str] = None) -> None:
-        self.input_root = batch.input_root.to_path() / exp_name
-        self.output_root = batch.output_root.to_path() / exp_name
-        self.graph_root = batch.graph_root.to_path() / exp_name
-        self.model_root = batch.model_root.to_path() / exp_name
-        self.stat_root = batch.state_root.to_path() / exp_name
+        self.input_root = batch.input_root / exp_name
+        self.output_root = batch.output_root / exp_name
+        self.graph_root = batch.graph_root / exp_name
+        self.model_root = batch.model_root / exp_name
+        self.stat_root = batch.stat_root / exp_name
 
         if exp0_name:
-            self.exp0_output_root = batch.output_root.to_path() / exp0_name
-            self.exp0_stat_root = batch.stat_root.to_path() / exp0_name
+            self.exp0_output_root = batch.output_root / exp0_name
+            self.exp0_stat_root = batch.stat_root / exp0_name

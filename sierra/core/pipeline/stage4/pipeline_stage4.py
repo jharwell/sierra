@@ -24,7 +24,7 @@ import sierra.core.variables.batch_criteria as bc
 
 from sierra.core.pipeline.stage4 import render
 import sierra.core.plugin_manager as pm
-from sierra.core import types, config, utils
+from sierra.core import types, config, utils, batchroot
 
 
 class PipelineStage4:
@@ -89,9 +89,11 @@ class PipelineStage4:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts) -> None:
-        self.cmdopts = cmdopts
+                 cmdopts: types.Cmdopts,
+                 pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
+        self.cmdopts = cmdopts
+        self.pathset = pathset
 
         self.project_config_root = pathlib.Path(self.cmdopts['project_config_root'])
         controllers_yaml = self.project_config_root / config.kYAML.controllers
@@ -406,6 +408,7 @@ class PipelineStage4:
                                        path='pipeline.stage4.graphs.inter.generate')
         module.generate(self.main_config,
                         self.cmdopts,
+                        self.pathset,
                         LN_targets,
                         HM_targets,
                         criteria)

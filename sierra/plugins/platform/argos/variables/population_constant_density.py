@@ -87,6 +87,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_names is None:
@@ -103,6 +104,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
+                          batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         if exp_names is None:
             exp_names = self.gen_exp_names()

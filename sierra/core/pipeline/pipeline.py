@@ -18,7 +18,7 @@ import yaml
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import types, config, utils, batchroot
+from sierra.core import config, utils, batchroot
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -36,6 +36,9 @@ class Pipeline:
                  pathset: tp.Optional[batchroot.PathSet] = None) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
+        self.pathset = pathset
+
+        self.logger.trace("%s", self.pathset)
 
         assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
             f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
@@ -106,7 +109,7 @@ class Pipeline:
                                        platform=self.cmdopts['platform'])
         module.PlatformCmdline.cmdopts_update(self.args, self.cmdopts)
 
-        if pathset is not None:
+        if self.pathset is not None:
             # Load additional cmdline options from project. This is mandatory,
             # because all projects have to define --controller and --scenario
             # at a minimum.
@@ -131,6 +134,7 @@ class Pipeline:
                                        path='variables.batch_criteria')
             self.batch_criteria = bc.factory(self.main_config,
                                              self.cmdopts,
+                                             self.pathset.input_root,
                                              self.args)
 
         self.controller = controller
@@ -141,19 +145,23 @@ class Pipeline:
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.cmdopts,
+                           self.pathset,
                            self.controller,  # type: ignore
                            self.batch_criteria).run()
 
         if 2 in self.args.pipeline:
-            PipelineStage2(self.cmdopts, self.pathset).run(self.batch_criteria)
+            PipelineStage2(self.cmdopts,
+                           self.pathset).run(self.batch_criteria)
 
         if 3 in self.args.pipeline:
             PipelineStage3(self.main_config,
-                           self.cmdopts, self.pathset).run(self.batch_criteria)
+                           self.cmdopts,
+                           self.pathset).run(self.batch_criteria)
 
         if 4 in self.args.pipeline:
             PipelineStage4(self.main_config,
-                           self.cmdopts).run(self.batch_criteria)
+                           self.cmdopts,
+                           self.pathset).run(self.batch_criteria)
 
         # not part of default pipeline
         if 5 in self.args.pipeline:

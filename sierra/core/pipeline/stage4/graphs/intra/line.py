@@ -5,7 +5,6 @@
 #
 
 # Core packages
-import pathlib
 import typing as tp
 import logging
 
@@ -13,33 +12,32 @@ import logging
 import json
 
 # Project packages
-from sierra.core import types, config
+from sierra.core import types, config, exproot
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
 
 _logger = logging.getLogger(__name__)
 
 
 def generate(cmdopts: types.Cmdopts,
+             pathset: exproot.PathSet,
              targets: tp.List[types.YAMLDict]) -> None:
     """
     Generate linegraphs from: term: `Averaged .csv` files within an experiment.
     """
 
-    graph_root = pathlib.Path(cmdopts['exp_graph_root'])
-    stats_root = pathlib.Path(cmdopts['exp_stat_root'])
-    _logger.info("Linegraphs from %s", cmdopts['exp_stat_root'])
+    _logger.info("Linegraphs from %s", pathset.stat_root)
 
     # For each category of linegraphs we are generating
     for category in targets:
 
         # For each graph in each category
         for graph in category['graphs']:
-            output_fpath = graph_root / ('SLN-' + graph['dest_stem'] +
-                                         config.kImageExt)
+            output_fpath = pathset.graph_root / ('SLN-' + graph['dest_stem'] +
+                                                 config.kImageExt)
             try:
                 _logger.trace('\n' +  # type: ignore
                               json.dumps(graph, indent=4))
-                StackedLineGraph(stats_root=stats_root,
+                StackedLineGraph(stats_root=pathset.stat_root,
                                  input_stem=graph['src_stem'],
                                  output_fpath=output_fpath,
                                  stats=cmdopts['dist_stats'],

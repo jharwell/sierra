@@ -69,7 +69,7 @@ class Parser():
 
         # remove batch criteria variable name, leaving only the spec
         sections = sections[1:]
-        assert len(sections) == 3,\
+        assert len(sections) == 3, \
             ("Spec must have 3 sections separated by '.'; "
              f"have {len(sections)} from '{arg}'")
 

@@ -142,15 +142,15 @@ class IntraExpGraphGenerator:
         #. :func:`~sierra.core.pipeline.stage4.graphs.intra.heatmap.generate()`
             to generate heatmaps for each experiment in the batch.
         """
-        utils.dir_create_checked(self.pathset.graph_root, exist_ok=True)
+        utils.dir_create_checked(pathset.graph_root, exist_ok=True)
 
         LN_targets, HM_targets = self.calc_targets()
 
         if not self.cmdopts['project_no_LN']:
-            line.generate(self.cmdopts, LN_targets)
+            line.generate(self.cmdopts, pathset, LN_targets)
 
         if not self.cmdopts['project_no_HM']:
-            heatmap.generate(self.cmdopts, HM_targets)
+            heatmap.generate(self.cmdopts, pathset, HM_targets)
 
     def calc_targets(self) -> tp.Tuple[tp.List[types.YAMLDict],
                                        tp.List[types.YAMLDict]]:

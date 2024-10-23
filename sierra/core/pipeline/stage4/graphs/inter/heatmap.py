@@ -66,7 +66,7 @@ def _generate_hm(graph: types.YAMLDict,
                  interval: int,
                  ipath: pathlib.Path) -> None:
 
-    odir = graph_root / ("HM-" + graph['dest_stem'])
+    odir = graph_collate_root / ("HM-" + graph['dest_stem'])
     odir.mkdir(parents=True, exist_ok=True)
     opath = odir / ('HM-{0}_{1}{2}'.format(graph['dest_stem'],
                                            interval,

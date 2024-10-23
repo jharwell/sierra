@@ -13,6 +13,7 @@ import sys
 import datetime
 import logging
 import pathlib
+import typing as tp
 
 # 3rd party packages
 
@@ -162,13 +163,15 @@ class BatchExpRunner:
 
         # Output some useful information before running
         if hasattr(module, 'pre_exp_diagnostics'):
-            module.pre_exp_diagnostics(self.cmdopts, self.logger)
+            module.pre_exp_diagnostics(self.cmdopts,
+                                       self.pathset,
+                                       self.logger)
 
-        exp_all = [self.batch_exp_root / d
+        exp_all = [self.pathset.input_root / d
                    for d in self.criteria.gen_exp_names()]
 
         exp_to_run = utils.exp_range_calc(self.cmdopts["exp_range"],
-                                          self.batch_exp_root,
+                                          self.pathset.input_root,
                                           self.criteria)
 
         # Verify environment is OK before running anything

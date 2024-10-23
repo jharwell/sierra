@@ -8,6 +8,7 @@ Reusable classes related to the homogeneous populations of agents.
 import typing as tp
 import re
 import math
+import pathlib
 
 # 3rd party packages
 
@@ -26,6 +27,7 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_names is None:
@@ -42,6 +44,7 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
+                          batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
         if exp_names is None:

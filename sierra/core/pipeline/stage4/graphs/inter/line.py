@@ -56,8 +56,8 @@ def _gen_summary_linegraph(graph: types.YAMLDict,
                            pathset: batchroot.PathSet,
                            cmdopts: types.Cmdopts,
                            criteria: bc.IConcreteBatchCriteria) -> None:
-    opath = pathset.graph_root / ('SM-' + graph['dest_stem'] + config.kImageExt)
-
+    opath = pathset.graph_collate_root / \
+        ('SM-' + graph['dest_stem'] + config.kImageExt)
     ln = SummaryLineGraph(stats_root=pathset.stat_collate_root,
                           input_stem=graph['dest_stem'],
                           output_fpath=opath,
@@ -79,9 +79,8 @@ def _gen_stacked_linegraph(graph: types.YAMLDict,
                            pathset: batchroot.PathSet,
                            cmdopts: types.Cmdopts,
                            criteria: bc.IConcreteBatchCriteria) -> None:
-    opath = pathset.graph_root / ('SLN-' + graph['dest_stem'] +
-                                  config.kImageExt)
-
+    opath = pathset.graph_collate_root / ('SLN-' + graph['dest_stem'] +
+                                          config.kImageExt)
     ln = StackedLineGraph(stats_root=pathset.stat_collate_root,
                           input_stem=graph['dest_stem'],
                           output_fpath=opath,

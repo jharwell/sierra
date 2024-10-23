@@ -97,7 +97,7 @@ class PopulationSize(population_size.BasePopulationSize):
                 exp_adds.append(xml.TagAdd("./master/group/[@ns='sierra']",
                                            "param",
                                            {
-                                               'name': 'experiment/n_robots',
+                                               'name': 'experiment/n_agents',
                                                'value': str(s)
                                            },
                                            False))
@@ -157,7 +157,7 @@ class PopulationSize(population_size.BasePopulationSize):
         adds = self.gen_tag_addlist()
         return ['exp' + str(x) for x in range(0, len(adds))]
 
-    def n_robots(self, exp_num: int) -> int:
+    def n_agents(self, exp_num: int) -> int:
         return int(len(self.tag_adds[exp_num]) / len(self.tag_adds[0]))
 
 

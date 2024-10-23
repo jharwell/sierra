@@ -20,8 +20,8 @@ from sierra.core.pipeline.stage4.graphs.inter import line, heatmap
 
 
 def generate(main_config: types.YAMLDict,
-             pathset: batchroot.PathSet,
              cmdopts: types.Cmdopts,
+             pathset: batchroot.PathSet,
              LN_targets: tp.List[types.YAMLDict],
              HM_targets: tp.List[types.YAMLDict],
              criteria: bc.IConcreteBatchCriteria) -> None:

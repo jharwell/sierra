@@ -261,6 +261,7 @@ class ParallelCollator():
                  pathset: batchroot.PathSet) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.pathset = pathset
 
         utils.dir_create_checked(pathset.stat_collate_root, exist_ok=True)
 

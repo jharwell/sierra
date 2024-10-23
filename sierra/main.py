@@ -115,6 +115,7 @@ class SIERRA():
 
             self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
             pathset = batchroot.from_cmdline(self.args)
+
             pipeline = Pipeline(self.args, controller, pathset)
         else:
             pipeline = Pipeline(self.args, None)

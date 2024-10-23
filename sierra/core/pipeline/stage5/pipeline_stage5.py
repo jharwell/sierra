@@ -9,6 +9,8 @@
 # Core packages
 import logging
 import pathlib
+import typing as tp
+import argparse
 
 # 3rd party packages
 import yaml
@@ -18,6 +20,7 @@ from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 from sierra.core.pipeline.stage5 import outputroot
 from sierra.core import types, utils, config, batchroot
+from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 
 
 class PipelineStage5:
@@ -81,7 +84,7 @@ class PipelineStage5:
         self.project_root = pathlib.Path(self.cmdopts['sierra_root'],
                                          self.cmdopts['project'])
 
-    def run(self, cli_args) -> None:
+    def run(self, cli_args: argparse.Namespace) -> None:
         """Run stage 5 of the experimental pipeline.
 
         If ``--controller-comparison`` was passed:
@@ -111,7 +114,7 @@ class PipelineStage5:
         elif self.cmdopts['scenario_comparison']:
             self._run_sc(cli_args)
 
-    def _run_cc(self, cli_args):
+    def _run_cc(self, cli_args: argparse.Namespace) -> None:
         # Use nice controller names on graph legends if configured
         if self.cmdopts['controllers_legend'] is not None:
             legend = self.cmdopts['controllers_legend'].split(',')
@@ -145,21 +148,23 @@ class PipelineStage5:
 
         self.logger.info("Inter-batch controller comparison complete")
 
-    def _run_sc(self, cli_args):
+    def _run_sc(self, cli_args: argparse.Namespace) -> None:
         # Use nice scenario names on graph legends if configured
         if self.cmdopts['scenarios_legend'] is not None:
             legend = self.cmdopts['scenarios_legend'].split(',')
         else:
             legend = self.scenarios
 
+        controller = ControllerGeneratorParser()(cli_args)
+
         self.logger.info("Inter-batch  comparison of %s across %s...",
-                         self.cmdopts['controller'],
+                         controller,
                          self.scenarios)
 
         assert cli_args.bc_univar, \
             "inter-scenario controller comparison only valid for univariate batch criteria"
 
-        comparator = intersc.UnivarInterScenarioComparator(self.cmdopts['controller'],
+        comparator = intersc.UnivarInterScenarioComparator(controller,
                                                            self.scenarios,
                                                            self.batch_roots,
                                                            self.stage5_roots,
@@ -171,10 +176,12 @@ class PipelineStage5:
                    legend=legend)
 
         self.logger.info("Inter-batch  comparison of %s across %s complete",
-                         self.cmdopts['controller'],
+                         controller,
                          self.scenarios)
 
-    def _verify_comparability(self, controllers, cli_args):
+    def _verify_comparability(self,
+                              controllers: tp.List[str],
+                              cli_args: argparse.Namespace) -> None:
         """Check if the specified controllers can be compared.
 
         Comparable controllers have all been run on the same set of batch

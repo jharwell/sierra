@@ -63,7 +63,7 @@ def analyze_pytype(session):
     session.run('pytype',
                 f'-j {cores}',
                 '-k',
-                '-d name-error,attribute-error,invalid-annotation,pyi-error',
+                '-d name-error,attribute-error,pyi-error',
                 'sierra',
                 external=True)
 
@@ -73,8 +73,6 @@ def analyze_pytype(session):
 def analyze_mypy(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
-
-    cores = psutil.cpu_count()
 
     session.run('mypyrun',
                 '--select',
@@ -109,7 +107,10 @@ def analyze_mypy(session):
                 'name-match',
                 'no-untype-def',
                 'redundant-cast',
-                'no-untyped-call'
+                'disallow-untyped-calls',
+                'check-untyped-defs',
+                'disallow-untyped-defs',
+                'disallow-incomplete-defs'
 
                 # List types
                 'list-item',

@@ -60,7 +60,9 @@ class IConcreteBatchCriteria(implements.Interface):
 
             exp_names: If not None, then this list of directories will be used
                        to calculate the ticks, rather than the results of
-                       :ref:`gen_exp_names()`.
+                       :ref:`gen_exp_names()`. This argument will be non-None
+                       when calling this function from within a bivariate batch
+                       criteria.
 
         """
 
@@ -84,7 +86,9 @@ class IConcreteBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`.
+                       :ref:`gen_exp_names()`. This argument will be non-None
+                       when calling this function from within a bivariate batch
+                       criteria.
 
         """
         raise NotImplementedError
@@ -589,7 +593,7 @@ class BivarBatchCriteria(BatchCriteria):
                                         batch_output_root,
                                         self)
 
-        ynames = exp_names if exp_names else self.criteria1.gen_exp_names(cmdopts)
+        ynames = exp_names if exp_names else self.criteria1.gen_exp_names()
 
         for c1 in ynames:
             for x in all_dirs:
@@ -608,7 +612,7 @@ class BivarBatchCriteria(BatchCriteria):
         all_dirs = utils.exp_range_calc(cmdopts["exp_range"],
                                         batch_output_root,
                                         self)
-        xnames = exp_names if exp_names else self.criteria2.gen_exp_names(cmdopts)
+        xnames = exp_names if exp_names else self.criteria2.gen_exp_names()
 
         for c2 in xnames:
             for y in all_dirs:
@@ -623,17 +627,59 @@ class BivarBatchCriteria(BatchCriteria):
                           cmdopts: types.Cmdopts,
                           batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+        """Generate x-axis labels.
+
+        This bivariate function is one of the reasons the ``exp_names`` argument
+        is needed as an optional: when calculating xticks using say criteria1,
+        if the criteria uses :ref:`populations()` in the process, the criteria's
+        OWN ``gen_exp_names()`` will be used, which will result in bad directory
+        name calculations. This can be overcome by passing the list of exp names
+        to use at THIS level.
+        """
+        names = []
+        all_dirs = utils.exp_range_calc(cmdopts['exp_range'],
+                                        batch_output_root,
+                                        self)
+
+        for c1 in self.criteria1.gen_exp_names():
+            for x in all_dirs:
+                leaf = x.name
+                if c1 in leaf.split('+')[0]:
+                    names.append(leaf)
+                    break
+
         return self.criteria1.graph_xticklabels(cmdopts,
                                                 batch_output_root,
-                                                exp_names)
+                                                names)
 
     def graph_yticklabels(self,
                           cmdopts: types.Cmdopts,
                           batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+        """Generate y-axis labels.
+
+        This bivariate function is one of the reasons the ``exp_names`` argument
+        is needed as an optional: when calculating yticks using criteria2,
+        if the criteria uses :ref:`populations()` in the process, the criteria's
+        OWN ``gen_exp_names()`` will be used, which will result in bad directory
+        name calculations. This can be overcome by passing the list of exp names
+        to use at THIS level.
+        """
+        names = []
+        all_dirs = utils.exp_range_calc(cmdopts['exp_range'],
+                                        batch_output_root,
+                                        self)
+
+        for c2 in self.criteria2.gen_exp_names():
+            for x in all_dirs:
+                leaf = x.name
+                if c2 in leaf.split('+')[0]:
+                    names.append(leaf)
+                    break
+
         return self.criteria2.graph_xticklabels(cmdopts,
                                                 batch_output_root,
-                                                exp_names)
+                                                names)
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return self.criteria1.graph_xlabel(cmdopts)

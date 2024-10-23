@@ -129,7 +129,7 @@ class UnivarInterScenarioComparator:
 
         """
         leaf = batchroot.ExpRootLeaf.from_name(candidate)
-        return leaf.to_path() in candidate and leaf.scenario in self.scenarios
+        return leaf.to_str() in candidate and leaf.scenario in self.scenarios
 
     def _compare_across_scenarios(self,
                                   cmdopts: types.Cmdopts,

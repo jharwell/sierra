@@ -77,6 +77,7 @@ class PopulationVariableDensity(vd.VariableDensity):
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
+                     batch_output_root: pathlib.Path,
                      exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_names is None:
@@ -86,9 +87,10 @@ class PopulationVariableDensity(vd.VariableDensity):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
+                          batch_output_root: pathlib.Path,
                           exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         return list(map(lambda x: str(round(x, 4)),
-                        self.graph_xticks(cmdopts, exp_names)))
+                        self.graph_xticks(cmdopts, batch_output_root, exp_names)))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Population Density"
