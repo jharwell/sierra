@@ -59,7 +59,6 @@ runs:
         command: |
           brew update
           brew install parallel pssh
-          brew install python@${{ matrix.python-version }}
 
     ############################################################################
     # SIERRA install
