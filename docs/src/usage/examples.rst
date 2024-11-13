@@ -1,4 +1,4 @@
-.. _ln-sierra-usage-examples:
+.. _usage/examples:
 
 ***********************
 SIERRA Usage By Example
@@ -7,7 +7,7 @@ SIERRA Usage By Example
 This page contains reference examples of SIERRA usage to help you craft your own
 SIERRA invocation.  These examples use the SIERRA project plugins from the
 SIERRA sample project repo: :xref:`SIERRA_SAMPLE_PROJECT`. See
-:ref:`ln-sierra-trial` or :ref:`ln-sierra-getting-started` for setting up the
+:ref:`trial` or :ref:`getting-started` for setting up the
 sample project repository.
 
 In all examples:
@@ -67,7 +67,7 @@ Within each experiment, 3 copies of each simulation will be run (each with
 different random seeds), for a total of 21 ARGoS simulations. On a reasonable
 machine it should take about 10 minutes or so to run. After it finishes, you can
 go to ``$HOME/exp`` and find all the simulation outputs. For an explanation of
-SIERRA's runtime directory tree, see :ref:`ln-sierra-usage-runtime-exp-tree`.
+SIERRA's runtime directory tree, see :ref:`usage/runtime-exp-tree`.
 
 HPC Example
 ===========
@@ -154,7 +154,7 @@ videos of simulations.
 The runs 3 simulations in parallel with 1 physics engine each, and runs ARGoS
 under :program:`Xvfb` to get it to render headless images. During stage 4, these
 images are stitched together using :program:`ffmpeg` to create videos (see
-:ref:`ln-sierra-usage-runtime-exp-tree` for where the videos will appear). No
+:ref:`usage/runtime-exp-tree` for where the videos will appear). No
 graphs are generated during stage 4 in this example.
 
 You may also be interested in the ``--camera-config`` option, which allows you
@@ -298,7 +298,7 @@ different random seeds), for a total of 16 Gazebo simulations. Each experimental
 run will be will be 10 seconds of simulated time. On a reasonable machine it
 should take about 10 minutes or so to run. After it finishes, you can go to
 ``$HOME/exp`` and find all the simulation outputs. For an explanation of
-SIERRA's runtime directory tree, see :ref:`ln-sierra-usage-runtime-exp-tree`.
+SIERRA's runtime directory tree, see :ref:`usage/runtime-exp-tree`.
 
 HPC Example
 ===========
@@ -414,4 +414,4 @@ could also omit ``--nodefile`` and set :envvar:`SIERRA_NODEFILE` instead.
 For these experiments, no master node is needed, so it is disabled. After all
 runs have completed and SIERRA finishes stages 3 and 4, you can go to
 ``$HOME/exp`` and find all the simulation outputs. For an explanation of
-SIERRA's runtime directory tree, see :ref:`ln-sierra-usage-runtime-exp-tree`.
+SIERRA's runtime directory tree, see :ref:`usage/runtime-exp-tree`.

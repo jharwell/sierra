@@ -1,4 +1,4 @@
-.. _ln-sierra-usage:
+.. _usage:
 
 ====================================
 SIERRA Overview: A Practical Summary
@@ -6,9 +6,9 @@ SIERRA Overview: A Practical Summary
 
 This page contains more in-depth documentation on how SIERRA works beyond the
 minimum needed to get started, and assumes that you have either gotten SIERRA
-working via :ref:`ln-sierra-trial` or :ref:`ln-sierra-getting-started`. Once
-you've done that, the docs on this page provide a good way to understand how to
-get the most out of SIERRA.
+working via :ref:`trial` or :ref:`getting-started`. Once you've done that, the
+docs on this page provide a good way to understand how to get the most out of
+SIERRA.
 
 .. toctree::
    :maxdepth: 1

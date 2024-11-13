@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 """The 5 pipeline stages implemented by SIERRA.
 
-See :ref:`ln-sierra-usage-pipeline` for high-level documentation.
+See :ref:`usage/pipeline` for high-level documentation.
 
 """
 
@@ -34,14 +34,21 @@ class Pipeline:
                  args: argparse.Namespace,
                  controller: tp.Optional[str],
                  pathset: tp.Optional[batchroot.PathSet] = None) -> None:
-        self.args = args
         self.logger = logging.getLogger(__name__)
         self.pathset = pathset
 
-        self.logger.trace("%s", self.pathset)
+        self.logger.trace("Run-time tree:\n%s", self.pathset)
 
         assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
             f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
+
+        # After running this, all shortform aliases have been converted to their
+        # longform counterparts in the argparse.Namespace. The namespace passed
+        # in contains arguments for the core and all plugins, so its OK to
+        # handle shortforms which aren't in the SIERRA core at this point. This
+        # also preserves the "longforms trump shortforms if both are passed"
+        # policy because their converted shortforms are overwritten below.
+        self.args = self._handle_shortforms(args)
 
         self.cmdopts = {
             # multistage
@@ -168,6 +175,55 @@ class Pipeline:
             PipelineStage5(self.main_config,
                            self.cmdopts,
                            self.pathset).run(self.args)
+
+    def _handle_shortforms(self, args: argparse.Namespace) -> argparse.Namespace:
+        """
+        Replace all shortform arguments in with their longform counterparts.
+
+        SIERRA always references arguments internally via longform if needed, so
+        this is required.
+
+        """
+        shortform_map = {
+            'p': 'plot',
+            'e': 'exp',
+            'x': 'exec',
+            's': 'skip',
+        }
+
+        for k in shortform_map:
+            passed = getattr(args, k, None)
+            if not passed:
+                self.logger.trace(("No shortform args for -%s -> --%s "
+                                   "passed to SIERRA"),
+                                  k,
+                                  shortform_map[k])
+                continue
+
+            self.logger.trace("Collected shortform args for -%s -> --%s: %s",
+                              k,
+                              shortform_map[k],
+                              passed)
+
+            # There are 3 ways to pass shortform arguments, assuming a shortform
+            # of 'X:
+            #
+            # 1. -Xarg
+            # 2. -Xarg=foo
+            # 3. -Xarg foo
+            for p in passed:
+                if len(p) == 1 and '=' not in p[0]:  # boolean
+                    key = '{0}_{1}'.format(shortform_map[k], p[0].replace('-', '_'))
+                    setattr(args, key, True)
+                elif len(p) == 1 and '=' in p[0]:
+                    arg, value = p[0].split('=')
+                    key = '{0}_{1}'.format(shortform_map[k], arg.replace('-', '_'))
+                    setattr(args, key, value)
+                else:
+                    key = '{0}_{1}'.format(shortform_map[k], p[1:].replace('-', '_'))
+                    setattr(args, key, p[1:])
+
+        return args
 
     def _load_config(self) -> None:
         self.logger.debug("Loading project config from '%s'",

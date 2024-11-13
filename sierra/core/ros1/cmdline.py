@@ -72,7 +72,7 @@ class ROSCmdline(cmd.BaseCmdline):
                                      Defines experiment run length, ticks per
                                      second for the experiment, # of datapoints
                                      to capture/capture interval for each
-                                     simulation. See :ref:`ln-sierra-vars-expsetup` for
+                                     simulation. See :ref:`usage/vars/expsetup` for
                                      a full description.
 
                             """ + self.stage_usage_doc([1]),
@@ -87,7 +87,7 @@ class ROSCmdline(cmd.BaseCmdline):
                                      The key name of the robot model, which must
                                      be present in the appropriate section of
                                      ``{0}`` for the :term:`Project`. See
-                                     :ref:`ln-sierra-tutorials-project-main-config`
+                                     :ref:`tutorials/project/main-config`
                                      for details.
 
                             """.format(config.kYAML.main) + self.stage_usage_doc([1]))
@@ -115,7 +115,7 @@ class ROSCmdlineValidator():
     """
 
     def __call__(self, args: argparse.Namespace) -> None:
-        assert args.robot is not None,\
+        assert args.robot is not None, \
             "You must specify the --robot to use"
 
 

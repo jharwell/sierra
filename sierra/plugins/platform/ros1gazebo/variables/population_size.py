@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Classes for the population size batch criteria.
 
-See :ref:`ln-sierra-platform-ros1gazebo-bc-population-size` for usage
+See :ref:`plugins/platform/ros1gazebo/bc/population-size` for usage
 documentation.
 
 """

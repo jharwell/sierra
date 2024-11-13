@@ -1,4 +1,4 @@
-.. _ln-sierra-exec-env-hpc:
+.. _plugins/exec-env/hpc:
 
 =================================
 HPC Execution Environment Plugins
@@ -12,9 +12,9 @@ environments that come with SIERRA are listed on this page.
 These plugins tested with the following platforms (they may work on other
 platforms out of the box too):
 
-- :ref:`ln-sierra-platform-plugins-argos`
+- :ref:`plugins/platform/argos`
 
-- :ref:`ln-sierra-platform-plugins-ros1gazebo`
+- :ref:`plugins/platform/ros1gazebo`
 
 SIERRA makes the following assumptions about the HPC environments corresponding
 to the plugins listed on this page:
@@ -44,7 +44,7 @@ to the plugins listed on this page:
        if everything ran on a common filesystem prior to running any later
        stages.
 
-.. _ln-sierra-hpc-plugins-local:
+.. _plugins/exec-env/hpc/local:
 
 Local HPC Plugin
 ================
@@ -70,7 +70,7 @@ The # threads per :term:`experimental run <Experimental Run>` is defined with
 ``--physics-n-engines``, and that option is required for this HPC environment
 during stage 1.
 
-.. _ln-sierra-hpc-plugins-pbs:
+.. _plugins/exec-env/hpc/pbs:
 
 PBS HPC Plugin
 ==============
@@ -133,7 +133,7 @@ The following environmental variables are used in the PBS HPC environment:
        variables automatically, and because GNU parallel starts another level of
        child shells.
 
-.. _ln-sierra-hpc-plugins-slurm:
+.. _plugins/exec-env/hpc/slurm:
 
 SLURM HPC Plugin
 ================
@@ -208,7 +208,7 @@ The following environmental variables are used in the SLURM HPC environment:
        automatically, because GNU parallel starts another level of child
        shells.
 
-.. _ln-sierra-hpc-plugins-adhoc:
+.. _plugins/exec-env/hpc/adhoc:
 
 Adhoc HPC Plugin
 ================

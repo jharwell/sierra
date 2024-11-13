@@ -2,9 +2,9 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-Terminal interfare for the various storage plugins that come with SIERRA.
+Terminal interface for the various storage plugins that come with SIERRA.
 
-See :ref:`ln-sierra-tutorials-plugin-storage` for more details.
+See :ref:`tutorials/plugin/storage` for more details.
 """
 
 # Core packages

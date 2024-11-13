@@ -1,4 +1,4 @@
-.. _ln-sierra-storage-plugins:
+.. _plugins/storage:
 
 ===============
 Storage Plugins
@@ -7,9 +7,9 @@ Storage Plugins
 SIERRA is capable of reading :term:`Experimental Run` output data in a number of
 formats. Supported formats that come with SIERRA are:
 
-- :ref:`ln-sierra-storage-plugins-csv`
+- :ref:`plugins/storage/csv`
 
-.. _ln-sierra-storage-plugins-csv:
+.. _plugins/storage/csv:
 
 CSV
 ===

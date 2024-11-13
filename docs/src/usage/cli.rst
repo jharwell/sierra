@@ -1,4 +1,4 @@
-.. _ln-sierra-usage-cli:
+.. _usage/cli:
 
 ======================
 Command Line Interface
@@ -9,6 +9,7 @@ is, option batch criteria applicability is only documented for options which
 apply to a subset of the available :term:`Batch Criteria`.
 
 If an option is given more than once, the last such occurrence is used.
+
 
 SIERRA Core
 ===========

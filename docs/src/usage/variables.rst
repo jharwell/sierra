@@ -1,4 +1,4 @@
-.. _ln-sierra-usage-vars:
+.. _usage/vars:
 
 =============================
 Configurable SIERRA Variables
@@ -8,9 +8,9 @@ Non-:term:`Batch Criteria` variables which you can use to configure
 simulations. All batch criteria are variables, but not all variables are batch
 criteria.
 
-- :ref:`Experiment Setup <ln-sierra-vars-expsetup>`
+- :ref:`Experiment Setup <usage/vars/expsetup>`
 
-.. _ln-sierra-vars-expsetup:
+.. _usage/vars/expsetup:
 
 Experiment Setup
 ================
@@ -19,7 +19,7 @@ Configure :term:`Experiment` time: length, controller cadence (:term:`Tick`
 duration/timestep), and how many datapoints to capture per :term:`Experimental
 Run`.
 
-.. _ln-sierra-vars-expsetup-cmdline:
+.. _usage/vars/expsetup/cmdline:
 
 Cmdline Syntax
 --------------

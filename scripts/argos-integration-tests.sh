@@ -50,12 +50,12 @@ setup_env() {
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \
-       --exp-setup=exp_setup.T500.K5 \
+       -esetup=exp_setup.T500.K5 \
        --n-runs=4 \
-       --exec-strict \
+       -xstrict \
        --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
        --scenario=LowBlockCount.10x10x2 \
-       --exec-no-devnull \
+       -xno-devnull \
        --with-robot-leds \
        --with-robot-rab \
        --log-level=TRACE"
@@ -694,8 +694,9 @@ stage5_univar_test() {
        --pipeline 5 \
        --n-runs=4 \
        --bc-univar \
-       --plot-log-yscale \
-       --plot-large-text \
+       -plog-yscale \
+       -plarge-text \
+       -pprimary-axis=1 \
        --log-level=TRACE"
 
     # Compare the controllers

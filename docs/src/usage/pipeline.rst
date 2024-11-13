@@ -1,4 +1,4 @@
-.. _ln-sierra-usage-pipeline:
+.. _usage/pipeline:
 
 SIERRA Pipeline
 ===============
@@ -22,9 +22,9 @@ experimental inputs allowing you to focus on their *content*, rather than the
 mechanics of how to turn the content into something that can be executed. See
 also:
 
-- :ref:`ln-sierra-support-matrix`
+- :ref:`support-matrix`
 
-- :ref:`ln-sierra-usage-cli`
+- :ref:`usage/cli`
 
 Part of default pipeline.
 
@@ -46,11 +46,11 @@ multiple experimental runs from each experiment in parallel if possible. Similar
 to stage 1, switching between execution environments is as easy as changing a
 single command line argument. See also:
 
-- :ref:`ln-sierra-exec-env-plugins`
+- :ref:`plugins/exec-env`
 
-- :ref:`ln-sierra-platform-plugins`
+- :ref:`plugins/platform`
 
-- :ref:`ln-sierra-support-matrix`
+- :ref:`support-matrix`
 
 Part of default pipeline.
 
@@ -64,11 +64,11 @@ running the batch experiment; some parts of this can be done in parallel. This
 includes one or more of:
 
 - Computing statistics over/about experimental data for stage 4 for use in graph
-  generation in stage 4. See :ref:`ln-sierra-usage-cli` documentation for
+  generation in stage 4. See :ref:`usage/cli` documentation for
   ``--dist-stats`` for details.
 
 - Creating images from project CSV files for rendering in stage 4. See
-  :ref:`ln-sierra-usage-rendering-project` for details.
+  :ref:`usage/rendering/project` for details.
 
 Part of default pipeline.
 
@@ -89,10 +89,10 @@ simplifying reproduction of previous results if you need to tweak a given graph
 
 SIERRA also has a rich model framework allowing you to run arbitrary models,
 generate data, and plot it on the same figure as empirical results,
-automatically. See :ref:`ln-sierra-tutorials-project-models` for details.
+automatically. See :ref:`tutorials/project/models` for details.
 
 For some examples, see the "Generating Deliverables" section of
-:xref:`2022-aamas-demo`. See :ref:`ln-sierra-usage-rendering` for details about
+:xref:`2022-aamas-demo`. See :ref:`usage/rendering` for details about
 rendering capabilities.
 
 Part of default pipeline.
@@ -106,9 +106,9 @@ which can be dropped immediately into academic papers without modification. This
 can be used to compare:
 
 - Different agent control algorithms which have all been run in the same
-  ``--scenario``. See :ref:`ln-sierra-usage-stage5-intra-scenario` for details.
+  ``--scenario``. See :ref:`usage/stage5/intra-scenario` for details.
 
 - A single ``--controller`` across multiple scenarios. See
-  :ref:`ln-sierra-usage-stage5-inter-scenario` for details.
+  :ref:`usage/stage5/inter-scenario` for details.
 
 Not part of default pipeline.

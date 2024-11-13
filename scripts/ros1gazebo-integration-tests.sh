@@ -49,12 +49,12 @@ setup_env() {
        --project=ros1gazebo_project \
        --exp-setup=exp_setup.T5.K5\
        --n-runs=4 \
-       --exec-strict \
+       -xstrict \
        --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
        --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3 \
-       --exec-no-devnull \
+       -xno-devnull \
        --log-level=TRACE"
 
     export PARALLEL="--env LD_LIBRARY_PATH"

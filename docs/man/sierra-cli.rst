@@ -1,4 +1,4 @@
-.. _ln-sierra-usage-cli:
+.. _usage/cli:
 
 ######################
 Command Line Interface
@@ -12,7 +12,7 @@ If an option is given more than once, the last such occurrence is used.
 
 See also :manpage:`sierra-examples`.
 
-:seealso:`ln-sierra-examples`
+:seealso:`sierra-examples`
 
 
 ===========

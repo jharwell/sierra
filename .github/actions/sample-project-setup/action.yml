@@ -130,7 +130,7 @@ runs:
         # 2023/1/18: You still need install these even after installing stuff
         # with apt AND if the sysem python matches your current python. I don't
         # know why.
-        pip3 install empy \
+        python3 -m pip install empy \
                      rospkg \
                      wheel \
                      pyparsing \

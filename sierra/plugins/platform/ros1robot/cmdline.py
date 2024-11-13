@@ -137,23 +137,23 @@ class PlatformCmdline(cmd.BaseCmdline):
                                  default=False)
 
     @staticmethod
-    def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
+    def cmdopts_update(args: argparse.Namespace, cmdopts: types.Cmdopts) -> None:
         """Update cmdopts with ROS1+robot-specific cmdline options.
 
         """
-        ros1.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
+        ros1.cmdline.ROSCmdline.cmdopts_update(args, cmdopts)
         updates = {
             # Multistage
             'exec_jobs_per_node': 1,  # (1 job/robot)
-            'skip_online_check': cli_args.skip_online_check,
-            'online_check_method': cli_args.online_check_method,
+            'skip_online_check': args.skip_online_check,
+            'online_check_method': args.online_check_method,
 
             # stage 1
-            'skip_sync': cli_args.skip_sync,
+            'skip_sync': args.skip_sync,
 
             # stage 2
-            'exec_resume': cli_args.exec_resume,
-            'exec_inter_run_pause': cli_args.exec_inter_run_pause
+            'exec_resume': args.exec_resume,
+            'exec_inter_run_pause': args.exec_inter_run_pause
         }
 
         cmdopts.update(updates)

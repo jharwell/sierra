@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-project-models:
+.. _tutorials/project/models:
 
 ====================================
 Adding Models to your SIERRA Project
@@ -31,7 +31,7 @@ Create A New Intra-Experiment Model
    Configuration`_ below for details.
 
 #. Run your model during stage 4. You also need to pass ``--models-enable``
-   (models are not enabled by default); see :ref:`ln-sierra-usage-cli` for more
+   (models are not enabled by default); see :ref:`usage/cli` for more
    details.
 
 Model File Requirements

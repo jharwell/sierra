@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-project-stage5-config:
+.. _tutorials/project/stage5-config:
 
 =====================
 Stage 5 Configuration
@@ -15,7 +15,7 @@ This page has the following sections:
 All configuration for stage 5 is in ``<project>/config/stage5.yaml`` file. This
 file is mandatory for running stage 5, and optional otherwise.
 
-.. _ln-sierra-tutorials-project-stage5-config-intra:
+.. _tutorials/project/stage5-config/intra:
 
 Intra-Scenario Comparison
 =========================
@@ -103,7 +103,7 @@ Unless stated otherwise, all keys are required.
 
 
 
-.. _ln-sierra-tutorials-project-stage5-config-inter:
+.. _tutorials/project/stage5-config/inter:
 
 Inter-Scenario Comparison
 =========================

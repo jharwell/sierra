@@ -1,4 +1,4 @@
-.. _ln-sierra-req:
+.. _req:
 
 ==========================
 Requirements To Use SIERRA
@@ -9,7 +9,7 @@ in a more or less out-of-the-box fashion. Because SIERRA is highly modular, use
 cases which don't meet one or more of the parameters described below can likely
 still be accommodated with an appropriate plugin.
 
-.. _ln-sierra-req-OS:
+.. _req/os:
 
 OS Requirements
 ===============
@@ -37,7 +37,7 @@ Python Requirements
 Python 3.8+. Tested with 3.8-3.10. It may work for newer versions, probably
 won't for older.
 
-.. _ln-sierra-req-exp:
+.. _req/exp:
 
 Experimental Definition Requirements
 ====================================
@@ -68,7 +68,7 @@ SIERRA restricts the content of this file in a few modest ways.
      relatively straightforward for projects to read experimental definitions
      from XML.
 
-#. No reserved XML tokens are present. See :ref:`ln-sierra-req-xml` for details.
+#. No reserved XML tokens are present. See :ref:`req/xml` for details.
 
 #. All experiments from which you want to generate statistics/graphs are:
 
@@ -107,7 +107,7 @@ SIERRA restricts the content of this file in a few modest ways.
 :term:`Platforms <Platform>` may have additional experiment requirements, as
 shown below.
 
-.. _ln-sierra-req-exp-argos:
+.. _req/exp/argos:
 
 :term:`ARGoS` Platform
 ----------------------
@@ -149,7 +149,7 @@ shown below.
          ...
       </argos-configuration>
 
-   See also :ref:`ln-sierra-tutorials-project-main-config`.
+   See also :ref:`tutorials/project/main-config`.
 
 :term:`ROS1`-based Platforms
 ----------------------------
@@ -166,7 +166,7 @@ These requirements apply to any :term:`Platform` which uses :term:`ROS1` (e.g.,
    parameters you want to be able to modify with SIERRA must be present in a
    single ``.launch`` file. Other parameters you don't want to modify with
    SIERRA can be present in other ``.launch`` or ``.world`` files, and using the
-   usual ``<include>`` mechanism. See also :ref:`ln-sierra-philosophy`.
+   usual ``<include>`` mechanism. See also :ref:`philosophy`.
 
 #. Within the template ``.launch`` file (``--template-input-file``), the root
    XML tag must be ``<ros-configuration>`` . The
@@ -175,13 +175,13 @@ These requirements apply to any :term:`Platform` which uses :term:`ROS1` (e.g.,
    standard, which states that there can be only a single root element (i.e.,
    you can't have a ``<params>`` element and a ``<launch>`` element both at the
    root level--see options below). See
-   :ref:`ln-sierra-tutorials-project-template-input-file` for details of required
+   :ref:`tutorials/project/template-input-file` for details of required
    structure of passed ``--template-input-file``, and what changes are applied
    to them by SIERRA to use with ROS.
 
    :term:`Projects <Project>` can choose either of the following options for
    specifying controller parameters. See
-   :ref:`ln-sierra-tutorials-project-template-input-file` for further details of
+   :ref:`tutorials/project/template-input-file` for further details of
    required structure of passed ``--template-input-file``, and what changes are
    applied to them by SIERRA to use with ROS, depending on the option chosen.
 
@@ -208,7 +208,7 @@ These requirements apply to any :term:`Platform` which uses :term:`ROS1` (e.g.,
         ``.launch`` file.
 
         All SIERRA configuration exposed via XML parameters uses the ROS
-        parameter server. See :ref:`ln-sierra-tutorials-project-template-input-file`
+        parameter server. See :ref:`tutorials/project/template-input-file`
         for specifics.
 
 #. ROS does not currently provide a way to shut down after a given # of
@@ -242,7 +242,7 @@ Additional Platform Requirements
                     via (a) a start barrier triggered from the master node, or
                     else timestamp the data from robots and marshal it on the
                     master node in some fashion. The :ref:`SIERRA ROSBridge
-                    <ln-sierra-packages-rosbridge>` provides some support for (a).
+                    <packages/rosbridge>` provides some support for (a).
 
    - Mount a shared directory on each robot where it can write its data, and
      then after execution finishes but before your code exits you process the
@@ -256,7 +256,7 @@ Additional Platform Requirements
    - Record some/all messages sent and received via one or more ROSbag files,
      and use these files directly as a "database" to query during stage 3. This
      would require writing a SIERRA storage plugin (see
-     :ref:`ln-sierra-tutorials-plugin-storage`).
+     :ref:`tutorials/plugin/storage`).
 
      .. IMPORTANT:: This method requires that whatever is recorded into the
                     ROSbag file is per-run, not per-robot; that is, if a given
@@ -265,7 +265,7 @@ Additional Platform Requirements
                     then sent to a dedicated topic to be recorded.
 
 
-.. _ln-sierra-req-code:
+.. _req/code:
 
 Requirements For Project Code
 =============================
@@ -280,7 +280,7 @@ your code does not meet these assumptions, then you will need to make some
 
 #. Project code uses a configurable random seed. While this is not technically
    `required` for use with SIERRA, all research code should do this for
-   reproducibility. See :ref:`ln-sierra-platform-plugins` for platform-specific
+   reproducibility. See :ref:`plugins/platform` for platform-specific
    details about random seeding and usage with SIERRA.
 
 #. :term:`Experimental Runs<Experimental Run>` can be launched from `any`
@@ -293,25 +293,25 @@ your code does not meet these assumptions, then you will need to make some
    outputs need to appear in a directory such as
    ``$HOME/exp/research/simulations/sim1/outputs``. The directory within the
    experimental run root which SIERRA looks for simulation outputs is configured
-   via YAML; see :ref:`ln-sierra-tutorials-project-main-config` for details.
+   via YAML; see :ref:`tutorials/project/main-config` for details.
 
-   For HPC execution environments (see :ref:`ln-sierra-exec-env-hpc`), this requirement
+   For HPC execution environments (see :ref:`plugins/exec-env/hpc`), this requirement
    is easy to meet. For real robot execution environments
-   (see :ref:`ln-sierra-exec-env-robot`), this can be more difficult to meet.
+   (see :ref:`plugins/exec-env/realrobot`), this can be more difficult to meet.
 
 #. All experimental run outputs are in a format that SIERRA understands within
-   the output directory for the run. See :ref:`ln-sierra-storage-plugins` for which
+   the output directory for the run. See :ref:`plugins/storage` for which
    output formats are currently understood by SIERRA. If your output format is
    not in the list, never fear! It's easy to create a new storage plugin, see
-   :ref:`ln-sierra-tutorials-plugin-storage`.
+   :ref:`tutorials/plugin/storage`.
 
 ARGoS Platform
 --------------
 
 #. ``--project`` matches the name of the C++ library for the project
    (i.e. ``--project.so``), unless ``library_name`` is present in
-   ``sierra.main.run`` YAML config. See :ref:`ln-sierra-tutorials-project-main-config`
-   for details. For example if you pass ``--project=project-awesome``, then
+   ``sierra.main.run`` YAML config. See :ref:`tutorials/project/main-config`
+   for details. For example if you pass ``--project=project/awesome``, then
    SIERRA will tell ARGoS to search in ``proj-awesome.so`` for both loop
    function and controller definitions via XML changes, unless you specify
    otherwise in project configuration. You *cannot* put the
@@ -324,7 +324,7 @@ ROS1+Gazebo Project Platform
 
 #. :envvar:`ROS_PACKAGE_PATH` is set up properly prior to invoking SIERRA.
 
-.. _ln-sierra-req-code-ros1robot:
+.. _req/code/ros1robot:
 
 ROS1+Robot Platform
 -------------------
@@ -338,20 +338,20 @@ ROS1+Robot Platform
    verify this by trying to launch a ROS master on each robot: if it launches
    without errors, then these values are setup properly.
 
-.. _ln-sierra-req-models:
+.. _req/models:
 
 ============================
 Model Framework Requirements
 ============================
 
 When running models during stage 4 (see
-:ref:`ln-sierra-tutorials-project-models`) SIERRA requires that:
+:ref:`tutorials/project/models`) SIERRA requires that:
 
 - All models return :class:`pandas.DataFrame` (if they don't do this natively,
   then their python bindings will have to do it). This is enforced by the
   interfaces models must implement.
 
-.. _ln-sierra-req-xml:
+.. _req/xml:
 
 XML Content Requirements
 ========================
@@ -364,16 +364,16 @@ that including these tokens would cause problems, because SIERRA looks for them
 in `specific` places in the ``--template-input-file``, they should be avoided.
 
 - ``__CONTROLLER__`` - Tag used when as a placeholder for selecting which
-  controller present in an input file (if there are multiple) a user wants
-  to use for a specific :term:`Experiment`. Can appear in XML attributes. This
+  controller present in an input file (if there are multiple) a user wants to
+  use for a specific :term:`Experiment`. Can appear in XML attributes. This
   makes auto-population of the controller name based on the ``--controller``
   argument and the contents of ``controllers.yaml`` (see
-  :ref:`ln-sierra-tutorials-project-main-config` for details) in template input files
-  possible.
+  :ref:`tutorials/project/main-config` for details) in template input
+  files possible.
 
 - ``__UUID__`` - XPath substitution optionally used when a :term:`ROS1` platform
   is selected in ``controllers.yaml`` (see
-  :ref:`ln-sierra-tutorials-project-main-config`) when adding XML tags to force
+  :ref:`tutorials/project/main-config`) when adding XML tags to force
   addition of the tag once for every robot in the experiment, with ``__UUID__``
   replaced with the configured robot prefix concatenated with its numeric ID
   (0-based). Can appear in XML attributes.

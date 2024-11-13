@@ -1,4 +1,4 @@
-.. _ln-usage-env-vars:
+.. _usage/env-vars:
 
 Environment Variables
 =====================

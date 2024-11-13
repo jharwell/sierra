@@ -37,7 +37,7 @@ def load_config(cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
            inter_LN, intra_HM, inter_HM``.
 
       This function can be extended/overriden using a :term:`Project` hook. See
-      :ref:`ln-sierra-tutorials-project-hooks` for details.
+      :ref:`tutorials/project/hooks` for details.
 
     """
     inter_LN_config = {}

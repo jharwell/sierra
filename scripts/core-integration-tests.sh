@@ -58,10 +58,10 @@ setup_env() {
        --project=argos_project \
        --exp-setup=exp_setup.T5000.K5 \
        --n-runs=4 \
-       --exec-strict \
+       -xstrict \
        --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
        --scenario=LowBlockCount.10x10x2 \
-       --exec-no-devnull \
+       -xno-devnull \
        --with-robot-leds \
        --with-robot-rab\
        --log-level=TRACE"
@@ -74,12 +74,12 @@ setup_env() {
        --project=ros1gazebo_project \
        --exp-setup=exp_setup.T10.K5.N50\
        --n-runs=4 \
-       --exec-strict\
+       -xstrict\
        --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
        --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3\
-       --exec-no-devnull \
+       -xno-devnull \
        --log-level=TRACE"
 
 }
@@ -105,7 +105,9 @@ print(path)
     export SIERRA_ARCH=fizzbuzz
 
     which argos3
-    ln -s /usr/local/bin/argos3 /usr/local/bin/argos3-fizzbuzz
+
+    ln -sf /usr/local/bin/argos3 /usr/local/bin/argos3-fizzbuzz
+
     SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
     --physics-n-engines=1 \
     --batch-criteria population_size.Linear3.C3 \

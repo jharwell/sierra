@@ -4,7 +4,7 @@
 #
 """Classes for the constant population density batch criteria.
 
-See :ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
+See :ref:`plugins/platform/argos/bc/population-constant-density` for usage
 documentation.
 
 """

@@ -5,7 +5,7 @@
 #
 """Functionality for generating root directory paths for a batch experiment.
 
-See :ref:`ln-sierra-usage-runtime-exp-tree` for details about the defined root
+See :ref:`usage/runtime-exp-tree` for details about the defined root
 directories in SIERRA.
 """
 
@@ -21,6 +21,9 @@ import argparse
 
 
 class ExpRootLeaf():
+    """
+    Representation of the "name" in pathlib parlance in :python:`ExpRoot`.
+    """
     @staticmethod
     def from_name(leaf: str) -> 'ExpRootLeaf':
         template_stem = ''.join(leaf.split('-')[0])
@@ -59,6 +62,10 @@ class ExpRootLeaf():
 
 
 class ExpRoot():
+    """
+    Representation of the filesystem path containing all per-experiment data.
+    """
+
     def __init__(self,
                  sierra_root: str,
                  project: str,
@@ -66,21 +73,19 @@ class ExpRoot():
                  leaf: ExpRootLeaf) -> None:
         """Generate the directory path for the rootbatch root directory.
 
-        The directory path depends on all of the input arguments to this function,
-        and if ANY of the arguments change, so will the generated path.
-
-         root is:
+        The directory path depends on all of the input arguments to this
+        class, and if ANY of the arguments change, so will the generated
+        path. Root is:
         <sierra_root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
 
         Arguments:
 
-            root: The path to the root directory where SIERRA should store
-                  everything.
+        root: The path to the root directory where SIERRA should store
+        everything.
 
-            project: The name of the project plugin used.
+        project: The name of the project plugin used.
 
-            controller: The name of the controller used.
-
+        controller: The name of the controller used.
         """
         self.leaf = leaf
 
@@ -100,6 +105,12 @@ class ExpRoot():
 
 
 class PathSet():
+    """
+    The set of filesystem paths under ``--sierra-root`` that SIERRA uses.
+
+    Collected here in the interest of DRY.
+    """
+
     def __init__(self, root: ExpRoot) -> None:
         self.input_root = root.to_path() / "exp-inputs"
         self.output_root = root.to_path() / "exp-outputs"
@@ -176,3 +187,12 @@ def from_exp(sierra_root: str,
                    batch_leaf)
     logging.info('Generated batch root %s', root.to_path())
     return PathSet(root)
+
+
+__api__ = [
+    "from_exp",
+    "from_cmdline",
+    "PathSet",
+    "ExpRoot",
+    "ExpRootLeaf",
+]

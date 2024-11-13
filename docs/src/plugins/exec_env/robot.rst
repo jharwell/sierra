@@ -1,4 +1,4 @@
-.. _ln-sierra-exec-env-robot:
+.. _plugins/exec-env/realrobot:
 
 ========================================
 Real Robot Execution Environment Plugins
@@ -11,9 +11,9 @@ this page.
 These plugins are tested with the following platforms (they may work with other
 platforms out of the box too):
 
-- :ref:`ln-sierra-platform-plugins-ros1robot`
+- :ref:`plugins/platform/ros1robot`
 
-.. _ln-sierra-exec-env-robot-plugins-turtlebot3:
+.. _plugins/exec-env/real-robot/turtlebot3:
 
 Turtlebot3
 ==========

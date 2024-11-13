@@ -4,7 +4,7 @@
 
 """Classes for the ``--exp-setup`` cmdline option.
 
-See :ref:`ln-sierra-vars-expsetup` for usage documentation.
+See :ref:`usage/vars/expsetup` for usage documentation.
 
 """
 

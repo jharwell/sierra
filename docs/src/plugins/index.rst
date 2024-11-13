@@ -1,3 +1,5 @@
+.. _plugins:
+
 ==============
 SIERRA Plugins
 ==============
@@ -6,6 +8,6 @@ SIERRA Plugins
    :maxdepth: 1
    :caption: Contents:
 
-   ../platform/index.rst
-   ../exec_env/index.rst
-   ../storage/index.rst
+   platform/index.rst
+   exec_env/index.rst
+   storage/index.rst

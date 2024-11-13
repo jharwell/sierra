@@ -166,3 +166,36 @@ def unit_tests(session):
 
     session.run('pytest',
                 '--cov')
+
+# 2024-11-19 [JRH]: This currently is just a paper-thin wrapper around the shell
+# scripts, which were implemented a long time ago. And it works. Some/all of the
+# stuff in these scripts should be migrated into python, where doing things like
+# loops is way easier/better/cleaner.
+
+
+@nox.session(python=versions)
+def core_integration(session):
+    session.install('.')  # same as 'pip3 install .'
+
+    session.run('./scripts/core-integration-tests.sh', *session.posargs)
+
+
+@nox.session(python=versions)
+def plugin_argos_integration(session):
+    session.install('.')  # same as 'pip3 install .'
+
+    session.run('./scripts/argos-integration-tests.sh', *session.posargs)
+
+
+@nox.session(python=versions)
+def plugin_ros1gazebo_integration(session):
+    session.install('.')  # same as 'pip3 install .'
+
+    session.run('./scripts/ros1gazebo-integration-tests.sh', *session.posargs)
+
+
+@nox.session(python=versions)
+def plugin_ros1robot_integration(session):
+    session.install('.')  # same as 'pip3 install .'
+
+    session.run('./scripts/ros1robot-integration-tests.sh', *session.posargs)

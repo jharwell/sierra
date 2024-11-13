@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-hpc-cluster-setup:
+.. _tutorials/hpc/cluster-setup:
 
 =================
 HPC Cluster Setup
@@ -9,8 +9,8 @@ your local machine. If you haven't done that yet--shoo!
 
 This setup applies to the following SIERRA HPC cluster environments:
 
-- :ref:`ln-sierra-hpc-plugins-pbs`
-- :ref:`ln-sierra-hpc-plugins-slurm`
+- :ref:`tutorials/hpc/plugins/pbs`
+- :ref:`tutorial/hpc/plugins/slurm`
 
 ARGoS Setup on HPC Clusters
 ===========================
@@ -35,7 +35,7 @@ The steps to properly configure the C++ libraries for :term:`ARGoS` and your
 
 Once ARGoS/your C++ code has been built, you can setup SIERRA:
 
-#. Install SIERRA package by following the instructions in :ref:`ln-sierra-packages`.
+#. Install SIERRA package by following the instructions in :ref:`packages`.
 
 #. Verify GNU :program:`parallel` is installed; if it is not installed, ask your
    cluster admin to install it for you.
@@ -46,7 +46,7 @@ Once ARGoS/your C++ code has been built, you can setup SIERRA:
    directory with the EXACT name you want it to be callable with on the cmdline
    via ``--project``.
 
-#. Read the documentation for :ref:`ln-sierra-exec-env-hpc`, and select and
+#. Read the documentation for :ref:`plugins/exec-env/hpc`, and select and
    appropriate plugin to use. Be sure to define all necessary environment
    variables!!
 

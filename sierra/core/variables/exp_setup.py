@@ -18,7 +18,7 @@ from sierra.core import types
 class Parser():
     """Enforces the cmdline definition of ``--exp-setup``.
 
-    See :ref:`ln-sierra-vars-expsetup` for documentation.
+    See :ref:`usage/vars/expsetup` for documentation.
 
     """
 
@@ -32,7 +32,7 @@ class Parser():
         # remove variable name, leaving only the spec
         sections = sections[1:]
 
-        assert len(sections) >= 1 and len(sections) <= 3,\
+        assert len(sections) >= 1 and len(sections) <= 3, \
             ("Spec must have between 1 and 3 sections separated by '.'; "
              f"have {len(sections)} from '{arg}'")
 

@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials:
+.. _tutorials:
 
 =====================================
 Configuration and Extension Tutorials
@@ -7,7 +7,7 @@ Configuration and Extension Tutorials
 This page contains tutorials to setup and/or extend SIERRA according to your
 needs.
 
-.. _ln-sierra-tutorials-project:
+.. _tutorials/project:
 
 .. toctree::
    :maxdepth: 1
@@ -24,7 +24,7 @@ needs.
    project/hooks.rst
    project/models.rst
 
-.. _ln-sierra-tutorials-hpc:
+.. _tutorials/hpc:
 
 .. toctree::
    :maxdepth: 1
@@ -33,7 +33,7 @@ needs.
    hpc/cluster_setup.rst
    hpc/local_setup.rst
 
-.. _ln-sierra-tutorials-extension:
+.. _tutorials/extension:
 
 .. toctree::
    :maxdepth: 1
