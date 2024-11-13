@@ -25,7 +25,8 @@ def generate(cmdopts: types.Cmdopts,
     Generate linegraphs from: term: `Averaged .csv` files within an experiment.
     """
 
-    _logger.info("Linegraphs from %s", pathset.stat_root)
+    _logger.info("Linegraphs from <batch_root>/%s",
+                 pathset.stat_root.relative_to(pathset.parent))
 
     # For each category of linegraphs we are generating
     for category in targets:

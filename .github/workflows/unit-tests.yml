@@ -11,7 +11,7 @@ jobs:
         os:
           - ubuntu-20.04
           - ubuntu-22.04
-          - macos-13
+          - macos-12
 
         # 2024/08/26: Test the earliest and latest supported version, to speed
         # up CI.

@@ -4,7 +4,7 @@
 #
 """Classes for the variable population density batch criteria.
 
-See :ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
+See :ref:`plugins/platform/argos/bc/population-variable-density` for usage
 documentation.
 
 """

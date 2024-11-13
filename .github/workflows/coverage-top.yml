@@ -87,9 +87,6 @@ jobs:
           # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
           # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
 
-          echo HERE1
-          find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
-          echo HERE2
           coverage \
             combine \
             $(find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*")

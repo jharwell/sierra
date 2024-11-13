@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-plugin-platform:
+.. _tutorials/plugin/platform:
 
 ==============================
 Creating a New Platform Plugin

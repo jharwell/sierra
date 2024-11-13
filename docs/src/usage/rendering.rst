@@ -1,4 +1,4 @@
-.. _ln-sierra-usage-rendering:
+.. _usage/rendering:
 
 =========
 Rendering
@@ -8,14 +8,14 @@ SIERRA's capabilities for rendering video outputs are detailed in this
 section. SIERRA can render frames (images) into videos from 3 sources:
 
 - Those captured using ``--platform-vc``, details :ref:`here
-  <ln-sierra-usage-rendering-platform>`.
+  <usage/rendering/platform>`.
 
 - Those imagized from project CSV output files via ``--project-imagizing`` using
   ``--project-rendering`` details :ref:`here
-  <ln-sierra-usage-rendering-project>`.
+  <usage/rendering/project>`.
 
 - Inter-experiment heatmaps from bivariate batch criteria ``--bc-rendering``,
-  details :ref:`here <ln-sierra-usage-rendering-bc>`.
+  details :ref:`here <usage/rendering/bc>`.
 
 
 .. NOTE:: Using BOTH the platform and project rendering capabilities
@@ -23,7 +23,7 @@ section. SIERRA can render frames (images) into videos from 3 sources:
    ``--project-rendering`` during stage 3), but discouraged unless you have
    multiple terrabytes of disk space available. ``--exp-range`` is your friend.
 
-.. _ln-sierra-usage-rendering-platform:
+.. _usage/rendering/platform:
 
 Platform Visual Capture
 =======================
@@ -44,7 +44,7 @@ This is applicable to the following platforms:
                computing power available.
 
 
-.. _ln-sierra-usage-rendering-platform-argos:
+.. _usage/rendering/platform/argos:
 
 ARGos Visual Capture
 --------------------
@@ -63,18 +63,18 @@ that:
   we can output to a file.
 
 During stage 2, ARGoS outputs captured frames to ``frames/`` in each output
-directory (see :ref:`config.kRendering`).  During stage 4, ``--platform-vc``
-causes frames captured during stage 2 to be stitched together into a unique
-video file using :program:`ffmpeg` (precise command configurable via
-``--render-cmd-opts``), and output to ``<batch_root>/videos/<exp>``.
+directory.  During stage 4, ``--platform-vc`` causes frames captured during
+stage 2 to be stitched together into a unique video file using :program:`ffmpeg`
+(precise command configurable via ``--render-cmd-opts``), and output to
+``<batch_root>/videos/<exp>``.
 
-.. _ln-sierra-usage-rendering-project:
+.. _usage/rendering/project:
 
 Project Rendering
 =================
 
 Projects can generate CSV files residing in subdirectories within the
-``main.run_metrics_leaf`` (see :ref:`ln-sierra-tutorials-project-main-config`)
+``main.run_metrics_leaf`` (see :ref:`tutorials/project/main-config`)
 directory (directory path set on a per ``--project`` basis) for each
 experimental run, in addition to generating CSV files residing directly in
 the ``main.run_metrics_leaf.`` directory. SIERRA can then render these CSV
@@ -84,7 +84,7 @@ images together to make videos.
 .. IMPORTANT::
 
    Imagized/rendered images/videos are generated per :term:`Experiment` rather
-   than per :term:`Experiment Run`, and thus the raw inputs *ARE* averaged
+   than per :term:`Experimental Run`, and thus the raw inputs *ARE* averaged
    before imagizing and subsequent rendering.
 
 To use, do the following:
@@ -96,7 +96,7 @@ To use, do the following:
    suitable for video rendering in stage 4. Not all subdirectories under
    ``main.run_metrics_leaf`` *have* to contain stuff for imagizing; what is
    selected for imagizing is controlled by ``intra-graphs-hm.yaml``--see
-   :ref:`ln-sierra-tutorials-project-graphs-config` for details.
+   :ref:`tutorials/project/graphs-config` for details.
 
    The following restrictions apply:
 
@@ -140,7 +140,7 @@ To use, do the following:
       getting paid by the hour).
 
 
-.. _ln-sierra-usage-rendering-bc:
+.. _usage/rendering/bc:
 
 Batch Criteria Rendering
 ========================

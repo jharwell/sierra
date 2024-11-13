@@ -1,4 +1,4 @@
-.. _ln-sierra-platform-argos-bc:
+.. _plugins/platform/argos/bc:
 
 ==============
 Batch Criteria
@@ -9,24 +9,24 @@ short version is that they are the core of SIERRA--how to get it to DO stuff for
 you.  The following batch criteria are defined which can be used with any
 :term:`Project`.
 
-- :ref:`ln-sierra-platform-argos-bc-population-size`
-- :ref:`ln-sierra-platform-argos-bc-population-constant-density`
-- :ref:`ln-sierra-platform-argos-bc-population-variable-density`
+- :ref:`plugins/platform/argos/bc/population-size`
+- :ref:`plugins/platform/argos/bc/population-constant-density`
+- :ref:`plugins/platform/argos/bc/population-variable-density`
 
-.. _ln-sierra-platform-argos-bc-population-size:
+.. _plugins/platform/argos/bc/population-size:
 
 Population Size
 ===============
 
 Changing the population size to investigate behavior across scales within a
 static arena size (i.e., variable density). This criteria is functionally
-identical to :ref:`ln-sierra-platform-argos-bc-population-variable-density` in
+identical to :ref:`plugins/platform/argos/bc/population-variable-density` in
 terms of changes to the template XML file, but has a different semantic meaning
 which can make generated deliverables more immediately understandable, depending
 on the context of what is being investigated (e.g., population size
 vs. population density on the X axis).
 
-.. _ln-sierra-platform-argos-bc-population-size-cmdline:
+.. _plugins/platform/argos/bc/population-size-cmdline:
 
 Cmdline Syntax
 --------------
@@ -56,7 +56,7 @@ Examples
 - ``population_size.Linear10.C2``: Static population sizes 5...10 (2)
 
 
-.. _ln-sierra-platform-argos-bc-population-constant-density:
+.. _plugins/platform/argos/bc/population-constant-density:
 
 Constant Population Density
 ===========================
@@ -66,11 +66,11 @@ size/arena size ratio to investigate behavior across scales.
 
 .. NOTE:: This criteria is for `constant` density of robots as population sizes
           increase. For `variable` robot density, use
-          :ref:`ln-sierra-platform-argos-bc-population-size` or
-          :ref:`ln-sierra-platform-argos-bc-population-variable-density`.
+          :ref:`plugins/platform/argos/bc/population-size` or
+          :ref:`plugins/platform/argos/bc/population-variable-density`.
 
 
-.. _ln-sierra-platform-argos-bc-population-constant-density-cmdline:
+.. _plugins/platform/argos/bc/population-constant-density-cmdline:
 
 Cmdline Syntax
 --------------
@@ -92,15 +92,14 @@ Examples
   dimensions will increase by 16 in both X and Y for each experiment in the
   batch (4 total).
 
-.. _ln-sierra-platform-argos-bc-population-variable-density:
-
+.. _plugins/platform/argos/bc/population-variable-density:
 
 Variable Population Density
 ===========================
 
 Changing the population size to investigate behavior across scales within a
 static arena size. This criteria is functionally identical to
-:ref:`ln-sierra-platform-argos-bc-population-size` in terms of changes to the
+:ref:`plugins/platform/argos/bc/population-size` in terms of changes to the
 template XML file, but has a different semantic meaning which can make generated
 deliverables more immediately understandable, depending on the context of what
 is being investigated (e.g., population density vs. population size on the X
@@ -108,9 +107,9 @@ axis).
 
 .. NOTE:: This criteria is for `variable` density of robots as population sizes
           increase. For `constant` robot density, use
-          :ref:`ln-sierra-platform-argos-bc-population-constant-density`.
+          :ref:`plugins/platform/argos/bc/population-constant-density`.
 
-.. _ln-sierra-platform-argos-bc-population-variable-density-cmdline:
+.. _platform/argos/bc/population-variable-density-cmdline:
 
 Cmdline Syntax
 --------------

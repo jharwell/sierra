@@ -1,4 +1,4 @@
-.. _ln-sierra-contributing:
+.. _contributing:
 
 ============
 Contributing
@@ -11,8 +11,8 @@ All types of contributions are welcome: bugfixes, adding unit/integration tests,
 etc. If you're only have a little bit of time and/or are new to SIERRA, looking
 at the issues is a good place to look for places to contribute. If you have more
 time and/or want to give back to the community in a bigger way, see
-:ref:`ln-sierra-roadmap` for some big picture ideas about where things might be
-going, and help shape the future!
+:ref:`roadmap` for some big picture ideas about where things might be going, and
+help shape the future!
 
 Mechanics
 =========
@@ -70,7 +70,7 @@ repository.
     - ``models/`` - Model interfaces.
 
     - ``pipeline/`` - Core pipline code in 5 stages (see
-      :ref:`ln-sierra-usage-pipeline`).
+      :ref:`usage/pipeline`).
 
     - ``ros1/`` - Common :term:`ROS1` bindings.
 

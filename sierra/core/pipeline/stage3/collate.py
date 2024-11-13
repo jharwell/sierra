@@ -159,7 +159,7 @@ class ExpRunCSVGatherer:
     """Gather :term:`Output .csv` files across all runs within an experiment.
 
     This class can be extended/overriden using a :term:`Project` hook.  See
-    :ref:`ln-sierra-tutorials-project-hooks` for details.
+    :ref:`tutorials/project/hooks` for details.
 
     Attributes:
 

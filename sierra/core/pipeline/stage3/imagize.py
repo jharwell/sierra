@@ -4,7 +4,7 @@
 
 """Classes for creating image files from ``.mean`` files for experiments.
 
-See :ref:`ln-sierra-usage-rendering` for usage documentation.
+See :ref:`usage/rendering` for usage documentation.
 
 """
 
@@ -106,7 +106,7 @@ def _proc_single_exp(HM_config: types.YAMLDict,
     """Create images from the averaged ``.mean`` files from a single experiment.
 
     If no ``.mean`` files suitable for averaging are found, nothing is done. See
-    :ref:`ln-sierra-usage-rendering` for per-platform descriptions of what
+    :ref:`usage/rendering` for per-platform descriptions of what
     "suitable" means.
 
     Arguments:

@@ -44,7 +44,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/core-integration-tests.sh -f ${{ matrix.function }}
+          command: nox -s core_integration -p ${{ matrix.python-version }} -- -f ${{ matrix.function }}
 
       - uses: actions/upload-artifact@v3
         with:
@@ -94,7 +94,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/${{ matrix.platform }}-integration-tests.sh -f bc_bivar_sanity_test
+          command: nox -s plugin_${{ matrix.platform }}_integration -p ${{ matrix.python-version }} -- -f bc_bivar_sanity_test
 
 
       - uses: actions/upload-artifact@v3
@@ -151,7 +151,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/${{ matrix.platform }}-integration-tests.sh -f stage1_bivar_test
+          command: nox -s plugin_${{ matrix.platform }}_integration -p ${{ matrix.python-version }} -- -f stage1_bivar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -193,7 +193,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/argos-integration-tests.sh -f stage3_univar_test
+          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage3_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -235,7 +235,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/argos-integration-tests.sh -f stage3_bivar_test
+          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage3_bivar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -277,7 +277,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/argos-integration-tests.sh -f stage4_univar_test
+          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage4_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -318,7 +318,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/argos-integration-tests.sh -f stage5_univar_test
+          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage5_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -361,7 +361,7 @@ jobs:
           timeout_minutes: 3600
           max_attempts: 3
           shell: bash
-          command: ./scripts/argos-integration-tests.sh -f stage5_bivar_test
+          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage5_bivar_test
 
       - uses: actions/upload-artifact@v3
         with:

@@ -1,4 +1,4 @@
-.. _ln-sierra-support-matrix:
+.. _support-matrix:
 
 =====================
 SIERRA Support Matrix
@@ -6,7 +6,7 @@ SIERRA Support Matrix
 
 SIERRA supports multiple :term:`Platforms <Platform>` which researchers can
 write code to target, as shown below.  If your desired platform is not listed,
-see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
+see the :ref:`tutorials` for how to add it via a plugin.
 
 .. IMPORTANT:: In SIERRA terminology, platform != OS. If a SIERRA platform runs
                on a given OS, then SIERRA supports doing so; if it does not,
@@ -40,7 +40,7 @@ see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
 SIERRA supports multiple HPC environments for execution of experiments in on HPC
 hardware (see :doc:`/src/exec_env/hpc`) and on real robots (see
 :doc:`/src/exec_env/robot`). If your desired execution environment is not
-listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
+listed, see the :ref:`tutorials` for how to add it via a plugin.
 
 .. list-table::
    :header-rows: 1
@@ -95,9 +95,9 @@ listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
        later is required.
 
 SIERRA also supports multiple output formats for experimental outputs. If the
-format for your experimental outputs is not listed, see the
-:ref:`ln-sierra-tutorials` for how to add it via a plugin. SIERRA currently only
-supports XML experimental inputs.
+format for your experimental outputs is not listed, see the :ref:`tutorials` for
+how to add it via a plugin. SIERRA currently only supports XML experimental
+inputs.
 
 .. list-table::
    :header-rows: 1

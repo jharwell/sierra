@@ -29,7 +29,8 @@ def generate(cmdopts: types.Cmdopts,
 
     targets = targets
 
-    _logger.info("Heatmaps from %s", pathset.stat_root)
+    _logger.info("Heatmaps from <batch_root>/%s",
+                 pathset.stat_root.relative_to(pathset.parent))
 
     # For each category of heatmaps we are generating
     for category in targets:

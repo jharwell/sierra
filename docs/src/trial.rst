@@ -1,4 +1,4 @@
-.. _ln-sierra-trial:
+.. _trial:
 
 =================
 Trying Out SIERRA
@@ -177,7 +177,7 @@ you clone things somewhere else.
               . /path/to/setup.bash
 
 
-#. Run SIERRA (invocation inspired by :ref:`ln-sierra-usage-examples`).
+#. Run SIERRA (invocation inspired by :ref:`usage/examples`).
 
    .. tabs::
 
@@ -207,7 +207,7 @@ you clone things somewhere else.
          so to run. After it finishes, you can go to ``$HOME/research/exp`` and
          find all the simulation outputs, including camera ready graphs! For an
          explanation of SIERRA's runtime directory tree, see
-         :ref:`ln-sierra-usage-runtime-exp-tree`. You can also run the same experiment
+         :ref:`usage/runtime-exp-tree`. You can also run the same experiment
          again, and it will overwrite the previous one because you passed
          ``--exp-overwrite``.
 

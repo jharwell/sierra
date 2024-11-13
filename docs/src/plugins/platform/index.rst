@@ -1,4 +1,4 @@
-.. _ln-sierra-platform-plugins:
+.. _plugins/platform:
 
 ================
 Platform Plugins

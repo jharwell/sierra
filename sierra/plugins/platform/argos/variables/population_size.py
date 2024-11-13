@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Classes for the population size batch criteria.
 
-See :ref:`ln-sierra-platform-argos-bc-population-size` for usage documentation.
+See :ref:`plugins/platform/argos/bc/population-size` for usage documentation.
 
 """
 

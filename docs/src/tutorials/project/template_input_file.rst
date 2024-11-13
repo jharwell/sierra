@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-project-template-input-file:
+.. _tutorials/project/template-input-file:
 
 ====================
 Template Input Files
@@ -34,7 +34,7 @@ Examples of the structure/required content of the XML file passed to SIERRA via
             ...
         <argos-configuration>
 
-   See :ref:`ln-sierra-req-xml` for usage/description of the ``__CONTROLLER__`` tag.
+   See :ref:`req/xml` for usage/description of the ``__CONTROLLER__`` tag.
 
    .. group-tab:: ROS1 (Using parameter server)
 

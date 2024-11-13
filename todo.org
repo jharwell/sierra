@@ -1,5 +1,5 @@
 * SIERRA                                                            :sierra:
-** TODO [#B] Add additional integration tests [50%]
+** TODO [#B] Add additional integration tests [60%]
 - [X] Verifying ARGoS stage 1,2,3,4 outputs
 - [X] Testing ARGoS video generation
 - [X] Verifying ROS1+Gazebo stage 1 outputs
@@ -12,23 +12,14 @@
   core not tested by the plugin integration tests. This should get its own
   workflow file. What shows up as github badges should be a core+plugins yml
   file with an "Integration tests" label.
-- [ ] Testing that the generated experiments match between python versions
-      (i.e., file contents is the same).
 - [ ] Simple model for testing in the sample project, associated tests
 - [ ] Switch from bash to something else (python/noxfile?); my scripts are
   getting too complicated.
+- [X] Imagizing integration tests
 
 ** TODO Add additional unit tests [0%]
 - [ ] Parser unit tests (for CLI variables that can be used as batch criteria)
 - [ ] Nodefile parsing
-
-** TODO Better tasking framework/organization
-- Switch to calling nox instead of calling bash directly from the yml workflow
-files. This will allow me to easily parameterize multiple versions of python,
-AND reduce the # of jobs I need/total workflow runtime on github by a good bit.
-
-** TODO Switch from cmdopts dictionary to a data class with fields
-I will get WAY better help from the static analyzer
 
 ** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
 
@@ -36,15 +27,6 @@ I will get WAY better help from the static analyzer
 - And add an example in the sample project
 
 ** TODO Add --seed to gazebo commands so experiments are more idempotent
-** TODO Change n_robots -> n_agents everywhere
-
-** TODO Add short options with some category prefixes
-- To emulate GCC syntax, which is really nice. Some ideas:
--E -> --exec-
--e -> --exp-
--s -> --skip-
--L -> --plot-
--c -> --controller-
 
 ** TODO [#A] Add plugin interface for experimental inputs
 - This is needed as part of making SIERRA directly able to support platforms
@@ -59,12 +41,14 @@ setup written to the pkl file.
 Might be helpful to spot trends among different controllers. Would also need to
 be implemented in stage 5 as another comparison option.
 
-** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way better type checking
+** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way
+better type checking
 ** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
 Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 
 ** TODO [#C] Check out the fastcore library
 ** TODO [#C] Try Modin as a parallel pandas wrapper
+** TODO [#C] Fix all links in document to not be prefixed with 'ln-sierra'
 ** TODO [#B] Document why you need 2 GNU parallel processes for rosrobot :sierra:
    Because you can't have robot controllers running on the master, which could
    happen if you only had a single GNU parallel process.
@@ -167,3 +151,33 @@ Does what I do, but much better
 
 ** DONE Add sys.excepthook hook asking the user to file a bug.
 CLOSED: [2022-10-18 Tue 15:02]
+
+** DONE Switch from cmdopts dictionary to a data class with fields
+CLOSED: [2024-11-12 Tue 12:53]
+I will get WAY better help from the static analyzer
+
+** DONE Add short options with some category prefixes
+CLOSED: [2024-11-13 Wed 11:21]
+- To emulate GCC syntax, which is really nice. Some ideas:
+-E -> --exec-
+-e -> --exp-
+-s -> --skip-
+-L -> --plot-
+-c -> --controller-
+
+After implementing this, I'm not sure at this point that there is that much
+value in doing this, because it adds more complexity than it removes for most
+users. But its there, and can be removed easily enough...
+
+** DONE Change n_robots -> n_agents everywhere
+CLOSED: [2024-11-13 Wed 11:22]
+
+** DONE Better tasking framework/organization
+CLOSED: [2024-11-13 Wed 11:24]
+- Switch to calling nox instead of calling bash directly from the yml workflow
+files. This will allow me to easily parameterize multiple versions of python,
+AND reduce the # of jobs I need/total workflow runtime on github by a good bit.
+
+** DONE [#B] Make all fs paths shown be relative to batch root
+CLOSED: [2024-11-19 Tue 11:27]
+- Screen will be much less cluttered; could make this toggleable if desired.

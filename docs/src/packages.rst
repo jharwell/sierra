@@ -1,10 +1,10 @@
-.. _ln-sierra-packages:
+.. _packages:
 
 =============================
 SIERRA Installation Reference
 =============================
 
-.. _ln-sierra-packages-pypi:
+.. _packages/pypi:
 
 SIERRA PyPi Package
 ===================
@@ -44,7 +44,7 @@ Installing SIERRA
 
    pip3 install sierra-research
 
-.. _ln-sierra-packages-rosbridge:
+.. _packages/rosbridge:
 
 SIERRA ROSBridge
 ================

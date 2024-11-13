@@ -1,11 +1,11 @@
-.. _ln-sierra-getting-started:
+.. _getting-started:
 
 ===========================
 Getting Started With SIERRA
 ===========================
 
 If you're looking for the "I just want to try out SIERRA without doing any work"
-quickstart, see :ref:`ln-sierra-trial`. Otherwise, the steps to start using
+quickstart, see :ref:`trial`. Otherwise, the steps to start using
 SIERRA are below.
 
 Basic Setup
@@ -18,14 +18,14 @@ Basic Setup
 
    Seriously--it will make the later steps make more sense.
 
-#. Check requirements at :ref:`ln-sierra-req` to how to organize your
+#. Check requirements at :ref:`req` to how to organize your
    experimental inputs/template input files so they can be used with SIERRA, and
    if you need to modify the way your code outputs data so that SIERRA can
    process it.
 
 #. Install SIERRA
 
-   - Install SIERRA packages by following :ref:`ln-sierra-packages`.
+   - Install SIERRA packages by following :ref:`packages`.
 
    - Install OS packages (if you don't see your OS below you will have to find
      and install the equivalent packages).
@@ -84,18 +84,23 @@ do so are:
 
 #. Select which :term:`Platform` SIERRA should target (what platform it targets
    will partially define how you create your project plugin). See
-   :ref:`ln-sierra-platform-plugins` for supported platforms. If your desired
+   :ref:`plugins/platform` for supported platforms. If your desired
    platform is not in the list, never fear! It's easy to create a new platform
-   plugin, see :ref:`ln-sierra-tutorials-plugin-platform`.
+   plugin, see :ref:`tutorials/plugin/platform`.
 
-#. Setup the interface between your code and SIERRA by defining a SIERRA by
-   following :ref:`ln-sierra-tutorials-project-project`.
+#. Setup the interface between your code and SIERRA by following
+   :ref:`tutorials/project/project`.
 
 #. Select an execution environment for SIERRA that matches your available
-   computational resources: :ref:`ln-sierra-exec-env-hpc` or
-   :ref:`ln-sierra-exec-env-robot`, following the appropriate setup guide. If
+   computational resources:
+
+   - :ref:`plugins/exec-env/hpc`
+
+   - :ref:`plugins/exec-env/realrobot`
+
+   and following the appropriate setup guide. If
    there is nothing suitable, never fear! It's easy to create a new execution
-   environment plugin, see :ref:`ln-sierra-tutorials-plugin-exec-env`.
+   environment plugin, see :ref:`tutorials/plugin/exec-env`.
 
 Usage Setup
 ===========
@@ -108,20 +113,20 @@ SIERRA! The steps to do so are:
    want to change across some range and see how system behavior changes, or
    doesn't change). Which criteria are available to use depends on your
    :term:`Platform`; if you don't see something suitable, you can
-   :ref:`Define A New Batch Criteria <ln-sierra-tutorials-project-new-bc>`.
+   :ref:`Define A New Batch Criteria <tutorials/project/new-bc>`.
 
-#. Look at the :ref:`ln-sierra-usage-cli` to understand how to invoke SIERRA in
+#. Look at the :ref:`usage/cli` to understand how to invoke SIERRA in
    general.
 
-#. Look at the :ref:`ln-sierra-usage-examples` to get ideas on how to craft your
-   own SIERRA invocation. If you get stuck, look at :ref:`ln-sierra-faq` for
+#. Look at the :ref:`usage/examples` to get ideas on how to craft your
+   own SIERRA invocation. If you get stuck, look at :ref:`faq` for
    answers to common questions.
 
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
    - What platform you are targeting/want to run on: ``--platform``. See
-     :ref:`ln-sierra-platform-plugins` for details.
+     :ref:`plugins/platform` for details.
 
    - What project to load: ``--project``. This is used to:
 
@@ -132,16 +137,16 @@ SIERRA! The steps to do so are:
        processing configuration from.
 
    - What template input file to use: ``--template-input-file``. See
-     :ref:`ln-sierra-tutorials-project-template-input-file` for requirements.
+     :ref:`tutorials/project/template-input-file` for requirements.
 
    - How many variations of the main settings for each experiment to run:
      ``--n-runs``.
 
    - Where it is running/how to run experiments: ``--exec-env``. See
-     :ref:`ln-sierra-exec-env-hpc` for available plugins.
+     :ref:`plugins/exec-env/hpc` for available plugins.
 
    - What controller to run: ``--controller``. See
-     :ref:`ln-sierra-tutorials-project-main-config` for details on how valid
+     :ref:`tutorials/project/main-config` for details on how valid
      controllers are defined for a :term:`Project`. Project dependent.
 
    - How large the arena should be, what block distribution type to use (for
@@ -156,7 +161,7 @@ SIERRA! The steps to do so are:
    doing anything substantial.
 
    Full documentation of all command line options it accepts is in
-   :ref:`ln-sierra-usage-cli`, and there are many useful options that SIERRA
+   :ref:`usage/cli`, and there are many useful options that SIERRA
    accepts, so skimming the CLI docs is **very** worthwhile.
 
    .. IMPORTANT:: Generally speaking, do not try to run SIERRA on HPC
@@ -172,11 +177,11 @@ SIERRA! The steps to do so are:
 
    Different platforms may require additional environments to be set.
 
-#. Learn SIERRA's runtime :ref:`ln-sierra-usage-runtime-exp-tree`. When running,
+#. Learn SIERRA's runtime :ref:`usage/runtime-exp-tree`. When running,
    SIERRA will create a (rather) large directory structure for you, so reading
    the docs is worthwhile to understand what the structure means, and to gain
    intuition into where to look for the inputs/outputs of different stages,
    etc., without having to search exhaustively through the filesystem.
 
-#. Invoke SIERRA! Again, look at the :ref:`ln-sierra-usage-examples` for some
+#. Invoke SIERRA! Again, look at the :ref:`usage/examples` for some
    ideas.

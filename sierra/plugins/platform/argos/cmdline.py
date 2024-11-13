@@ -61,7 +61,7 @@ class PlatformCmdline(cmd.BaseCmdline):
                                      <Tick>` per second for the experiment
                                      (<experiment> tag), # of datapoints to
                                      capture/capture interval for each
-                                     simulation. See :ref:`ln-sierra-vars-expsetup` for
+                                     simulation. See :ref:`vars/expsetup` for
                                      a full description.
 
                                      """ + self.stage_usage_doc([1]),

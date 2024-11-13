@@ -1,4 +1,4 @@
-.. _ln-sierra-exec-env-plugins:
+.. _plugins/exec-env:
 
 =============================
 Execution Environment Plugins

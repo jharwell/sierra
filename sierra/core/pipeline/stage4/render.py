@@ -135,7 +135,7 @@ def from_platform(main_config: types.YAMLDict,
       <batch_root>/videos/<exp_name>
 
     ``<frames_leaf>`` is controlled via configuration.  For more
-    details, see :ref:`ln-sierra-usage-rendering`.
+    details, see :ref:`usage/rendering`.
 
     .. note:: This currently only works with PNG images.
     """
@@ -168,7 +168,7 @@ def from_project_imagized(main_config: types.YAMLDict,
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
     Frames (images) in each subdirectory in the imagize root (see
-    :ref:`ln-sierra-usage-runtime-exp-tree`) are stitched together to make a
+    :ref:`usage/runtime-exp-tree`) are stitched together to make a
     video using :program:`ffmpeg`.  Output format controlled via configuration.
 
     Targets to render are found in::
@@ -179,7 +179,7 @@ def from_project_imagized(main_config: types.YAMLDict,
 
       <batch_root>/videos/<exp>/<subdir_name>
 
-    For more details, see :ref:`ln-sierra-usage-rendering`.
+    For more details, see :ref:`usage/rendering`.
 
     .. note:: This currently only works with PNG images.
     """
@@ -225,7 +225,7 @@ def from_bivar_heatmaps(main_config: types.YAMLDict,
 
       <batch_root>/videos/<graph name>
 
-    For more details, see :ref:`ln-sierra-usage-rendering`.
+    For more details, see :ref:`usage/rendering`.
 
     versionadded:: 1.2.20
     """

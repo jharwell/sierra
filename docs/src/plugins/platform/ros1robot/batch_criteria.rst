@@ -1,4 +1,4 @@
-.. _ln-sierra-platform-ros1gazebo-bc:
+.. _plugins/platform/ros1robot/bc:
 
 ==============
 Batch Criteria
@@ -6,12 +6,12 @@ Batch Criteria
 
 See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
 short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.  The following batch criteria are defined which can be used with any
+you. The following batch criteria are defined which can be used with any
 :term:`Project`.
 
-- :ref:`ln-sierra-platform-ros1gazebo-bc-population-size`
+- :ref:`plugins/platform/ros1robot/bc/population-size`
 
-.. _ln-sierra-platform-ros1gazebo-bc-population-size:
+.. _plugins/platform/ros1robot/bc/population-size:
 
 System Population Size
 ======================
@@ -19,10 +19,7 @@ System Population Size
 Changing the system size to investigate behavior across scales within a static
 arena size (i.e., variable density). Systems are homogeneous.
 
-.. _ln-sierra-platform-ros1gazebo-bc-population-size-cmdline:
-
-Cmdline Syntax
---------------
+.. _plugins/platform/ros1robot/bc/population-size/cmdline:
 
 ``population_size.{model}{N}[.C{cardinality}]``
 

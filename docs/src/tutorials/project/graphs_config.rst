@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-project-graphs-config:
+.. _tutorials/project/graphs-config:
 
 ===================
 Graph Configuration
@@ -32,7 +32,7 @@ Add a root level dictionary to one of the following YAML configuration files:
   data across all runs within a single experiment (1 graph per experiment), *OR*
   created from each experimental run (multiple graphs per experiment). The
   former is generally used to generate graph deliverables, and the latter used
-  as part of imagizing/generating videos; see :ref:`ln-sierra-usage-rendering`
+  as part of imagizing/generating videos; see :ref:`usage/rendering`
   for more details.
 
 - ``<project>/config/inter-graphs-line.yaml`` for inter-experiment line
@@ -222,4 +222,4 @@ If you added a new :term:`Graph Category`, it will not automatically be used to
 generate graphs for existing or new controllers. You will need to modify the
 ``<project>/config/controllers.yaml`` file to specify which controllers your new
 category of graphs should be generated for. See
-:ref:`ln-sierra-tutorials-project-main-config` for details.
+:ref:`tutorials/project/main-config` for details.

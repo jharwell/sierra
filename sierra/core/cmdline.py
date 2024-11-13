@@ -178,26 +178,26 @@ class BootstrapCmdline(BaseCmdline):
 
                                - ``hpc.local`` - This directs SIERRA to run
                                  experiments on the local machine. See
-                                 :ref:`ln-sierra-hpc-plugins-local` for a detailed
+                                 :ref:`plugins/hpc/local` for a detailed
                                  description.
 
                                - ``hpc.pbs`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by TORQUE-PBS. See :ref:`ln-sierra-hpc-plugins-pbs`
+                                 by TORQUE-PBS. See :ref:`plugins/hpc/pbs`
                                  for a detailed description.
 
                                - ``hpc.slurm`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
                                  by SLURM. See
-                                 :ref:`ln-sierra-hpc-plugins-slurm` for a
+                                 :ref:`plugins/hpc/slurm` for a
                                  detailed description.
 
                                - ``hpc.adhoc`` - This will direct SIERRA to run
                                  experiments on an ad-hoc network of
                                  computers. See
-                                 :ref:`ln-sierra-hpc-plugins-adhoc` for a
+                                 :ref:`hpc/plugins/adhoc` for a
                                  detailed description.
 
                                - ``robot.turtlebot3`` - This will direct SIERRA
@@ -219,26 +219,6 @@ class CoreCmdline(BaseCmdline):
                  stages: tp.List[int]) -> None:
         self.scaffold_cli(parents)
         self.init_cli(stages)
-
-    def init_cli(self, stages: tp.List[int]) -> None:
-        """Define cmdline arguments for stages 1-5."""
-        if -1 in stages:
-            self.init_multistage()
-
-        if 1 in stages:
-            self.init_stage1()
-
-        if 2 in stages:
-            self.init_stage2()
-
-        if 3 in stages:
-            self.init_stage3()
-
-        if 4 in stages:
-            self.init_stage4()
-
-        if 5 in stages:
-            self.init_stage5()
 
     def scaffold_cli(self,
                      parents: tp.Optional[tp.List[ArgumentParser]]) -> None:
@@ -265,6 +245,88 @@ class CoreCmdline(BaseCmdline):
             'Stage4: General options for generating graphs')
         self.stage5 = self.parser.add_argument_group(
             'Stage5: General options for controller comparison')
+        self.shortforms = self.parser.add_argument_group(
+            title='Shortform aliases',
+            description="""
+                        Most cmdline options to SIERRA are longform (i.e.,
+                        ``--option``), but some families of options have
+                        shortforms (i.e., ``-o`` for ``--option``) as
+                        well. Shortform arguments behave the same as their
+                        longform counterparts.
+                        """)
+
+    def init_cli(self, stages: tp.List[int]) -> None:
+        """Define cmdline arguments for stages 1-5."""
+        if -1 in stages:
+            self.init_multistage()
+            self.init_shortforms()
+
+        if 1 in stages:
+            self.init_stage1()
+
+        if 2 in stages:
+            self.init_stage2()
+
+        if 3 in stages:
+            self.init_stage3()
+
+        if 4 in stages:
+            self.init_stage4()
+
+        if 5 in stages:
+            self.init_stage5()
+
+    def init_shortforms(self) -> None:
+        """
+        Define cmdline shortform arguments for all pipeline stages.
+        """
+        self.shortforms.add_argument("-p", action="append", nargs="+",
+                                     help="""
+                                     Alias of ``--plot-``; any number of
+                                     ``--plot-XX`` option can be passed
+                                     with separate ``-p`` arguments .
+                                     If the argument to ``-p`` does not map
+                                     to a valid ``plot-XX`` option it is
+                                     ignored.
+
+                                     .. versionadded:: 1.3.14
+                                     """)
+
+        self.shortforms.add_argument("-e", action="append", nargs="+",
+                                     help="""
+                                     Alias of ``--exp-``; any number of
+                                     ``--exp-XX`` option can be passed
+                                     with separate ``-e`` arguments .
+                                     If the argument to ``-e`` does not map
+                                     to a valid ``exp-XX`` option it is
+                                     ignored.
+
+                                     .. versionadded:: 1.3.14
+                                     """)
+
+        self.shortforms.add_argument("-x", action="append", nargs="+",
+                                     help="""
+                                     Alias of ``--exec-``; any number of
+                                     ``--exec-XX`` option can be passed
+                                     with separate ``-x`` arguments .
+                                     If the argument to ``-x`` does not map
+                                     to a valid ``exec-XX`` option it is
+                                     ignored.
+
+                                     .. versionadded:: 1.3.14
+                                     """)
+
+        self.shortforms.add_argument("-s", action="append", nargs="+",
+                                     help="""
+                                     Alias of ``--skip``; any number of
+                                     ``--skip-XX`` option can be passed
+                                     with separate ``-s`` arguments .
+                                     If the argument to ``-s`` does not map
+                                     to a valid ``skip-XX`` option it is
+                                     ignored.
+
+                                     .. versionadded:: 1.3.14
+                                     """)
 
     def init_multistage(self) -> None:
         """
@@ -280,7 +342,7 @@ class CoreCmdline(BaseCmdline):
                                      content of the file can be any valid XML,
                                      with the exception of the SIERRA
                                      requirements detailed in
-                                     :ref:`ln-sierra-tutorials-project-template-input-file`.
+                                     :ref:`tutorials/project/template-input-file`.
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))
 
@@ -414,7 +476,7 @@ class CoreCmdline(BaseCmdline):
                                     selected ``--platform`` does not support
                                     visual capture, then this option has no
                                     effect. See
-                                    :ref:`ln-sierra-usage-rendering-platform`
+                                    :ref:`usage/rendering/platform`
                                     for full details.
 
                                     """ + self.stage_usage_doc([1, 4]),
@@ -532,7 +594,7 @@ class CoreCmdline(BaseCmdline):
                                      For example, in a bivariate batch criteria
                                      composed of
 
-                                    - :ref:`ln-sierra-platform-argos-bc-population-size`
+                                    - :ref:`plugins/platform/argos/bc/population-size`
                                       on the X axis (rows)
 
                                     - Another batch criteria which does not
@@ -904,7 +966,7 @@ class CoreCmdline(BaseCmdline):
                                Enable generation of image files from CSV files
                                captured during stage 2 and averaged during stage
                                3 for each experiment. See
-                               :ref:`ln-sierra-usage-rendering-project` for
+                               :ref:`usage/rendering/project` for
                                details and restrictions.
 
                                """ + self.stage_usage_doc([3, 4]),
@@ -916,7 +978,7 @@ class CoreCmdline(BaseCmdline):
                                Enable generation of videos from imagized CSV
                                files created as a result of
                                ``--project-imagizing``. See
-                               :ref:`ln-sierra-usage-rendering-project` for
+                               :ref:`usage/rendering/project` for
                                details.
 
                                """ + self.stage_usage_doc([4]),
@@ -929,7 +991,7 @@ class CoreCmdline(BaseCmdline):
                                graphs, such as heatmaps. Bivariate batch
                                criteria only.
 
-                               .. versionadded: 1.2.20
+                               .. versionadded:: 1.2.20
 
                                """ + self.stage_usage_doc([4]),
                                action='store_true')

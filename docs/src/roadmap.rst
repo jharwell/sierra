@@ -1,4 +1,4 @@
-.. _ln-sierra-roadmap:
+.. _roadmap:
 
 ===================
 Development Roadmap

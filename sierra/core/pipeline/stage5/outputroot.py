@@ -15,6 +15,12 @@ from sierra.core import types
 
 
 class PathSet:
+    """
+    The set of filesystem paths used during stage 5.
+
+    Collected here in the interest of DRY.
+    """
+
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  controllers: tp.List[str],
@@ -50,3 +56,8 @@ class PathSet:
             self.model_root = pathlib.Path(cmdopts['sierra_root'],
                                            cmdopts['project'],
                                            '+'.join(scenarios) + "-sc-models")
+
+
+__api__ = [
+    "PathSet"
+]

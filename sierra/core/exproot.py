@@ -14,6 +14,12 @@ from sierra.core import batchroot
 
 
 class PathSet():
+    """
+    The set of filesystem paths under the per-experiment root that SIERRA uses.
+
+    Collected here in the interest of DRY.
+    """
+
     def __init__(self,
                  batch: batchroot.PathSet,
                  exp_name: str,
@@ -23,7 +29,13 @@ class PathSet():
         self.graph_root = batch.graph_root / exp_name
         self.model_root = batch.model_root / exp_name
         self.stat_root = batch.stat_root / exp_name
+        self.parent = batch.root
 
         if exp0_name:
             self.exp0_output_root = batch.output_root / exp0_name
             self.exp0_stat_root = batch.stat_root / exp0_name
+
+
+__api__ = [
+    "PathSet"
+]

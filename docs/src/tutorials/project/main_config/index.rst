@@ -1,4 +1,4 @@
-.. _ln-sierra-tutorials-project-main-config:
+.. _tutorials/project/main-config:
 
 ==================
 Main Configuration

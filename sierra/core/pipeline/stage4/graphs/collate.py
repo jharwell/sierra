@@ -70,8 +70,8 @@ class UnivarGraphCollator:
     def __call__(self,
                  criteria,
                  target: dict) -> None:
-        self.logger.info("Univariate files from batch in %s for graph '%s'...",
-                         self.pathset.output_root,
+        self.logger.info("Univariate files from batch in <batch_root>/%s for graph '%s'...",
+                         self.pathset.output_root.relative_to(self.pathset.root),
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 

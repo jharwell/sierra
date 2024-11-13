@@ -34,4 +34,4 @@ jobs:
     uses: ./.github/workflows/analyze-nox.yml
     secrets: inherit
     with:
-      os: macos-13
+      os: macos-12
