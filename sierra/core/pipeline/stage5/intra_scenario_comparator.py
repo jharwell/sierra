@@ -89,12 +89,12 @@ class UnivarIntraScenarioComparator:
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
             found = False
-            for l in batch_leaves:
-                if self._leaf_select(l):
+            for leaf2 in batch_leaves:
+                if self._leaf_select(leaf2):
                     self.logger.debug("Generating graph %s from scenario '%s'",
                                       graph,
-                                      l)
-                    leaf = batchroot.ExpRootLeaf.from_name(l)
+                                      leaf2)
+                    leaf = batchroot.ExpRootLeaf.from_name(leaf2)
                     self._compare_in_scenario(cmdopts=cmdopts,
                                               graph=graph,
                                               batch_leaf=leaf,
@@ -300,9 +300,9 @@ class BivarIntraScenarioComparator:
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
             found = False
-            for l in batch_leaves:
-                if self._leaf_select(l):
-                    leaf = batchroot.ExpRootLeaf.from_name(l)
+            for leaf2 in batch_leaves:
+                if self._leaf_select(leaf2):
+                    leaf = batchroot.ExpRootLeaf.from_name(leaf2)
                     self.logger.debug("Generating graph %s from scenario '%s'",
                                       graph,
                                       leaf)

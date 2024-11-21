@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+
+<argos-configuration>
+
+  <framework>
+    <system threads="0" />
+    <experiment length="10000"
+                ticks_per_second="5"
+                random_seed="123" />
+  </framework>
+</argos-configuration>

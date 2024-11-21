@@ -51,6 +51,7 @@ class SIERRA():
         plugin_core_path = [install_root / 'plugins' / 'hpc',
                             install_root / 'plugins' / 'storage',
                             install_root / 'plugins' / 'robot',
+                            install_root / 'plugins' / 'expdef',
                             install_root / 'plugins' / 'platform']
         plugin_search_path = plugin_core_path
         env = os.environ.get('SIERRA_PLUGIN_PATH')
@@ -90,7 +91,7 @@ class SIERRA():
         # Verify storage plugin (declared as part of core cmdline arguments
         # rather than bootstrap, so we have to wait until after all arguments
         # are parsed to verify it)
-        module = manager.get_plugin_module(self.args.storage_medium)
+        module = manager.get_plugin_module(self.args.storage)
         plugin.storage_sanity_checks(module)
 
         # Configure cmdopts for platform + execution environment by modifying

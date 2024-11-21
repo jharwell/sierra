@@ -1,0 +1,50 @@
+{
+    "configuration":
+    {
+	"agents":
+	[
+	    {
+		"id": "0001",
+		"type": "drone",
+		"name": "PewPew",
+		"ppu": 0.55,
+		"components":
+		{
+		    "laser":
+		    [
+			{ "id": "1001", "type": "regular" },
+			{ "id": "1002", "type": "turbo" },
+			{ "id": "1003", "type": "ultra" },
+			{ "id": "1004", "type": "death" }
+		    ]
+		},
+		"donutcanon":
+		[
+		    { "id": "5001", "type": "none" },
+		    { "id": "5002", "type": "glazed" },
+		    { "id": "5005", "type": "sugar" },
+		    { "id": "5007", "type": "powdered sugar" },
+		    { "id": "5006", "type": "chocolate with sprinkles" },
+		    { "id": "5003", "type": "chocolate" },
+		    { "id": "5004", "type": "maple" }
+		]
+	    },
+	    {
+		"id": "0002",
+		"type": "drone",
+		"name": "PowPow",
+		"ppu": 0.55,
+		"components":
+		{
+		    "laser":
+		    [
+			{ "id": "1001", "type": "regular" },
+			{ "id": "1002", "type": "turbo" },
+			{ "id": "1003", "type": "ultra" },
+			{ "id": "1004", "type": "death" }
+		    ]
+		}
+            }
+	]
+    }
+}

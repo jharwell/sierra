@@ -4,7 +4,7 @@
 """Experiment generation classes.
 
 Experiment generation modifies the
-:class:`~sierra.core.experiment.definition.XMLExpDef` object built from
+:class:`~sierra.core.experiment.definition.BaseExpDef` object built from
 the specified batch criteria as follows:
 
 - Platform-specific modifications common to all batch experiments
@@ -56,7 +56,7 @@ class BatchExpDefGenerator:
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: types.Cmdopts) -> None:
-        self.batch_config_template = pathlib.Path(cmdopts['template_input_file'])
+        self.batch_config_template = pathlib.Path(cmdopts['expdef_template'])
 
         assert self.batch_config_template.is_file(), \
             "'{0}' is not a valid file".format(self.batch_config_template)
@@ -72,7 +72,7 @@ class BatchExpDefGenerator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def generate_defs(self) -> tp.List[definition.XMLExpDef]:
+    def generate_defs(self) -> tp.List[definition.BaseExpDef]:
         """Generate and return the batch experiment definition.
 
         Returns:
@@ -112,7 +112,7 @@ class BatchExpDefGenerator:
         config_root = pathlib.Path(self.cmdopts['project_config_root'])
         scenario = gf.scenario_generator_create(controller=self.controller_name,
                                                 exp_spec=exp_spec,
-                                                template_input_file=template_fpath,
+                                                expdef_template=template_fpath,
                                                 cmdopts=self.cmdopts)
 
         controller = gf.controller_generator_create(controller=self.controller_name,

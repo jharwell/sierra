@@ -101,10 +101,10 @@ class ExpCreator:
         self.commands_fpath = self.exp_input_root / \
             config.kGNUParallel['cmdfile_stem']
 
-    def from_def(self, exp_def: definition.XMLExpDef):
+    def from_def(self, exp_def: definition.BaseExpDef):
         """Create all experimental runs by writing input files to filesystem.
 
-        The passed :class:`~sierra.core.experiment.definition.XMLExpDef` object
+        The passed :class:`~sierra.core.experiment.definition.BaseExpDef` object
         contains all changes that should be made to all runs in the
         experiment. Additional changes to create a set of unique runs from which
         distributions of system behavior can be meaningfully computed post-hoc
@@ -145,10 +145,10 @@ class ExpCreator:
                 utils.pickle_dump(self.random_seeds, f)
 
     def _create_exp_run(self,
-                        run_exp_def: definition.XMLExpDef,
+                        run_exp_def: definition.BaseExpDef,
                         cmds_generator,
                         run_num: int) -> None:
-        run_output_dir = "{0}_run{1}_output".format(self.template_stem, run_num)
+        run_output_dir = f"{self.template_stem}_run{run_num}_output"
 
         # If the project defined per-run configuration, apply
         # it. Otherwise, just apply the configuration in the SIERRA core.
@@ -213,7 +213,7 @@ class ExpCreator:
     def _get_launch_file_stempath(self, run_num: int) -> pathlib.Path:
         """File is named as ``<template input file stem>_run<run_num>``.
         """
-        leaf = "{0}_run{1}".format(self.template_stem, run_num)
+        leaf = f"{self.template_stem}_run{run_num}"
         return self.exp_input_root / leaf
 
     def _update_cmds_file(self,
@@ -301,7 +301,7 @@ class BatchExpCreator:
                  cmdopts: types.Cmdopts,
                  pathset: batchroot.PathSet) -> None:
 
-        self.batch_config_template = pathlib.Path(cmdopts['template_input_file'])
+        self.batch_config_template = pathlib.Path(cmdopts['expdef_template'])
         self.batch_input_root = pathset.input_root
         self.batch_output_root = pathset.output_root
         self.criteria = criteria
@@ -315,8 +315,10 @@ class BatchExpCreator:
         # Scaffold the batch experiment, creating experiment directories and
         # writing template XML input files for each experiment in the batch with
         # changes from the batch criteria added.
-        exp_def = definition.XMLExpDef(input_fpath=self.batch_config_template,
-                                       write_config=None)
+        module = pm.pipeline.get_plugin_module(self.cmdopts['expdef'])
+
+        exp_def = module.ExpDef(input_fpath=self.batch_config_template,
+                                write_config=None)
 
         self.criteria.scaffold_exps(exp_def, self.cmdopts)
 

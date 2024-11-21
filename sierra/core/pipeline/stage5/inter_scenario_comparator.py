@@ -106,9 +106,9 @@ class UnivarInterScenarioComparator:
         # using data from all scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
-            for l in batch_leaves:
-                if self._leaf_select(l):
-                    leaf = batchroot.ExpRootLeaf.from_name(l)
+            for leaf2 in batch_leaves:
+                if self._leaf_select(leaf2):
+                    leaf = batchroot.ExpRootLeaf.from_name(leaf2)
                     self._compare_across_scenarios(cmdopts=cmdopts,
                                                    graph=graph,
                                                    batch_leaf=leaf,

@@ -21,9 +21,6 @@ setup_env() {
 
     . $SIERRA_ROSBRIDGE_INSTALL_PREFIX/setup.bash
 
-    localsite=$(python3 -m site --user-site)
-    localbase=$(python3 -m site --user-base)
-
     # I should NOT have to do this, but (apparentwly) PATH is reset
     # between jobs in a workflow  on OSX, and doing this the way
     # github says to do doesn't work.
@@ -50,7 +47,7 @@ setup_env() {
        --exp-setup=exp_setup.T5.K5\
        --n-runs=4 \
        -xstrict \
-       --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
+       --expdef-template=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
        --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3 \

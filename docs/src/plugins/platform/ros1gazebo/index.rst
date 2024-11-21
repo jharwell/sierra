@@ -36,7 +36,13 @@ Random Seeding For Reproducibility
 ROS1+Gazebo do not provide a random number generator manager, but SIERRA
 provides random seeds to each :term:`Experimental Run` which :term:`Project`
 code should use to manage random number generation, if needed, to maximize
-reproducability. See :ref:`tutorials/project/template-input-file` and
-:ref:`req/exp` for details on the format of the provided seed. By default SIERRA
-does not overwrite its generated random seeds for each experiment once
-generated; you can override with ``--no-preserve-seeds``.
+reproducability. See:
+
+- :ref:`tutorials/project/expdef-template`
+
+- :ref:`plugins/platform/ros1gazebo`
+
+for details on the format of the provided seed.
+
+By default SIERRA does not overwrite its generated random seeds for each
+experiment once generated; you can override with ``--no-preserve-seeds``.

@@ -20,6 +20,11 @@ runs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
+    - name: Get branch for sample project
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
+
     - name: Clone sample project
       shell: bash
       working-directory: ${{ github.workspace }} # Needed to match with scripts/argos-integration-tests.sh
@@ -32,7 +37,15 @@ runs:
         cd sierra-sample-project
         git pull
         fi
-        git checkout devel
+
+        # The maste rbranch of SIERRA/sample project are always kept in
+        # sync. Otherwise, all flowdown changes for whatever I'm doing in SIERRA
+        # will end up on the devel branch in the sample project repo.
+        if [ ${{ steps.extract_branch.outputs.branch}} == "master" ]; then
+           git checkout master
+        else
+           git checkout devel
+        fi
 
     - name: Get number of CPU cores
       uses: SimenB/github-actions-cpu-cores@v1
@@ -46,10 +59,6 @@ runs:
       with:
         key: ${{ runner.os }}-${{ steps.system-info.outputs.release }}-build-objects
         verbose: 0
-
-    - name: Update apt repos
-      run: |
-        sudo apt-get update
 
     ############################################################################
     # ARGoS setup
@@ -72,6 +81,14 @@ runs:
           # Note that by omitting Xquartz you MUST also omit Qt, otherwise CI
           # fails (I think ARGoS segfaults).
           brew install pkg-config cmake libpng freeimage lua
+
+
+    - name: Re-setup python (OSX)
+      if: runner.os == 'macOS'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     - name: Install and cache ARGoS dependencies (Linux)
       if: runner.os == 'Linux'
@@ -134,6 +151,8 @@ runs:
         # 2023/1/18: You still need install these even after installing stuff
         # with apt AND if the sysem python matches your current python. I don't
         # know why.
+        which python3
+        python3 --version
         python3 -m pip install empy \
                      rospkg \
                      wheel \

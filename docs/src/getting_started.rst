@@ -136,8 +136,8 @@ SIERRA! The steps to do so are:
      - Figure out the directory to load graph and :term:`Experiment` data
        processing configuration from.
 
-   - What template input file to use: ``--template-input-file``. See
-     :ref:`tutorials/project/template-input-file` for requirements.
+   - What template input file to use: ``--expdef-template``. See
+     :ref:`tutorials/project/expdef-template` for requirements.
 
    - How many variations of the main settings for each experiment to run:
      ``--n-runs``.
@@ -167,8 +167,8 @@ SIERRA! The steps to do so are:
    .. IMPORTANT:: Generally speaking, do not try to run SIERRA on HPC
                   environments with a debug build of whatever project you are
                   using. It will work but be obnoxiously/irritatingly
-                  slow. SIERRA is intended for `production` code (well, as close
-                  to production as research code gets) which is compiled with
+                  slow. SIERRA is intended for *production* code (well, as close
+                  to production as R&D code gets) which is compiled with
                   optimizations enabled.
 
 #. Setup the cmdline environment you are going to invoke SIERRA in.
@@ -177,7 +177,7 @@ SIERRA! The steps to do so are:
 
    Different platforms may require additional environments to be set.
 
-#. Learn SIERRA's runtime :ref:`usage/runtime-exp-tree`. When running,
+#. Learn SIERRA's runtime :ref:`usage/runtime-tree`. When running,
    SIERRA will create a (rather) large directory structure for you, so reading
    the docs is worthwhile to understand what the structure means, and to gain
    intuition into where to look for the inputs/outputs of different stages,

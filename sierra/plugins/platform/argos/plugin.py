@@ -21,7 +21,7 @@ import packaging.version
 # Project packages
 from sierra.plugins.platform.argos import cmdline
 from sierra.core import hpc, config, types, utils, platform, batchroot
-from sierra.core.experiment import bindings, definition, xml
+from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -283,8 +283,8 @@ class ExecEnvChecker(platform.ExecEnvChecker):
             assert shutil.which('Xvfb') is not None, "Xvfb not found"
 
 
-def population_size_from_pickle(chgs: tp.Union[xml.AttrChangeSet,
-                                               xml.TagAddList],
+def population_size_from_pickle(chgs: tp.Union[definition.AttrChangeSet,
+                                               definition.ElementAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     for path, attr, value in chgs:
@@ -308,20 +308,20 @@ def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaE
     return dims
 
 
-def robot_type_from_def(exp_def: definition.XMLExpDef) -> tp.Optional[str]:
+def robot_type_from_def(exp_def: definition.BaseExpDef) -> tp.Optional[str]:
     """
     Get the entity type of the robots managed by ARGoS.
 
     .. NOTE:: Assumes homgeneous systems.
     """
     for robot in config.kARGoS['spatial_hash2D']:
-        if exp_def.has_tag(f'.//arena/distribute/entity/{robot}'):
+        if exp_def.has_element(f'.//arena/distribute/entity/{robot}'):
             return robot
 
     return None
 
 
-def population_size_from_def(exp_def: definition.XMLExpDef,
+def population_size_from_def(exp_def: definition.BaseExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return population_size_from_pickle(exp_def.attr_chgs, main_config, cmdopts)

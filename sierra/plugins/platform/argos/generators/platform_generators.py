@@ -18,7 +18,7 @@ import psutil
 
 # Project packages
 from sierra.core.utils import ArenaExtent
-from sierra.core.experiment import spec, definition, xml
+from sierra.core.experiment import spec, definition
 from sierra.core import types, config, utils
 import sierra.core.plugin_manager as pm
 
@@ -49,24 +49,26 @@ class PlatformExpDefGenerator():
         self.controller = controller
         self.spec = exp_spec
         self.cmdopts = cmdopts
-        self.template_input_file = kwargs['template_input_file']
+        self.expdef_template = kwargs['expdef_template']
         self.kwargs = kwargs
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> definition.XMLExpDef:
+    def generate(self) -> definition.BaseExpDef:
         """Generate XML modifications common to all ARGoS experiments.
 
         """
         # ARGoS uses a single input file
-        wr_config = xml.WriterConfig([{'src_parent': None,
-                                       'src_tag': '.',
-                                       'opath_leaf': config.kARGoS['launch_file_ext'],
-                                       'create_tags': None,
-                                       'dest_parent': None,
-                                       'rename_to': None
-                                       }])
-        exp_def = definition.XMLExpDef(input_fpath=self.template_input_file,
-                                       write_config=wr_config)
+        wr_config = definition.WriterConfig([{'src_parent': None,
+                                              'src_tag': '.',
+                                              'opath_leaf': config.kARGoS['launch_file_ext'],
+                                              'new_children': None,
+                                              'new_children_parent': None,
+                                              'rename_to': None
+                                              }])
+        module = pm.pipeline.get_plugin_module(self.cmdopts['expdef'])
+
+        exp_def = module.ExpDef(input_fpath=self.expdef_template,
+                                write_config=wr_config)
 
         # Generate # robots
         self._generate_n_agents(exp_def)
@@ -89,7 +91,7 @@ class PlatformExpDefGenerator():
         return exp_def
 
     def generate_physics(self,
-                         exp_def: definition.XMLExpDef,
+                         exp_def: definition.BaseExpDef,
                          cmdopts: types.Cmdopts,
                          engine_type: str,
                          n_engines: int,
@@ -137,7 +139,7 @@ class PlatformExpDefGenerator():
         utils.apply_to_expdef(pe, exp_def)
 
     def generate_arena_shape(self,
-                             exp_def: definition.XMLExpDef,
+                             exp_def: definition.BaseExpDef,
                              shape: arena_shape.ArenaShape) -> None:
         """
         Generate XML changes for the specified arena shape.
@@ -149,7 +151,7 @@ class PlatformExpDefGenerator():
         _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_n_agents(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_n_agents(self, exp_def: definition.BaseExpDef) -> None:
         """
         Generate XML changes to setup # robots (if specified on cmdline).
 
@@ -168,7 +170,7 @@ class PlatformExpDefGenerator():
         # Write # robots info to file for later retrieval
         chgs[0].pickle(self.spec.exp_def_fpath)
 
-    def _generate_saa(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_saa(self, exp_def: definition.BaseExpDef) -> None:
         """Generate XML changes to disable selected sensors/actuators.
 
         Some sensors and actuators are computationally expensive in large
@@ -182,24 +184,24 @@ class PlatformExpDefGenerator():
                            "(all runs)"))
 
         if not self.cmdopts["with_robot_rab"]:
-            exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
-            exp_def.tag_remove(".//actuators",
-                               "range_and_bearing",
-                               noprint=True)
-            exp_def.tag_remove(".//sensors", "range_and_bearing", noprint=True)
+            exp_def.element_remove(".//media", "range_and_bearing", noprint=True)
+            exp_def.element_remove(".//actuators",
+                                   "range_and_bearing",
+                                   noprint=True)
+            exp_def.element_remove(".//sensors", "range_and_bearing", noprint=True)
 
         if not self.cmdopts["with_robot_leds"]:
-            exp_def.tag_remove(".//actuators", "leds", noprint=True)
-            exp_def.tag_remove(".//sensors",
-                               "colored_blob_omnidirectional_camera",
-                               noprint=True)
-            exp_def.tag_remove(".//media", "led", noprint=True)
+            exp_def.element_remove(".//actuators", "leds", noprint=True)
+            exp_def.element_remove(".//sensors",
+                                   "colored_blob_omnidirectional_camera",
+                                   noprint=True)
+            exp_def.element_remove(".//media", "led", noprint=True)
 
         if not self.cmdopts["with_robot_battery"]:
-            exp_def.tag_remove(".//sensors", "battery", noprint=True)
-            exp_def.tag_remove(".//entity/*", "battery", noprint=True)
+            exp_def.element_remove(".//sensors", "battery", noprint=True)
+            exp_def.element_remove(".//entity/*", "battery", noprint=True)
 
-    def _generate_time(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_time(self, exp_def: definition.BaseExpDef) -> None:
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -213,7 +215,7 @@ class PlatformExpDefGenerator():
         # Write time setup info to file for later retrieval
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_threading(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_threading(self, exp_def: definition.BaseExpDef) -> None:
         """Generate XML changes to set the # of cores for a simulation to use.
 
         This may be less than the total # available on the system, depending on
@@ -258,7 +260,7 @@ class PlatformExpDefGenerator():
                                 "pin_threads_to_cores",
                                 "true")
 
-    def _generate_library(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_library(self, exp_def: definition.BaseExpDef) -> None:
         """Generate XML changes for ARGoS search paths for controller,loop functions.
 
         Set to the name of the plugin passed on the cmdline, unless overriden in
@@ -284,7 +286,7 @@ class PlatformExpDefGenerator():
                             "library",
                             lib_name)
 
-    def _generate_visualization(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_visualization(self, exp_def: definition.BaseExpDef) -> None:
         """Generate XML changes to remove visualization elements from input file.
 
         This depends on cmdline parameters, as visualization definitions should
@@ -299,7 +301,7 @@ class PlatformExpDefGenerator():
 
         if not self.cmdopts["platform_vc"]:
             # ARGoS visualizations
-            exp_def.tag_remove(".", "./visualization", noprint=True)
+            exp_def.element_remove(".", "./visualization", noprint=True)
         else:
             self.logger.debug('Frame grabbing enabled')
             # Rendering must be processing before cameras, because it deletes
@@ -355,14 +357,14 @@ class PlatformExpRunDefUniqueGenerator:
                             "random_seed",
                             str(self.random_seed))
 
-    def generate(self, exp_def: definition.XMLExpDef):
+    def generate(self, exp_def: definition.BaseExpDef):
         # Setup simulation random seed
         self.__generate_random(exp_def)
 
         # Setup simulation visualization output
         self.__generate_visualization(exp_def)
 
-    def __generate_visualization(self, exp_def: definition.XMLExpDef):
+    def __generate_visualization(self, exp_def: definition.BaseExpDef):
         """
         Generate XML changes for setting up rendering for a specific simulation.
         """

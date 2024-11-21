@@ -37,7 +37,7 @@ experiment SIERRA runs is determined by:
 - ``--controller``
 - ``--scenario``
 - ``--sierra-root``
-- ``--template-input-file``
+- ``--expdef-template``
 - ``--batch-criteria``
 
 SIERRA currently supports two types of execution environments: simulators and

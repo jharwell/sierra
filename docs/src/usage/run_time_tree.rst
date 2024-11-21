@@ -1,7 +1,7 @@
-.. _usage/runtime-exp-tree:
+.. _usage/runtime-tree:
 
-SIERRA Runtime Directory Tree
-=============================
+Runtime Directory Tree
+======================
 
 .. IMPORTANT:: SIERRA **NEVER** deletes directories for you.
 
@@ -45,7 +45,7 @@ Basic Structure
        - ``--controller``
        - ``--scenario``
        - ``--sierra-root``
-       - ``--template-input-file``
+       - ``--expdef-template``
        - ``--batch-criteria``
 
        Subsequent experiments using the same values for these cmdline
@@ -135,7 +135,7 @@ following partial SIERRA option set to explain the experiment tree::
   --platform=platform.argos\
   --batch-criteria=population_size.Log8\
   --n-runs=4\
-  --template-input-file=~/my-template.argos\
+  --expdef-template=~/my-template.argos\
   --project=fordyca
 
 
@@ -154,7 +154,7 @@ it runs:
 
       - ``mytemplate-SS.12x6`` - The directory for the :term:`Batch Experiment`
         is named from a combination of the template input file used
-        (``--template-input-file``) and the scenario (``--scenario``).
+        (``--expdef-template``) and the scenario (``--scenario``).
 
         - ``exp-inputs`` - Root directory for :term:`Experimental<Experiment>`
           inputs; each experiment in the batch gets their own directory in here.
@@ -163,7 +163,7 @@ it runs:
             batch (there are 4 such directories in this example), there will be
             an input file for each :term:`Experimental Run` in the experiment,
             as well as a ``commands.txt`` used by GNU parallel to run them all
-            in parallel. The leaf of the ``--template-input-file``, sans
+            in parallel. The leaf of the ``--expdef-template``, sans
             extension, has the experimental run # appended to it
             (e.g. ``my-template_run0.argos`` is the input file for simulation 0).
 

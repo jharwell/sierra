@@ -10,6 +10,7 @@ on:
   push:
     paths:
       - 'sierra/**'
+      - '.github/**'
 
   schedule:
     - cron: '0 0 1 * *'
@@ -83,9 +84,10 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          # ls -al . || true
-          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
-          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
+          ls -al . || true
+          ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
+          ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
+          find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
 
           coverage \
             combine \

@@ -11,7 +11,7 @@ setup_env() {
         export ARGOS_INSTALL_PREFIX=/usr/local
 
     else
-        export SAMPLE_ROOT=$HOME/git/sierra-sample-project
+        export SAMPLE_ROOT=$HOME/git/thesis/sierra-sample-project
         export ARGOS_INSTALL_PREFIX=/$HOME/.local
 
     fi
@@ -25,14 +25,6 @@ setup_env() {
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
     export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
     export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
-
-    localsite=$(python3 -m site --user-site)
-    localbase=$(python3 -m site --user-base)
-
-    # I should NOT have to do this, but (apparentwly) PATH is reset
-    # between jobs in a workflow  on OSX, and doing this the way
-    # github says to do doesn't work.
-    export PATH=$pythonLocation/bin:$PATH
 
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
@@ -59,7 +51,7 @@ setup_env() {
        --exp-setup=exp_setup.T5000.K5 \
        --n-runs=4 \
        -xstrict \
-       --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
+       --expdef-template=$SAMPLE_ROOT/exp/argos/template.argos \
        --scenario=LowBlockCount.10x10x2 \
        -xno-devnull \
        --with-robot-leds \
@@ -75,7 +67,7 @@ setup_env() {
        --exp-setup=exp_setup.T10.K5.N50\
        --n-runs=4 \
        -xstrict\
-       --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
+       --expdef-template=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
        --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3\
@@ -106,7 +98,7 @@ print(path)
 
     which argos3
 
-    ln -sf /usr/local/bin/argos3 /usr/local/bin/argos3-fizzbuzz
+    ln -sfn /usr/local/bin/argos3 /usr/local/bin/argos3-fizzbuzz
 
     SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
     --physics-n-engines=1 \
@@ -151,16 +143,17 @@ cmdline_opts_test() {
 ################################################################################
 # Run Tests
 ################################################################################
-setup_env
-
 # Exit anytime SIERRA crashes or a command fails
 set -e
 
 # Echo cmds to stdout
 set -x
 
+setup_env
+
 func=NONE
 exec_env=''
+
 
 while getopts f:e: arg; do
     case "$arg" in

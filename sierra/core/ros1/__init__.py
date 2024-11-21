@@ -7,4 +7,7 @@
 # 3rd party packages
 
 # Project packages
-from . import cmdline, callbacks, variables, generators
+from . import cmdline as cmdline
+from . import callbacks as callbacks
+from . import variables as variables
+from . import generators as generators

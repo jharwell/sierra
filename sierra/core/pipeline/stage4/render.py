@@ -168,7 +168,7 @@ def from_project_imagized(main_config: types.YAMLDict,
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
     Frames (images) in each subdirectory in the imagize root (see
-    :ref:`usage/runtime-exp-tree`) are stitched together to make a
+    :ref:`usage/runtime-tree`) are stitched together to make a
     video using :program:`ffmpeg`.  Output format controlled via configuration.
 
     Targets to render are found in::

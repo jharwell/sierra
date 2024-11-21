@@ -24,14 +24,6 @@ setup_env() {
     export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
     export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 
-    localsite=$(python3 -m site --user-site)
-    localbase=$(python3 -m site --user-base)
-
-    # I should NOT have to do this, but (apparentwly) PATH is reset
-    # between jobs in a workflow  on OSX, and doing this the way
-    # github says to do doesn't work.
-    export PATH=$pythonLocation/bin:$PATH
-
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
     # measured because the local site-packages is omitted, or if that
@@ -53,7 +45,7 @@ setup_env() {
        -esetup=exp_setup.T500.K5 \
        --n-runs=4 \
        -xstrict \
-       --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
+       --expdef-template=$SAMPLE_ROOT/exp/argos/template.argos \
        --scenario=LowBlockCount.10x10x2 \
        -xno-devnull \
        --with-robot-leds \

@@ -24,7 +24,7 @@ Connect to SIERRA
 =================
 
 #. Put ``$HOME/git/plugins`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then
-   your plugin can be selected as ``--exec-env=storage.infinite``.
+   your plugin can be selected as ``--storage=storage.infinite``.
 
 .. NOTE:: Storage plugin names have the same constraints as python package names
    (e.g., no dots).

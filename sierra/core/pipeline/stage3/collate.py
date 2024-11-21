@@ -85,7 +85,7 @@ class ExpParallelCollator:
                                       processq,
                                       self.main_config,
                                       self.cmdopts['project'],
-                                      self.cmdopts['storage_medium'])) for _ in range(0, n_gatherers)]
+                                      self.cmdopts['storage'])) for _ in range(0, n_gatherers)]
 
         self.logger.debug("Starting %d processors, method=%s",
                           n_processors,
@@ -94,7 +94,7 @@ class ExpParallelCollator:
                                       (processq,
                                        self.main_config,
                                        self.pathset.stat_collate_root,
-                                       self.cmdopts['storage_medium'],
+                                       self.cmdopts['storage'],
                                        self.cmdopts['df_homogenize'])) for _ in range(0, n_processors)]
 
         # To capture the otherwise silent crashes when something goes wrong in
@@ -116,11 +116,11 @@ class ExpParallelCollator:
                        processq: mp.Queue,
                        main_config: types.YAMLDict,
                        project: str,
-                       storage_medium: str) -> None:
+                       storage_plugin_name: str) -> None:
         module = pm.module_load_tiered(project=project,
                                        path='pipeline.stage3.collate')
         gatherer = module.ExpRunCSVGatherer(main_config,
-                                            storage_medium,
+                                            storage_plugin_name,
                                             processq)
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
@@ -136,11 +136,11 @@ class ExpParallelCollator:
     def _process_worker(processq: mp.Queue,
                         main_config: types.YAMLDict,
                         batch_stat_collate_root: pathlib.Path,
-                        storage_medium: str,
+                        storage_plugin_name: str,
                         df_homogenize: str) -> None:
         collator = ExpRunCollator(main_config,
                                   batch_stat_collate_root,
-                                  storage_medium,
+                                  storage_plugin_name,
                                   df_homogenize)
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
@@ -166,7 +166,7 @@ class ExpRunCSVGatherer:
     processq: The multiprocessing-safe producer-consumer queue that the data
     gathered from experimental runs will be placed in for processing.
 
-    storage_medium: The name of the storage medium plugin to use to extract
+    storage: The name of the storage medium plugin to use to extract
     dataframes from when reading run data.
 
     main_config: Parsed dictionary of main YAML configuration.
@@ -179,11 +179,11 @@ class ExpRunCSVGatherer:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 storage_medium: str,
+                 storage_plugin_name: str,
                  processq: mp.Queue) -> None:
         self.processq = processq
 
-        self.storage_medium = storage_medium
+        self.storage = storage_plugin_name
         self.main_config = main_config
 
         self.run_metrics_leaf = main_config['sierra']['run']['run_metrics_leaf']
@@ -235,7 +235,7 @@ class ExpRunCSVGatherer:
         intra_perf_leaf = intra_perf_csv.split('.')[0]
         intra_perf_col = self.main_config['sierra']['perf']['intra_perf_col']
 
-        reader = storage.DataFrameReader(self.storage_medium)
+        reader = storage.DataFrameReader(self.storage)
         perf_path = run_output_root / (intra_perf_leaf +
                                        config.kStorageExt['csv'])
         perf_df = reader(perf_path, index_col=False)
@@ -257,13 +257,13 @@ class ExpRunCollator:
     def __init__(self,
                  main_config: types.YAMLDict,
                  batch_stat_collate_root: pathlib.Path,
-                 storage_medium: str,
+                 storage_plugin_name: str,
                  df_homogenize: str) -> None:
         self.main_config = main_config
         self.batch_stat_collate_root = batch_stat_collate_root
         self.df_homogenize = df_homogenize
 
-        self.storage_medium = storage_medium
+        self.storage = storage_plugin_name
 
         # To support inverted performance measures where smaller is better
         self.invert_perf = main_config['sierra']['perf'].get('inverted', False)
@@ -302,7 +302,7 @@ class ExpRunCollator:
                 collated[(csv_leaf, col)][run] = csv_df
 
         for (csv_leaf, col) in collated:
-            writer = storage.DataFrameWriter(self.storage_medium)
+            writer = storage.DataFrameWriter(self.storage)
             df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
             fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStorageExt['csv']
             opath = self.batch_stat_collate_root / fname

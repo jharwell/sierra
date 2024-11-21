@@ -17,14 +17,6 @@ setup_env() {
 
     export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 
-    localsite=$(python3 -m site --user-site)
-    localbase=$(python3 -m site --user-base)
-
-    # I should NOT have to do this, but (apparentwly) PATH is reset
-    # between jobs in a workflow  on OSX, and doing this the way
-    # github says to do doesn't work.
-    export PATH=$pythonLocation/bin:$PATH
-
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
     # measured because the local site-packages is omitted, or if that
@@ -48,7 +40,7 @@ setup_env() {
        --project=ros1robot_project \
        --exp-setup=exp_setup.T10.K5.N50\
        --n-runs=4 \
-       --template-input-file=$SAMPLE_ROOT/exp/ros1robot/turtlebot3.launch \
+       --expdef-template=$SAMPLE_ROOT/exp/ros1robot/turtlebot3.launch \
        --scenario=OutdoorWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3

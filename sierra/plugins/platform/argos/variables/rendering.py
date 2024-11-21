@@ -14,7 +14,7 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition
 import sierra.core.config
 from sierra.core import types
 
@@ -40,9 +40,9 @@ class ARGoSQTHeadlessRendering():
 
     def __init__(self, setup: exp.ExpSetup) -> None:
         self.setup = setup
-        self.tag_adds = []  # type: tp.List[xml.TagAddList]
+        self.element_adds = []  # type: tp.List[definition.ElementAddList]
 
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         """
         No effect.
 
@@ -50,42 +50,42 @@ class ARGoSQTHeadlessRendering():
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
         """Remove the ``<qt_opengl>`` tag if it exists.
 
         Obviously you *must* call this function BEFORE adding new definitions.
 
         """
-        return [xml.TagRmList(xml.TagRm("./visualization", "qt-opengl"))]
+        return [definition.ElementRmList(definition.ElementRm("./visualization", "qt-opengl"))]
 
-    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
-        if not self.tag_adds:
-            self.tag_adds = [xml.TagAddList(xml.TagAdd('.',
-                                                       'visualization',
-                                                       {},
-                                                       False),
-                                            xml.TagAdd('./visualization',
-                                                       'qt-opengl',
-                                                       {'autoplay': "true"},
-                                                       False
-                                                       ),
-                                            xml.TagAdd('./visualization/qt-opengl',
-                                                       'frame_grabbing',
-                                                       {
-                                                           'directory': 'frames',
-                                                           'base_name': 'frame_',
-                                                           'format': sierra.core.config.kImageExt[1:],
-                                                           'headless_grabbing': "true",
-                                                           'headless_frame_size': "{0}".format(self.kFrameSize),
-                                                           'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
-                                                       },
-                                                       False),
-                                            xml.TagAdd('visualization/qt-opengl',
-                                                       'user_functions',
-                                                       {'label': '__EMPTY__'},
-                                                       False))]
+    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+        if not self.element_adds:
+            self.element_adds = [definition.ElementAddList(definition.ElementAdd('.',
+                                                                                 'visualization',
+                                                                                 {},
+                                                                                 False),
+                                                           definition.ElementAdd('./visualization',
+                                                                                 'qt-opengl',
+                                                                                 {'autoplay': "true"},
+                                                                                 False
+                                                                                 ),
+                                                           definition.ElementAdd('./visualization/qt-opengl',
+                                                                                 'frame_grabbing',
+                                                                                 {
+                                                                                     'directory': 'frames',
+                                                                                     'base_name': 'frame_',
+                                                                                     'format': sierra.core.config.kImageExt[1:],
+                                                                                     'headless_grabbing': "true",
+                                                                                     'headless_frame_size': "{0}".format(self.kFrameSize),
+                                                                                     'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
+                                                                                 },
+                                                                                 False),
+                                                           definition.ElementAdd('visualization/qt-opengl',
+                                                                                 'user_functions',
+                                                                                 {'label': '__EMPTY__'},
+                                                                                 False))]
 
-        return self.tag_adds
+        return self.element_adds
 
     def gen_files(self) -> None:
         pass

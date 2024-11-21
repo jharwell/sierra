@@ -96,6 +96,7 @@ setup(
         "coloredlogs",
         "implements",
         "retry",
+        'jsonpath-ng'
     ],
     # Apt module not included--should be provided by linux OS if SIERRA is
     # installed on linux.
@@ -107,12 +108,14 @@ setup(
             'pydocstyle',
             'xenon',
             'flake8',
+            'ruff',
             'nox',
             'psutil',
             'pytest',
             'pytest-cov',
             'mypy',
             'xmldiff',
+            'jsondiff',
             'coverage',
             'coveralls',
             'mypy-runner',

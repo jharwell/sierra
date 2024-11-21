@@ -18,7 +18,7 @@ needs.
    project/main_config/index.rst
    project/graphs_config.rst
    project/stage5_config.rst
-   project/template_input_file.rst
+   project/expdef-template/index.rst
    project/generators.rst
    project/new_bc.rst
    project/hooks.rst
@@ -42,3 +42,4 @@ needs.
    plugin/platform/index.rst
    plugin/exec_env/index.rst
    plugin/storage/index.rst
+   plugin/expdef/index.rst

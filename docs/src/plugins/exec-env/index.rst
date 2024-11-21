@@ -9,4 +9,4 @@ Execution Environment Plugins
    :caption: Contents:
 
    hpc.rst
-   robot.rst
+   realrobot.rst

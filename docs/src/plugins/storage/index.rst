@@ -14,7 +14,7 @@ formats. Supported formats that come with SIERRA are:
 CSV
 ===
 
-This storage plugin can be selected via ``--storage-medium=storage.csv``.
+This storage plugin can be selected via ``--storage=storage.csv``.
 
 This is the default storage type which SIERRA will use to read
 :term:`Experimental Run` outputs.

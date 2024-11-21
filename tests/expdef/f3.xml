@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+
+<argos-configuration>
+
+  <framework>
+    <system threads="0" />
+    <experiment length="10000"
+                ticks_per_second="5"
+                random_seed="123" />
+  </framework>
+    <controllers>
+
+    <crw_controller id="ffc"
+                               library="libfordyca-argos-footbot">
+      <actuators>
+        <differential_steering implementation="default" />
+        <leds implementation="default" medium="leds" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <differential_steering implementation="default" />
+        <footbot_proximity implementation="default" show_rays="true" />
+        <footbot_light implementation="rot_z_only" show_rays="false" />
+        <footbot_motor_ground implementation="rot_z_only" />
+        <range_and_bearing implementation="medium" medium="rab" />
+        <battery implementation="default" />
+        <positioning implementation="default"/>
+        <colored_blob_omnidirectional_camera implementation="rot_z_only"
+                                             medium="leds" />
+      </sensors>
+      </crw_controller>
+    </controllers>
+
+</argos-configuration>

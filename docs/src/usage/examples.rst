@@ -12,7 +12,7 @@ sample project repository.
 
 In all examples:
 
-- ``$HOME/git/mycode`` contains the ARGoS C++ library
+- ``$HOME/git/mycode`` contains the C++ project code library
 
 - ``$HOME/git/sierra-sample-project/projects`` contains the SIERRA project
   plugin
@@ -44,7 +44,7 @@ experiments.
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=exp/your-experiment.argos \
+   --expdef-template=exp/your-experiment.argos \
    --n-runs=3 \
    --platform=platform.argos\
    --project=argos_project \
@@ -67,7 +67,7 @@ Within each experiment, 3 copies of each simulation will be run (each with
 different random seeds), for a total of 21 ARGoS simulations. On a reasonable
 machine it should take about 10 minutes or so to run. After it finishes, you can
 go to ``$HOME/exp`` and find all the simulation outputs. For an explanation of
-SIERRA's runtime directory tree, see :ref:`usage/runtime-exp-tree`.
+SIERRA's runtime directory tree, see :ref:`usage/runtime-tree`.
 
 HPC Example
 ===========
@@ -97,7 +97,7 @@ options set.
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=exp/your-experiment.argos \
+   --expdef-template=exp/your-experiment.argos \
    --n-runs=96 \
    --platform=platform.argos\
    --project=argos_project \
@@ -139,7 +139,7 @@ videos of simulations.
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=exp/your-experiment.argos \
+   --expdef-template=exp/your-experiment.argos \
    --platform=platform.argos\
    --project=argos_project \
    --controller=foraging.footbot_foraging \
@@ -154,7 +154,7 @@ videos of simulations.
 The runs 3 simulations in parallel with 1 physics engine each, and runs ARGoS
 under :program:`Xvfb` to get it to render headless images. During stage 4, these
 images are stitched together using :program:`ffmpeg` to create videos (see
-:ref:`usage/runtime-exp-tree` for where the videos will appear). No
+:ref:`usage/runtime-tree` for where the videos will appear). No
 graphs are generated during stage 4 in this example.
 
 You may also be interested in the ``--camera-config`` option, which allows you
@@ -173,7 +173,7 @@ TWO variables/things you want to vary jointly)::
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=exp/your-experiment.argos \
+   --expdef-template=exp/your-experiment.argos \
    --platform=platform.argos\
    --project=argos_project \
    --controller=foraging.footbot_foraging \
@@ -282,7 +282,7 @@ plugin::
    --project=ros1gazebo_project \
    --n-runs=4 \
    --exec-env=hpc.local \
-   --template-input-file=exp/your-experiment.launch \
+   --expdef-template=exp/your-experiment.launch \
    --scenario=HouseWorld.10x10x1 \
    --sierra-root=$HOME/exp/test \
    --batch-criteria population_size.Log8 \
@@ -298,7 +298,7 @@ different random seeds), for a total of 16 Gazebo simulations. Each experimental
 run will be will be 10 seconds of simulated time. On a reasonable machine it
 should take about 10 minutes or so to run. After it finishes, you can go to
 ``$HOME/exp`` and find all the simulation outputs. For an explanation of
-SIERRA's runtime directory tree, see :ref:`usage/runtime-exp-tree`.
+SIERRA's runtime directory tree, see :ref:`usage/runtime-tree`.
 
 HPC Example
 ===========
@@ -327,7 +327,7 @@ options set.
    --project=ros1gazebo_project \
    --n-runs=96 \
    --exec-env=hpc.slurm \
-   --template-input-file=exp/your-experiment.launch \
+   --expdef-template=exp/your-experiment.launch \
    --scenario=HouseWorld.10x10x1 \
    --sierra-root=$HOME/exp/test \
    --batch-criteria population_size.Log8 \
@@ -354,7 +354,7 @@ with TWO variables/things you want to vary jointly)::
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=exp/your-experiment.argos \
+   --expdef-template=exp/your-experiment.argos \
    --platform=platform.ros1gazebo\
    --project=ros1gazebo_project \
    --controller=turtlebot3_sim.wander \
@@ -390,7 +390,7 @@ plugin::
    --platform=platform.ros1robot \
    --project=ros1robot_project \
    --n-runs=4 \
-   --template-input-file=exp/your-experiment.launch \
+   --expdef-template=exp/your-experiment.launch \
    --scenario=OutdoorWorld.16x16x2 \
    --sierra-root=$HOME/exp/test \
    --batch-criteria population_size.Linear6.C6 \
@@ -400,7 +400,7 @@ plugin::
    --exec-env=robot.turtlebot3 \
    --nodefile=turtlebots.txt
    --exec-inter-run-pause=60 \
-   --no-master-node \
+   --no-master-node
 
 This will run a batch of 4 experiments using a correlated random walk controller
 (CRW) on the turtlebot3. Population size will be varied from 1,2,3,4,5,6. Within
@@ -414,4 +414,4 @@ could also omit ``--nodefile`` and set :envvar:`SIERRA_NODEFILE` instead.
 For these experiments, no master node is needed, so it is disabled. After all
 runs have completed and SIERRA finishes stages 3 and 4, you can go to
 ``$HOME/exp`` and find all the simulation outputs. For an explanation of
-SIERRA's runtime directory tree, see :ref:`usage/runtime-exp-tree`.
+SIERRA's runtime directory tree, see :ref:`usage/runtime-tree`.

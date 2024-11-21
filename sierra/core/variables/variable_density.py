@@ -14,7 +14,7 @@ import pathlib
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
 from sierra.core import types
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition  # noqa: F401
 
 
 class VariableDensity(UnivarBatchCriteria):
@@ -44,7 +44,7 @@ class VariableDensity(UnivarBatchCriteria):
             self, cli_arg, main_config, batch_input_root)
         self.densities = densities
         self.extent = extent
-        self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
+        self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
 
 class Parser():

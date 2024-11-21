@@ -9,6 +9,6 @@
 # 3rd party packages
 
 # Project packages
-from . import inter
-from . import intra
-from . import collate
+from . import inter as inter
+from . import intra as intra
+from . import collate as collate

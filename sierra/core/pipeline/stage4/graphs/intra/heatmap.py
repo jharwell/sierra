@@ -27,8 +27,6 @@ def generate(cmdopts: types.Cmdopts,
     """
     large_text = cmdopts['plot_large_text']
 
-    targets = targets
-
     _logger.info("Heatmaps from <batch_root>/%s",
                  pathset.stat_root.relative_to(pathset.parent))
 

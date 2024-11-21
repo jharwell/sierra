@@ -5,8 +5,10 @@ Create A New Batch Criteria
 ===========================
 
 If you have a new experimental variable that you have added to your C++ library,
-**AND** which is exposed via the input ``.xml`` file, then you need to do the
-following to get it to work with SIERRA as a :term:`Batch Criteria`:
+**AND** which is exposed via the input file, then you need to do the
+following to get it to work with SIERRA as a :term:`Batch Criteria`. For the
+purposes of this tutorial, we will assume that the :term:`Platform` you are
+using supports XML.
 
 #. Make your variable (``MyVar`` in this tutorial) inherit from
    :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria` and place
@@ -26,14 +28,14 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
    .. _ln-xpath: https://docs.python.org/2/library/xml.etree.elementtree.html
 
    In order to change attributes, add/remove tags, you will need to understand
-   the XPath syntax for search in XML files; tutorial is `here _ln-xpath`.
+   the XPath syntax for search in XML files.
 
    ``get_attr_changelist()`` - Given whatever parameters that your variable was
    passed during initialization (e.g. the boundaries of a range you want to vary
    it within), produce a list of sets, where each set is all changes that need
    to be made to the ``.xml`` template file in order to set the value of your
    variable to something. Each change is a
-   :class:`~sierra.core.experiment.xml.AttrChange` object, that takes the
+   :class:`~sierra.core.experiment.definition.AttrChange` object, that takes the
    following arguments in its constructor:
 
    #. XPath search path for the **parent** of the attribute that you want to
@@ -48,20 +50,20 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
    tags that need to be removed from the ``.xml`` template file in order to
    set the value of your variable to something.
 
-   Each change is a :class:`~sierra.core.experiment.xml.TagRm` object that
-   takes the following arguments in its constructor:
+   Each change is a :class:`~sierra.core.experiment.definition.ElementRm` object
+   that takes the following arguments in its constructor:
 
    #. XPath search path for the **parent** of the tag that you want to
       remove.
 
    #. Name of the tag you want to remove within the parent element.
 
-   ``gen_tag_addlist()`` - Given whatever parameters that your variable was
+   ``gen_element_addlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
    tags that need to be added to the ``.xml`` template file.
 
-   Each change is a :class:`~sierra.core.experiment.xml.TagAdd` object that
-   takes the following arguments in its constructor:
+   Each change is a :class:`~sierra.core.experiment.definition.ElementAdd`
+   object that takes the following arguments in its constructor:
 
    #. XPath search path for the **parent** of the tag that you want to
       add.

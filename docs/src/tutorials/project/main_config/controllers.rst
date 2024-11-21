@@ -49,12 +49,12 @@ to the ``FizzBuzz`` controller.
         # platform for frame capture/video rendering by specifying the QT
         # visualization functions to use.
         xml:
-          tag_change:
+          element_change:
             - ['.//loop-functions/parent', 'child', 'stepchild']
           attr_change:
             - ['.//loop-functions', 'label', 'my_category_loop_functions']
             - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
-          tag_add:
+          element_add:
             - ...
             - ...
 
@@ -72,7 +72,7 @@ to the ``FizzBuzz`` controller.
               attr_change:
 
                 # The ``__CONTROLLER__`` tag in the
-                # ``--template-input-file`` is REQUIRED to allow SIERRA to
+                # ``--expdef-template`` is REQUIRED to allow SIERRA to
                 # unambiguously set the "library" attribute of the
                 # controller.
                 - ['.//controllers', '__CONTROLLER__', 'FizzBuzz']
@@ -134,11 +134,11 @@ to the ``FizzBuzz`` controller.
         # robot that are not launched by default/by the controller entry
         # point).
         xml:
-          tag_change:
+          element_change:
             - ...
           attr_change:
             - ...
-          tag_add:
+          element_add:
             - ...
 
         # Under ``controllers`` is a list of controllers which can be
@@ -163,7 +163,7 @@ to the ``FizzBuzz`` controller.
         controllers:
           - name: FizzBuzz
             xml:
-              tag_add:
+              element_add:
                 - [".//launch/group/[@ns='__UUID__']", 'param', "{'name': 'topic_name', 'value':'mytopic'}"]
 
 

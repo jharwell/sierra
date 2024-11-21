@@ -1,4 +1,4 @@
-Within this file, you must define the following classes, which must be named
+Within this file, you must define the following functions, which must be named
 **EXACTLY** as specified, otherwise SIERRA will not detect them.
 
 .. code-block:: python

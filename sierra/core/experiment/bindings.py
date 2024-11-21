@@ -274,7 +274,7 @@ class IExpConfigurer(implements.Interface):
 
         Arguments:
 
-            exp_input_root: Absolute path to the input directory for the
+o            exp_input_root: Absolute path to the input directory for the
                             experiment.
         """
         raise NotImplementedError

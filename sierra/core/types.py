@@ -6,7 +6,16 @@
 """
 # Core packages
 import typing as tp
-from types import ModuleType
+import sys
+from types import ModuleType  # noqa: F401
+
+# 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
+# can be replaced unilaterally with tp.TypeAlias.
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
+
 import pathlib
 
 # 3rd party packages
@@ -20,6 +29,17 @@ import pathlib
 Cmdopts = tp.Dict[str, tp.Any]
 YAMLDict = tp.Dict[str, tp.Any]
 SimpleDict = tp.Dict[str, tp.Union[str, int]]
+
+# 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
+# can be replaced with the '|' syntax, which is much nicer. Also the TypeAlias
+# import from extensions won't be needed/will be part of the tying module.
+JSON: TypeAlias = tp.Union[dict[str, "JSON"],
+                           list["JSON"],
+                           str,
+                           int,
+                           float,
+                           bool,
+                           None]
 
 StrDict = tp.Dict[str, str]
 IntDict = tp.Dict[str, int]

@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - 'sierra/**'
+      - '.github/**'
 
   schedule:
     - cron: '0 0 1 * *'
@@ -34,4 +35,4 @@ jobs:
     uses: ./.github/workflows/analyze-nox.yml
     secrets: inherit
     with:
-      os: macos-12
+      os: macos-13

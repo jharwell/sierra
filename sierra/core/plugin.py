@@ -4,7 +4,7 @@
 """Sanity checks for verifying selected plugins.
 
 Checks that selected plugins implement the necessary classes and
- functions. Currently checkes: ``--storage-medium``, ``--exec-env``, and
+ functions. Currently checkes: ``--storage``, ``--exec-env``, and
  ``--platform``.
 
 """
@@ -20,16 +20,16 @@ import logging
 
 def storage_sanity_checks(module) -> None:
     """
-    Check the selected ``--storage-medium`` plugin.
+    Check the selected ``--storage`` plugin.
     """
-    logging.trace("Verifying --storage-medium plugin interface")  # type: ignore
+    logging.trace("Verifying --storage plugin interface")  # type: ignore
 
     functions = ['df_read',
                  'df_write']
     in_module = inspect.getmembers(module, inspect.isfunction)
 
     for f in functions:
-        assert (any(f in name for (name, _) in in_module)),\
+        assert (any(f in name for (name, _) in in_module)), \
             f"Storage medium plugin does not define {f}"
 
 
@@ -79,7 +79,7 @@ def platform_sanity_checks(module) -> None:
     in_module = inspect.getmembers(module, inspect.isclass)
 
     for c in req_classes:
-        assert (any(c in name for (name, _) in in_module)),\
+        assert (any(c in name for (name, _) in in_module)), \
             f"Platform plugin '{module.__name__}' does not define '{c}'"
 
     for f in opt_classes:
@@ -93,7 +93,7 @@ def platform_sanity_checks(module) -> None:
     in_module = inspect.getmembers(module, inspect.isfunction)
 
     for f in req_functions:
-        assert (any(f in name for (name, _) in in_module)),\
+        assert (any(f in name for (name, _) in in_module)), \
             f"Platform plugin '{module.__name__}' does not define '{f}()'"
 
     for f in opt_functions:

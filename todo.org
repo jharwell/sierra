@@ -43,6 +43,7 @@ be implemented in stage 5 as another comparison option.
 
 ** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way
 better type checking
+** TODO [#B] Add .sierrarc to read common cmdline args/envvar settings from
 ** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
 Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 
