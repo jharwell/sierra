@@ -36,15 +36,15 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
         super().__init__(exp_spec, controller, cmdopts, **kwargs)
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> definition.XMLExpDef:
+    def generate(self) -> definition.BaseExpDef:
         exp_def = super().generate()
 
         exp_def.write_config.add({
             'src_parent': ".",
             'src_tag': "master",
             'opath_leaf': "_master" + config.kROS['launch_file_ext'],
-            'create_tags': None,
-            'dest_parent': None,
+            'new_children': None,
+            'new_children_parent': None,
             'rename_to': 'launch'
         })
 
@@ -52,8 +52,8 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
             'src_parent': ".",
             'src_tag': "robot",
             'opath_leaf': "_robots" + config.kROS['launch_file_ext'],
-            'create_tags': None,
-            'dest_parent': None,
+            'new_children': None,
+            'new_children_parent': None,
             'rename_to': 'launch'
         })
 
@@ -65,7 +65,7 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
 
         return exp_def
 
-    def _generate_gazebo_core(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_gazebo_core(self, exp_def: definition.BaseExpDef) -> None:
         """
         Generate XML tag changes to setup Gazebo core experiment parameters.
 
@@ -75,46 +75,46 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
         self.logger.debug("Generating Gazebo experiment changes (all runs)")
 
         # Start Gazebo/ROS in debug mode to make post-mortem analysis easier.
-        exp_def.tag_add("./master/include",
-                        "arg",
-                        {
-                            "name": "verbose",
-                            "value": "true"
-                        })
+        exp_def.element_add("./master/include",
+                            "arg",
+                            {
+                                "name": "verbose",
+                                "value": "true"
+                            })
 
         # Terminate Gazebo server whenever the launch script that invoked it
         # exits.
-        exp_def.tag_add("./master/include",
-                        "arg",
-                        {
-                            "name": "server_required",
-                            "value": "true"
-                        })
+        exp_def.element_add("./master/include",
+                            "arg",
+                            {
+                                "name": "server_required",
+                                "value": "true"
+                            })
 
         # Don't record stuff
-        exp_def.tag_remove("./master/include", "arg/[@name='headless']")
-        exp_def.tag_remove("./master/include", "arg/[@name='recording']")
+        exp_def.element_remove("./master/include", "arg/[@name='headless']")
+        exp_def.element_remove("./master/include", "arg/[@name='recording']")
 
         # Don't start paused
-        exp_def.tag_remove("./master/include", "arg/[@name='paused']")
+        exp_def.element_remove("./master/include", "arg/[@name='paused']")
 
         # Don't start gazebo under gdb
-        exp_def.tag_remove("./master/include", "arg/[@name='debug']")
+        exp_def.element_remove("./master/include", "arg/[@name='debug']")
 
-    def _generate_gazebo_vis(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_gazebo_vis(self, exp_def: definition.BaseExpDef) -> None:
         """
         Generate XML changes to configure Gazebo visualizations.
 
         Does not write generated changes to the simulation definition pickle
         file.
         """
-        exp_def.tag_remove_all("./master/include", "arg/[@name='gui']")
-        exp_def.tag_add("./master/include",
-                        "arg",
-                        {
-                            "name": "gui",
-                            "value": "false"
-                        })
+        exp_def.element_remove_all("./master/include", "arg/[@name='gui']")
+        exp_def.element_add("./master/include",
+                            "arg",
+                            {
+                                "name": "gui",
+                                "value": "false"
+                            })
 
 
 class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerator):
@@ -124,7 +124,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
-    def generate(self, exp_def: definition.XMLExpDef):
+    def generate(self, exp_def: definition.BaseExpDef):
         exp_def = super().generate(exp_def)
 
         self.generate_random(exp_def)

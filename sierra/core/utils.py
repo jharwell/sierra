@@ -21,7 +21,7 @@ from retry import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
-from sierra.core.experiment import xml, definition
+from sierra.core.experiment import definition
 from sierra.core import types, config
 from sierra.core import plugin_manager as pm
 
@@ -250,9 +250,9 @@ def bivar_exp_labels_calc(exp_dirs: types.PathList) -> tp.Tuple[tp.List[str],
 
 
 def apply_to_expdef(var,
-                    exp_def: definition.XMLExpDef) -> tp.Tuple[tp.Optional[xml.TagRmList],
-                                                               tp.Optional[xml.TagAddList],
-                                                               tp.Optional[xml.AttrChangeSet]]:
+                    exp_def: definition.BaseExpDef) -> tp.Tuple[tp.Optional[definition.ElementRmList],
+                                                                tp.Optional[definition.ElementAddList],
+                                                                tp.Optional[definition.AttrChangeSet]]:
     """
     Apply a generated XML modifictions to an experiment definition.
 
@@ -262,14 +262,14 @@ def apply_to_expdef(var,
     #. Add new XML tags
     #. Change existing XML attributes
     """
-    rmsl = var.gen_tag_rmlist()  # type: tp.List[xml.TagRmList]
-    addsl = var.gen_tag_addlist()  # type: tp.List[xml.TagAddList]
-    chgsl = var.gen_attr_changelist()  # type: tp.List[xml.AttrChangeSet]
+    rmsl = var.gen_tag_rmlist()  # type: tp.List[definition.ElementRmList]
+    addsl = var.gen_element_addlist()  # type: tp.List[definition.ElementAddList]
+    chgsl = var.gen_attr_changelist()  # type: tp.List[definition.AttrChangeSet]
 
     if rmsl:
         rms = rmsl[0]
         for r in rms:
-            exp_def.tag_remove(r.path, r.tag)
+            exp_def.element_remove(r.path, r.tag)
     else:
         rms = None
 
@@ -277,7 +277,7 @@ def apply_to_expdef(var,
         adds = addsl[0]
         for a in adds:
             assert a.path is not None, "Can't add tag {a.tag} with no parent"
-            exp_def.tag_add(a.path, a.tag, a.attr, a.allow_dup)
+            exp_def.element_add(a.path, a.tag, a.attr, a.allow_dup)
     else:
         adds = None
 
@@ -291,8 +291,8 @@ def apply_to_expdef(var,
     return rms, adds, chgs
 
 
-def pickle_modifications(adds: tp.Optional[xml.TagAddList],
-                         chgs: tp.Optional[xml.AttrChangeSet],
+def pickle_modifications(adds: tp.Optional[definition.ElementAddList],
+                         chgs: tp.Optional[definition.AttrChangeSet],
                          path: pathlib.Path) -> None:
     """
     After applying XML modifications, pickle changes for later retrieval.
@@ -313,20 +313,20 @@ def exp_template_path(cmdopts: types.Cmdopts,
      per-run input files.
 
     """
-    template = pathlib.Path(cmdopts['template_input_file'])
+    template = pathlib.Path(cmdopts['expdef_template'])
     return batch_input_root / dirname / template.stem
 
 
 def get_n_agents(main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts,
                  exp_input_root: pathlib.Path,
-                 exp_def: definition.XMLExpDef) -> int:
+                 exp_def: definition.BaseExpDef) -> int:
     """
     Get the # robots used for a specific :term:`Experiment`.
     """
-    module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+    module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
 
-    # Get # robots to send to shell cmds generator. We try:
+    # Get # agent to send to shell cmds generator. We try:
     #
     # 1. Getting it from the current experiment definition, which contains all
     #    changes to the template input file EXCEPT those from batch criteria,
@@ -334,14 +334,17 @@ def get_n_agents(main_config: types.YAMLDict,
     #
     # 2. Getting it from the pickled experiment definition (i.e., from the
     #    batch criteria which was used for this experiment).
-    n_agents = module.population_size_from_def(exp_def,
-                                               main_config,
-                                               cmdopts)
+    n_agents = module1.population_size_from_def(exp_def,
+                                                main_config,
+                                                cmdopts)
+
+    module2 = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+
     if n_agents <= 0:
-        pkl_def = definition.unpickle(exp_input_root / config.kPickleLeaf)
-        n_agents = module.population_size_from_pickle(pkl_def,
-                                                      main_config,
-                                                      cmdopts)
+        pkl_def = module2.unpickle(exp_input_root / config.kPickleLeaf)
+        n_agents = module1.population_size_from_pickle(pkl_def,
+                                                       main_config,
+                                                       cmdopts)
 
     assert n_agents > 0, "n_agents must be > 0"
 

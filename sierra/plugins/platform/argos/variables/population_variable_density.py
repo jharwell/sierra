@@ -12,17 +12,17 @@ documentation.
 # Core packages
 import typing as tp
 import logging
-import numpy as np
 import pathlib
 
 # 3rd party packages
 import implements
+import numpy as np
 
 # Project packages
 from sierra.core.variables import variable_density as vd
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition
 from sierra.core import types, utils
 
 
@@ -41,7 +41,7 @@ class PopulationVariableDensity(vd.VariableDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         """Generate XML modifications to achieve the desired population densities.
 
         Robots are approximated as point masses.
@@ -58,9 +58,9 @@ class PopulationVariableDensity(vd.VariableDensity):
                     calculated as 0 for area=%d,density=%s",
                                         self.extent.area(),
                                         density)
-                changeset = xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity",
-                                                             "quantity",
-                                                             str(n_agents)))
+                changeset = definition.AttrChangeSet(definition.AttrChange(".//arena/distribute/entity",
+                                                                           "quantity",
+                                                                           str(n_agents)))
                 self.attr_changes.append(changeset)
                 self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
                                   n_agents,

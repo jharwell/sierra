@@ -13,7 +13,7 @@ import sys
 import datetime
 import logging
 import pathlib
-import typing as tp
+import typing as tp  # noqa: F401
 
 # 3rd party packages
 

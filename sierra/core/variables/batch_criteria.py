@@ -16,7 +16,7 @@ import implements
 
 from sierra.core.variables import base_variable
 from sierra.core import utils
-from sierra.core.experiment import definition, xml
+from sierra.core.experiment import definition
 
 
 import sierra.core.plugin_manager as pm
@@ -224,13 +224,13 @@ class BatchCriteria():
 
     # Stub out IBaseVariable because all concrete batch criteria only implement
     # a subset of them.
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
+    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
         return []
 
     def gen_files(self) -> None:
@@ -293,7 +293,7 @@ class BatchCriteria():
                 exp_defi[1].pickle(pkl_path, delete=False)
 
     def scaffold_exps(self,
-                      batch_def: definition.XMLExpDef,
+                      batch_def: definition.BaseExpDef,
                       cmdopts: types.Cmdopts) -> None:
         """Scaffold a batch experiment.
 
@@ -330,7 +330,7 @@ class BatchCriteria():
             raise RuntimeError("Batch experiment size/# exp dir mismatch")
 
     def _scaffold_expi(self,
-                       expi_def: definition.XMLExpDef,
+                       expi_def: definition.BaseExpDef,
                        modsi,
                        is_compound: bool,
                        i: int,
@@ -350,15 +350,15 @@ class BatchCriteria():
                               exp_dirname)
 
             for mod in modsi:
-                if isinstance(mod, xml.AttrChange):
+                if isinstance(mod, definition.AttrChange):
                     expi_def.attr_change(mod.path, mod.attr, mod.value)
-                elif isinstance(mod, xml.TagAdd):
+                elif isinstance(mod, definition.ElementAdd):
                     assert mod.path is not None, \
                         "Cannot add root {mode.tag} during scaffolding"
-                    expi_def.tag_add(mod.path,
-                                     mod.tag,
-                                     mod.attr,
-                                     mod.allow_dup)
+                    expi_def.element_add(mod.path,
+                                         mod.tag,
+                                         mod.attr,
+                                         mod.allow_dup)
         else:
             self.logger.debug(("Applying %s XML modifications from '%s' for "
                                "exp%s in %s"),
@@ -371,10 +371,10 @@ class BatchCriteria():
             # first, in case some insane person wants to use the second batch
             # criteria to modify something they just added.
             for add in modsi[0]:
-                expi_def.tag_add(add.path,
-                                 add.tag,
-                                 add.attr,
-                                 add.allow_dup)
+                expi_def.element_add(add.path,
+                                     add.tag,
+                                     add.attr,
+                                     add.allow_dup)
             for chg in modsi[1]:
                 expi_def.attr_change(chg.path,
                                      chg.attr,
@@ -382,12 +382,12 @@ class BatchCriteria():
 
         # This will be the "template" input file used to generate the input
         # files for each experimental run in the experiment
-        wr_config = xml.WriterConfig([{'src_parent': None,
-                                       'src_tag': '.',
-                                       'opath_leaf': None,
-                                       'create_tags': None,
-                                       'dest_parent': None
-                                       }])
+        wr_config = definition.WriterConfig([{'src_parent': None,
+                                              'src_tag': '.',
+                                              'opath_leaf': None,
+                                              'new_children': None,
+                                              'new_children_parent': None
+                                              }])
         expi_def.write_config_set(wr_config)
         opath = utils.exp_template_path(cmdopts,
                                         self.batch_input_root,
@@ -432,14 +432,15 @@ class UnivarBatchCriteria(BatchCriteria):
         else:
             names = self.gen_exp_names()
 
-        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module2 = pm.pipeline.get_plugin_module(cmdopts['expdef'])
         for d in names:
             path = self.batch_input_root / d / config.kPickleLeaf
-            exp_def = definition.unpickle(path)
+            exp_def = module2.unpickle(path)
 
-            sizes.append(module.population_size_from_pickle(exp_def,
-                                                            self.main_config,
-                                                            cmdopts))
+            sizes.append(module1.population_size_from_pickle(exp_def,
+                                                             self.main_config,
+                                                             cmdopts))
         return sizes
 
 
@@ -476,7 +477,7 @@ class BivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return False
 
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         list1 = self.criteria1.gen_attr_changelist()
         list2 = self.criteria2.gen_attr_changelist()
         ret = []
@@ -494,9 +495,9 @@ class BivarBatchCriteria(BatchCriteria):
 
         return ret
 
-    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
-        list1 = self.criteria1.gen_tag_addlist()
-        list2 = self.criteria2.gen_tag_addlist()
+    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+        list1 = self.criteria1.gen_element_addlist()
+        list2 = self.criteria2.gen_element_addlist()
         ret = []
 
         if list1 and list2:
@@ -512,7 +513,7 @@ class BivarBatchCriteria(BatchCriteria):
 
         return ret
 
-    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
         ret = self.criteria1.gen_tag_rmlist()
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
@@ -548,20 +549,21 @@ class BivarBatchCriteria(BatchCriteria):
                  for row in self.criteria1.gen_exp_names()]
 
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
-        n_adds2 = len(self.criteria2.gen_tag_addlist())
+        n_adds2 = len(self.criteria2.gen_element_addlist())
 
-        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module2 = pm.pipeline.get_plugin_module(cmdopts['expdef'])
 
         for d in names:
             pkl_path = self.batch_input_root / d / config.kPickleLeaf
-            exp_def = definition.unpickle(pkl_path)
+            exp_def = module2.unpickle(pkl_path)
 
             index = names.index(d)
             i = int(index / (n_chgs2 + n_adds2))
             j = index % (n_chgs2 + n_adds2)
-            sizes[i][j] = module.population_size_from_pickle(exp_def,
-                                                             self.main_config,
-                                                             cmdopts)
+            sizes[i][j] = module1.population_size_from_pickle(exp_def,
+                                                              self.main_config,
+                                                              cmdopts)
 
         return sizes
 
@@ -694,7 +696,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def n_agents(self, exp_num: int) -> int:
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
-        n_adds2 = len(self.criteria2.gen_tag_addlist())
+        n_adds2 = len(self.criteria2.gen_element_addlist())
         i = int(exp_num / (n_chgs2 + n_adds2))
         j = exp_num % (n_chgs2 + n_adds2)
 

@@ -61,8 +61,8 @@ class PlatformCmdline(cmd.BaseCmdline):
                                      <Tick>` per second for the experiment
                                      (<experiment> tag), # of datapoints to
                                      capture/capture interval for each
-                                     simulation. See :ref:`vars/expsetup` for
-                                     a full description.
+                                     simulation. See :ref:`usage/vars/expsetup`
+                                     for a full description.
 
                                      """ + self.stage_usage_doc([1]),
                                      default="exp_setup.T{0}.K{1}.N{2}".format(
@@ -219,7 +219,7 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         If passed, do not remove the Range and
                                         Bearing (RAB) sensor, actuator, and
                                         medium XML definitions from
-                                        ``--template-input-file`` before
+                                        ``--expdef-template`` before
                                         generating experimental
                                         inputs. Otherwise, the following XML
                                         tags are removed if they exist:
@@ -237,7 +237,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
                                         If passed, do not remove the robot LED
                                         actuator XML definitions from the
-                                        ``--template-input-file`` before
+                                        ``--expdef-template`` before
                                         generating experimental
                                         inputs. Otherwise, the following XML
                                         tags are removed if they exist:
@@ -255,7 +255,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
                                         If passed, do not remove the robot
                                         battery sensor XML definitions from
-                                        ``--template-input-file`` before
+                                        ``--expdef-template`` before
                                         generating experimental
                                         inputs. Otherwise, the following XML
                                         tags are removed if they exist:

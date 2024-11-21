@@ -13,11 +13,11 @@ import typing as tp
 
 # Project packages
 from sierra.core import types
-from sierra.core.experiment import xml, definition
+from sierra.core.experiment import definition
 
 
-def population_size_from_pickle(adds_def: tp.Union[xml.AttrChangeSet,
-                                                   xml.TagAddList],
+def population_size_from_pickle(adds_def: tp.Union[definition.AttrChangeSet,
+                                                   definition.ElementAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     for add in adds_def:
@@ -27,10 +27,10 @@ def population_size_from_pickle(adds_def: tp.Union[xml.AttrChangeSet,
     return 0
 
 
-def population_size_from_def(exp_def: definition.XMLExpDef,
+def population_size_from_def(exp_def: definition.BaseExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
-    return population_size_from_pickle(exp_def.tag_adds, main_config, cmdopts)
+    return population_size_from_pickle(exp_def.element_adds, main_config, cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict,

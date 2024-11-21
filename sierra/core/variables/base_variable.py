@@ -9,7 +9,7 @@ import typing as tp
 import implements
 
 # Project packages
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition
 
 
 class IBaseVariable(implements.Interface):
@@ -17,7 +17,7 @@ class IBaseVariable(implements.Interface):
 
     """
 
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         """Generate XML attributes to change in a batch experiment definition.
 
         Modifications are sets, one per experiment in the batch, because the
@@ -26,7 +26,7 @@ class IBaseVariable(implements.Interface):
         """
         raise NotImplementedError
 
-    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
         """Generate XML tags to remove from the batch experiment definition.
 
         Modifications are lists, one per experiment in the batch, because the
@@ -35,7 +35,7 @@ class IBaseVariable(implements.Interface):
 
         raise NotImplementedError
 
-    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
+    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
         """Generate XML tags to add to the batch experiment definition.
 
         Modifications are lists, one per experiment in the batch, because the

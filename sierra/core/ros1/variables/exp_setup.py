@@ -16,7 +16,7 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition
 from sierra.core import config
 from sierra.core.variables.exp_setup import Parser
 
@@ -51,71 +51,71 @@ class ExpSetup():
         self.barrier_start = barrier_start
         self.robots_need_timekeeper = robots_need_timekeeper
 
-        self.tag_adds = None
+        self.element_adds = None
 
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
-        if not self.tag_adds:
-            adds = xml.TagAddList(
-                xml.TagAdd("./master/group/[@ns='sierra']",
-                           "param",
-                           {
-                               "name": "experiment/length",
-                               "value": str(self.n_secs_per_run),
-                           },
-                           True),
-                xml.TagAdd("./master/group/[@ns='sierra']",
-                           "param",
-                           {
-                               "name": "experiment/ticks_per_sec",
-                               "value": str(self.n_ticks_per_sec),
-                           },
-                           True),
-                xml.TagAdd("./master/group/[@ns='sierra']",
-                           "param",
-                           {
-                               "name": "experiment/barrier_start",
-                               "value": str(self.barrier_start).lower(),
-                           },
-                           True),
-                xml.TagAdd("./master/group/[@ns='sierra']",
-                           "node",
-                           {
-                               "name": "sierra_timekeeper",
-                               "pkg": "sierra_rosbridge",
-                               "type": "sierra_timekeeper.py",
-                               "required": "true",
-                               # Otherwise rospy prints nothing
-                               "output": "screen"
-                           },
-                           True),
+    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+        if not self.element_adds:
+            adds = definition.ElementAddList(
+                definition.ElementAdd("./master/group/[@ns='sierra']",
+                                      "param",
+                                      {
+                                          "name": "experiment/length",
+                                          "value": str(self.n_secs_per_run),
+                                      },
+                                      True),
+                definition.ElementAdd("./master/group/[@ns='sierra']",
+                                      "param",
+                                      {
+                                          "name": "experiment/ticks_per_sec",
+                                          "value": str(self.n_ticks_per_sec),
+                                      },
+                                      True),
+                definition.ElementAdd("./master/group/[@ns='sierra']",
+                                      "param",
+                                      {
+                                          "name": "experiment/barrier_start",
+                                          "value": str(self.barrier_start).lower(),
+                                      },
+                                      True),
+                definition.ElementAdd("./master/group/[@ns='sierra']",
+                                      "node",
+                                      {
+                                          "name": "sierra_timekeeper",
+                                          "pkg": "sierra_rosbridge",
+                                          "type": "sierra_timekeeper.py",
+                                          "required": "true",
+                                          # Otherwise rospy prints nothing
+                                          "output": "screen"
+                                      },
+                                      True),
 
-                xml.TagAdd("./robot/group/[@ns='sierra']",
-                           "param",
-                           {
-                               "name": "experiment/length",
-                               "value": str(self.n_secs_per_run),
-                           },
-                           True),
-                xml.TagAdd("./robot/group/[@ns='sierra']",
-                           "param",
-                           {
-                               "name": "experiment/ticks_per_sec",
-                               "value": str(self.n_ticks_per_sec),
-                           },
-                           True),
-                xml.TagAdd("./robot/group/[@ns='sierra']",
-                           "param",
-                           {
-                               "name": "experiment/barrier_start",
-                               "value": str(self.barrier_start).lower()
-                           },
-                           True)
+                definition.ElementAdd("./robot/group/[@ns='sierra']",
+                                      "param",
+                                      {
+                                          "name": "experiment/length",
+                                          "value": str(self.n_secs_per_run),
+                                      },
+                                      True),
+                definition.ElementAdd("./robot/group/[@ns='sierra']",
+                                      "param",
+                                      {
+                                          "name": "experiment/ticks_per_sec",
+                                          "value": str(self.n_ticks_per_sec),
+                                      },
+                                      True),
+                definition.ElementAdd("./robot/group/[@ns='sierra']",
+                                      "param",
+                                      {
+                                          "name": "experiment/barrier_start",
+                                          "value": str(self.barrier_start).lower()
+                                      },
+                                      True)
             )
             if self.robots_need_timekeeper:
                 # Robots also need the timekeeper when they are real and not
@@ -133,21 +133,21 @@ class ExpSetup():
                 # most 1 dependent node will be active at a given time. Plus,
                 # it's just sloppy to leave that sort of thing hanging around
                 # after a run exits.
-                adds.append(xml.TagAdd("./robot/group/[@ns='sierra']",
-                                       "node",
-                                       {
-                                           "name": "sierra_timekeeper",
-                                           "pkg": "sierra_rosbridge",
-                                           "type": "sierra_timekeeper.py",
-                                           "required": "true",
-                                           # Otherwise rospy prints nothing
-                                           "output": "screen"
-                                       },
-                                       True)
+                adds.append(definition.ElementAdd("./robot/group/[@ns='sierra']",
+                                                  "node",
+                                                  {
+                                                      "name": "sierra_timekeeper",
+                                                      "pkg": "sierra_rosbridge",
+                                                      "type": "sierra_timekeeper.py",
+                                                      "required": "true",
+                                                      # Otherwise rospy prints nothing
+                                                      "output": "screen"
+                                                  },
+                                                  True)
                             )
-            self.tag_adds = adds
+            self.element_adds = adds
 
-        return [self.tag_adds]
+        return [self.element_adds]
 
     def gen_files(self) -> None:
         pass

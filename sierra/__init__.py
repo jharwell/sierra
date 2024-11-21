@@ -7,5 +7,5 @@
 # 3rd party packages
 
 # Project packages
-from . import core
-from . import plugins
+from . import core as core
+from . import plugins as plugins

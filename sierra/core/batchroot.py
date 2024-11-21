@@ -5,7 +5,7 @@
 #
 """Functionality for generating root directory paths for a batch experiment.
 
-See :ref:`usage/runtime-exp-tree` for details about the defined root
+See :ref:`usage/runtime-tree` for details about the defined root
 directories in SIERRA.
 """
 
@@ -126,24 +126,41 @@ class PathSet():
         self.root = root.to_path()
 
     def __str__(self) -> str:
-        return (f"Batch root: {self.root}\n" +
-                f"Input root: <batch root>/{self.input_root.name}\n" +
-                f"Output root: <batch root>/{self.output_root.name}\n" +
-                f"Graph root: <batch root>/{self.graph_root.name}\n" +
-                f"Model root: <batch root>/{self.model_root.name}\n" +
-                f"Statistics root: <batch root>/{self.stat_root.name}\n" +
-                f"Execution statistics root: <batch root>/{self.stat_exec_root.name}\n" +
-                f"Imagizing root: <batch root>/{self.imagize_root.name}\n" +
-                f"Video root: <batch root>/{self.video_root.name}\n" +
-                f"Statistics collate root: <batch root>/{self.stat_collate_root.name}\n" +
-                f"Experiment scratch root: <batch root>/{self.scratch_root.name}")
+        """
+        Print the computed SIERRA root in a GNU ``tree``-like format.
+
+        No recursion.
+        """
+        # pointers:
+        tee = '├── '
+        last = '└── '
+
+        contents = [
+            self.input_root,
+            self.output_root,
+            self.graph_root,
+            self.model_root,
+            self.stat_root,
+            self.stat_exec_root,
+            self.imagize_root,
+            self.video_root,
+            self.stat_collate_root,
+            self.graph_collate_root,
+            self.scratch_root,
+        ]
+        pointers = [tee] * (len(contents) - 1) + [last]
+        dirs = ''
+        for pointer, path in zip(pointers, contents):
+            dirs += f'\n{pointer}{path.name}'
+
+        return str(self.root.resolve()) + dirs
 
 
 def from_cmdline(args: argparse.Namespace) -> PathSet:
     """Generate directory paths directly from cmdline arguments.
 
     """
-    template = pathlib.Path(args.template_input_file)
+    template = pathlib.Path(args.expdef_template)
 
     # Remove all '-' from the template input file stem so we know the only '-'
     # that are in it are ones that we put there.

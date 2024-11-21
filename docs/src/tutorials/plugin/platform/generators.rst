@@ -9,7 +9,7 @@ experiment runs for your platform and per-run changes, respectively.
    class PlatformExpDefGenerator():
        """
        Create an experiment definition from the
-       ``--template-input-file`` and generate XML changes to input files
+       ``--expdef-template`` and generate XML changes to input files
        that are common to all experiments on the platform. All projects
        using this platform should derive from this class for `their`
        project-specific changes for the platform.

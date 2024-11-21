@@ -52,6 +52,10 @@ def lint(session):
                 '--max-average A',
                 '--no-assert sierra')
 
+    session.run("ruff",
+                "check",
+                "sierra")
+
 
 # venv argument needed so the apt module can be found in the nox venv on linux
 @nox.session(python=versions)

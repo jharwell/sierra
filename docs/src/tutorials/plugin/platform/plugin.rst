@@ -70,29 +70,29 @@ will get a runtime error.
      - Yes
 
      - During stage 2, on some platforms (e.g., ROS) you need to be able to
-       extract the # of robots that will be used for a given
+       extract the # of agents that will be used for a given
        :term:`Experiment`/:term:`Experimental Run` in order to correctly
        setup the execution environment. So, given the experimental definition
-       object, extract the # robots that will be used.
+       object, extract the # agents that will be used.
 
 
    * - population_size_from_pickle()
 
      - Yes
 
-     - During stage 5, there is no way for SIERRA to know how many robots
+     - During stage 5, there is no way for SIERRA to know how many agents
        were used in a cross-platform way, because different platforms can
-       write different XML tags capturing the # robots used for a specific
+       write different XML tags capturing the # agents used for a specific
        experiment. So, given an unpickled experiment definition, extract the
-       # robots used.
+       # agents used.
 
 
-   * - robot_prefix_extract()
+   * - agent_prefix_extract()
 
      - No
 
-     - Return the alpha-numeric prefix that will be prepended to each robot's
-       numeric ID to create a UUID for the robot. Not needed by all
+     - Return the alpha-numeric prefix that will be prepended to each agent's
+       numeric ID to create a UUID for the agent. Not needed by all
        platforms; if not needed by your platform, return None.
 
 
@@ -122,7 +122,7 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
    import implements
 
-   from sierra.core.experiment import bindings, xml, definition
+   from sierra.core.experiment import bindings, definition
    from sierra.core.variables import batch_criteria as bc
 
    @implements.implements(bindings.IParsedCmdlineConfigurer)
@@ -176,7 +176,7 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
        """
 
    def population_size_from_pickle(exp_def: tp.Union[xml.AttrChangeSet,
-                                                 xml.TagAddList]) -> int:
+                                                 xml.ElementAddList]) -> int:
        """
        Size can be obtained from added tags or changed attributes; platform
        specific.
@@ -196,7 +196,7 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
      """
 
-   def robot_prefix_extract(main_config: types.YAMLDict,
+   def agent_prefix_extract(main_config: types.YAMLDict,
                             cmdopts: types.Cmdopts) -> str:
        """
 

@@ -24,7 +24,12 @@ Random Seeding For Reproducibility
 ARGoS provides its own random seed mechanism under ``<experiment>`` which SIERRA
 uses to seed each experiment. :term:`Project` code should use this mechanism or
 a similar random seed generator manager seeded by the same value so that
-experiments can be reproduced exactly. By default SIERRA does not overwrite its
+experiments can be reproduced exactly. See:
+
+- :ref:`tutorials/project/expdef-template`
+
+- :ref:`plugins/platform/argos`
+
+By default SIERRA does not overwrite its
 generated random seeds for each experiment once generated; you can override with
-``--no-preserve-seeds``. See :ref:`tutorials/project/template-input-file` and
-:ref:`req/exp` for details on the format of the provided seed.
+``--no-preserve-seeds``.

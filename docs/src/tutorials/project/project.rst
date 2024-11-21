@@ -70,12 +70,12 @@ Creating a New SIERRA Project
      - ``scenario_generator_parser.py`` - Contains the parser for parsing the
        contents of ``--scenario`` into a dictionary which can be used to
        configure experiments. This file is required. See
-       :ref:`tutorials/project/generators-scenario-config` for
+       :ref:`tutorials/project/generators/scenario-config` for
        documentation.
 
      - ``scenario_generators.py`` - Specifies classes and functions to enable
        SIERRA to generate XML file modifications to the
-       ``--template-input-file`` based on what is passed as ``--scenario`` on
+       ``--expdef-template`` based on what is passed as ``--scenario`` on
        the cmdline. This file is required. See
        :ref:`tutorials/project/generators/scenario-config` for documentation.
 
@@ -106,8 +106,8 @@ Creating a New SIERRA Project
    generation during stage 4 is one of the most useful parts of SIERRA, so its
    kind of silly if you don't do this.
 
-#. Setup your ``--template-input-file`` appropriately by following
-   :doc:`template_input_file`.
+#. Setup your ``--expdef-template`` appropriately by following
+   :ref:`tutorials/project/expdef-template`.
 
 Optional Steps
 ==============

@@ -62,21 +62,20 @@ class BaseCmdline:
     def stage_usage_doc(stages: tp.List[int],
                         omitted: str = "If omitted: N/A.") -> str:
         lst = ",".join(map(str, stages))
-        header = "\n.. TIP:: Used by stage {" + \
-            lst + "}; can be omitted otherwise. " + omitted + "\n"
+        header = f"\n.. TIP:: Used by stage {lst}; can be omitted otherwise. {omitted}\n"
         return header
 
     @staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
-        return "\n.. TIP:: Applicable batch criteria:\n\n" + lst + "\n"
+        return f"\n.. TIP:: Applicable batch criteria:\n\n{lst}\n"
 
     @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " +
                           utils.sphinx_ref(graph) + "\n",
                           graphs))
-        return "\n.. TIP:: Applicable graphs:\n\n" + lst + "\n"
+        return f"\n.. TIP:: Applicable graphs:\n\n{lst}\n"
 
 
 class BootstrapCmdline(BaseCmdline):
@@ -178,26 +177,27 @@ class BootstrapCmdline(BaseCmdline):
 
                                - ``hpc.local`` - This directs SIERRA to run
                                  experiments on the local machine. See
-                                 :ref:`plugins/hpc/local` for a detailed
-                                 description.
+                                 :ref:`plugins/exec-env/hpc/local` for a
+                                 detailed description.
 
                                - ``hpc.pbs`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by TORQUE-PBS. See :ref:`plugins/hpc/pbs`
-                                 for a detailed description.
+                                 by TORQUE-PBS. See
+                                 :ref:`plugins/exec-env/hpc/pbs` for a detailed
+                                 description. 
 
                                - ``hpc.slurm`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
                                  by SLURM. See
-                                 :ref:`plugins/hpc/slurm` for a
+                                 :ref:`plugins/exec-env/hpc/slurm` for a
                                  detailed description.
 
                                - ``hpc.adhoc`` - This will direct SIERRA to run
                                  experiments on an ad-hoc network of
                                  computers. See
-                                 :ref:`hpc/plugins/adhoc` for a
+                                 :ref:`plugins/exec-env/hpc/adhoc` for a
                                  detailed description.
 
                                - ``robot.turtlebot3`` - This will direct SIERRA
@@ -332,7 +332,7 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments which are used in multiple pipeline stages.
         """
-        self.multistage.add_argument("--template-input-file",
+        self.multistage.add_argument("--expdef-template",
                                      metavar="filepath",
                                      help="""
 
@@ -342,7 +342,7 @@ class CoreCmdline(BaseCmdline):
                                      content of the file can be any valid XML,
                                      with the exception of the SIERRA
                                      requirements detailed in
-                                     :ref:`tutorials/project/template-input-file`.
+                                     :ref:`tutorials/project/expdef-template`.
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))
 
@@ -660,6 +660,26 @@ class CoreCmdline(BaseCmdline):
                                      self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
+        self.multistage.add_argument("--expdef", choices=['expdef.xml'],
+                                     help="""
+
+                                 Specify the experiment definition format, so
+                                 that SIERRA can select an appropriate plugin to
+                                 read/write files of that format, and manipulate
+                                 in-memory representations to create runnable
+                                 experiments.
+                                 them. Any plugin on :envvar:`SIERRA_PLUGIN_PATH`
+                                 can be used, but the ones that come with SIERRA
+                                 are:
+
+                                 - ``expdef.xml`` - Experimental definitions are
+                                   created from XML files. This causes
+                                   ``--expdef-template`` to be parsed
+                                   as XML.
+
+                                 """ + self.stage_usage_doc([1, 4, 5]),
+                                     default='expdef.xml')
+
     def init_stage1(self) -> None:
         """
         Define cmdline arguments for stage 1.
@@ -737,15 +757,15 @@ class CoreCmdline(BaseCmdline):
                                  action='store_true',
                                  default=False)
 
-        self.stage3.add_argument("--storage-medium", choices=['storage.csv'],
+        self.stage3.add_argument("--storage", choices=['storage.csv'],
                                  help="""
 
                                  Specify the storage medium for
                                  :term:`Experimental Run` outputs, so that
                                  SIERRA can select an appropriate plugin to read
-                                 them. Any plugin under ``plugins/storage`` can
-                                 be used, but the ones that come with SIERRA
-                                 are:
+                                 them. Any plugin on
+                                 :envvar:`SIERRA_PLUGIN_PATH`, but the ones that
+                                 come with SIERRA are:
 
                                  - ``storage.csv`` - Experimental run outputs
                                    are stored in a per-run directory as one or
@@ -1209,8 +1229,8 @@ class CoreCmdlineValidator():
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
             assert args.n_runs is not None, \
                 '--n-runs is required for running stage 1'
-            assert args.template_input_file is not None, \
-                '--template-input-file is required for running stage 1'
+            assert args.expdef_template is not None, \
+                '--expdef-template is required for running stage 1'
             assert args.scenario is not None, \
                 '--scenario is required for running stage 1'
 

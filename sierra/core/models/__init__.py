@@ -6,4 +6,4 @@
 # 3rd party packages
 
 # Project packages
-from . import interface
+from . import interface as interface

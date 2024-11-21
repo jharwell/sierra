@@ -88,7 +88,7 @@ Reworking the SIERRA core to support a set of types of experimental
 definitions which would be implemented as plugins: you would have an
 XMLExpDef, PythonExpDef, etc. The type of experiment definition and
 therefore the type of the template input file could be inferred from
-the contents of ``--template-input-file``, or specified on the
+the contents of ``--expdef-template``, or specified on the
 cmdline.
 
 Pros: SIERRA core would remain relatively easier to understand, and

@@ -9,7 +9,7 @@ Environment Variables
    plugin directory outside the SIERRA source tree must be on
    ``SIERRA_PLUGIN_PATH``. Paths are added to ``PYTHONPATH`` as needed to load
    plugins correctly. For example, if you have a different version of the
-   ``--storage-medium`` plugin you'd like to use, and you have but the directory
+   ``--storage`` plugin you'd like to use, and you have but the directory
    containing the plugin in ``$HOME/plugins``, then you need to add
    ``$HOME/plugins`` to your ``SIERRA_PLUGIN_PATH`` to so that SIERRA will find
    it. This variable is used in stages 1-5.
@@ -105,3 +105,16 @@ Environment Variables
    packages. SIERRA does `not` modify this variable, so it needs to be setup
    properly prior to invoking SIERRA (i.e., sourcing the proper ``setup.bash``
    script).
+
+.. envvar:: ROS_IP
+
+   The IP address of a ROS node. Usually this is computed automatically for you;
+   if things aren't working correctly you may have to explicitly assign this
+   based on whatever the system ROS is running on says is IP address is.
+
+
+.. envvar:: ROS_HOSTNAME
+
+   The resolvable hostname for a ROS node. Unless you have DNS configured within
+   the network that things are running on, best not to rely on this (at least
+   for real robots).

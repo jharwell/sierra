@@ -1,12 +1,19 @@
 .. _support-matrix:
 
-=====================
-SIERRA Support Matrix
-=====================
+================================================
+SIERRA Builtin Plugins And Native Support Matrix
+================================================
+
+This page details SIERRA's builtin plugins, and how they can/can't be used
+together.
+
+
+Platforms
+=========
 
 SIERRA supports multiple :term:`Platforms <Platform>` which researchers can
 write code to target, as shown below.  If your desired platform is not listed,
-see the :ref:`tutorials` for how to add it via a plugin.
+see :ref:`tutorials/plugin/platform` for how to add it.
 
 .. IMPORTANT:: In SIERRA terminology, platform != OS. If a SIERRA platform runs
                on a given OS, then SIERRA supports doing so; if it does not,
@@ -37,10 +44,14 @@ see the :ref:`tutorials` for how to add it via a plugin.
      - Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
        later is required.
 
+Execution Environments
+======================
+
 SIERRA supports multiple HPC environments for execution of experiments in on HPC
-hardware (see :doc:`/src/exec_env/hpc`) and on real robots (see
-:doc:`/src/exec_env/robot`). If your desired execution environment is not
-listed, see the :ref:`tutorials` for how to add it via a plugin.
+hardware (see :ref:`plugins/exec-env/hpc`) and on real hardware such as robots
+(see :ref:`plugins/exec-env/realrobot`). If your desired execution environment
+is not listed, see the :ref:`tutorials/plugin/exec-env` for how to add it via a
+plugin.
 
 .. list-table::
    :header-rows: 1
@@ -71,39 +82,48 @@ listed, see the :ref:`tutorials` for how to add it via a plugin.
 
      - Real turtlebot3 robots
 
+Experiment Definitions
+======================
+
+SIERRA also supports multiple formats for experimental inputs, which are used to
+define experiments (hence the plugin name). If the format for your experimental
+inputs is not listed, see the :ref:`tutorials/plugin/expdef` for how to add it.
+Before looking at the specifics below, it will be helpful to be familiar with
+the abstract terminology SIERRA uses to describe the different components of the
+various markup languages SIERRA supports as inputs, so take a look at
+:ref:`tutorials/project/expdef-template/semantics`.
+
 .. list-table::
    :header-rows: 1
-   :widths: 50,50
+   :widths: 10,90
 
-   * - Platform
+   * - Format
 
      - Description
 
-   * - `ARGoS <https://www.argos-sim.info/index.php>`_
+   * - XML
 
-     - Simulator for fast simulation of large swarms. Requires ARGoS >=
-       3.0.0-beta59.
+     - Experimental inputs are defined using XML. See the section on XML in
+       :ref:`req/expdef` for restrictions on the contents of XML input files.
 
-   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://github.com/gazebosim/gz-sim>`_
+   * - JSON
 
-     - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
-       Kinetic or later.
+     - Experimental inputs are defined using JSON. See the section on JSON in
+       :ref:`req/expdef` for restrictions on the contents of JSON input files.
 
-   * - `ROS1+Robot <https://ros.org>`_
+Experimental Outputs
+====================
 
-     - Using ROS1 with a real robot platform of your choice. ROS1 Kinetic or
-       later is required.
+SIERRA also supports storage formats for experimental outputs. If the format for
+your experimental outputs is not listed, see the :ref:`tutorials/plugin/storage`
+for how to add it.
 
-SIERRA also supports multiple output formats for experimental outputs. If the
-format for your experimental outputs is not listed, see the :ref:`tutorials` for
-how to add it via a plugin. SIERRA currently only supports XML experimental
-inputs.
 
 .. list-table::
    :header-rows: 1
    :widths: 50,50
 
-   * - Experimental Output Format
+   * - Format
 
      - Scope
 
@@ -115,15 +135,35 @@ inputs.
 
      - Stitching images together into videos
 
-SIERRA supports (mostly) mix-and-match between platforms, execution
-environments, experiment input/output formats as shown in its support matrix
-below. This is one of the most powerful features of SIERRA!
+Native Support Matrix
+=====================
+
+SIERRA supports mix-and-match between plugins for platforms, execution
+environments, experiment input/output formats, subject to restrictions within
+the plugins themselves; that is, from SIERRA's point of view, any plugin from a
+given category can be used with any plugin from a different category. In
+practice, selection of a given plugin may impose restrictions on the selection
+of other plugins. For example, if you select JSON as the experiment definition
+format, then you won't functionally be able to use ROS1-based platforms, because
+those platforms require XML as input.
+
+This mix-and-match capability is THE most powerful feature of SIERRA (imo), and
+makes it very easy to run experiments on different hardware, targeting different
+simulators, generating different outputs, etc., all with little to no
+configuration changes by the user.
+
+
+The native support matrix for SIERRA is below; however, it should be *strongly*
+emphasized that this matrix only contains end-to-end selections of plugins. The
+JSON expdef plugin does not have a matching :term:`Platform` that supports it,
+so it doesn't appear here; similarly for some other plugins listed above.
 
 .. list-table::
    :header-rows: 1
    :widths: 25,25,25,25
 
    * - Execution Environment
+
      - Platform
 
      - Experimental Input Format

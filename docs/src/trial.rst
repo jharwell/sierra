@@ -187,7 +187,7 @@ you clone things somewhere else.
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --template-input-file=$HOME/research/exp/argos/template.argos \
+            --expdef-template=$HOME/research/exp/argos/template.argos \
             --n-runs=4 \
             --platform=platform.argos \
             --project=argos_project \
@@ -207,8 +207,8 @@ you clone things somewhere else.
          so to run. After it finishes, you can go to ``$HOME/research/exp`` and
          find all the simulation outputs, including camera ready graphs! For an
          explanation of SIERRA's runtime directory tree, see
-         :ref:`usage/runtime-exp-tree`. You can also run the same experiment
-         again, and it will overwrite the previous one because you passed
+         :ref:`usage/runtime-tree`. You can also run the same experiment again,
+         and it will overwrite the previous one because you passed
          ``--exp-overwrite``.
 
          .. NOTE:: The ``--with-robot-rab`` and ``--with-robot-leds`` arguments
@@ -224,7 +224,7 @@ you clone things somewhere else.
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --template-input-file=$HOME/research/exp/ros1gazebo/turtlebot3_house.launch \
+            --expdef-template=$HOME/research/exp/ros1gazebo/turtlebot3_house.launch \
             --n-runs=4 \
             --platform=platform.ros1gazebo \
             --project=ros1gazebo_project \

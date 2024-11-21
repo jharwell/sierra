@@ -73,11 +73,12 @@ What is SIERRA?
 
 SIERRA is a command line tool and plugin framework for:
 
-- Automating scientific research, providing faculties for seamless experiment
+- Automating R&D, providing faculties for seamless experiment
   generation, execution, and results processing.
 
-- Accelerating research cycles by allowing researchers to focus on the “science”
-  aspects: developing new things and designing experiments to test them.
+- Accelerating R&D cycles by allowing researchers/developers to focus on the
+  “science” aspects: developing new things and designing experiments to test
+  them.
 
 - Improving the reproducibility of scientific research, particularly in AI.
 
@@ -117,135 +118,24 @@ Why SIERRA?
   automatically.
 
 - Its deeply modular architecture makes it easy to customize for the needs
-  of a specific research project.
+  of a specific project.
 
-Not sure if SIERRA makes sense for your research? Consider the following use
-cases:
+Not sure if SIERRA makes sense for your research? Check out some of the
+`use cases<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for
+which SIERRA was designed.
 
-- `Use Case #1: Alice The Robotics Researcher`_
-
-- `Use Case #2: Alice The Contagion Modeler`_
-
-If aspects of either use case sound familiar, then there is a strong chance
-SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
+If aspects of any sound familiar, then there is a strong chance SIERRA could
+help you! SIERRA is well documented--see the `SIERRA docs
 <https://sierra.readthedocs.io/en/master/>`_ to get started.
 
-Use Case #1: Alice The Robotics Researcher
-------------------------------------------
-
-Alice is a researcher at a large university that has developed a new distributed
-task allocation algorithm ``$\alpha$`` for use in a foraging task where
-robots must coordinate to find objects of interest in an unknown environment and
-bring them to a central location. Alice wants to implement her algorithm so she
-can investigate:
-
-- How well it scales with the number of robots, specifically if it remains
-  efficient with up to 1000 robots in several different scenarios.
-
-- How robust it is with respect to sensor and actuator noise.
-
-- How it compares to other similar state of the art algorithms on a foraging
-  task: ``$\beta,\gamma$``.
-
-Alice is faced with the following heterogeneity matrix which she has to deal
-with to answer her research queries, *in addition to the technical challenges of
-the AI elements themselves*:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 25,25,25
-
-   * - Algorithm
-
-     - Contains stochasticity?
-
-     - Outputs data in?
-
-   * - ``$\alpha$``
-
-     - Yes
-
-     - CSV, rosbag
-
-   * - ``$\beta$``
-
-     - Yes
-
-     - CSV, rosbag
-
-   * - ``$\gamma$``
-
-     - No
-
-     - rosbag
-
-Alice is familiar with ROS, and wants to use it with large scale simulated and
-small scale real-robot experiments with TurtleBots. However, for real robots she
-is unsure what data she will ultimately need, and wants to capture all ROS
-messages, to avoid having to redo experiments later.  She has access to a large
-SLURM-managed cluster, and prefers to develop code on her laptop.
-
-Use Case #2: Alice The Contagion Modeler
-----------------------------------------
-
-Alice has teamed with Bob, a biologist, to model the spread of contagion among
-agents in a population, and how that affects their individual and collective
-abilities to do tasks. She believes her ``$\alpha$`` algorithm can be reused
-in this context. However, Bob is not convinced and has selected several
-multi-agent models from recent papers: ``$\delta,\epsilon$``, and wants
-Alice to compare ``$\alpha$`` to them. ``$\delta$`` was originally
-developed in NetLogo, for modeling disease transmission in
-animals. ``$\epsilon$`` was originally developed for ARGoS to model the
-effects of radiation on robots.
-
-Alice is faced with the following heterogeneity matrix which she must deal with
-with to answer her research query, *in addition to the technical challenges of
-the AI elements themselves*:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 25,25,25
-
-   * - Algorithm
-
-     - Can Run On?
-
-     - Input Requirements?
-
-   * - ``$\alpha$``
-
-     - ROS/Gazebo
-
-     - XML
-
-   * - ``$\delta$``
-
-     - NetLogo
-
-     - NetLogo
-
-   * - ``$\epsilon$``
-
-     -  ARGoS
-
-     -  XML
-
-Bob is interested in how the rate of contagion spread varies with agent velocity
-and population size. Bob needs to prepare succinct, comprehensive visual
-representations of the results of this research queries for a a presentation,
-including visual comparisons of the multi-agent model as it runs for each
-algorithm. He will give Alice a range of parameter values to test for each
-algorithm based on his ecological knowledge, and rely on Alice to perform the
-experiments. For this project, Alice does not have access to HPC resources, but
-does have a handful of servers in her lab which she can use.
 
 SIERRA Support Matrix
 =====================
 
 SIERRA supports multiple `platforms
-<https://sierra.readthedocs.io/en/master/src/platform/index.html>`_ which
-researchers can write code to target. In SIERRA terminology, a platform is a
-"thing" (usually a simulator or robot) that you want to write to code to run
+<https://sierra.readthedocs.io/en/master/src/platform/index.html>`_ which you
+can write code to target. In SIERRA terminology, a platform is a "thing"
+(usually a simulator or real hardware) that you want to write to code to run
 on. Note that platform != OS, in SIERRA terminology. If a SIERRA platform runs
 on a given OS, then SIERRA supports doing so; if it does not, then SIERRA does
 not. For example, SIERRA does not support running ARGoS on windows, because
@@ -255,120 +145,21 @@ SIERRA supports multiple execution environments for execution of experiments,
 such as `High Performance Computing (HPC) environments
 <https://sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_ and `real
 robots <https://sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
-Which execution environment experiments targeting a given platform is (somewhat)
-independent of the platform itself (see below).
 
-SIERRA also supports multiple output formats for experimental outputs, as shown
-below. SIERRA currently only supports XML experimental inputs.
+SIERRA also supports multiple formats for experimental inputs and outputs.
 
-SIERRA supports (mostly) mix-and-match between platforms, execution
-environments, experiment input/output formats as shown in its support matrix
-below. This is one of the most powerful features of SIERRA!  If your desired
-platform/execution environment is not listed, see the `plugin tutorials
-<https://sierrap.readthedocs.io/en/master/src/tutorials.html>`_ for how to add
-it via a plugin.
+The set of built-in plugins which come with SIERRA are below. If your desired
+platform/execution environment/etc is not listed, see the `plugin tutorials
+<https://sierra.readthedocs.io/en/master/src/tutorials.html>`_ for how to add
+it via a new plugin. SIERRA supports full mix-and-match between plugins from the
+table above--this is one of the most powerful features of SIERRA!
 
-.. list-table::
-   :header-rows: 1
-   :widths: 25,25,25,25
-
-   * - Execution Environment
-
-     - Platform
-
-     - Experimental Input Format
-
-     - Experimental Output Format
-
-   * - `SLURM <https://slurm.schedmd.com/documentation.html>`_: An HPC cluster
-       managed by the SLURM scheduler.
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - `Torque/MOAB
-       <https://adaptivecomputing.com/cherry-services/torque-resource-manager>`_:
-       An HPC cluster managed by the Torque/MOAB scheduler.
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - ADHOC: A miscellaneous collection of networked HPC compute nodes or
-       random servers; not managed by a scheduler.
-
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - Local: The SIERRA host machine,e.g., a researcher's laptop.
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - ROS1+Turtlebot3: `Turtlebot3
-       <https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
-       robots with ROS1.
-
-     - ROS1+Gazebo, ROS1+robot
-
-     - XML
-
-     - CSV, PNG
-
-For more details about the platforms out experimental output formats, see below.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50,50
-
-   * - Platform
-
-     - Description
-
-   * - `ARGoS <https://www.argos-sim.info/index.php>`_
-
-     - Simulator for fast simulation of large swarms. Requires ARGoS >=
-       3.0.0-beta59.
-
-   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://www.gazebosim.org>`_
-
-     - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
-       Noetic or later.
-
-   * - `ROS1+Robot <https://ros.org>`_
-
-     - Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
-       later is required.
-
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50,50
-
-   * - Experimental Output Format
-
-     - Scope
-
-   * - CSV file
-
-     - Raw experimental outputs, transforming into heatmap images.
-
-   * - PNG file
-
-     - Stitching images together into videos.
-
+While SIERRA itself supports arbitrary sets of plugins, there are necessarily
+restrictions on which plugins can be used together. For example, if you are
+using a platform mapping to a custom in-house simulator which takes JSON as
+input, you can't use the XML plugin for experimental inputs. For more details on
+which sets of plugins are valid which built-in platforms, see the
+`support matrix <https://sierra.readthedocs.io/en/master/src/matrix.html>`_.
 
 Requirements To Use SIERRA
 ==========================
@@ -389,12 +180,12 @@ The basic requirements are:
           SIERRA, please get in touch with me--SIERRA is written in pure
           python and can definitely be made to work on windows.
 
-For more details, including the requirements for researcher code, see the
-`SIERRA requirements
-<https://sierra.readthedocs.io/en/master/src/requirements.html>`_.
+For more details, including the requirements for project code, see the `SIERRA
+requirements <https://sierra.readthedocs.io/en/master/src/requirements.html>`_.
 
 Citing
 ======
+
 If you use SIERRA and have found it helpful, please cite the following paper::
 
   @inproceedings{Harwell2022a-SIERRA,

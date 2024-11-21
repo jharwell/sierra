@@ -48,7 +48,7 @@ setup_env() {
        --project=ros1robot_project \
        --exp-setup=exp_setup.T10.K5.N50\
        --n-runs=4 \
-       --template-input-file=$SAMPLE_ROOT/exp/ros1robot/turtlebot3.launch \
+       --expdef-template=$SAMPLE_ROOT/exp/ros1robot/turtlebot3.launch \
        --scenario=OutdoorWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3

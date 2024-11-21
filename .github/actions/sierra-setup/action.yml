@@ -16,6 +16,8 @@ runs:
     - name: Install python packages (all OSes)
       shell: bash
       run: |
+        python3 --version
+        which python3
         python3 -m pip install wheel
         python3 -m pip install -r docs/requirements.txt
 
@@ -57,8 +59,22 @@ runs:
         max_attempts: 3
         shell: bash
         command: |
+          python3 --version
+          which python3
+
           brew update
           brew install parallel pssh
+
+    # 2024-12-12 [JRH]: We have to do this after installing homebrew packages,
+    # because if any of the packages update/install python, then we start
+    # picking up the system python/homebrew python instead of the one we want
+    # which we setup earlier.
+    - name: Re-setup python (OSX)
+      if: runner.os == 'macOS'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     ############################################################################
     # SIERRA install
@@ -66,7 +82,14 @@ runs:
     - name: Install SIERRA
       shell: bash
       run: |
+        python3 --version
+        which python3
+
         cd docs && make man && cd ..
+
+        # 2024-12-12 [JRH]: This is necessary on OSX until msgspec releases the
+        # necessary package in pypi; not a problem on linux.
+        python3 -m pip install git+https://github.com/jcrist/msgspec.git@main
 
         python3 -m pip install .
         python3 -m pip install .[devel]

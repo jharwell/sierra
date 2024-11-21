@@ -9,8 +9,9 @@ your local machine. If you haven't done that yet--shoo!
 
 This setup applies to the following SIERRA HPC cluster environments:
 
-- :ref:`tutorials/hpc/plugins/pbs`
-- :ref:`tutorial/hpc/plugins/slurm`
+- :ref:`plugins/exec-env/hpc/pbs`
+
+- :ref:`plugins/exec-env/hpc/slurm`
 
 ARGoS Setup on HPC Clusters
 ===========================

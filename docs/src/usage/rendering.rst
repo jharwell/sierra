@@ -53,7 +53,7 @@ Visual capture in :term:`ARGoS` is done via frame capturing while running, and
 then the captured images stitched together into videos during stage 4.
 
 During stage 1 ``--platform-vc`` causes the ARGoS Qt/OpenGL
-``<visualization>`` subtree to be added to the ``--template-input-file`` when
+``<visualization>`` subtree to be added to the ``--expdef-template`` when
 generating experimental inputs; it is removed otherwise. If ``<visualization>``
 already exists, it is removed and re-created. During stage 1 SIERRA assumes
 that:

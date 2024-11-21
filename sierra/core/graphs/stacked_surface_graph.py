@@ -12,7 +12,7 @@ import pathlib
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
 # Project packages
 from sierra.core import config, storage, types
@@ -74,7 +74,7 @@ class StackedSurfaceGraph:
                               StackedSurfaceGraph.kMaxSurfaces)
             return
 
-        assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
+        assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces, \
             f"Too many surfaces to plot: {len(dfs)} > {StackedSurfaceGraph.kMaxSurfaces}"
 
         # Scaffold graph
@@ -154,8 +154,8 @@ class StackedSurfaceGraph:
                   fontsize=self.text_size['legend_label'])
 
     def _plot_labels(self, ax):
-        max_xlen = max([len(str(l)) for l in self.xtick_labels])
-        max_ylen = max([len(str(l)) for l in self.ytick_labels])
+        max_xlen = max([len(str(label)) for label in self.xtick_labels])
+        max_ylen = max([len(str(label)) for label in self.ytick_labels])
         ax.set_xlabel('\n' * max_xlen + self.xlabel,
                       fontsize=self.text_size['xyz_label'])
         ax.set_ylabel('\n' * max_ylen + self.ylabel,

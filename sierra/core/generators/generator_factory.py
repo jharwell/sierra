@@ -17,7 +17,7 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.experiment import spec, xml, definition
+from sierra.core.experiment import spec, definition
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config, utils
 
@@ -47,7 +47,7 @@ class ControllerGenerator():
         self.logger = logging.getLogger(__name__)
         self.spec = exp_spec
 
-    def generate(self, exp_def: definition.XMLExpDef) -> definition.XMLExpDef:
+    def generate(self, exp_def: definition.BaseExpDef) -> definition.BaseExpDef:
         """Generate all modifications to the experiment definition from the controller.
 
         Does not save.
@@ -57,9 +57,9 @@ class ControllerGenerator():
         self._generate_controller(exp_def)
         return exp_def
 
-    def _pp_for_tag_add(self,
-                        add: xml.TagAdd,
-                        robot_id: tp.Optional[int] = None) -> xml.TagAdd:
+    def _pp_for_element_add(self,
+                            add: definition.ElementAdd,
+                            robot_id: tp.Optional[int] = None) -> definition.ElementAdd:
         module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
 
         if '__UUID__' in add.path:
@@ -68,9 +68,9 @@ class ControllerGenerator():
 
         return add
 
-    def _do_tag_add(self,
-                    exp_def: definition.XMLExpDef,
-                    add: xml.TagAdd) -> None:
+    def _do_element_add(self,
+                        exp_def: definition.BaseExpDef,
+                        add: definition.ElementAdd) -> None:
 
         # If the user is applying tags for each robot, then they might be added
         # multiple tags with the same name, but different attributes, so we
@@ -83,7 +83,7 @@ class ControllerGenerator():
             # then this won't work.
             controllers = config.kYAML.controllers
             assert hasattr(self.spec.criteria, 'n_agents'), \
-                (f"When using __UUID__ and tag_add in {controllers}, the batch "
+                (f"When using __UUID__ and element_add in {controllers}, the batch "
                  "criteria must implement bc.IQueryableBatchCriteria")
             n_agents = self.spec.criteria.n_agents(self.spec.exp_num)
 
@@ -92,21 +92,21 @@ class ControllerGenerator():
 
             for robot_id in range(0, n_agents):
                 to_pp = copy.deepcopy(add)
-                pp_add = self._pp_for_tag_add(to_pp, robot_id)
-                exp_def.tag_add(pp_add.path,
-                                pp_add.tag,
-                                pp_add.attr,
-                                True)
+                pp_add = self._pp_for_element_add(to_pp, robot_id)
+                exp_def.element_add(pp_add.path,
+                                    pp_add.tag,
+                                    pp_add.attr,
+                                    True)
         else:
             to_pp = copy.deepcopy(add)
-            pp_add = self._pp_for_tag_add(to_pp)
-            exp_def.tag_add(pp_add.path,
-                            pp_add.tag,
-                            pp_add.attr,
-                            False)
+            pp_add = self._pp_for_element_add(to_pp)
+            exp_def.element_add(pp_add.path,
+                                pp_add.tag,
+                                pp_add.attr,
+                                False)
 
     def _generate_controller_support(self,
-                                     exp_def: definition.XMLExpDef) -> None:
+                                     exp_def: definition.BaseExpDef) -> None:
         # Setup controller support code (if any)
         xml_mods = self.controller_config.get(self.category, {}).get('xml', {})
 
@@ -114,18 +114,18 @@ class ControllerGenerator():
         for t in chgs:
             exp_def.attr_change(t[0], t[1], t[2])
 
-        chgs = xml_mods. get('tag_change', {})
+        chgs = xml_mods. get('element_change', {})
         for t in chgs:
-            exp_def.tag_change(t[0], t[1], t[2])
+            exp_def.element_change(t[0], t[1], t[2])
 
-        adds = xml_mods.get('tag_add', {})
+        adds = xml_mods.get('element_add', {})
         for t in adds:
-            self._do_tag_add(exp_def, xml.TagAdd(t[0],
-                                                 t[1],
-                                                 eval(t[2]),
-                                                 False))
+            self._do_element_add(exp_def, definition.ElementAdd(t[0],
+                                                                t[1],
+                                                                eval(t[2]),
+                                                                False))
 
-    def _generate_controller(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_controller(self, exp_def: definition.BaseExpDef) -> None:
         if self.category not in self.controller_config:
             self.logger.fatal("Controller category '%s' not found in YAML configuration",
                               self.category)
@@ -147,16 +147,16 @@ class ControllerGenerator():
             for t in chgs:
                 exp_def.attr_change(t[0], t[1], t[2])
 
-            chgs = controller.get('xml', {}).get('tag_change', {})
+            chgs = controller.get('xml', {}).get('element_change', {})
             for t in chgs:
-                exp_def.tag_change(t[0], t[1], t[2])
+                exp_def.element_change(t[0], t[1], t[2])
 
-            adds = controller.get('xml', {}).get('tag_add', {})
+            adds = controller.get('xml', {}).get('element_add', {})
             for t in adds:
-                self._do_tag_add(exp_def, xml.TagAdd(t[0],
-                                                     t[1],
-                                                     eval(t[2]),
-                                                     False))
+                self._do_element_add(exp_def, definition.ElementAdd(t[0],
+                                                                    t[1],
+                                                                    eval(t[2]),
+                                                                    False))
 
 
 def joint_generator_create(controller, scenario):

@@ -78,7 +78,7 @@ class PipelineStage1:
         self.creator.create(self.generator)
 
         n_exp_in_batch = len(self.criteria.gen_attr_changelist()) + \
-            len(self.criteria.gen_tag_addlist())
+            len(self.criteria.gen_element_addlist())
         self.logger.info("%d input files generated in %d experiments.",
                          self.cmdopts['n_runs'] * n_exp_in_batch,
                          n_exp_in_batch)

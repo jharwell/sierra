@@ -23,10 +23,11 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    :hidden:
    :caption: Contents:
 
+   src/use-cases.rst
    src/trial.rst
    src/getting_started.rst
 
-   src/requirements.rst
+   src/requirements/index.rst
    src/matrix.rst
 
    src/usage/examples.rst

@@ -15,7 +15,7 @@ from sierra.core.utils import ArenaExtent
 from sierra.core.vector import Vector3D
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition
 
 
 class SimpleBatchScaffoldSpec():
@@ -24,7 +24,7 @@ class SimpleBatchScaffoldSpec():
                  log: bool = False) -> None:
         self.criteria = criteria
         self.chgs = criteria.gen_attr_changelist()
-        self.adds = criteria.gen_tag_addlist()
+        self.adds = criteria.gen_element_addlist()
         self.rms = criteria.gen_tag_rmlist()
         self.logger = logging.getLogger(__name__)
 
@@ -56,8 +56,8 @@ class SimpleBatchScaffoldSpec():
             raise RuntimeError(("This spec can't be used with compound "
                                 "scaffolding"))
 
-    def __iter__(self) -> tp.Iterator[tp.Union[xml.AttrChangeSet,
-                                               xml.TagAddList]]:
+    def __iter__(self) -> tp.Iterator[tp.Union[definition.AttrChangeSet,
+                                               definition.ElementAddList]]:
         return iter(self.mods)
 
     def __len__(self) -> int:
@@ -70,7 +70,7 @@ class CompoundBatchScaffoldSpec():
                  log: bool = False) -> None:
         self.criteria = criteria
         self.chgs = criteria.gen_attr_changelist()
-        self.adds = criteria.gen_tag_addlist()
+        self.adds = criteria.gen_element_addlist()
         self.rms = criteria.gen_tag_rmlist()
         self.logger = logging.getLogger(__name__)
 
@@ -180,7 +180,7 @@ def scaffold_spec_factory(criteria: bc.BatchCriteria,
                           **kwargs) -> tp.Union[SimpleBatchScaffoldSpec,
                                                 CompoundBatchScaffoldSpec]:
     chgs = criteria.gen_attr_changelist()
-    adds = criteria.gen_tag_addlist()
+    adds = criteria.gen_element_addlist()
 
     if chgs and adds:
         logging.debug("Create compound batch experiment scaffolding for '%s'",

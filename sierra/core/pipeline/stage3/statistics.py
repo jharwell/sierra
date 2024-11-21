@@ -60,7 +60,7 @@ class BatchExpCalculator:
                                           self.pathset.output_root,
                                           criteria)
 
-        template_input_leaf = pathlib.Path(self.cmdopts['template_input_file']).stem
+        template_input_leaf = pathlib.Path(self.cmdopts['expdef_template']).stem
 
         avg_opts = {
             'template_input_leaf': template_input_leaf,
@@ -68,7 +68,7 @@ class BatchExpCalculator:
             'dist_stats': self.cmdopts['dist_stats'],
             'project_imagizing': self.cmdopts['project_imagizing'],
             'processing_mem_limit': self.cmdopts['processing_mem_limit'],
-            'storage_medium': self.cmdopts['storage_medium'],
+            'storage': self.cmdopts['storage'],
             'df_homogenize': self.cmdopts['df_homogenize']
         }
 
@@ -297,7 +297,7 @@ class ExpCSVGatherer:
                 item_path = sim_output_root / \
                     (item.item_stem + config.kStorageExt['csv'])
 
-            reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+            reader = storage.DataFrameReader(self.gather_opts['storage'])
             df = reader(item_path, index_col=False)
 
             if df.dtypes.iloc[0] == 'object':
@@ -379,7 +379,7 @@ class ExpCSVGatherer:
 
             # Verify both dataframes have same # columns, and that
             # column sets are identical
-            reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+            reader = storage.DataFrameReader(self.gather_opts['storage'])
             df1 = reader(path1)
             df2 = reader(path2)
 
@@ -467,7 +467,7 @@ class ExpCalculator:
                 opath = opath.with_suffix(ext)
 
             df = utils.df_fill(dfs[ext], self.avg_opts['df_homogenize'])
-            writer = storage.DataFrameWriter(self.avg_opts['storage_medium'])
+            writer = storage.DataFrameWriter(self.avg_opts['storage'])
             writer(df, opath, index=False)
 
 

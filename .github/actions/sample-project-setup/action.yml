@@ -20,6 +20,11 @@ runs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
+    - name: Get branch for sample project
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
+
     - name: Clone sample project
       shell: bash
       working-directory: ${{ github.workspace }} # Needed to match with scripts/argos-integration-tests.sh
@@ -32,7 +37,15 @@ runs:
         cd sierra-sample-project
         git pull
         fi
-        git checkout devel
+
+        # The maste rbranch of SIERRA/sample project are always kept in
+        # sync. Otherwise, all flowdown changes for whatever I'm doing in SIERRA
+        # will end up on the devel branch in the sample project repo.
+        if [ ${{ steps.extract_branch.outputs.branch}} == "master" ]; then
+           git checkout master
+        else
+           git checkout devel
+        fi
 
     - name: Get number of CPU cores
       uses: SimenB/github-actions-cpu-cores@v1

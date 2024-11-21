@@ -104,18 +104,18 @@ def _apt_pkg_checks(dist: str) -> None:
         if pkg not in cache or not cache[pkg].is_installed:
             missing.append(pkg)
 
-    if missing:
-        if required:
-            raise RuntimeError((f"Required .deb packages {missing} missing on "
-                                f"Linux distribution '{dist}'. Install all "
-                                "required packages before running SIERRA! "
-                                "(Did you read the \"Getting Started\" docs?)"))
+        if missing:
+            if required:
+                raise RuntimeError((f"Required .deb packages {missing} missing on "
+                                    f"Linux distribution '{dist}'. Install all "
+                                    "required packages before running SIERRA! "
+                                    "(Did you read the \"Getting Started\" docs?)"))
 
-        logging.debug(("Recommended .deb packages %s missing on Linux "
-                       "distribution '%s'. Some SIERRA functionality will "
-                       "not be available. "),
-                      missing,
-                      dist)
+            logging.debug(("Recommended .deb packages %s missing on Linux "
+                           "distribution '%s'. Some SIERRA functionality will "
+                           "not be available. "),
+                          missing,
+                          dist)
 
 
 def _osx_pkg_checks() -> None:

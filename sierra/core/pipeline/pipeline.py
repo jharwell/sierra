@@ -37,7 +37,7 @@ class Pipeline:
         self.logger = logging.getLogger(__name__)
         self.pathset = pathset
 
-        self.logger.trace("Run-time tree:\n%s", self.pathset)
+        self.logger.trace("Computed run-time tree:\n%s", self.pathset)
 
         assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
             f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
@@ -55,7 +55,7 @@ class Pipeline:
             'pipeline': self.args.pipeline,
             'sierra_root': self.args.sierra_root,
             'scenario': self.args.scenario,
-            'template_input_file': self.args.template_input_file,
+            'expdef_template': self.args.expdef_template,
             'project': self.args.project,
             'exec_env': args.exec_env,
             'platform_vc': self.args.platform_vc,
@@ -75,6 +75,7 @@ class Pipeline:
             'plot_primary_axis': self.args.plot_primary_axis,
             'plot_large_text': self.args.plot_large_text,
             'plot_transpose_graphs': self.args.plot_transpose_graphs,
+            'expdef': self.args.expdef,
 
             # stage 1
             'preserve_seeds': self.args.preserve_seeds,
@@ -87,7 +88,7 @@ class Pipeline:
             'df_homogenize': self.args.df_homogenize,
             'render_cmd_opts': self.args.render_cmd_opts,
             'processing_mem_limit': self.args.processing_mem_limit,
-            'storage_medium': self.args.storage_medium,
+            'storage': self.args.storage,
 
             # stage 4
             'exp_graphs': self.args.exp_graphs,

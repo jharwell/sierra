@@ -11,7 +11,6 @@ import os
 import copy
 import typing as tp
 import logging
-import pathlib
 
 # 3rd party packages
 

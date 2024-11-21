@@ -1,0 +1,34 @@
+{
+    "colors":
+    [
+        {
+	    "color": "red",
+	    "value1": "foo"
+        },
+        {
+	    "color": "green",
+	    "value2": "#0f0"
+        },
+        {
+	    "color": "blue",
+	    "value3": "#00f"
+        },
+        {
+	    "color": "cyan",
+	    "value2": "bar"
+        },
+        {
+	    "color": "magenta",
+	    "value1": "#f0f"
+        },
+        {
+	    "color": "yellow",
+	    "value3": "#ff0"
+        },
+        {
+	    "donut": "cookie",
+	    "value4": "sugar"
+        }
+    ]
+
+}

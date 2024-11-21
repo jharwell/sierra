@@ -14,10 +14,11 @@ import pathlib
 # 3rd party packages
 
 # Project packages
-from sierra.core.experiment import definition, spec, xml
+from sierra.core.experiment import definition, spec
 import sierra.core.utils as scutils
 from sierra.core import types, config
 import sierra.core.ros1.variables.exp_setup as exp
+from sierra.core import plugin_manager as pm
 
 
 class ROSExpDefGenerator():
@@ -50,23 +51,27 @@ class ROSExpDefGenerator():
         self.controller = controller
         self.spec = exp_spec
         self.cmdopts = cmdopts
-        self.template_input_file = kwargs['template_input_file']
+        self.expdef_template = kwargs['expdef_template']
         self.kwargs = kwargs
         self.ros_param_server = False
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> definition.XMLExpDef:
-        exp_def = definition.XMLExpDef(input_fpath=self.template_input_file)
-        wr_config = xml.WriterConfig([])
+    def generate(self) -> definition.BaseExpDef:
+        module = pm.pipeline.get_plugin_module(self.cmdopts['expdef'])
 
-        if exp_def.has_tag('./params'):
+        exp_def = module.ExpDef(input_fpath=self.expdef_template,
+                                write_config=None)
+
+        wr_config = definition.WriterConfig([])
+
+        if exp_def.has_element('./params'):
             self.logger.debug("Using shared XML parameter file")
             wr_config.add({
                 'src_parent': '.',
                 'src_tag': 'params',
                 'opath_leaf': config.kROS['param_file_ext'],
-                'create_tags': None,
-                'dest_parent': None,
+                'new_children': None,
+                'new_children_parent': None,
                 'rename_to': None
             })
 
@@ -76,34 +81,34 @@ class ROSExpDefGenerator():
         exp_def.write_config_set(wr_config)
 
         # Add <master> tag
-        if not exp_def.has_tag("./master"):
-            exp_def.tag_add(".",
-                            "master",
-                            {})
-        if not exp_def.has_tag("./master/group/[@ns='sierra']"):
-            exp_def.tag_add("./master",
-                            "group",
-                            {
-                                'ns': 'sierra'
-                            })
+        if not exp_def.has_element("./master"):
+            exp_def.element_add(".",
+                                "master",
+                                {})
+        if not exp_def.has_element("./master/group/[@ns='sierra']"):
+            exp_def.element_add("./master",
+                                "group",
+                                {
+                                    'ns': 'sierra'
+                                })
         # Add <robot> tag
-        if not exp_def.has_tag("./robot"):
-            exp_def.tag_add(".",
-                            "robot",
-                            {})
-        if not exp_def.has_tag("./robot/group/[@ns='sierra']"):
-            exp_def.tag_add("./robot",
-                            "group",
-                            {
-                                'ns': 'sierra'
-                            })
+        if not exp_def.has_element("./robot"):
+            exp_def.element_add(".",
+                                "robot",
+                                {})
+        if not exp_def.has_element("./robot/group/[@ns='sierra']"):
+            exp_def.element_add("./robot",
+                                "group",
+                                {
+                                    'ns': 'sierra'
+                                })
 
         # Generate core experiment definitions
         self._generate_experiment(exp_def)
 
         return exp_def
 
-    def _generate_experiment(self, exp_def: definition.XMLExpDef) -> None:
+    def _generate_experiment(self, exp_def: definition.BaseExpDef) -> None:
         """
         Generate XML tag changes to setup basic experiment parameters.
 
@@ -150,10 +155,10 @@ class ROSExpRunDefUniqueGenerator:
         self.run_num = run_num
         self.logger = logging.getLogger(__name__)
 
-    def generate(self, exp_def: definition.XMLExpDef):
+    def generate(self, exp_def: definition.BaseExpDef):
         return exp_def
 
-    def generate_random(self, exp_def: definition.XMLExpDef) -> None:
+    def generate_random(self, exp_def: definition.BaseExpDef) -> None:
         """Generate XML changes for random seeding for an experimental run.
 
         """
@@ -161,22 +166,22 @@ class ROSExpRunDefUniqueGenerator:
                           self.run_num)
 
         # Master gets the random seed
-        exp_def.tag_add("./master/group/[@ns='sierra']",
-                        "param",
-                        {
-                            "name": "experiment/random_seed",
-                            "value": str(self.random_seed)
-                        })
+        exp_def.element_add("./master/group/[@ns='sierra']",
+                            "param",
+                            {
+                                "name": "experiment/random_seed",
+                                "value": str(self.random_seed)
+                            })
 
         # Each robot gets the random seed
-        exp_def.tag_add("./robot/group/[@ns='sierra']",
-                        "param",
-                        {
-                            "name": "experiment/random_seed",
-                            "value": str(self.random_seed)
-                        })
+        exp_def.element_add("./robot/group/[@ns='sierra']",
+                            "param",
+                            {
+                                "name": "experiment/random_seed",
+                                "value": str(self.random_seed)
+                            })
 
-    def generate_paramfile(self, exp_def: definition.XMLExpDef) -> None:
+    def generate_paramfile(self, exp_def: definition.BaseExpDef) -> None:
         """Generate XML changes for the parameter file for an experimental run.
 
         """
@@ -186,26 +191,26 @@ class ROSExpRunDefUniqueGenerator:
         param_file = self.launch_stem_path.with_suffix(config.kROS['param_file_ext'])
 
         # Master node gets a copy of the parameter file
-        exp_def.tag_add("./master/group/[@ns='sierra']",
-                        "param",
-                        {
-                            "name": "experiment/param_file",
-                            "value": str(param_file)
-                        })
+        exp_def.element_add("./master/group/[@ns='sierra']",
+                            "param",
+                            {
+                                "name": "experiment/param_file",
+                                "value": str(param_file)
+                            })
 
         # Each robot gets a copy of the parameter file
-        if not exp_def.has_tag("./robot/group/[@ns='sierra']"):
-            exp_def.tag_add("./robot",
-                            "group",
+        if not exp_def.has_element("./robot/group/[@ns='sierra']"):
+            exp_def.element_add("./robot",
+                                "group",
+                                {
+                                    "ns": "sierra",
+                                })
+        exp_def.element_add("./robot/group/[@ns='sierra']",
+                            "param",
                             {
-                                "ns": "sierra",
+                                "name": "experiment/param_file",
+                                "value": str(param_file)
                             })
-        exp_def.tag_add("./robot/group/[@ns='sierra']",
-                        "param",
-                        {
-                            "name": "experiment/param_file",
-                            "value": str(param_file)
-                        })
 
 
 __api__ = [

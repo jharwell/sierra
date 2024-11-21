@@ -10,6 +10,7 @@ on:
   push:
     paths:
       - 'sierra/**'
+      - '.github/**'
 
   schedule:
     - cron: '0 0 1 * *'

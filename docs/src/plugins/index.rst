@@ -9,5 +9,5 @@ SIERRA Plugins
    :caption: Contents:
 
    platform/index.rst
-   exec_env/index.rst
+   exec-env/index.rst
    storage/index.rst

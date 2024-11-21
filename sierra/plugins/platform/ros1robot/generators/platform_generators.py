@@ -15,7 +15,7 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.experiment import spec, xml, definition
+from sierra.core.experiment import spec, definition
 from sierra.core import types, ros1, config, utils
 
 
@@ -38,7 +38,7 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> definition.XMLExpDef:
+    def generate(self) -> definition.BaseExpDef:
         exp_def = super().generate()
 
         self.logger.debug("Writing separate <master> launch file")
@@ -46,22 +46,22 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
             'src_parent': '.',
             'src_tag': 'master',
             'opath_leaf': '_master' + config.kROS['launch_file_ext'],
-            'create_tags': None,
+            'new_children': None,
             'rename_to': 'launch',
-            'dest_parent': None
+            'new_children_parent': None
         })
 
         # Add <robot> tag
-        if not exp_def.has_tag("./robot"):
-            exp_def.tag_add(".",
-                            "robot",
-                            {})
-        if not exp_def.has_tag("./robot/group/[@ns='sierra']"):
-            exp_def.tag_add("./robot",
-                            "group",
-                            {
-                                'ns': 'sierra'
-                            })
+        if not exp_def.has_element("./robot"):
+            exp_def.element_add(".",
+                                "robot",
+                                {})
+        if not exp_def.has_element("./robot/group/[@ns='sierra']"):
+            exp_def.element_add("./robot",
+                                "group",
+                                {
+                                    'ns': 'sierra'
+                                })
 
         return exp_def
 
@@ -73,7 +73,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
-    def generate(self, exp_def: definition.XMLExpDef):
+    def generate(self, exp_def: definition.BaseExpDef):
         exp_def = super().generate(exp_def)
         main_path = pathlib.Path(self.cmdopts['project_config_root'],
                                  config.kYAML.main)
@@ -92,9 +92,10 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
                 'src_parent': "./robot",
                 'src_tag': f"group/[@ns='{prefix}{i}']",
                 'opath_leaf': f'_robot{i}' + config.kROS['launch_file_ext'],
-                'create_tags': [xml.TagAdd.as_root('launch', {})],
-                'dest_parent': ".",
+                'new_children': [definition.ElementAdd.as_root('launch', {})],
+                'new_children_parent': ".",
                 'rename_to': None,
+                'child_grafts_parent': ".",
                 'child_grafts': ["./robot/group/[@ns='sierra']"]
             })
 

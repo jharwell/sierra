@@ -50,7 +50,7 @@ setup_env() {
        --exp-setup=exp_setup.T5.K5\
        --n-runs=4 \
        -xstrict \
-       --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
+       --expdef-template=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
        --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3 \

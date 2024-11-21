@@ -23,7 +23,7 @@ from sierra.plugins.platform.argos.variables import constant_density as cd
 from sierra.core import utils, types
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.experiment import xml
+from sierra.core.experiment import definition
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -43,7 +43,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         """Generate XML modifications to to maintain constant population density.
 
         Robots are approximated as point masses.
@@ -69,9 +69,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
                                                 str(extent.area()),
                                                 self.target_density / 100.0)
 
-                        changeset.add(xml.AttrChange(".//arena/distribute/entity",
-                                                     "quantity",
-                                                     str(n_agents)))
+                        changeset.add(definition.AttrChange(".//arena/distribute/entity",
+                                                            "quantity",
+                                                            str(n_agents)))
                         self.logger.debug("Calculated population size=%d for extent=%s,density=%s",
                                           n_agents,
                                           str(extent), self.target_density)
