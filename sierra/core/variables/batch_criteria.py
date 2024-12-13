@@ -86,7 +86,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`. This argument will be non-None
+                       ``gen_exp_names()``. This argument will be non-None
                        when calling this function from within a bivariate batch
                        criteria.
 
@@ -128,7 +128,7 @@ class IBivarBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`.
+                       ``gen_exp_names()``.
         """
         raise NotImplementedError
 
@@ -150,7 +150,7 @@ class IBivarBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`.
+                       ``gen_exp_names()``.
         """
         raise NotImplementedError
 
@@ -197,7 +197,7 @@ class IBatchCriteriaType(implements.Interface):
 
 @implements.implements(base_variable.IBaseVariable)
 class BatchCriteria():
-    """Defines experiments via  lists of sets of changes to make to an XML file.
+    """Defines experiments via  lists of sets of changes to make to an expdef.
 
     Attributes:
 
@@ -297,7 +297,7 @@ class BatchCriteria():
                       cmdopts: types.Cmdopts) -> None:
         """Scaffold a batch experiment.
 
-        Takes the raw template input file and apply XML modifications from the
+        Takes the raw template input file and apply expdef modifications from the
         batch criteria for all experiments, and save the result in each
         experiment's input directory.
 
@@ -342,7 +342,7 @@ class BatchCriteria():
                                  exist_ok=cmdopts['exp_overwrite'])
 
         if not is_compound:
-            self.logger.debug(("Applying %s XML modifications from '%s' for "
+            self.logger.debug(("Applying %s expdef modifications from '%s' for "
                                "exp%s in %s"),
                               len(modsi),
                               self.cli_arg,
@@ -360,7 +360,7 @@ class BatchCriteria():
                                          mod.attr,
                                          mod.allow_dup)
         else:
-            self.logger.debug(("Applying %s XML modifications from '%s' for "
+            self.logger.debug(("Applying %s expdef modifications from '%s' for "
                                "exp%s in %s"),
                               len(modsi[0]) + len(modsi[1]),
                               self.cli_arg,
@@ -454,7 +454,7 @@ class BivarBatchCriteria(BatchCriteria):
     .. versionchanged:: 1.2.20
 
          Bivariate batch criteria can be compound: one criteria can create and
-         the other modify XML tags to create an experiment definition.
+         the other modify expdef elements to create an experiment definition.
 
     """
 

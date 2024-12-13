@@ -22,32 +22,30 @@ from sierra.core import types, utils
 from sierra.core.experiment import bindings
 
 
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
-    """Configure SIERRA for ad-hoc HPC.
+def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure SIERRA for ad-hoc HPC.
 
     May use the following environment variables:
 
-    - ``SIERRA_NODEFILE`` - If this is not defined ``--nodefile`` must be
+    - :envvar:`SIERRA_NODEFILE` - If this is not defined ``--nodefile`` must be
       passed.
 
     """
 
-    def __init__(self, exec_env: str) -> None:
-        pass
+    if args.nodefile is None:
+        assert 'SIERRA_NODEFILE' in os.environ, \
+            ("Non-hpc.adhoc environment detected: --nodefile not "
+             "passed and 'SIERRA_NODEFILE' not found")
+        args.nodefile = os.environ['SIERRA_NODEFILE']
 
-    def __call__(self, args: argparse.Namespace) -> None:
-        if args.nodefile is None:
-            assert 'SIERRA_NODEFILE' in os.environ,\
-                ("Non-hpc.adhoc environment detected: --nodefile not "
-                 "passed and 'SIERRA_NODEFILE' not found")
-            args.nodefile = os.environ['SIERRA_NODEFILE']
+    assert utils.path_exists(args.nodefile), \
+        f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
 
-        assert utils.path_exists(args.nodefile), \
-            f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+    assert not args.platform_vc, \
+        "Platform visual capture not supported on Adhoc"
 
-        assert not args.platform_vc,\
-            "Platform visual capture not supported on Adhoc"
+    return args
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -120,6 +118,6 @@ class ExpShellCmdsGenerator():
 
 
 __api__ = [
-    'ParsedCmdlineConfigurer',
+    'cmdline_postparse_configurer',
     'ExpShellCmdsGenerator',
 ]

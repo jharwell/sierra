@@ -41,17 +41,27 @@ def exec_env_sanity_checks(module) -> None:
 
     in_module = inspect.getmembers(module, inspect.isclass)
 
-    opt_classes = ['ParsedCmdlineConfigurer',
-                   'ExpRunShellCmdsGenerator',
-                   'ExpShellCmdsGenerator',
-                   'ExecEnvChecker']
+    opt_functions = ['cmdline_postparse_configure',
+                     'exec_env_checker'
+                     ]
+    opt_classes = ['ExpRunShellCmdsGenerator',
+                   'ExpShellCmdsGenerator'
+                   ]
 
     for c in opt_classes:
         if not any(c in name for (name, _) in in_module):
             logging.debug(("Execution environment plugin '%s' does not define "
-                           "'%s'"),
+                           "'%s'--some SIERRA functionality may not be "
+                           "available. See docs for details."),
                           module.__name__,
                           c)
+
+    for f in opt_functions:
+        if not any(f in name for (name, _) in in_module):
+            logging.debug(("Execution environment plugin '%s' not define define "
+                           "'%s()'."),
+                          module.__name__,
+                          f)
 
 
 def platform_sanity_checks(module) -> None:
@@ -61,19 +71,19 @@ def platform_sanity_checks(module) -> None:
     logging.trace("Verifying --platform plugin interface")  # type: ignore
 
     req_classes = ['ExpConfigurer',
-                   'CmdlineParserGenerator'
                    ]
 
-    req_functions = ['population_size_from_def',
+    req_functions = ['cmdline_parser',
+                     'population_size_from_def',
                      'population_size_from_pickle',
                      ]
 
-    opt_classes = ['ParsedCmdlineConfigurer',
-                   'ExpRunShellCmdsGenerator',
-                   'ExpShellCmdsGenerator',
-                   'ExecEnvChecker']
+    opt_classes = ['ExpRunShellCmdsGenerator',
+                   'ExpShellCmdsGenerator']
 
-    opt_functions = ['robot_prefix_extract',
+    opt_functions = ['cmdline_postparse_configure',
+                     'exec_env_checker',
+                     'agent_prefix_extract',
                      'arena_dims_from_criteria']
 
     in_module = inspect.getmembers(module, inspect.isclass)

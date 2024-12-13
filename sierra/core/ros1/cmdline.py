@@ -82,6 +82,7 @@ class ROSCmdline(cmd.BaseCmdline):
                                          config.kExperimentalRunData['n_datapoints_1D']))
 
         self.stage1_exp.add_argument("--robot",
+                                     required=True,
                                      help="""
 
                                      The key name of the robot model, which must
@@ -109,17 +110,6 @@ class ROSCmdline(cmd.BaseCmdline):
         cmdopts.update(updates)
 
 
-class ROSCmdlineValidator():
-    """
-    Perform checks on parsed ROS cmdline arguments.
-    """
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        assert args.robot is not None, \
-            "You must specify the --robot to use"
-
-
 __api__ = [
     'ROSCmdline',
-    'ROSCmdlineValidator'
 ]

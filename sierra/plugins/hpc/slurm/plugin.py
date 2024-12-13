@@ -20,42 +20,45 @@ from sierra.core import types
 from sierra.core.experiment import bindings
 
 
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
-    """Configure SIERRA for SLURM HPC.
+def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure SIERRA for SLURM HPC.
 
     Uses the following environment variables (if any of them are not defined an
     assertion will be triggered):
 
-    - ``SLURM_CPUS_PER_TASK``
-    - ``SLURM_TASKS_PER_NODE``
-    - ``SLURM_JOB_NODELIST``
-    - ``SLURM_JOB_ID``
+    - :envvar:`SLURM_CPUS_PER_TASK`
+
+    - :envvar:`SLURM_TASKS_PER_NODE`
+
+    - :envvar:`SLURM_JOB_NODELIST`
+
+    - :envvar:`SLURM_JOB_ID`
 
     """
 
-    def __init__(self, exec_env: str) -> None:
-        pass
+    keys = [
+        'SLURM_CPUS_PER_TASK',
+        'SLURM_TASKS_PER_NODE',
+        'SLURM_JOB_NODELIST',
+        'SLURM_JOB_ID'
+    ]
 
-    def __call__(self, args: argparse.Namespace) -> None:
-        keys = ['SLURM_CPUS_PER_TASK',
-                'SLURM_TASKS_PER_NODE',
-                'SLURM_JOB_NODELIST',
-                'SLURM_JOB_ID']
+    for k in keys:
+        assert k in os.environ, \
+            f"Non-SLURM environment detected: '{k}' not found"
 
-        for k in keys:
-            assert k in os.environ,\
-                f"Non-SLURM environment detected: '{k}' not found"
+    assert not args.platform_vc, \
+        "Platform visual capture not supported on SLURM"
 
-        assert not args.platform_vc,\
-            "Platform visual capture not supported on SLURM"
+    # SLURM_TASKS_PER_NODE can be set to things like '1(x32),3', indicating
+    # that not all nodes will run the same # of tasks. SIERRA expects all
+    # nodes to have the same # tasks allocated to each (i.e., a homogeneous
+    # allocation), so we check for this.
+    assert "," not in os.environ['SLURM_TASKS_PER_NODE'], \
+        "SLURM_TASKS_PER_NODE not homogeneous"
 
-        # SLURM_TASKS_PER_NODE can be set to things like '1(x32),3', indicating
-        # that not all nodes will run the same # of tasks. SIERRA expects all
-        # nodes to have the same # tasks allocated to each (i.e., a homogeneous
-        # allocation), so we check for this.
-        assert "," not in os.environ['SLURM_TASKS_PER_NODE'], \
-            "SLURM_TASKS_PER_NODE not homogeneous"
+    return args
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -123,7 +126,7 @@ class ExpShellCmdsGenerator():
 
 
 __api__ = [
-    'ParsedCmdlineConfigurer',
+    'cmdline_postparse_configurer',
     'ExpShellCmdsGenerator'
 
 

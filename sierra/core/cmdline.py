@@ -1198,23 +1198,23 @@ class CoreCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
 
+    def validate(self, args: argparse.Namespace) -> None:
+        """
+        Validate the parsed cmdline arguments.
 
-class CoreCmdlineValidator():
-    """Validate the core command line arguments.
+        Only perform checks for args defined by this class; args from child
+        parsers should be validated in derived classes.
 
-    This ensures that the pipeline will work properly in all stages, given the
-    options that were passed.
-
-    """
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        self._check_bc(args)
-        self._check_pipeline(args)
+        This ensures that the pipeline will work properly in all stages, given
+        the options that were passed.
+        """
+        self._validate_check_bc(args)
+        self._validate_check_pipeline(args)
 
         assert args.sierra_root is not None, \
             '--sierra-root is required for all stages'
 
-    def _check_bc(self, args: argparse.Namespace) -> None:
+    def _validate_check_bc(self, args: argparse.Namespace) -> None:
         assert len(args.batch_criteria) <= 2, \
             "Too many batch criteria passed"
 
@@ -1225,7 +1225,7 @@ class CoreCmdlineValidator():
             assert isinstance(args.batch_criteria, list), \
                 'Batch criteria not passed as list on cmdline'
 
-    def _check_pipeline(self, args: argparse.Namespace) -> None:
+    def _validate_check_pipeline(self, args: argparse.Namespace) -> None:
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
             assert args.n_runs is not None, \
                 '--n-runs is required for running stage 1'

@@ -17,9 +17,9 @@ import pathlib
 # Project packages
 import sierra.core.cmdline as cmd
 from sierra import version
-from sierra.core import platform, plugin, startup, batchroot
+from sierra.core import platform, plugin, startup, batchroot, exec_env
 from sierra.core.pipeline.pipeline import Pipeline
-from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
+from sierra.core.generators.controller import ControllerGeneratorParser
 import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: ignore
 
@@ -73,20 +73,24 @@ class SIERRA():
         module = manager.get_plugin_module(bootstrap_args.exec_env)
         plugin.exec_env_sanity_checks(module)
 
-        # Load platform cmdline extensions
-        platform_parser = platform.CmdlineParserGenerator(
-            bootstrap_args.platform)()
+        # Load core cmdline+platform extensions
+        platform_parser = platform.cmdline_parser(bootstrap_args.platform)
 
-        # Load project cmdline extensions
+        # Load additional project cmdline extensions
         self.logger.info("Loading cmdline extensions from project '%s'",
                          project)
         path = f"{project}.cmdline"
         module = pm.module_load(path)
 
-        # Validate cmdline args
-        self.args = module.Cmdline([bootstrap.parser, platform_parser],
-                                   [-1, 1, 2, 3, 4, 5]).parser.parse_args(other_args)
-        module.CmdlineValidator()(self.args)
+        # Parse all cmdline args and validate. This is done BEFORE post-hoc
+        # configuration, because you shouldn't have to configure things post-hoc
+        # in order for them to be valid.
+        parents = [platform_parser] if platform_parser else []
+        nonbootstrap_cmdline = module.Cmdline(parents,
+                                              [-1, 1, 2, 3, 4, 5])
+
+        self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
+        nonbootstrap_cmdline.validate(self.args)
 
         # Verify storage plugin (declared as part of core cmdline arguments
         # rather than bootstrap, so we have to wait until after all arguments
@@ -95,10 +99,14 @@ class SIERRA():
         plugin.storage_sanity_checks(module)
 
         # Configure cmdopts for platform + execution environment by modifying
-        # arguments/adding new arguments as needed.
-        configurer = platform.ParsedCmdlineConfigurer(bootstrap_args.platform,
-                                                      bootstrap_args.exec_env)
-        self.args = configurer(self.args)
+        # arguments/adding new arguments as needed, and perform additional
+        # validation.
+        self.args = exec_env.cmdline_postparse_configure(bootstrap_args.exec_env,
+                                                         self.args)
+        self.args = platform.cmdline_postparse_configure(bootstrap_args.platform,
+                                                         bootstrap_args.exec_env,
+                                                         self.args)
+
         self.args.__dict__['project'] = project
 
     def __call__(self) -> None:
@@ -110,9 +118,9 @@ class SIERRA():
 
         if 5 not in self.args.pipeline:
             controller = ControllerGeneratorParser()(self.args)
-            sgp = pm.module_load_tiered(project=self.args.project,
-                                        path='generators.scenario_generator_parser')
-            scenario = sgp.ScenarioGeneratorParser().to_scenario_name(self.args)
+            scenario = pm.module_load_tiered(project=self.args.project,
+                                             path='generators.scenario')
+            scenario = scenario.ScenarioGeneratorParser().to_scenario_name(self.args)
 
             self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
             pathset = batchroot.from_cmdline(self.args)

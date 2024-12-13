@@ -18,37 +18,35 @@ import pathlib
 import implements
 
 # Project packages
-from sierra.core import types, platform, utils
+from sierra.core import types, exec_env, utils
 from sierra.core.experiment import bindings
 
+_logger = logging.getLogger("robot.turtlebot3")
 
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
-    """Configure SIERRA for the turtlebot3 execution environment.
+
+def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure SIERRA for the turtlebot3 execution environment.
 
     May use the following environment variables:
 
-    - ``SIERRA_NODEFILE`` - If this is not defined ``--nodefile`` must be
+    - :envvar:`SIERRA_NODEFILE` - If this is not defined ``--nodefile`` must be
       passed.
-
     """
+    if args.nodefile is None:
+        assert 'SIERRA_NODEFILE' in os.environ, \
+            ("Non-robot.turtlebot3 environment detected: --nodefile not "
+             "passed and 'SIERRA_NODEFILE' not found")
+        args.nodefile = os.environ['SIERRA_NODEFILE']
 
-    def __init__(self, exec_env: str) -> None:
-        self.logger = logging.getLogger("robot.turtlebot3")
+    assert utils.path_exists(args.nodefile), \
+        f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+    _logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
-    def __call__(self, args: argparse.Namespace) -> None:
-        if args.nodefile is None:
-            assert 'SIERRA_NODEFILE' in os.environ,\
-                ("Non-robot.turtlebot3 environment detected: --nodefile not "
-                 "passed and 'SIERRA_NODEFILE' not found")
-            args.nodefile = os.environ['SIERRA_NODEFILE']
+    assert not args.platform_vc, \
+        "Platform visual capture not supported on robot.turtlebot3"
 
-        assert utils.path_exists(args.nodefile), \
-            f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
-        self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
-
-        assert not args.platform_vc,\
-            "Platform visual capture not supported on robot.turtlebot3"
+    return args
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -166,29 +164,30 @@ class ExpShellCmdsGenerator():
         return ret
 
 
-class ExecEnvChecker(platform.ExecEnvChecker):
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        super().__init__(cmdopts)
-        self.cmdopts = cmdopts
-        self.logger = logging.getLogger('robot.turtlebot3')
+def exec_env_check(cmdopts: types.Cmdopts) -> None:
+    """
+    Verify execution environment in stage 2 for the :term:`ROS1+Robot` platform.
 
-    def __call__(self) -> None:
-        nodes = self.parse_nodefile(self.cmdopts['nodefile'])
-        for node in nodes:
-            if int(node.n_cores) != 1:
-                self.logger.warning(("Nodefile %s, host %s has multiple "
-                                     "cores; turtlebots are single core"),
-                                    self.cmdopts['nodefile'],
-                                    node.hostname)
-            if not self.cmdopts['skip_online_check']:
-                self.check_connectivity(node.login,
+    Checks that a valid list of IPs for robots is set/passed, and checks that
+    they are reachable.
+    """
+    nodes = exec_env.parse_nodefile(cmdopts['nodefile'])
+    for node in nodes:
+        if int(node.n_cores) != 1:
+            _logger.warning(("Nodefile %s, host %s has multiple "
+                             "cores; turtlebots are single core"),
+                            cmdopts['nodefile'],
+                            node.hostname)
+        if not cmdopts['skip_online_check']:
+            exec_env.check_connectivity(cmdopts,
+                                        node.login,
                                         node.hostname,
                                         node.port,
                                         'turtlebot3')
 
 
 __api__ = [
-    'ParsedCmdlineConfigurer',
-    'ExpShellCmdsGenerator',
-    'ExecEnvChecker'
+    'cmdline_postparse_configurer',
+    'exec_env_check',
+    'ExpShellCmdsGenerator'
 ]

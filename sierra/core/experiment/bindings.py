@@ -4,7 +4,6 @@
 
 # Core packages
 import typing as tp
-import argparse
 import pathlib
 
 # 3rd party packages
@@ -21,19 +20,19 @@ class IExpShellCmdsGenerator(implements.Interface):
 
     This includes:
 
-    - The cmds to run the prior to the experiment (before any
-      :term:`Experimental Runs <Experimental Run>`).
+        - The cmds to run the prior to the experiment (before any
+          :term:`Experimental Runs <Experimental Run>`).
 
-    - The cmds to run the experiment.
+        - The cmds to run the experiment.
 
-    - Any post-experiment cleanup cmds before the next :term:`Experiment` is
-      run.
+        - Any post-experiment cleanup cmds before the next :term:`Experiment` is
+          run.
 
     Arguments:
 
-        cmdopts: Dictionary of parsed cmdline options.
+    cmdopts: Dictionary of parsed cmdline options.
 
-        exp_num: The 0-based index of the experiment in the batch.
+    exp_num: The 0-based index of the experiment in the batch.
     """
 
     def __init__(self,
@@ -105,7 +104,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         Commands are run during stage 2 after all :term:`Experimental Runs
         <Experimental Run>` for an :term:`Experiment` have finished, but before
         the next experiment in the :term:`Batch Experiment` is launched.  These
-        commands are run in the `same` sub-shell as the pre- and exec-exp
+        commands are run in the *same* sub-shell as the pre- and exec-exp
         commands.
 
         These commands include things like cleaning up/stopping background
@@ -121,9 +120,9 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     This includes:
 
-    - The cmds to run the prior to the run.
+    - The cmds to run the prior to executing the run.
 
-    - The cmds to executed the experimental run.
+    - The cmds to execute the experimental run.
 
     - Any post-run cleanup cmds before the next run is executed.
 
@@ -135,7 +134,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
         cmdopts: Dictionary of parsed cmdline options.
 
-        n_agents: The configured # of robots for the experimental run.
+        n_agents: The configured # of agents for the experimental run.
 
         exp_num: The 0-based index of the experiment in the batch.
 
@@ -209,58 +208,13 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
 
-class IParsedCmdlineConfigurer(implements.Interface):
-    """
-    Modify arguments as needed for the platform or execution environment.
-    """
-
-    def __init__(self, exec_env: str) -> None:
-        raise NotImplementedError
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        raise NotImplementedError
-
-
-class ICmdlineParserGenerator(implements.Interface):
-    """Return the argparse object containing ALL options relevant to the platform.
-
-    This includes the options for whatever ``--exec-env`` are valid for the
-    platform, making use of the ``parents`` option for the cmdline.
-
-    """
-
-    def __call__(self) -> argparse.ArgumentParser:
-        raise NotImplementedError
-
-
-class IExecEnvChecker(implements.Interface):
-    """Perform sanity checks for stage 2 execution environment.
-
-    This is needed because stage 2 can run separate from stage 1, and we need to
-    guarantee that the execution environment we verified during stage 1 is still
-    valid.
-
-    Arguments:
-
-        cmdopts: Dictionary of parsed cmdline options.
-
-    """
-
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        raise NotImplementedError
-
-    def __call__(self) -> None:
-        raise NotImplementedError
-
-
 class IExpConfigurer(implements.Interface):
-    """Perform addition configuration after creating experiments.
+    """Perform addition configuration after creating experiments in stage 1.
 
     E.g., creating directories store outputs in if they are not created by the
     simulator/:term:`Project` code.
 
     Arguments:
-
         cmdopts: Dictionary of parsed cmdline options.
 
     """
@@ -270,11 +224,10 @@ class IExpConfigurer(implements.Interface):
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
         """
-        Configure an experiment.
+        Configure an :term:`Experiment`.
 
         Arguments:
-
-o            exp_input_root: Absolute path to the input directory for the
+            exp_input_root: Absolute path to the input directory for the
                             experiment.
         """
         raise NotImplementedError
@@ -283,10 +236,9 @@ o            exp_input_root: Absolute path to the input directory for the
                     exp_input_root: pathlib.Path,
                     run_output_root: pathlib.Path) -> None:
         """
-        Configure an experimental run.
+        Configure an :term:`Experimental Run`.
 
         Arguments:
-
             exp_input_root: Absolute path to the input directory for the
                             experiment.
 
@@ -296,21 +248,34 @@ o            exp_input_root: Absolute path to the input directory for the
         raise NotImplementedError
 
     def cmdfile_paradigm(self) -> str:
-        """Return the paradigm for the platform, in terms of GNU parallel cmds.
+        """Return the parallelism paradigm for the platform.
 
-        - ``per-exp`` - A single GNU parallel cmds file per experiment.
+        For most simulator-based platforms, you generally want parallelism
+        *across* multiple experimental runs; that is all experimental runs in an
+        experiment run in parallel, subject to the limits of your selected
+        execution environment, configuration, etc.  For most real hardware-based
+        platforms, such as robots, you generally have to select parallelism
+        *within* an experimental run; that is, each experimental run requires
+        multiple remote sub-processes to execute, one per agent, since you can't
+        have single physical agent/robot be part of multiple experimental runs
+        simultaneously.
 
-        - ``per-run`` - A single GNU parallel cmds file per run.
+            - ``per-exp`` - A single GNU parallel cmds file per
+              :term:`Experiment`.  When executed, each line of the file contains
+              all the {pre, exec, post} cmds for each :term:`Experimental Run`.
+              Runs are generally executed in parallel, up to the limit of the
+              platform, subject to configuration/overrides.
 
+            - ``per-run`` - Each GNU parallel cmds file contains only the cmds
+              for a single :term:`Experimental Run`.  Multiple cmds files may be
+              needed for a single run (e.g., for ROS1 master + slaves).  This is
+              typically the paradigm for platforms targeting real hardware.
         """
         raise NotImplementedError
 
 
 __api__ = [
-    'IParsedCmdlineConfigurer',
     'IExpRunShellCmdsGenerator',
     'IExpShellCmdsGenerator',
     'IExpConfigurer',
-    'IExecEnvChecker',
-    'ICmdlineParserGenerator'
 ]

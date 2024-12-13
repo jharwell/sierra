@@ -20,7 +20,7 @@ from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 from sierra.core.pipeline.stage5 import outputroot
 from sierra.core import types, utils, config, batchroot
-from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
+from sierra.core.generators.controller import ControllerGeneratorParser
 
 
 class PipelineStage5:

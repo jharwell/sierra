@@ -195,12 +195,6 @@ class PlatformCmdline(corecmd.BaseCmdline):
         cmdopts.update(updates)
 
 
-class CmdlineValidator(corecmd.CoreCmdlineValidator):
-    """
-    Stub implementation.
-    """
-
-
 def sphinx_cmdline_stage1():
     parent1 = hpc.cmdline.HPCCmdline([1]).parser
     parent2 = ros1.cmdline.ROSCmdline([1]).parser
@@ -211,3 +205,8 @@ def sphinx_cmdline_stage2():
     parent1 = hpc.cmdline.HPCCmdline([2]).parser
     parent2 = ros1.cmdline.ROSCmdline([2]).parser
     return PlatformCmdline([parent1, parent2], [2]).parser
+
+
+__all__ = [
+    'PlatformCmdline'
+]

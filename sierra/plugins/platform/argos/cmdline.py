@@ -310,10 +310,6 @@ class PlatformCmdline(cmd.BaseCmdline):
         cmdopts.update(updates)
 
 
-class CmdlineValidator(cmd.CoreCmdlineValidator):
-    pass
-
-
 def sphinx_cmdline_stage1():
     return PlatformCmdline(None, [1]).parser
 

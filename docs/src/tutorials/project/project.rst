@@ -4,9 +4,41 @@
 Creating a New SIERRA Project
 =============================
 
-#. Decide what :term:`Platform` your :term:`Project` will target. Currently,
-   there is no way to share projects across platforms; any common code will have
-   to be put into common python files and imported as needed.
+.. IMPORTANT:: There are several :xref:`sample projects<SIERRA_SAMPLE_PROJECT`
+               available for all of SIERRA's built-in platforms and execution
+               environments which can be used in tandem with this guide to build
+               your own project.
+
+Preliminaries
+=============
+
+Before beginning, determine the following:
+
+- Do you need to create a new :term:`Platform` for your :term:`Project`? Unless
+  the simulator/hardware platform you want to use already has a SIERRA plugin,
+  you will have to do this. If so, following :ref:`tutorials/plugin/platform`.
+
+  .. NOTE:: Currently there is no way to share projects across platforms; any
+   common code will have to be put into common python files and imported as
+   needed.
+
+- Do you need to create a new execution environment for your :term:`Project`? If
+  you are targeting a simulator of some sort, you probably don't have to, at
+  least initially, as SIERRA supports running simulators locally out of the
+  box. If you want/need to run on e.g., some sort of exotic cluster-based
+  environment, see :ref:`tutorials/plugin/execenv`.
+
+  If you want to use SIERRA with some sort of real hardware (e.g., a specific
+  robot), you probably will have to create a new execution environment plugin.
+
+The distinction between execution environments and platforms is important, and
+gets to one of the core ways in which SIERRA was designed, so it is worth taking
+a moment to understand. *Platforms* are the thing you are building your software
+*against* (sort of like building against an API), while *execution environments*
+are the thing you want your software to run *on*.
+
+Steps
+=====
 
 #. Create the directory which will hold your :term:`Project`. The directory your
    project must be on :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to
@@ -15,14 +47,8 @@ Creating a New SIERRA Project
    ``/path/to/projects`` needs to be on :envvar:`SIERRA_PLUGIN_PATH`.
 
 #. Create the following directory structure within your project directory (or
-   copy and modify the one from an existing project).
-
-   .. IMPORTANT:: Once you create the directory structure below you need to
-                  INSTALL your project with pip so that not only can SIERRA find
-                  it, but so can the python interpreter. If you don't want to do
-                  that, then you need to put your project plugin directory on
-                  :envvar:`PYTHONPATH`. Otherwise, you won't be able to use your
-                  project plugin with SIERRA.
+   copy and modify the one from an existing project, such as the SIERRA sample
+   projects).
 
    - ``config/`` - Plugin YAML configuration root. This directory is required
      for all projects. Within this directory, the following files are used (not
@@ -67,20 +93,15 @@ Creating a New SIERRA Project
      XML files needed by your project. This directory is required for all SIERRA
      projects.
 
-     - ``scenario_generator_parser.py`` - Contains the parser for parsing the
-       contents of ``--scenario`` into a dictionary which can be used to
-       configure experiments. This file is required. See
-       :ref:`tutorials/project/generators/scenario-config` for
-       documentation.
-
-     - ``scenario_generators.py`` - Specifies classes and functions to enable
-       SIERRA to generate XML file modifications to the
-       ``--expdef-template`` based on what is passed as ``--scenario`` on
-       the cmdline. This file is required. See
+     - ``scenario.py`` - Specifies classes and functions to enable SIERRA to
+       generate XML file modifications to the ``--expdef-template`` based on
+       what is passed as ``--scenario`` on the cmdline. Contains the parser for
+       parsing the contents of ``--scenario`` into a dictionary which can be
+       used to configure experiments. This file is required. See
        :ref:`tutorials/project/generators/scenario-config` for documentation.
 
-     - ``exp_generators.py`` - Contains extensions to the per-:term:`Experiment`
-       and per-:term:`Experimental Run` configuration that SIERRA performs. See
+     - ``experiment.py`` - Contains extensions to the per-:term:`Experiment` and
+       per-:term:`Experimental Run` configuration that SIERRA performs. See
        :ref:`tutorials/project/generators/sim-config` for documentation. This
        file is optional.
 
@@ -94,8 +115,9 @@ Creating a New SIERRA Project
      directory is optional. See :doc:`models` for documentation.
 
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
-     plugin/project. This file is required. See :doc:`cmdline` for
-     documentation.
+     plugin/project. This file is required, because all projects have to define
+     the ``--controller`` and ``--scenario`` arguments used by SIERRA. See
+     :ref:`tutorials/misc/cmdline` for steps.
 
 #. Configure your project so SIERRA understands how to generate
    :term:`Experimental Run` inputs and process outputs correctly by following
@@ -117,9 +139,3 @@ Optional Steps
 
 #. Define one or more :term:`Models <Model>` to run to compare with empirical
    data.
-
-#. Add additional per-run configuration such as unique output directory
-   names, random seeds, etc. in various python files referenced by
-   ``scenario_generators.py`` and ``exp_generators.py`` beyond what is required
-   for ``--scenario``.  SIERRA can't set stuff like this up in a project
-   agnostic way.

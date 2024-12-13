@@ -19,7 +19,7 @@ import typing as tp  # noqa: F401
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, config, platform, utils, batchroot
+from sierra.core import types, config, platform, utils, batchroot, exec_env
 import sierra.core.plugin_manager as pm
 
 
@@ -175,11 +175,11 @@ class BatchExpRunner:
                                           self.criteria)
 
         # Verify environment is OK before running anything
-        if hasattr(platform, 'ExecEnvChecker'):
-            self.logger.debug("Checking execution environment")
-            platform.ExecEnvChecker(self.cmdopts)()
-        else:
-            self.logger.debug("Skip execution environment checking--not needed")
+        self.logger.debug("Checking --platform execution environment")
+        platform.exec_env_check(self.cmdopts)
+
+        self.logger.debug("Checking --exec-env execution environment")
+        exec_env.exec_env_check(self.cmdopts)
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()
@@ -196,21 +196,30 @@ class BatchExpRunner:
 
             # Run cmds for platform-specific things to setup the experiment
             # (e.g., start daemons) if needed.
-            generator = platform.ExpShellCmdsGenerator(self.cmdopts,
-                                                       exp_num)
-            for spec in generator.pre_exp_cmds():
+            platform_generator = platform.ExpShellCmdsGenerator(self.cmdopts,
+                                                                exp_num)
+            execenv_generator = exec_env.ExpShellCmdsGenerator(self.cmdopts,
+                                                               exp_num)
+
+            for spec in execenv_generator.pre_exp_cmds():
+                shell.run_from_spec(spec)
+
+            for spec in platform_generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
             runner = ExpRunner(self.pathset,
                                self.cmdopts,
                                exec_times_fpath,
-                               generator,
+                               execenv_generator,
                                shell)
             runner(exp.name, exp_num)
 
-            # Run cmds to cleanup platform-specific things now that the experiment
-            # is done (if needed).
-            for spec in generator.post_exp_cmds():
+            # Run cmds to cleanup {execenv, platform}-specific things now that
+            # the experiment is done (if needed).
+            for spec in execenv_generator.post_exp_cmds():
+                shell.run_from_spec(spec)
+
+            for spec in platform_generator.post_exp_cmds():
                 shell.run_from_spec(spec)
 
 
@@ -227,7 +236,7 @@ class ExpRunner:
                  pathset: batchroot.PathSet,
                  cmdopts: types.Cmdopts,
                  exec_times_fpath: pathlib.Path,
-                 generator: platform.ExpShellCmdsGenerator,
+                 generator: exec_env.ExpShellCmdsGenerator,
                  shell: ExpShell) -> None:
 
         self.exec_times_fpath = exec_times_fpath
@@ -267,6 +276,7 @@ class ExpRunner:
             'n_jobs': self.cmdopts['exec_jobs_per_node'],
             'nodefile': self.cmdopts['nodefile']
         }
+
         for spec in self.generator.exec_exp_cmds(exec_opts):
             if not self.shell.run_from_spec(spec):
                 self.logger.error("Check outputs in %s for full details",
