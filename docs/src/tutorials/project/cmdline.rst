@@ -4,14 +4,31 @@
 Extending the SIERRA Cmdline
 ============================
 
-At a minimum, all :term:`Projects<Project>` must define the ``--scenario`` and
-``--controller`` cmdline arguments to interact with the SIERRA core; other
-cmdline arguments can be added in the same manner. For example, you might want
-to control aspects of experiment generation outside of those controlled by
-``--scenario``, but only some of the time. To add additional cmdline options to
-the SIERRA, follow the steps below.
+This tutorial covers how to extend the SIERRA cmdline for
 
-#. Create ``cmdline.py`` in your :term:`Project` directory.
+- A new :term:`Project`
+
+- A new :term:`Platform`
+
+The requirements for each are largely the same, with following differences:
+
+- All :term:`Projects<Project>`  must define the ``--scenario`` and
+  ``--controller`` cmdline arguments to interact with the SIERRA core.
+
+- The  ``Cmdline.validate()`` is only for project-based cmdlines, because of how
+  SIERRA sets up the cmdline plugin; it will never be called for platform-based
+  cmdlines if defined. This is generally not an issue because each project is
+  associated with exactly one platform, and so can do any checks needed for the
+  platform there. If you need/want to validate arguments from platforms, you can
+  do that via ``cmdline_postparse_configure()`` -- see
+  :ref:`tutorials/plugin/platform` for details.
+
+- All :term:`Platforms<Platform>` must define ``--exp-setup`` and insert it into
+  and the ``cmdopts`` dict via the the ``cmdopts_update()`` function.
+
+With that out of the way, the steps to extend the SIERRA cmdline are as follows:
+
+#. Create ``cmdline.py`` in your project/platform plugin directory.
 
 #. Create a ``Cmdline`` class which inherits from the SIERRA cmdline as
    follows:
@@ -78,6 +95,9 @@ the SIERRA, follow the steps below.
         }
         cmdopts.update(updates)
 
+        def validate(self, args: argparse.Namespace) -> None:
+            ...
+
    All of the ``init_XXstage()`` functions are optional; if they are not given
    then SIERRA will use the version in
    :class:`~sierra.core.cmdline.CoreCmdline`.
@@ -92,24 +112,17 @@ the SIERRA, follow the steps below.
    name, though in general it is best to make them the same as the name of the
    argument (principle of least surprise).
 
-   The following command line arguments must be (a) present on all platforms and
-   (b) inserted into ``cmdopts`` by the ``cmdopts_update()`` function, or
-   SIERRA will crash/not work properly:
+   The ``validate()`` function is optional, and should assert() as needed to
+   check cmdline arg validity. For most cases, you shouldn't need to define this
+   function; it is provided if you need to do some tricky validation beyond what
+   is baked into argparse.
 
-   - ``--exp-setup``
+#. Hook your created cmdline into SIERRA.
 
-#. Create a ``CmdlineValidator`` class to validate the additional cmdline
-   arguments you pass (can be empty class if no additional validation is
-   needed). Generally this should be used for things like "if X is passed then Y
-   must also be passed".
+   If you created a cmdline for a :term:`Project`, there is nothing to do!
+   SIERRA will pick it up automatically.
 
-   .. code-block:: python
-
-      class CmdlineValidator(cmd.CoreCmdlineValidator):
-          def __call__(self, args: argparse.Namespace) -> None:
-              assert args.my_stage1_argument is not None,\
-                   "--my-stage1-argument must be passed!"
-
-   The ``__call__()`` function is passed the ``argparse`` object resulting from
-   parsing the arguments, which can be used as you would expect to perform
-   checks. All checks should be assertions.
+   If you created a cmdline for a :term:`Platform`, then you will need to make
+   sure your cmdline is used in the ``cmdline_parser()`` function in the
+   ``plugin.py`` for your new platform (see :ref:`tutorials/plugin/platform` for
+   details).

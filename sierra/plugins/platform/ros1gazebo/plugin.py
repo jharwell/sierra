@@ -25,12 +25,20 @@ from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
 
-class CmdlineParserGenerator():
-    def __call__(self) -> argparse.ArgumentParser:
-        parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-        parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-        return cmdline.PlatformCmdline(parents=[parent1, parent2],
-                                       stages=[-1, 1, 2, 3, 4, 5]).parser
+def cmdline_extensions() -> argparse.ArgumentParser:
+    """
+    Get a cmdline parser supporting the :term:`ROS1+Gazebo` platform.
+
+    Extends the built-in cmdline parser with:
+
+    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
+    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
+    - :class:`~cmdline.PlatformCmdline` (Gazebo specifics)
+    """
+    parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+    parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parent1, parent2],
+                                   stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)

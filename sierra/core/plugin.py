@@ -61,10 +61,10 @@ def platform_sanity_checks(module) -> None:
     logging.trace("Verifying --platform plugin interface")  # type: ignore
 
     req_classes = ['ExpConfigurer',
-                   'CmdlineParserGenerator'
                    ]
 
-    req_functions = ['population_size_from_def',
+    req_functions = ['cmdline_parser',
+                     'population_size_from_def',
                      'population_size_from_pickle',
                      ]
 
@@ -73,7 +73,7 @@ def platform_sanity_checks(module) -> None:
                    'ExpShellCmdsGenerator',
                    'ExecEnvChecker']
 
-    opt_functions = ['robot_prefix_extract',
+    opt_functions = ['agent_prefix_extract',
                      'arena_dims_from_criteria']
 
     in_module = inspect.getmembers(module, inspect.isclass)

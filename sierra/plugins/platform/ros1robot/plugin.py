@@ -22,11 +22,18 @@ from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
 
-class CmdlineParserGenerator():
-    def __call__(self) -> argparse.ArgumentParser:
-        parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-        return cmdline.PlatformCmdline(parents=[parent1],
-                                       stages=[-1, 1, 2, 3, 4, 5]).parser
+def cmdline_extensions() -> argparse.ArgumentParser:
+    """
+    Get a cmdline parser supporting the :term:`ROS1+Robot` platform.
+
+    Extends built-in cmdline parser with:
+
+    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
+    - :class:`~cmdline.PlatformCmdline` (ROS1+robot specifics)
+    """
+    parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parent1],
+                                   stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)

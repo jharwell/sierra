@@ -209,30 +209,6 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
 
-class IParsedCmdlineConfigurer(implements.Interface):
-    """
-    Modify arguments as needed for the platform or execution environment.
-    """
-
-    def __init__(self, exec_env: str) -> None:
-        raise NotImplementedError
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        raise NotImplementedError
-
-
-class ICmdlineParserGenerator(implements.Interface):
-    """Return the argparse object containing ALL options relevant to the platform.
-
-    This includes the options for whatever ``--exec-env`` are valid for the
-    platform, making use of the ``parents`` option for the cmdline.
-
-    """
-
-    def __call__(self) -> argparse.ArgumentParser:
-        raise NotImplementedError
-
-
 class IExecEnvChecker(implements.Interface):
     """Perform sanity checks for stage 2 execution environment.
 
@@ -311,6 +287,5 @@ __api__ = [
     'IExpRunShellCmdsGenerator',
     'IExpShellCmdsGenerator',
     'IExpConfigurer',
-    'IExecEnvChecker',
-    'ICmdlineParserGenerator'
+    'IExecEnvChecker'
 ]

@@ -73,20 +73,23 @@ class SIERRA():
         module = manager.get_plugin_module(bootstrap_args.exec_env)
         plugin.exec_env_sanity_checks(module)
 
-        # Load platform cmdline extensions
-        platform_parser = platform.CmdlineParserGenerator(
-            bootstrap_args.platform)()
+        # Load core cmdline+platform extensions
+        platform_parser = platform.cmdline_parser(bootstrap_args.platform)
 
-        # Load project cmdline extensions
+        # Load additional project cmdline extensions
         self.logger.info("Loading cmdline extensions from project '%s'",
                          project)
         path = f"{project}.cmdline"
         module = pm.module_load(path)
 
-        # Validate cmdline args
-        self.args = module.Cmdline([bootstrap.parser, platform_parser],
-                                   [-1, 1, 2, 3, 4, 5]).parser.parse_args(other_args)
-        module.CmdlineValidator()(self.args)
+        # Parse all cmdline args and validate. This is done BEFORE post-hoc
+        # configuration, because you shouldn't have to configure things post-hoc
+        # in order for them to be valid.
+        nonbootstrap_cmdline = module.Cmdline([platform_parser],
+                                              [-1, 1, 2, 3, 4, 5])
+
+        self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
+        nonbootstrap_cmdline.validate(self.args)
 
         # Verify storage plugin (declared as part of core cmdline arguments
         # rather than bootstrap, so we have to wait until after all arguments
@@ -95,10 +98,12 @@ class SIERRA():
         plugin.storage_sanity_checks(module)
 
         # Configure cmdopts for platform + execution environment by modifying
-        # arguments/adding new arguments as needed.
-        configurer = platform.ParsedCmdlineConfigurer(bootstrap_args.platform,
-                                                      bootstrap_args.exec_env)
-        self.args = configurer(self.args)
+        # arguments/adding new arguments as needed, and perform additional
+        # validation.
+        self.args = platform.cmdline_postparse_configure(bootstrap_args.platform,
+                                                         bootstrap_args.exec_env,
+                                                         self.args)
+
         self.args.__dict__['project'] = project
 
     def __call__(self) -> None:

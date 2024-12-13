@@ -159,12 +159,6 @@ class PlatformCmdline(cmd.BaseCmdline):
         cmdopts.update(updates)
 
 
-class CmdlineValidator(ros1.cmdline.ROSCmdlineValidator):
-    """
-    Stub implementation.
-    """
-
-
 def sphinx_cmdline_stage1():
     parent = ros1.cmdline.ROSCmdline([1]).parser
     return PlatformCmdline([parent], [1]).parser

@@ -20,8 +20,7 @@ from sierra.core import types
 from sierra.core.experiment import bindings
 
 
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
+def parsed_cmdline_configure(argparse.Namespace) -> argparse.Namespace:
     """Configure SIERRA for PBS HPC.
 
     Uses the following environment variables (if any of them are not defined an
@@ -33,24 +32,23 @@ class ParsedCmdlineConfigurer():
 
     """
 
-    def __init__(self, exec_env: str) -> None:
-        pass
+    keys = [
+        'PBS_NUM_PPN',
+        'PBS_NODEFILE',
+        'PBS_JOBID'
+    ]
 
-    def __call__(self, args: argparse.Namespace) -> None:
-        keys = ['PBS_NUM_PPN',
-                'PBS_NODEFILE',
-                'PBS_JOBID'
-                ]
+    for k in keys:
+        assert k in os.environ, \
+            f"Non-PBS environment detected: '{k}' not found"
 
-        for k in keys:
-            assert k in os.environ,\
-                f"Non-PBS environment detected: '{k}' not found"
+    assert args.exec_jobs_per_node is not None, \
+        "--exec-jobs-per-node is required (can't be computed from PBS)"
 
-        assert args.exec_jobs_per_node is not None, \
-            "--exec-jobs-per-node is required (can't be computed from PBS)"
+    assert not args.platform_vc, \
+        "Platform visual capture not supported on PBS"
 
-        assert not args.platform_vc,\
-            "Platform visual capture not supported on PBS"
+    return args
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)

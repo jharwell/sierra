@@ -20,18 +20,6 @@ runtime error.
 
      - :class:`~sierra.core.experiment.bindings.IExpConfigurer`
 
-   * - CmdlineParserGenerator
-
-     - Yes
-
-     - :class:`~sierra.core.experiment.bindings.ICmdlineParserGenerator`
-
-   * - ParsedCmdlineConfigurer
-
-     - No
-
-     - :class:`~sierra.core.experiment.bindings.IParsedCmdlineConfigurer`
-
    * - ExpRunShellCmdsGenerator
 
      - No
@@ -64,6 +52,21 @@ will get a runtime error.
      - Required?
 
      - Purpose
+
+   * - cmdline_postparse_configure()
+
+     - No
+
+     - Performs addition modification/insertion of parsed cmdline arguments, as
+       well as any needed validation for this platform.
+
+   * - cmdline_parser
+
+     - Yes
+
+     - Creates and returns an ``argparse.ArgumentParser`` object containing all
+       cmdline arguments understood by SIERRA when invoked with the selected
+       platform.
 
    * - population_size_from_def()
 
@@ -124,26 +127,7 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
    from sierra.core.experiment import bindings, definition
    from sierra.core.variables import batch_criteria as bc
-
-   @implements.implements(bindings.IParsedCmdlineConfigurer)
-   class CmdlineParserGenerator():
-     def __call__() -> argparse.ArgumentParser:
-         """A class that conforms to
-         :class:`~sierra.core.experiment.bindings.ICmdlineParserGenerator`.
-         """
-         # As an example, assuming this platform can run on HPC
-         # environments. Initialize all stages and return the initialized
-         # parser to SIERRA for use.
-         parser = hpc.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-         return cmd.PlatformCmdline(parents=[parser],
-                                    stages=[-1, 1, 2, 3, 4, 5]).parser
-
-
-   @implements.implements(bindings.IParsedCmdlineConfigurer)
-   class ParsedCmdlineConfigurer():
-       """A class that conforms to
-       :class:`~sierra.core.experiment.bindings.IParsedCmdlineConfigurer`.
-       """
+   from sierra.core import hpc
 
    @implements.implements(bindings.IExpShellCmdsGenerator)
    class ExpShellCmdsGenerator():
@@ -173,6 +157,33 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
    class ExpRunConfigurer():
        """A class that conforms to
        :class:`~sierra.core.experiment.bindings.IExpRunConfigurer`.
+       """
+
+   def cmdline_parser() -> argparse.Parser:
+       """
+       Get a cmdline parser supporting the platform. The returned parser
+       should extend :class:`~sierra.core.cmdline.BaseCmdline`.
+
+       This example extends :class:`~sierra.core.cmdline.BaseCmdline` with:
+
+       - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
+       - :class:`~cmdline.PlatformCmdline` (platform specifics)
+
+       assuming this platform can run on HPC environments.
+       """
+       # Initialize all stages and return the initialized
+       # parser to SIERRA for use.
+       parser = hpc.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+       return cmd.PlatformCmdline(parents=[parser],
+                                  stages=[-1, 1, 2, 3, 4, 5]).parser
+
+
+   def cmdline_postparse_configure(argparse.Namespace) -> argparse.Namespace:
+       """
+       Additional configuration and/or validation of the passed cmdline
+       arguments pertaining to this platform. Validation should be performed
+       with assert(), and the parsed argument object should be returned with any
+       modifications/additions.
        """
 
    def population_size_from_pickle(exp_def: tp.Union[xml.AttrChangeSet,

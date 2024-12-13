@@ -25,18 +25,19 @@ from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
 
-@implements.implements(bindings.ICmdlineParserGenerator)
-class CmdlineParserGenerator():
+def cmdline_parser() -> argparse.ArgumentParser:
     """
-    Get the cmdline parser to use with the :term:`ARGoS` platform.
+    Get a cmdline parser supporting the :term:`ARGoS` platform.
 
-    Combination of the ARGoS cmdline extensions and the HPC cmdline.
+    Extends built-in cmdline parser with:
+
+    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
+    - :class:`~cmdline.PlatformCmdline` (ARGoS specifics)
+
     """
-
-    def __call__(self) -> argparse.ArgumentParser:
-        parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-        return cmdline.PlatformCmdline(parents=[parser],
-                                       stages=[-1, 1, 2, 3, 4, 5]).parser
+    parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parser],
+                                   stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)

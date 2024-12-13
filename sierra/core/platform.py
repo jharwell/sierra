@@ -32,17 +32,16 @@ from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
 
-class CmdlineParserGenerator():
+def cmdline_parser(platform: str) -> argparse.ArgumentParser:
     """
-    Dispatcher to generate additional platform-dependent cmdline arguments.
+    Dispatches cmdline parser creation to selected platform.
+
+    Since platforms often extend the core cmdline significantly, the returned
+    parser is expected to contain all arguments supported by the core AND the
+    selected platform.
     """
-
-    def __init__(self, platform: str) -> None:
-        module = pm.pipeline.get_plugin_module(platform)
-        self.platform = module.CmdlineParserGenerator()
-
-    def __call__(self) -> argparse.ArgumentParser:
-        return self.platform()
+    module = pm.pipeline.get_plugin_module(platform)
+    return module.cmdline_parser()
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
@@ -197,53 +196,41 @@ class ExpShellCmdsGenerator():
         return cmds
 
 
-class ParsedCmdlineConfigurer():
+def cmdline_postparse_configure(platform: str,
+                                exec_env: str,
+                                args: argparse.Namespace) -> argparse.Namespace:
     """Dispatcher for configuring the cmdopts dictionary.
 
-    Dispatches configuring to the selected platform and execution environment.
-    Called before the pipeline starts to add new/modify existing cmdline
-    arguments after initial parsing.
-
+    Dispatches configuring to the selected ``--platform`` and ``--exec-env``.
+    Called before the pipeline starts to add modify existing cmdline arguments
+    after initial parsing.
     """
+    logger = logging.getLogger(__name__)
 
-    def __init__(self,
-                 platform: str,
-                 exec_env: str) -> None:
-        self.platform = platform
-        self.exec_env = exec_env
-        self.logger = logging.getLogger(__name__)
+    # Configure for selected execution enivornment first, to check for
+    # low-level details.
+    args.__dict__['exec_env'] = exec_env
+    module = pm.pipeline.get_plugin_module(exec_env)
 
-        module = pm.pipeline.get_plugin_module(self.platform)
-        if hasattr(module, 'ParsedCmdlineConfigurer'):
-            self.platformg = module.ParsedCmdlineConfigurer(exec_env)
-        else:
-            self.platformg = None
-            self.logger.debug("Skipping configuring cmdline from --platform=%s",
-                              self.platform)
-
-        module = pm.pipeline.get_plugin_module(self.exec_env)
-        if hasattr(module, 'ParsedCmdlineConfigurer'):
-            self.envg = module.ParsedCmdlineConfigurer(exec_env)
-        else:
-            self.envg = None
-            self.logger.debug("Skipping configuring cmdline from --exec-env=%s",
-                              self.exec_env)
-
-    def __call__(self, args: argparse.Namespace) -> argparse.Namespace:
-        # Configure for selected execution enivornment first, to check for
-        # low-level details.
-        args.__dict__['exec_env'] = self.exec_env
-
-        if self.envg:
-            self.envg(args)
+    if hasattr(module, 'ParsedCmdlineConfigurer'):
+        args = module.ParsedCmdlineConfigurer(exec_env)
+    else:
+        logger.debug(("Skipping configuring cmdline from --exec-env='%s': "
+                      "does not define hook"),
+                     exec_env)
 
         # Configure for selected platform
-        args.__dict__['platform'] = self.platform
+    args.__dict__['platform'] = platform
+    module = pm.pipeline.get_plugin_module(platform)
 
-        if self.platformg:
-            self.platformg(args)
+    if hasattr(module, 'ParsedCmdlineConfigurer'):
+        args = module.ParsedCmdlineConfigurer(exec_env)
+    else:
+        logger.debug(("Skipping configuring cmdline from --platform='%s': "
+                      "does not define hook"),
+                     platform)
 
-        return args
+    return args
 
 
 class ExpConfigurer():
@@ -280,7 +267,7 @@ class ExecEnvChecker():
 
     """
 
-    @staticmethod
+    @ staticmethod
     def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
         ret = []
 
@@ -293,7 +280,7 @@ class ExecEnvChecker():
 
         return ret
 
-    @staticmethod
+    @ staticmethod
     def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
         # Line starts with a comment--no parsing needed
         comment_re = r"^#"

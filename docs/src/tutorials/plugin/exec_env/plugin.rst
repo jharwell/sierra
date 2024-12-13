@@ -39,17 +39,33 @@ runtime error.
      - :class:`~sierra.core.experiment.bindings.IExecEnvChecker`
 
 
+Within this file, you may define the following functions, which must be named
+**EXACTLY** as specified, otherwise SIERRA will not detect them. If you try
+to use a part of SIERRA which requires an optional function you omitted, you
+will get a runtime error.
+
+.. list-table:: Execution Environment Plugin Functions
+   :widths: 25,25,75
+   :header-rows: 1
+
+   * - Function
+
+     - Required?
+
+     - Purpose
+
+   * - cmdline_postparse_configure()
+
+     - No
+
+     - Performs addition modification/insertion of parsed cmdline arguments, as
+       well as any needed validation for this execution environment.
+
 Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
 .. code-block:: python
 
    from sierra.core.experiment import bindings
-
-   @implements.implements(bindings.IParsedCmdlineConfigurer)
-   class ParsedCmdlineConfigurer():
-       """A class that conforms to
-       :class:`~sierra.core.experiment.bindings.IParsedCmdlineConfigurer`.
-       """
 
    @implements.implements(bindings.IExpRunShellCmdsGenerator)
    class ExpRunShellCmdsGenerator():
@@ -71,4 +87,12 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
    class ExecEnvChecker():
        """A class that conforms to
        :class:`~sierra.core.experiment.bindings.IExecEnvChecker`.
-    """
+       """
+
+   def cmdline_postparse_configure(argparse.Namespace) -> argparse.Namespace:
+       """
+       Additional configuration and/or validation of the passed cmdline
+       arguments pertaining to this platform. Validation should be performed
+       with assert(), and the parsed argument object should be returned with any
+       modifications/additions.
+       """
