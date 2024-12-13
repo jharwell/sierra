@@ -26,11 +26,6 @@ runtime error.
 
      - :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`
 
-   * - ExecEnvChecker
-
-     - No
-
-     - :class:`~sierra.core.experiment.bindings.IExecEnvChecker`
 
 
 Within this file, you may define the following functions, which must be named
@@ -52,10 +47,17 @@ will get a runtime error.
 
      - No
 
-     - Performs addition modification/insertion of parsed cmdline arguments, as
-       well as any needed validation for this execution environment.
+     - Performs additional modification/insertion of parsed cmdline arguments,
+       as well as any needed validation for this execution environment.
 
        Used in stages 1-5.
+
+   * - exec_env_check()
+
+     - No
+
+     - Performs checking of the software environment for this execution
+       environment prior to running anything in stage 2.
 
 Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
@@ -79,16 +81,16 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
       """
 
-   @implements.implements(bindings.IExecEnvChecker)
-   class ExecEnvChecker():
-       """A class that conforms to
-       :class:`~sierra.core.experiment.bindings.IExecEnvChecker`.
+   def exec_env_check(cmdopts: types.Cmdopts):
+       """
+       Check the software environment (envvars, PATH, etc.) for this execution
+       environment plugin prior to running anything in stage 2.
        """
 
    def cmdline_postparse_configure(argparse.Namespace) -> argparse.Namespace:
        """
        Additional configuration and/or validation of the passed cmdline
-       arguments pertaining to this platform. Validation should be performed
-       with assert(), and the parsed argument object should be returned with any
-       modifications/additions.
+       arguments pertaining to this execution environment. Validation should be
+       performed with assert(), and the parsed argument object should be
+       returned with any modifications/additions.
        """

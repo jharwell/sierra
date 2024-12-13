@@ -18,7 +18,7 @@ import pathlib
 import implements
 
 # Project packages
-from sierra.core import types, platform, utils
+from sierra.core import types, exec_env, utils
 from sierra.core.experiment import bindings
 
 _logger = logging.getLogger("robot.turtlebot3")
@@ -164,22 +164,22 @@ class ExpShellCmdsGenerator():
         return ret
 
 
-class ExecEnvChecker(platform.ExecEnvChecker):
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        super().__init__(cmdopts)
-        self.cmdopts = cmdopts
-        _logger = logging.getLogger('robot.turtlebot3')
+def exec_env_check(cmdopts: types.Cmdopts) -> None:
+    """
+    Verify execution environment in stage 2 for the :term:`ROS1+Robot` platform.
 
-    def __call__(self) -> None:
-        nodes = self.parse_nodefile(self.cmdopts['nodefile'])
-        for node in nodes:
-            if int(node.n_cores) != 1:
-                _logger.warning(("Nodefile %s, host %s has multiple "
-                                 "cores; turtlebots are single core"),
-                                self.cmdopts['nodefile'],
-                                node.hostname)
-            if not self.cmdopts['skip_online_check']:
-                self.check_connectivity(node.login,
+    Checks that a valid list of IPs for robots is set/passed, and checks that
+    they are reachable.
+    """
+    nodes = exec_env.parse_nodefile(cmdopts['nodefile'])
+    for node in nodes:
+        if int(node.n_cores) != 1:
+            _logger.warning(("Nodefile %s, host %s has multiple "
+                             "cores; turtlebots are single core"),
+                            cmdopts['nodefile'],
+                            node.hostname)
+        if not cmdopts['skip_online_check']:
+            exec_env.check_connectivity(node.login,
                                         node.hostname,
                                         node.port,
                                         'turtlebot3')
@@ -187,6 +187,6 @@ class ExecEnvChecker(platform.ExecEnvChecker):
 
 __api__ = [
     'cmdline_postparse_configurer',
-    'ExpShellCmdsGenerator',
-    'ExecEnvChecker'
+    'exec_env_check',
+    'ExpShellCmdsGenerator'
 ]

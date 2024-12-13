@@ -22,7 +22,7 @@ import argparse
 
 class ExpRootLeaf():
     """
-    Representation of the "name" in pathlib parlance in :python:`ExpRoot`.
+    Representation of the "name" in pathlib parlance in :class:`ExpRoot`.
     """
     @staticmethod
     def from_name(leaf: str) -> 'ExpRootLeaf':

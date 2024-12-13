@@ -167,3 +167,8 @@ def sphinx_cmdline_stage1():
 def sphinx_cmdline_stage2():
     parent = ros1.cmdline.ROSCmdline([2]).parser
     return PlatformCmdline([parent], [2]).parser
+
+
+__all__ = [
+    'PlatformCmdline'
+]

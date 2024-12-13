@@ -40,11 +40,6 @@ runtime error.
 
      - Stage 1, 2.
 
-   * - ExecEnvChecker
-
-     - No
-
-     - None, but should derive from :class:`~sierra.core.platform.ExecEnvChecker`
 
 Within this file, you may define the following functions, which must be named
 **EXACTLY** as specified, otherwise SIERRA will not detect them. If you try
@@ -79,6 +74,13 @@ will get a runtime error.
        platform.
 
        Used in stages 1-5.
+
+   * - exec_env_check()
+
+     - No
+
+     - Performs checking of the software environment for this platform
+       prior to running anything in stage 2.
 
    * - population_size_from_def()
 
@@ -141,6 +143,8 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
    from sierra.core.variables import batch_criteria as bc
    from sierra.core import hpc, platform
 
+   from platform.matrix import cmdline as cmd
+
    @implements.implements(bindings.IExpShellCmdsGenerator)
    class ExpShellCmdsGenerator():
        """A class that conforms to
@@ -151,11 +155,6 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
    class ExpRunShellCmdsGenerator():
        """A class that conforms to
        :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
-       """
-
-   class ExecEnvChecker(platform.ExecEnvChecker):
-       """A class deriving from
-       :class:`~sierra.core.platform.ExecEnvChecker`.
        """
 
    @implements.implements(bindings.IExpConfigurer)
@@ -177,8 +176,8 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
        This example extends :class:`~sierra.core.cmdline.BaseCmdline` with:
 
-       - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
-       - :class:`~cmdline.PlatformCmdline` (platform specifics)
+       - :class:`~sierra.core.hpc.cmdline.HPCCmdline` (HPC common)
+       - :class:`~cmd.PlatformCmdline` (platform specifics)
 
        assuming this platform can run on HPC environments.
        """
@@ -188,13 +187,18 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
        return cmd.PlatformCmdline(parents=[parser],
                                   stages=[-1, 1, 2, 3, 4, 5]).parser
 
-
    def cmdline_postparse_configure(argparse.Namespace) -> argparse.Namespace:
        """
        Additional configuration and/or validation of the passed cmdline
        arguments pertaining to this platform. Validation should be performed
        with assert(), and the parsed argument object should be returned with any
        modifications/additions.
+       """
+
+   def exec_env_check(cmdopts: types.Cmdopts):
+       """
+       Check the software environment (envvars, PATH, etc.) for this platform
+       plugin prior to running anything in stage 2.
        """
 
    def population_size_from_pickle(exp_def: tp.Union[xml.AttrChangeSet,

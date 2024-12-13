@@ -20,7 +20,7 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.ros1gazebo import cmdline
-from sierra.core import hpc, platform, config, ros1, types, batchroot, exec_env
+from sierra.core import hpc, config, ros1, types, batchroot, exec_env
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
@@ -188,9 +188,12 @@ def cmdline_parser() -> argparse.ArgumentParser:
 
     Extends the built-in cmdline parser with:
 
-    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
-    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
-    - :class:`~cmdline.PlatformCmdline` (Gazebo specifics)
+        - :class:`~sierra.core.hpc.cmdline.HPCCmdline` (HPC common)
+
+        - :class:`~sierra.core.ros1.cmdline.ROSCmdline` (ROS1 common)
+
+        - :class:`~sierra.plugins.platform.ros1gazebo.cmdline.PlatformCmdline`
+          (Gazebo specifics)
     """
     parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
     parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
@@ -256,7 +259,7 @@ def _configure_hpc_slurm(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
-    nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+    nodes = exec_env.parse_nodefile(args.nodefile)
     ppn = sys.maxsize
     for node in nodes:
         ppn = min(ppn, node.n_cores)
@@ -303,11 +306,11 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
     Check for:
 
-    - -:envvar:`ROS_VERSION`} is ROS1.
+        - :envvar:`ROS_VERSION` is ROS1.
 
-    - :envvar:`ROS_DISTO` is {kinetic/noetic}.
+        - :envvar:`ROS_DISTO` is {kinetic/noetic}.
 
-    - :program:`gazebo` can be found and the version is supported.
+        - :program:`gazebo` can be found and the version is supported.
     """
     keys = ['ROS_DISTRO', 'ROS_VERSION']
 
@@ -372,5 +375,6 @@ def pre_exp_diagnostics(cmdopts: types.Cmdopts,
 
 __api__ = [
     'cmdline_parser',
-    'cmdline_postparse_configure'
+    'cmdline_postparse_configure',
+    'exec_env_check'
 ]

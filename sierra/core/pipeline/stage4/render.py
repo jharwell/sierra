@@ -248,8 +248,7 @@ def from_bivar_heatmaps(main_config: types.YAMLDict,
 
 
 __api__ = [
-    '_parallel_render'
-    'from_imagized',
+    'from_project_imagized',
     'from_platform',
     'from_bivar_heatmaps'
 ]

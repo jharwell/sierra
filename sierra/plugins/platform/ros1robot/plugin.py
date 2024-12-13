@@ -17,7 +17,7 @@ import yaml
 
 # Project packages
 from sierra.plugins.platform.ros1robot import cmdline
-from sierra.core import platform, config, ros1, types, utils, batchroot
+from sierra.core import platform, config, ros1, types, utils, batchroot, exec_env
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
@@ -128,7 +128,7 @@ class ExpRunShellCmdsGenerator():
                       run_num,
                       self.n_agents)
 
-        nodes = platform.ExecEnvChecker.parse_nodefile(self.cmdopts['nodefile'])
+        nodes = exec_env.parse_nodefile(self.cmdopts['nodefile'])
 
         if len(nodes) < self.n_agents:
             _logger.critical(("Need %d hosts to correctly generate launch "
@@ -234,8 +234,7 @@ class ExpConfigurer():
         else:
             _logger.info("Syncing experiment inputs  -> robots")
 
-        checker = platform.ExecEnvChecker(self.cmdopts)
-        nodes = checker.parse_nodefile(self.cmdopts['nodefile'])
+        nodes = exec_env.parse_nodefile(self.cmdopts['nodefile'])
 
         # Use {parallel ssh, rsync} to push each experiment to all robots in
         # parallel--takes O(M*N) operation and makes it O(N) more or less.
@@ -249,10 +248,10 @@ class ExpConfigurer():
             current_username = pwd.getpwuid(os.getuid())[0]
 
             if not self.cmdopts['skip_online_check']:
-                checker.check_connectivity(remote_login,
-                                           remote_hostname,
-                                           remote_port,
-                                           self.cmdopts['robot'])
+                exec_env.check_connectivity(remote_login,
+                                            remote_hostname,
+                                            remote_port,
+                                            self.cmdopts['robot'])
 
             pssh_base += f' -H {remote_login}@{remote_hostname}:{remote_port}'
             prsync_base += f' -H {remote_login}@{remote_hostname}:{remote_port}'
@@ -299,8 +298,10 @@ def cmdline_parser() -> argparse.ArgumentParser:
 
     Extends built-in cmdline parser with:
 
-    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
-    - :class:`~cmdline.PlatformCmdline` (ROS1+robot specifics)
+        - :class:`~sierra.core.ros1.cmdline.ROSCmdline` (ROS1 common)
+
+        - :class:`~sierra.plugins.platform.ros1robot.cmdline.PlatformCmdline`
+          (ROS1+robot specifics)
     """
     parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
     return cmdline.PlatformCmdline(parents=[parent1],
@@ -334,26 +335,33 @@ def cmdline_postparse_configure(exec_env: str,
     return args
 
 
-@implements.implements(bindings.IExecEnvChecker)
-class ExecEnvChecker():
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        pass
+def exec_env_check(cmdopts: types.Cmdopts) -> None:
+    """
+    Verify execution environment in stage 2 for :term:`ROS1+Robot`.
 
-    def __call__(self) -> None:
-        keys = ['ROS_DISTRO', 'ROS_VERSION']
+    Check for:
 
-        for k in keys:
-            assert k in os.environ, \
-                "Non-ROS1+robot environment detected: '{0}' not found".format(
-                    k)
+        - :envvar:`ROS_VERSION` is ROS1.
 
-        # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
-            "SIERRA only supports ROS1 kinetic,noetic"
+        - :envvar:`ROS_DISTO` is {kinetic/noetic}.
 
-        # Check ROS version
-        assert os.environ['ROS_VERSION'] == "1", \
-            "Wrong ROS version: This plugin is for ROS1"
+        - :program:`gazebo` can be found and the version is supported.
+    """
+
+    keys = ['ROS_DISTRO', 'ROS_VERSION']
+
+    for k in keys:
+        assert k in os.environ, \
+            "Non-ROS1+robot environment detected: '{0}' not found".format(
+                k)
+
+    # Check ROS distro
+    assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
+        "SIERRA only supports ROS1 kinetic,noetic"
+
+    # Check ROS version
+    assert os.environ['ROS_VERSION'] == "1", \
+        "Wrong ROS version: This plugin is for ROS1"
 
 
 def population_size_from_pickle(adds_def: tp.Union[definition.AttrChangeSet,
@@ -373,7 +381,7 @@ def population_size_from_def(exp_def: definition.BaseExpDef,
                                                    cmdopts)
 
 
-def robot_prefix_extract(main_config: types.YAMLDict,
+def agent_prefix_extract(main_config: types.YAMLDict,
                          cmdopts: types.Cmdopts) -> str:
     return ros1.callbacks.robot_prefix_extract(main_config, cmdopts)
 
@@ -385,3 +393,13 @@ def pre_exp_diagnostics(cmdopts: types.Cmdopts,
     logger.info(s,
                 pathset.root,
                 cmdopts['n_runs'])
+
+
+__all__ = [
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
+    'ExpConfigurer',
+    'cmdline_parser',
+    'cmdline_postparse_configure',
+    'exec_env_check'
+]

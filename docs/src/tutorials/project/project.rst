@@ -96,7 +96,7 @@ Creating a New SIERRA Project
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
      plugin/project. This file is required, because all projects have to define
      the ``--controller`` and ``--scenario`` arguments used by SIERRA. See
-     :ref:`tutorials/plugin/cmdline` for documentation. See also :doc:`cmdline`.
+     :ref:`tutorials/cmdline` for documentation. See also :doc:`cmdline`.
 
 #. Configure your project so SIERRA understands how to generate
    :term:`Experimental Run` inputs and process outputs correctly by following

@@ -14,7 +14,6 @@ needs.
    :caption: Configuring SIERRA projects:
 
    project/project.rst
-   project/cmdline.rst
    project/main_config/index.rst
    project/graphs_config.rst
    project/stage5_config.rst
@@ -43,3 +42,9 @@ needs.
    plugin/exec_env/index.rst
    plugin/storage/index.rst
    plugin/expdef/index.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Misc Tutorials
+
+   cmdline.rst

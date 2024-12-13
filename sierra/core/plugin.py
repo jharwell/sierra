@@ -41,11 +41,12 @@ def exec_env_sanity_checks(module) -> None:
 
     in_module = inspect.getmembers(module, inspect.isclass)
 
-    opt_functions = ['cmdline_postparse_configure'
+    opt_functions = ['cmdline_postparse_configure',
+                     'exec_env_checker'
                      ]
     opt_classes = ['ExpRunShellCmdsGenerator',
-                   'ExpShellCmdsGenerator',
-                   'ExecEnvChecker']
+                   'ExpShellCmdsGenerator'
+                   ]
 
     for c in opt_classes:
         if not any(c in name for (name, _) in in_module):
@@ -78,10 +79,10 @@ def platform_sanity_checks(module) -> None:
                      ]
 
     opt_classes = ['ExpRunShellCmdsGenerator',
-                   'ExpShellCmdsGenerator',
-                   'ExecEnvChecker']
+                   'ExpShellCmdsGenerator']
 
     opt_functions = ['cmdline_postparse_configure',
+                     'exec_env_checker',
                      'agent_prefix_extract',
                      'arena_dims_from_criteria']
 

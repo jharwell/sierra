@@ -19,7 +19,7 @@ import typing as tp  # noqa: F401
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, config, platform, utils, batchroot
+from sierra.core import types, config, platform, utils, batchroot, exec_env
 import sierra.core.plugin_manager as pm
 
 
@@ -175,11 +175,11 @@ class BatchExpRunner:
                                           self.criteria)
 
         # Verify environment is OK before running anything
-        if hasattr(platform, 'ExecEnvChecker'):
-            self.logger.debug("Checking execution environment")
-            platform.ExecEnvChecker(self.cmdopts)()
-        else:
-            self.logger.debug("Skip execution environment checking--not needed")
+        self.logger.debug("Checking --platform execution environment")
+        platform.exec_env_check(self.cmdopts)
+
+        self.logger.debug("Checking --exec-env execution environment")
+        exec_env.exec_env_check(self.cmdopts)
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()

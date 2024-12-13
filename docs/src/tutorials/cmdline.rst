@@ -1,4 +1,4 @@
-.. _tutorials/project/cmdline:
+.. _tutorials/cmdline:
 
 ============================
 Extending the SIERRA Cmdline

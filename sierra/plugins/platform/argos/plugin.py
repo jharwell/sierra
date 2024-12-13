@@ -20,7 +20,7 @@ import packaging.version
 
 # Project packages
 from sierra.plugins.platform.argos import cmdline
-from sierra.core import hpc, config, types, utils, platform, batchroot
+from sierra.core import hpc, config, types, utils, platform, batchroot, exec_env
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
@@ -126,38 +126,47 @@ class ExpConfigurer():
         return 'per-exp'
 
 
-class ExecEnvChecker(platform.ExecEnvChecker):
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        super().__init__(cmdopts)
+def exec_env_check(cmdopts: types.Cmdopts) -> None:
+    """
+    Perform stage2 execution environment checks for the :term:`ARgoS` platform.
 
-    def __call__(self) -> None:
-        keys = ['ARGOS_PLUGIN_PATH']
+    Checks:
 
-        for k in keys:
-            assert k in os.environ, \
-                f"Non-ARGoS environment detected: '{k}' not found"
+        - ARGoS can be found
 
-        # Check we can find ARGoS
-        proc = self.check_for_simulator(config.kARGoS['launch_cmd'])
+        - ARGoS version supported
 
-        # Check ARGoS version
-        stdout = proc.stdout.decode('utf-8')
-        stderr = proc.stderr.decode('utf-8')
-        res = re.search(r'[0-9]+.[0-9]+.[0-9]+-beta[0-9]+', stdout)
-        assert res is not None, \
-            f"ARGOS_VERSION not in stdout: stdout='{stdout}',stderr='{stderr}'"
+        - :envvar:`ARGOS_PLUGIN_PATH` is set
 
-        _logger.trace("Parsed ARGOS_VERSION: %s",  # type: ignore
-                      res.group(0))
+        - for :program:`Xvfb` if ``--platform-vc`` was passed.
+    """
+    keys = ['ARGOS_PLUGIN_PATH']
 
-        version = packaging.version.parse(res.group(0))
-        min_version = config.kARGoS['min_version']
+    for k in keys:
+        assert k in os.environ, \
+            f"Non-ARGoS environment detected: '{k}' not found"
 
-        assert version >= min_version, \
-            f"ARGoS version {version} < min required {min_version}"
+    # Check we can find ARGoS
+    proc = exec_env.check_for_simulator(config.kARGoS['launch_cmd'])
 
-        if self.cmdopts['platform_vc']:
-            assert shutil.which('Xvfb') is not None, "Xvfb not found"
+    # Check ARGoS version
+    stdout = proc.stdout.decode('utf-8')
+    stderr = proc.stderr.decode('utf-8')
+    res = re.search(r'[0-9]+.[0-9]+.[0-9]+-beta[0-9]+', stdout)
+    assert res is not None, \
+        f"ARGOS_VERSION not in stdout: stdout='{stdout}',stderr='{stderr}'"
+
+    _logger.trace("Parsed ARGOS_VERSION: %s",  # type: ignore
+                  res.group(0))
+
+    version = packaging.version.parse(res.group(0))
+    min_version = config.kARGoS['min_version']
+
+    assert version >= min_version, \
+        f"ARGoS version {version} < min required {min_version}"
+
+    if cmdopts['platform_vc']:
+        assert shutil.which('Xvfb') is not None, "Xvfb not found"
 
 
 def cmdline_parser() -> argparse.ArgumentParser:
@@ -166,9 +175,10 @@ def cmdline_parser() -> argparse.ArgumentParser:
 
     Extends built-in cmdline parser with:
 
-    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
-    - :class:`~cmdline.PlatformCmdline` (ARGoS specifics)
+        - :class:`~sierra.core.hpc.cmdline.HPCCmdline` (HPC common)
 
+        - :class:`~sierra.plugins.platform.argos.cmdline.PlatformCmdline` (ARGoS
+          specifics)
     """
     parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
     return cmdline.PlatformCmdline(parents=[parser],
@@ -209,7 +219,7 @@ def cmdline_postparse_configure(exec_env: str,
     raise RuntimeError(f"'{exec_env}' unsupported on ARGoS")
 
 
-def _configure_hpc_pbs(args: argparse.Namespace) -> args: argparse.Namespace:
+def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
     _logger.debug("Configuring ARGoS for PBS execution")
     # For HPC, we want to use the the maximum # of simultaneous jobs per
     # node such that there is no thread oversubscription. We also always
@@ -228,7 +238,7 @@ def _configure_hpc_pbs(args: argparse.Namespace) -> args: argparse.Namespace:
     return args
 
 
-def _configure_hpc_slurm(args: argparse.Namespace) -> args: argparse.Namespace:
+def _configure_hpc_slurm(args: argparse.Namespace) -> argparse.Namespace:
     _logger.debug("Configuring ARGoS for SLURM execution")
     # For HPC, we want to use the the maximum # of simultaneous jobs per
     # node such that there is no thread oversubscription. We also always
@@ -284,7 +294,7 @@ def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
 def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
     _logger.debug("Configuring ARGoS for ADHOC execution")
 
-    nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+    nodes = exec_env.parse_nodefile(args.nodefile)
     ppn = sys.maxsize
     for node in nodes:
         ppn = min(ppn, node.n_cores)

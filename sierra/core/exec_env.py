@@ -56,18 +56,16 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
     """Dispatcher for verifying execution environments in stage 2.
 
     This is required because what is needed to create experiments in stage 1 for
-    a platform is not necessarily the same as what is needed (in terms of
-    envvars, daemons, etc.) when running them.
-
+    an execution environment is not necessarily the same as what is needed (in
+    terms of envvars, daemons, etc.) when running them.
     """
-
-    module = pm.pipeline.get_plugin_module(cmdopts['platform'])
-    if hasattr(module, 'exec_env_check'):
-        module.exec_env_check(cmdopts)
-
     module = pm.pipeline.get_plugin_module(cmdopts['exec_env'])
     if hasattr(module, 'exec_env_check'):
         module.exec_env_check(cmdopts)
+    else:
+        _logger.debug(("Skipping execution environment check for "
+                       "--exec-env='%s': does not define hook"),
+                      cmdopts['exec_env'])
 
 
 def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:

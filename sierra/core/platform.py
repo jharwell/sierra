@@ -67,6 +67,23 @@ def cmdline_postparse_configure(platform: str,
     return args
 
 
+def exec_env_check(cmdopts: types.Cmdopts) -> None:
+    """Dispatcher for verifying execution environments in stage 2.
+
+    This is required because what is needed to create experiments in stage 1 for
+    a platform is not necessarily the same as what is needed (in terms of
+    envvars, daemons, etc.) when running them.
+
+    """
+    module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+    if hasattr(module, 'exec_env_check'):
+        module.exec_env_check(cmdopts)
+    else:
+        _logger.debug(("Skipping execution environment check for "
+                       "--platform='%s': does not define hook"),
+                      cmdopts['platform'])
+
+
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     """Dispatcher for shell cmd generation for an :term:`Experimental Run`.
@@ -268,9 +285,9 @@ def get_local_ip():
 __api__ = [
     'cmdline_parser',
     'cmdline_postparse_configure',
+    'exec_env_checker',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
-    'ExecEnvChecker',
 ]
