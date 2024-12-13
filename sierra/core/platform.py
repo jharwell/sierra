@@ -10,15 +10,10 @@ methods.
 """
 
 # Core packages
-import os
 import typing as tp
-import subprocess
-import shutil
 import argparse
 import socket
 import logging
-import pwd
-import re
 import pathlib
 
 # 3rd party packages
@@ -27,9 +22,11 @@ import netifaces
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import config, types, utils
+from sierra.core import types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
+
+_logger = logging.getLogger(__name__)
 
 
 def cmdline_parser(platform: str) -> argparse.ArgumentParser:
@@ -42,6 +39,32 @@ def cmdline_parser(platform: str) -> argparse.ArgumentParser:
     """
     module = pm.pipeline.get_plugin_module(platform)
     return module.cmdline_parser()
+
+
+def cmdline_postparse_configure(platform: str,
+                                exec_env: str,
+                                args: argparse.Namespace) -> argparse.Namespace:
+    """Dispatcher for configuring the cmdopts dictionary.
+
+    Dispatches configuring to the selected ``--platform`` and ``--exec-env``.
+    Called before the pipeline starts to add modify existing cmdline arguments
+    after initial parsing.  ``platform`` and ``exec_env`` are needed as
+    arguments as they are not present in ``args``; they are "bootstrap" cmdline
+    args needed to be parsed first to build the parser for the set of cmdline
+    arguments accepted.
+    """
+    # Configure for selected platform
+    args.__dict__['platform'] = platform
+    module = pm.pipeline.get_plugin_module(platform)
+
+    if hasattr(module, 'cmdline_postparse_configure'):
+        args = module.cmdline_postparse_configure(exec_env, args)
+    else:
+        _logger.debug(("Skipping configuring cmdline from --platform='%s': "
+                      "does not define hook"),
+                      platform)
+
+    return args
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
@@ -138,13 +161,12 @@ class ExpShellCmdsGenerator():
                  cmdopts: types.Cmdopts,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
-        self.logger = logging.getLogger(__name__)
 
         module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
         if hasattr(module, 'ExpShellCmdsGenerator'):
-            self.logger.debug(("Skipping generating experiment shell commands "
-                               "for --platform=%s"),
-                              self.cmdopts['platform'])
+            _logger.debug(("Skipping generating experiment shell commands "
+                           "for --platform=%s"),
+                          self.cmdopts['platform'])
 
             self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
                                                          exp_num)
@@ -153,9 +175,9 @@ class ExpShellCmdsGenerator():
 
         module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
         if hasattr(module, 'ExpShellCmdsGenerator'):
-            self.logger.debug(("Skipping generating experiment shell commands "
-                               "for --exec-env=%s"),
-                              self.cmdopts['exec_env'])
+            _logger.debug(("Skipping generating experiment shell commands "
+                           "for --exec-env=%s"),
+                          self.cmdopts['exec_env'])
 
             self.env = module.ExpShellCmdsGenerator(self.cmdopts,
                                                     exp_num)
@@ -196,43 +218,6 @@ class ExpShellCmdsGenerator():
         return cmds
 
 
-def cmdline_postparse_configure(platform: str,
-                                exec_env: str,
-                                args: argparse.Namespace) -> argparse.Namespace:
-    """Dispatcher for configuring the cmdopts dictionary.
-
-    Dispatches configuring to the selected ``--platform`` and ``--exec-env``.
-    Called before the pipeline starts to add modify existing cmdline arguments
-    after initial parsing.
-    """
-    logger = logging.getLogger(__name__)
-
-    # Configure for selected execution enivornment first, to check for
-    # low-level details.
-    args.__dict__['exec_env'] = exec_env
-    module = pm.pipeline.get_plugin_module(exec_env)
-
-    if hasattr(module, 'ParsedCmdlineConfigurer'):
-        args = module.ParsedCmdlineConfigurer(exec_env)
-    else:
-        logger.debug(("Skipping configuring cmdline from --exec-env='%s': "
-                      "does not define hook"),
-                     exec_env)
-
-        # Configure for selected platform
-    args.__dict__['platform'] = platform
-    module = pm.pipeline.get_plugin_module(platform)
-
-    if hasattr(module, 'ParsedCmdlineConfigurer'):
-        args = module.ParsedCmdlineConfigurer(exec_env)
-    else:
-        logger.debug(("Skipping configuring cmdline from --platform='%s': "
-                      "does not define hook"),
-                     platform)
-
-    return args
-
-
 class ExpConfigurer():
     """Perform platform-specific configuration for an :term:`Experimental Run`.
 
@@ -259,195 +244,6 @@ class ExpConfigurer():
         return self.platform.cmdfile_paradigm()
 
 
-class ExecEnvChecker():
-    """Base class for verifying execution environments before running experiments.
-
-    Platforms and/or execution environments needed to perform verification
-    should derive from this class to use the common functionality present in it.
-
-    """
-
-    @ staticmethod
-    def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
-        ret = []
-
-        with utils.utf8open(nodefile, 'r') as f:
-            lines = f.readlines()
-
-            for line in lines:
-                if parsed := ExecEnvChecker._parse_nodefile_line(line):
-                    ret.append(parsed)
-
-        return ret
-
-    @ staticmethod
-    def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
-        # Line starts with a comment--no parsing needed
-        comment_re = r"^#"
-        if res := re.search(comment_re, line):
-            return None
-
-        cores_re = r"^[0-9]+/"
-        if res := re.search(cores_re, line):
-            cores = int(line.split('/')[0])
-            ssh = line.split('/')[1]
-        else:
-            cores = 1
-            ssh = line
-
-        identifier_re = r"[a-zA-Z0-9_.:]+"
-        port_re = r"ssh -p\s*([0-9]+)"
-        username_at_host_re = f"({identifier_re})+@({identifier_re})"
-        port_and_username_at_host_re = port_re + r"\*s" + username_at_host_re
-        port_and_hostname_re = port_re + rf"\s+({identifier_re})"
-
-        if res := re.search(port_and_username_at_host_re, ssh):
-            # They specified the port AND 'username@host'
-            port = int(res.group(1))
-            login = res.group(2)
-            hostname = res.group(3)
-        elif res := re.search(port_and_hostname_re, ssh):
-            # They only specified the port and hostname
-            port = int(res.group(1))
-            hostname = res.group(2)
-            login = pwd.getpwuid(os.getuid())[0]
-        elif res := re.search(username_at_host_re, ssh):
-            # They only specified 'username@host'
-            port = 22
-            login = res.group(1)
-            hostname = res.group(2)
-        elif res := re.search(identifier_re, ssh):
-            # They only specified the hostname
-            port = 22
-            login = pwd.getpwuid(os.getuid())[0]
-            hostname = res.group(0)
-        else:
-            raise ValueError(f"Bad ssh/hostname spec {ssh}")
-
-        return types.ParsedNodefileSpec(hostname=hostname,
-                                        n_cores=cores,
-                                        login=login,
-                                        port=port)
-
-    def __init__(self, cmdopts: types.Cmdopts):
-        self.cmdopts = cmdopts
-        self.exec_env = self.cmdopts['exec_env']
-        self.platform = self.cmdopts['platform']
-        self.logger = logging.getLogger(__name__)
-
-    def __call__(self) -> None:
-        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
-        if hasattr(module, 'ExecEnvChecker'):
-            module.ExecEnvChecker(self.cmdopts)()
-
-        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
-        if hasattr(module, 'ExecEnvChecker'):
-            module.ExecEnvChecker(self.cmdopts)()
-
-    def check_connectivity(self,
-                           login: str,
-                           hostname: str,
-                           port: int,
-                           host_type: str) -> None:
-        self.logger.info("Checking connectivity to %s", hostname)
-        ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
-        nc_diag = f"{host_type},port={port} via {hostname}"
-
-        if self.cmdopts['online_check_method'] == 'ping+ssh':
-            try:
-                self.logger.debug("Attempt to ping %s, type=%s",
-                                  hostname,
-                                  host_type)
-                timeout = config.kPlatform['ping_timeout']
-                subprocess.run(f"ping -c 3 -W {timeout} {hostname}",
-                               shell=True,
-                               check=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                self.logger.fatal("Unable to ping %s, type=%s",
-                                  hostname,
-                                  host_type)
-                raise
-            self.logger.debug("%s is alive, type=%s", hostname, host_type)
-        elif self.cmdopts['online_check_method'] == 'nc+ssh':
-            try:
-                self.logger.debug("Check for ssh tunnel to %s", nc_diag)
-                timeout = config.kPlatform['ping_timeout']
-                subprocess.run(f"nc -z {hostname} {port}",
-                               shell=True,
-                               check=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                self.logger.fatal("No ssh tunnel to %s", nc_diag)
-                raise
-            self.logger.debug("ssh tunnel to %s alive", nc_diag)
-
-        try:
-
-            self.logger.debug("Verify ssh to %s", ssh_diag)
-            subprocess.run((f"ssh -p{port} "
-                            "-o PasswordAuthentication=no "
-                            "-o StrictHostKeyChecking=no "
-                            "-o BatchMode=yes "
-                            f"{login}@{hostname} exit"),
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError:
-            self.logger.fatal("Unable to connect to %s", ssh_diag)
-            raise
-        self.logger.info("%s@%s online", host_type, hostname)
-
-    def check_for_simulator(self, name: str):
-        shellname = get_executable_shellname(name)
-
-        version_cmd = f'{shellname} -v'
-        self.logger.debug("Check version for '%s' via '%s'",
-                          shellname,
-                          version_cmd)
-
-        if shutil.which(shellname):
-            res = subprocess.run(version_cmd,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 shell=True)
-            return res
-        else:
-            error = "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
-                                                                                        self.platform,
-                                                                                        name)
-            raise RuntimeError(error)
-
-
-def get_executable_shellname(base: str) -> str:
-    if 'SIERRA_ARCH' in os.environ:
-        arch = os.environ['SIERRA_ARCH']
-        return f'{base}-{arch}'
-    else:
-        return base
-
-
-def get_free_port() -> int:
-    """Determine a free port using sockets.
-
-    From
-    https://stackoverflow.com/questions/44875422/how-to-pick-a-free-port-for-a-subprocess
-
-    Because of TCP TIME_WAIT, close()d ports are still unusable for a few
-    minutes, which will leave plenty of time for SIERRA to assign all unique
-    ports to processes during stage 2.
-
-    """
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('', 0))  # bind to port 0 -> OS allocates free port
-    port = s.getsockname()[1]
-    s.close()
-    return port
-
-
 def get_local_ip():
     """
     Get the local IP address of the SIERRA host machine.
@@ -470,10 +266,10 @@ def get_local_ip():
 
 
 __api__ = [
-    'CmdlineParserGenerator',
+    'cmdline_parser',
+    'cmdline_postparse_configure',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
-    'ParsedCmdlineConfigurer',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
     'ExecEnvChecker',

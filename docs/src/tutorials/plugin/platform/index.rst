@@ -24,7 +24,7 @@ Create the Code
 
 Create the following filesystem structure and content in
 ``$HOME/git/plugins/platform/matrix``. Each file is required; any number of
-additional files can be included.
+additional files can be included as needed.
 
 .. tabs::
 

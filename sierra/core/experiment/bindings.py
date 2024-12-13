@@ -105,7 +105,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         Commands are run during stage 2 after all :term:`Experimental Runs
         <Experimental Run>` for an :term:`Experiment` have finished, but before
         the next experiment in the :term:`Batch Experiment` is launched.  These
-        commands are run in the `same` sub-shell as the pre- and exec-exp
+        commands are run in the *same* sub-shell as the pre- and exec-exp
         commands.
 
         These commands include things like cleaning up/stopping background
@@ -121,9 +121,9 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     This includes:
 
-    - The cmds to run the prior to the run.
+    - The cmds to run the prior to executing the run.
 
-    - The cmds to executed the experimental run.
+    - The cmds to execute the experimental run.
 
     - Any post-run cleanup cmds before the next run is executed.
 
@@ -135,7 +135,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
         cmdopts: Dictionary of parsed cmdline options.
 
-        n_agents: The configured # of robots for the experimental run.
+        n_agents: The configured # of agents for the experimental run.
 
         exp_num: The 0-based index of the experiment in the batch.
 
@@ -209,34 +209,13 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
 
-class IExecEnvChecker(implements.Interface):
-    """Perform sanity checks for stage 2 execution environment.
-
-    This is needed because stage 2 can run separate from stage 1, and we need to
-    guarantee that the execution environment we verified during stage 1 is still
-    valid.
-
-    Arguments:
-
-        cmdopts: Dictionary of parsed cmdline options.
-
-    """
-
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        raise NotImplementedError
-
-    def __call__(self) -> None:
-        raise NotImplementedError
-
-
 class IExpConfigurer(implements.Interface):
-    """Perform addition configuration after creating experiments.
+    """Perform addition configuration after creating experiments in stage 1.
 
     E.g., creating directories store outputs in if they are not created by the
     simulator/:term:`Project` code.
 
     Arguments:
-
         cmdopts: Dictionary of parsed cmdline options.
 
     """
@@ -246,11 +225,10 @@ class IExpConfigurer(implements.Interface):
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
         """
-        Configure an experiment.
+        Configure an :term:`Experiment`.
 
         Arguments:
-
-o            exp_input_root: Absolute path to the input directory for the
+            exp_input_root: Absolute path to the input directory for the
                             experiment.
         """
         raise NotImplementedError
@@ -259,10 +237,9 @@ o            exp_input_root: Absolute path to the input directory for the
                     exp_input_root: pathlib.Path,
                     run_output_root: pathlib.Path) -> None:
         """
-        Configure an experimental run.
+        Configure an :term:`Experimental Run`.
 
         Arguments:
-
             exp_input_root: Absolute path to the input directory for the
                             experiment.
 
@@ -283,9 +260,7 @@ o            exp_input_root: Absolute path to the input directory for the
 
 
 __api__ = [
-    'IParsedCmdlineConfigurer',
     'IExpRunShellCmdsGenerator',
     'IExpShellCmdsGenerator',
     'IExpConfigurer',
-    'IExecEnvChecker'
 ]

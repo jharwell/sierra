@@ -22,39 +22,7 @@ from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
 
-def cmdline_extensions() -> argparse.ArgumentParser:
-    """
-    Get a cmdline parser supporting the :term:`ROS1+Robot` platform.
-
-    Extends built-in cmdline parser with:
-
-    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
-    - :class:`~cmdline.PlatformCmdline` (ROS1+robot specifics)
-    """
-    parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.PlatformCmdline(parents=[parent1],
-                                   stages=[-1, 1, 2, 3, 4, 5]).parser
-
-
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
-    def __init__(self, exec_env: str) -> None:
-        self.exec_env = exec_env
-        self.logger = logging.getLogger('platform.ros1robot')
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        if args.nodefile is None:
-            assert 'SIERRA_NODEFILE' in os.environ, \
-                ("Non-ros1robot environment detected: --nodefile not "
-                 "passed and 'SIERRA_NODEFILE' not found")
-            args.nodefile = os.environ['SIERRA_NODEFILE']
-
-        assert utils.path_exists(args.nodefile), \
-            f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
-        self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
-
-        assert not args.platform_vc, \
-            "Platform visual capture not supported on ros1robot"
+_logger = logging.getLogger('platform.ros1robot')
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
@@ -68,7 +36,6 @@ class ExpRunShellCmdsGenerator():
         self.n_agents = n_agents
         self.exp_num = exp_num
         self.criteria = criteria
-        self.logger = logging.getLogger('platform.ros1robot')
 
     def pre_run_cmds(self,
                      host: str,
@@ -95,9 +62,9 @@ class ExpRunShellCmdsGenerator():
 
         main_config = yaml.load(utils.utf8open(main_path), yaml.FullLoader)
 
-        self.logger.debug("Generating pre-exec cmds for run%s slaves: %d robots",
-                          run_num,
-                          self.n_agents)
+        _logger.debug("Generating pre-exec cmds for run%s slaves: %d robots",
+                      run_num,
+                      self.n_agents)
 
         script_yaml = main_config['ros']['robots'][self.cmdopts['robot']]
         script_file = script_yaml.get('setup_script', "$HOME/.bashrc")
@@ -126,8 +93,8 @@ class ExpRunShellCmdsGenerator():
         if self.cmdopts['no_master_node']:
             return []
 
-        self.logger.debug("Generating exec cmds for run%s master",
-                          run_num)
+        _logger.debug("Generating exec cmds for run%s master",
+                      run_num)
 
         # ROS master node
         exp_dirname = self.criteria.gen_exp_names()[self.exp_num]
@@ -157,19 +124,19 @@ class ExpRunShellCmdsGenerator():
                              input_fpath: pathlib.Path,
                              run_num: int) -> tp.List[types.ShellCmdSpec]:
 
-        self.logger.debug("Generating exec cmds for run%s slaves: %d robots",
-                          run_num,
-                          self.n_agents)
+        _logger.debug("Generating exec cmds for run%s slaves: %d robots",
+                      run_num,
+                      self.n_agents)
 
         nodes = platform.ExecEnvChecker.parse_nodefile(self.cmdopts['nodefile'])
 
         if len(nodes) < self.n_agents:
-            self.logger.critical(("Need %d hosts to correctly generate launch "
-                                  "cmds for run%s with %d robots; %d available"),
-                                 self.n_agents,
-                                 run_num,
-                                 self.n_agents,
-                                 len(nodes))
+            _logger.critical(("Need %d hosts to correctly generate launch "
+                              "cmds for run%s with %d robots; %d available"),
+                             self.n_agents,
+                             run_num,
+                             self.n_agents,
+                             len(nodes))
 
         ret = []  # type: tp.List[types.ShellCmdSpec]
         for i in range(0, self.n_agents):
@@ -205,14 +172,13 @@ class ExpShellCmdsGenerator():
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
-        self.logger = logging.getLogger('platform.ros1robot')
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         local_ip = platform.get_local_ip()
         port = config.kROS['port_base'] + self.exp_num
         master_uri = f'http://{local_ip}:{port}'
 
-        self.logger.info("Using ROS_MASTER_URI=%s", master_uri)
+        _logger.info("Using ROS_MASTER_URI=%s", master_uri)
 
         return [
             types.ShellCmdSpec(
@@ -252,7 +218,6 @@ class ExpShellCmdsGenerator():
 class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
-        self.logger = logging.getLogger('platform.ros1robot')
 
     def cmdfile_paradigm(self) -> str:
         return 'per-run'
@@ -264,15 +229,15 @@ class ExpConfigurer():
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
         if self.cmdopts['skip_sync']:
-            self.logger.info("Skipping syncing experiment inputs -> robots")
+            _logger.info("Skipping syncing experiment inputs -> robots")
             return
         else:
-            self.logger.info("Syncing experiment inputs  -> robots")
+            _logger.info("Syncing experiment inputs  -> robots")
 
         checker = platform.ExecEnvChecker(self.cmdopts)
         nodes = checker.parse_nodefile(self.cmdopts['nodefile'])
 
-        # Use parallel ssh, rsync to push each experiment to all robots in
+        # Use {parallel ssh, rsync} to push each experiment to all robots in
         # parallel--takes O(M*N) operation and makes it O(N) more or less.
         pssh_base = 'parallel-ssh'
         prsync_base = 'parallel-rsync'
@@ -307,28 +272,69 @@ class ExpConfigurer():
                      f"{exp_input_root}/ "
                      f"{robot_input_root}/")
         try:
-            self.logger.trace("Running mkdir: %s", mkdir_cmd)  # type: ignore
+            _logger.trace("Running mkdir: %s", mkdir_cmd)  # type: ignore
             res = subprocess.run(mkdir_cmd,
                                  shell=True,
                                  check=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
-            self.logger.trace("Running rsync: %s", rsync_cmd)  # type: ignore
+            _logger.trace("Running rsync: %s", rsync_cmd)  # type: ignore
             res = subprocess.run(rsync_cmd,
                                  shell=True,
                                  check=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
         except subprocess.CalledProcessError:
-            self.logger.fatal("Unable to sync %s with %s: stdout=%s,stderr=%s",
-                              exp_input_root,
-                              robot_input_root,
-                              res.stdout.decode('utf-8'),
-                              res.stderr.decode('utf-8'))
+            _logger.fatal("Unable to sync %s with %s: stdout=%s,stderr=%s",
+                          exp_input_root,
+                          robot_input_root,
+                          res.stdout.decode('utf-8'),
+                          res.stderr.decode('utf-8'))
             raise
 
 
-@ implements.implements(bindings.IExecEnvChecker)
+def cmdline_parser() -> argparse.ArgumentParser:
+    """
+    Get a cmdline parser supporting the :term:`ROS1+Robot` platform.
+
+    Extends built-in cmdline parser with:
+
+    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
+    - :class:`~cmdline.PlatformCmdline` (ROS1+robot specifics)
+    """
+    parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parent1],
+                                   stages=[-1, 1, 2, 3, 4, 5]).parser
+
+
+def cmdline_postparse_configure(exec_env: str,
+                                args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure cmdline args after parsing for the :term:`ROS1+Robot` platform.
+
+    Checks for:
+
+    - List of robot IPs via ``--nodefile`` or :envvar:`SIERRA_NODEFILE`.
+
+    """
+    if args.nodefile is None:
+        assert 'SIERRA_NODEFILE' in os.environ, \
+            ("Non-ros1robot environment detected: --nodefile not "
+             "passed and 'SIERRA_NODEFILE' not found")
+        args.nodefile = os.environ['SIERRA_NODEFILE']
+
+    assert utils.path_exists(args.nodefile), \
+        f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+
+    _logger.info("Using '%s' as robot hostnames file", args.nodefile)
+
+    assert not args.platform_vc, \
+        "Platform visual capture not supported on ros1robot"
+
+    return args
+
+
+@implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         pass

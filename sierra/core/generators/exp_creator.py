@@ -115,6 +115,7 @@ class ExpCreator:
         configurer = platform.ExpConfigurer(self.cmdopts)
         commands_fpath = self.commands_fpath.with_suffix(
             config.kGNUParallel['cmdfile_ext'])
+
         if configurer.cmdfile_paradigm() == 'per-exp' and utils.path_exists(commands_fpath):
             commands_fpath.unlink()
 

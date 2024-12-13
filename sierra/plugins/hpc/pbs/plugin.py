@@ -20,16 +20,18 @@ from sierra.core import types
 from sierra.core.experiment import bindings
 
 
-def parsed_cmdline_configure(argparse.Namespace) -> argparse.Namespace:
-    """Configure SIERRA for PBS HPC.
+def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure SIERRA for PBS HPC.
 
     Uses the following environment variables (if any of them are not defined an
     assertion will be triggered):
 
-    - ``PBS_NUM_PPN``
-    - ``PBS_NODEFILE``
-    - ``PBS_JOBID``
+    - :envvar:`PBS_NUM_PPN`
 
+    - :envvar:`PBS_NODEFILE`
+
+    - :envvar:`PBS_JOBID`
     """
 
     keys = [
@@ -118,7 +120,7 @@ class ExpShellCmdsGenerator():
 
 
 __api__ = [
-    'ParsedCmdlineConfigurer',
+    'cmdline_postparse_configurer',
 
 
 ]

@@ -14,12 +14,6 @@ runtime error.
 
      - Conforms to interface?
 
-   * - ParsedCmdlineConfigurer
-
-     - No
-
-     - :class:`~sierra.core.experiment.bindings.IParsedCmdlineConfigurer`
-
    * - ExpRunShellCmdsGenerator
 
      - No
@@ -60,6 +54,8 @@ will get a runtime error.
 
      - Performs addition modification/insertion of parsed cmdline arguments, as
        well as any needed validation for this execution environment.
+
+       Used in stages 1-5.
 
 Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 

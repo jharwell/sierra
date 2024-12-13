@@ -5,7 +5,7 @@ a part of SIERRA which requires an optional class you omitted, you will get a
 runtime error.
 
 .. list-table:: Platform Plugin Classes
-   :widths: 25,25,50
+   :widths: 25,25,40, 10
    :header-rows: 1
 
    * - Class
@@ -14,11 +14,15 @@ runtime error.
 
      - Conforms to interface?
 
+     - Used in?
+
    * - ExpConfigurer
 
      - Yes
 
      - :class:`~sierra.core.experiment.bindings.IExpConfigurer`
+
+     - Stage 1.
 
    * - ExpRunShellCmdsGenerator
 
@@ -26,17 +30,21 @@ runtime error.
 
      - :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`
 
+     - Stage 1, 2.
+
    * - ExpShellCmdsGenerator
 
      - No
 
      - :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`
 
+     - Stage 1, 2.
+
    * - ExecEnvChecker
 
      - No
 
-     - :class:`~sierra.core.experiment.bindings.IExecEnvChecker`
+     - None, but should derive from :class:`~sierra.core.platform.ExecEnvChecker`
 
 Within this file, you may define the following functions, which must be named
 **EXACTLY** as specified, otherwise SIERRA will not detect them. If you try
@@ -60,6 +68,8 @@ will get a runtime error.
      - Performs addition modification/insertion of parsed cmdline arguments, as
        well as any needed validation for this platform.
 
+       Used in stages 1-5.
+
    * - cmdline_parser
 
      - Yes
@@ -67,6 +77,8 @@ will get a runtime error.
      - Creates and returns an ``argparse.ArgumentParser`` object containing all
        cmdline arguments understood by SIERRA when invoked with the selected
        platform.
+
+       Used in stages 1-5.
 
    * - population_size_from_def()
 
@@ -127,7 +139,7 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
 
    from sierra.core.experiment import bindings, definition
    from sierra.core.variables import batch_criteria as bc
-   from sierra.core import hpc
+   from sierra.core import hpc, platform
 
    @implements.implements(bindings.IExpShellCmdsGenerator)
    class ExpShellCmdsGenerator():
@@ -141,10 +153,9 @@ Below is a sample/skeleton ``plugin.py`` to use as a starting point.
        :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
        """
 
-   @implements.implements(bindings.IExecEnvChecker)
-   class ExecEnvChecker():
-       """A class that conforms to
-       :class:`~sierra.core.experiment.bindings.IExecEnvChecker`.
+   class ExecEnvChecker(platform.ExecEnvChecker):
+       """A class deriving from
+       :class:`~sierra.core.platform.ExecEnvChecker`.
        """
 
    @implements.implements(bindings.IExpConfigurer)

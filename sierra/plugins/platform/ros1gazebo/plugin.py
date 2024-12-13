@@ -20,106 +20,11 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.ros1gazebo import cmdline
-from sierra.core import hpc, platform, config, ros1, types, batchroot
+from sierra.core import hpc, platform, config, ros1, types, batchroot, exec_env
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
-
-def cmdline_extensions() -> argparse.ArgumentParser:
-    """
-    Get a cmdline parser supporting the :term:`ROS1+Gazebo` platform.
-
-    Extends the built-in cmdline parser with:
-
-    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
-    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
-    - :class:`~cmdline.PlatformCmdline` (Gazebo specifics)
-    """
-    parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-    parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.PlatformCmdline(parents=[parent1, parent2],
-                                   stages=[-1, 1, 2, 3, 4, 5]).parser
-
-
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
-    def __init__(self, exec_env: str) -> None:
-        self.exec_env = exec_env
-        self.logger = logging.getLogger('ros1gazebo.plugin')
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        # No configuration needed for stages 3-5
-        if not any(stage in args.pipeline for stage in [1, 2]):
-            return
-
-        if self.exec_env == 'hpc.local':
-            self._hpc_local(args)
-        elif self.exec_env == 'hpc.adhoc':
-            self._hpc_adhoc(args)
-        elif self.exec_env == 'hpc.slurm':
-            self._hpc_slurm(args)
-        elif self.exec_env == 'hpc.pbs':
-            self._hpc_pbs(args)
-        else:
-            raise RuntimeError(f"'{self.exec_env}' unsupported on ROS1+Gazebo")
-
-    def _hpc_pbs(self, args: argparse.Namespace) -> None:
-        # For now, nothing to do. If more stuff with physics engine
-        # configuration is implemented, this may change.
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
-
-    def _hpc_slurm(self, args: argparse.Namespace) -> None:
-        # We rely on the user to request their job intelligently so that
-        # SLURM_TASKS_PER_NODE is appropriate.
-        if args.exec_jobs_per_node is None:
-            res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
-            assert res is not None, \
-                "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
-                    os.environ['SLURM_TASKS_PER_NODE'])
-            args.exec_jobs_per_node = int(res.group(0))
-
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
-
-    def _hpc_adhoc(self, args: argparse.Namespace) -> None:
-        nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
-        ppn = sys.maxsize
-        for node in nodes:
-            ppn = min(ppn, node.n_cores)
-
-        if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
-
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
-
-    def _hpc_local(self, args: argparse.Namespace) -> None:
-        # For now. If more physics engine configuration is added, this will
-        # change.
-        ppn_per_run_req = 1
-
-        if args.exec_jobs_per_node is None:
-            parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
-
-        if parallel_jobs == 0:
-            self.logger.warning(("Local machine has %s logical cores, but "
-                                 "%s threads/run requested; "
-                                 "allocating anyway"),
-                                psutil.cpu_count(),
-                                ppn_per_run_req)
-            parallel_jobs = 1
-
-        # Make sure we don't oversubscribe cores--each simulation needs at
-        # least 1 core.
-        args.exec_jobs_per_node = min(args.n_runs, parallel_jobs)
-
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
+_logger = logging.getLogger('ros1gazebo.plugin')
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
@@ -277,38 +182,159 @@ class ExpConfigurer():
         return 'per-exp'
 
 
-@implements.implements(bindings.IExecEnvChecker)
-class ExecEnvChecker(platform.ExecEnvChecker):
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        super().__init__(cmdopts)
+def cmdline_parser() -> argparse.ArgumentParser:
+    """
+    Get a cmdline parser supporting the :term:`ROS1+Gazebo` platform.
 
-    def __call__(self) -> None:
-        keys = ['ROS_DISTRO', 'ROS_VERSION']
+    Extends the built-in cmdline parser with:
 
-        for k in keys:
-            assert k in os.environ, \
-                f"Non-ROS+Gazebo environment detected: '{k}' not found"
+    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
+    - :class:`~ros1.cmdline.ROSCmdline` (ROS1 common)
+    - :class:`~cmdline.PlatformCmdline` (Gazebo specifics)
+    """
+    parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+    parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parent1, parent2],
+                                   stages=[-1, 1, 2, 3, 4, 5]).parser
 
-        # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
-            "SIERRA only supports ROS1 kinetic,noetic"
 
-        # Check ROS version
-        assert os.environ['ROS_VERSION'] == "1", \
-            "Wrong ROS version: this plugin is for ROS1"
+def cmdline_postparse_configure(exec_env: str,
+                                args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure cmdline args after parsing for the :term:`ROS1+Gazebo` platform.
 
-        # Check we can find Gazebo
-        version = self.check_for_simulator(config.kGazebo['launch_cmd'])
+    This sets arguments appropriately depending on what HPC environment is
+    selected with ``--exec-env``:
 
-        # Check Gazebo version
-        res = re.search(r'[0-9]+.[0-9]+.[0-9]+', version.stdout.decode('utf-8'))
-        assert res is not None, "Gazebo version not in -v output"
+    - hpc.local
 
-        version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(config.kGazebo['min_version'])
+    - hpc.adhoc
 
-        assert version >= min_version, \
-            f"Gazebo version {version} < min required {min_version}"
+    - hpc.slurm
+
+    - hpc.pbs
+    """
+    # No configuration needed for stages 3-5
+    if not any(stage in args.pipeline for stage in [1, 2]):
+        return args
+
+    if exec_env == 'hpc.local':
+        return _configure_hpc_local(args)
+    elif exec_env == 'hpc.adhoc':
+        return _configure_hpc_adhoc(args)
+    elif exec_env == 'hpc.slurm':
+        return _configure_hpc_slurm(args)
+    elif exec_env == 'hpc.pbs':
+        return _configure_hpc_pbs(args)
+
+    raise RuntimeError(f"'{exec_env}' unsupported on ROS1+Gazebo")
+
+
+def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
+    # For now, nothing to do. If more stuff with physics engine
+    # configuration is implemented, this may change.
+    _logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                  args.physics_n_threads,
+                  args.exec_jobs_per_node)
+    return args
+
+
+def _configure_hpc_slurm(args: argparse.Namespace) -> argparse.Namespace:
+    # We rely on the user to request their job intelligently so that
+    # SLURM_TASKS_PER_NODE is appropriate.
+    if args.exec_jobs_per_node is None:
+        res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
+        assert res is not None, \
+            "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
+                os.environ['SLURM_TASKS_PER_NODE'])
+        args.exec_jobs_per_node = int(res.group(0))
+
+    _logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                  args.physics_n_threads,
+                  args.exec_jobs_per_node)
+    return args
+
+
+def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
+    nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+    ppn = sys.maxsize
+    for node in nodes:
+        ppn = min(ppn, node.n_cores)
+
+    if args.exec_jobs_per_node is None:
+        args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
+
+    _logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                  args.physics_n_threads,
+                  args.exec_jobs_per_node)
+
+    return args
+
+
+def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
+    # For now. If more physics engine configuration is added, this will
+    # change.
+    ppn_per_run_req = 1
+
+    if args.exec_jobs_per_node is None:
+        parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
+
+    if parallel_jobs == 0:
+        _logger.warning(("Local machine has %s logical cores, but "
+                         "%s threads/run requested; "
+                         "allocating anyway"),
+                        psutil.cpu_count(),
+                        ppn_per_run_req)
+        parallel_jobs = 1
+
+    # Make sure we don't oversubscribe cores--each simulation needs at
+    # least 1 core.
+    args.exec_jobs_per_node = min(args.n_runs, parallel_jobs)
+
+    _logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                  args.physics_n_threads,
+                  args.exec_jobs_per_node)
+    return args
+
+
+def exec_env_check(cmdopts: types.Cmdopts) -> None:
+    """
+    Verify execution environment in stage 2 for :term:`ROS1+Gazebo`.
+
+    Check for:
+
+    - -:envvar:`ROS_VERSION`} is ROS1.
+
+    - :envvar:`ROS_DISTO` is {kinetic/noetic}.
+
+    - :program:`gazebo` can be found and the version is supported.
+    """
+    keys = ['ROS_DISTRO', 'ROS_VERSION']
+
+    for k in keys:
+        assert k in os.environ, \
+            f"Non-ROS+Gazebo environment detected: '{k}' not found"
+
+    # Check ROS distro
+    assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
+        "SIERRA only supports ROS1 kinetic,noetic"
+
+    # Check ROS version
+    assert os.environ['ROS_VERSION'] == "1", \
+        "Wrong ROS version: this plugin is for ROS1"
+
+    # Check we can find Gazebo
+    version = exec_env.check_for_simulator(config.kGazebo['launch_cmd'])
+
+    # Check Gazebo version
+    res = re.search(r'[0-9]+.[0-9]+.[0-9]+', version.stdout.decode('utf-8'))
+    assert res is not None, "Gazebo version not in -v output"
+
+    version = packaging.version.parse(res.group(0))
+    min_version = packaging.version.parse(config.kGazebo['min_version'])
+
+    assert version >= min_version, \
+        f"Gazebo version {version} < min required {min_version}"
 
 
 def population_size_from_pickle(adds_def: tp.Union[definition.AttrChangeSet,
@@ -328,9 +354,9 @@ def population_size_from_def(exp_def: definition.BaseExpDef,
                                                    cmdopts)
 
 
-def robot_prefix_extract(main_config: types.YAMLDict,
+def agent_prefix_extract(main_config: types.YAMLDict,
                          cmdopts: types.Cmdopts) -> str:
-    return ros1.callbacks.robot_prefix_extract(main_config, cmdopts)
+    return ros1.callbacks.agent_prefix_extract(main_config, cmdopts)
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,
@@ -342,3 +368,9 @@ def pre_exp_diagnostics(cmdopts: types.Cmdopts,
                 cmdopts['n_runs'],
                 cmdopts['physics_n_threads'],
                 cmdopts['exec_jobs_per_node'])
+
+
+__api__ = [
+    'cmdline_parser',
+    'cmdline_postparse_configure'
+]

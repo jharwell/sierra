@@ -17,7 +17,7 @@ import pathlib
 # Project packages
 import sierra.core.cmdline as cmd
 from sierra import version
-from sierra.core import platform, plugin, startup, batchroot
+from sierra.core import platform, plugin, startup, batchroot, exec_env
 from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 import sierra.core.plugin_manager as pm
@@ -100,8 +100,9 @@ class SIERRA():
         # Configure cmdopts for platform + execution environment by modifying
         # arguments/adding new arguments as needed, and perform additional
         # validation.
+        self.args = exec_env.cmdline_postparse_configure(bootstrap_args.exec_env,
+                                                         self.args)
         self.args = platform.cmdline_postparse_configure(bootstrap_args.platform,
-                                                         bootstrap_args.exec_env,
                                                          self.args)
 
         self.args.__dict__['project'] = project

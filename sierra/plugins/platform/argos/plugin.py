@@ -24,129 +24,7 @@ from sierra.core import hpc, config, types, utils, platform, batchroot
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
-
-def cmdline_parser() -> argparse.ArgumentParser:
-    """
-    Get a cmdline parser supporting the :term:`ARGoS` platform.
-
-    Extends built-in cmdline parser with:
-
-    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
-    - :class:`~cmdline.PlatformCmdline` (ARGoS specifics)
-
-    """
-    parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.PlatformCmdline(parents=[parser],
-                                   stages=[-1, 1, 2, 3, 4, 5]).parser
-
-
-@implements.implements(bindings.IParsedCmdlineConfigurer)
-class ParsedCmdlineConfigurer():
-    def __init__(self, exec_env: str) -> None:
-        self.exec_env = exec_env
-        self.logger = logging.getLogger('platform.argos')
-
-    def __call__(self, args: argparse.Namespace) -> None:
-        # No configuration needed for stages 3-5
-        if not any(stage in args.pipeline for stage in [1, 2]):
-            return
-
-        if self.exec_env == 'hpc.local':
-            self._hpc_local(args)
-        elif self.exec_env == 'hpc.adhoc':
-            self._hpc_adhoc(args)
-        elif self.exec_env == 'hpc.slurm':
-            self._hpc_slurm(args)
-        elif self.exec_env == 'hpc.pbs':
-            self._hpc_pbs(args)
-        else:
-            raise RuntimeError(f"'{self.exec_env}' unsupported on ARGoS")
-
-    def _hpc_pbs(self, args: argparse.Namespace) -> None:
-        self.logger.debug("Configuring ARGoS for PBS execution")
-        # For HPC, we want to use the the maximum # of simultaneous jobs per
-        # node such that there is no thread oversubscription. We also always
-        # want to allocate each physics engine its own thread for maximum
-        # performance, per the original ARGoS paper.
-        #
-        # However, PBS does not have an environment variable for # jobs/node, so
-        # we have to rely on the user to set this appropriately.
-        args.physics_n_engines = int(
-            float(os.environ['PBS_NUM_PPN']) / args.exec_jobs_per_node)
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
-
-    def _hpc_slurm(self, args: argparse.Namespace) -> None:
-        self.logger.debug("Configuring ARGoS for SLURM execution")
-        # For HPC, we want to use the the maximum # of simultaneous jobs per
-        # node such that there is no thread oversubscription. We also always
-        # want to allocate each physics engine its own thread for maximum
-        # performance, per the original ARGoS paper.
-        #
-        # We rely on the user to request their job intelligently so that
-        # SLURM_TASKS_PER_NODE is appropriate.
-        if args.exec_jobs_per_node is None:
-            res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
-            assert res is not None, \
-                "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
-                    os.environ['SLURM_TASKS_PER_NODE'])
-            args.exec_jobs_per_node = int(res.group(0))
-
-        args.physics_n_engines = int(os.environ['SLURM_CPUS_PER_TASK'])
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
-
-    def _hpc_local(self, args: argparse.Namespace) -> None:
-        self.logger.debug("Configuring ARGoS for LOCAL execution")
-        if any(stage in args.pipeline for stage in [1, 2]):
-            assert args.physics_n_engines is not None, \
-                '--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}'
-
-        ppn_per_run_req = args.physics_n_engines
-
-        if args.exec_jobs_per_node is None:
-            # Every physics engine gets at least 1 core
-            parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
-            if parallel_jobs == 0:
-                self.logger.warning(("Local machine has %s logical cores, but "
-                                     "%s physics engines/run requested; "
-                                     "allocating anyway"),
-                                    psutil.cpu_count(),
-                                    ppn_per_run_req)
-                parallel_jobs = 1
-
-            # Make sure we don't oversubscribe cores--each simulation needs at
-            # least 1 core.
-            args.exec_jobs_per_node = min(args.n_runs, parallel_jobs)
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
-
-    def _hpc_adhoc(self, args: argparse.Namespace) -> None:
-        self.logger.debug("Configuring ARGoS for ADHOC execution")
-
-        nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
-        ppn = sys.maxsize
-        for node in nodes:
-            ppn = min(ppn, node.n_cores)
-
-        # For HPC, we want to use the the maximum # of simultaneous jobs per
-        # node such that there is no thread oversubscription. We also always
-        # want to allocate each physics engine its own thread for maximum
-        # performance, per the original ARGoS paper.
-        if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
-
-        args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
+_logger = logging.getLogger('platform.argos')
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
@@ -248,11 +126,9 @@ class ExpConfigurer():
         return 'per-exp'
 
 
-@implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)
-        self.logger = logging.getLogger('platform.argos')
 
     def __call__(self) -> None:
         keys = ['ARGOS_PLUGIN_PATH']
@@ -271,8 +147,8 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         assert res is not None, \
             f"ARGOS_VERSION not in stdout: stdout='{stdout}',stderr='{stderr}'"
 
-        self.logger.trace("Parsed ARGOS_VERSION: %s",  # type: ignore
-                          res.group(0))
+        _logger.trace("Parsed ARGOS_VERSION: %s",  # type: ignore
+                      res.group(0))
 
         version = packaging.version.parse(res.group(0))
         min_version = config.kARGoS['min_version']
@@ -282,6 +158,150 @@ class ExecEnvChecker(platform.ExecEnvChecker):
 
         if self.cmdopts['platform_vc']:
             assert shutil.which('Xvfb') is not None, "Xvfb not found"
+
+
+def cmdline_parser() -> argparse.ArgumentParser:
+    """
+    Get a cmdline parser supporting the :term:`ARGoS` platform.
+
+    Extends built-in cmdline parser with:
+
+    - :class:`~hpc.cmdline.HPCCmdline` (HPC common)
+    - :class:`~cmdline.PlatformCmdline` (ARGoS specifics)
+
+    """
+    parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parser],
+                                   stages=[-1, 1, 2, 3, 4, 5]).parser
+
+
+def cmdline_postparse_configure(exec_env: str,
+                                args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Configure cmdline args after parsing for the :term:`ARGoS`platform.
+
+    This sets arguments appropriately depending on what HPC environment s
+    selected with ``--exec-env``.
+
+    - hpc.local
+
+    - hpc.adhoc
+
+    - hpc.slurm
+
+    - hpc.pbs
+
+    """
+
+    # No configuration needed for stages 3-5
+    if not any(stage in args.pipeline for stage in [1, 2]):
+        return
+
+    if exec_env == 'hpc.local':
+        return _configure_hpc_local(args)
+    elif exec_env == 'hpc.adhoc':
+        return _configure_hpc_adhoc(args)
+    elif exec_env == 'hpc.slurm':
+        return _configure_hpc_slurm(args)
+    elif exec_env == 'hpc.pbs':
+        return _configure_hpc_pbs(args)
+
+    raise RuntimeError(f"'{exec_env}' unsupported on ARGoS")
+
+
+def _configure_hpc_pbs(args: argparse.Namespace) -> args: argparse.Namespace:
+    _logger.debug("Configuring ARGoS for PBS execution")
+    # For HPC, we want to use the the maximum # of simultaneous jobs per
+    # node such that there is no thread oversubscription. We also always
+    # want to allocate each physics engine its own thread for maximum
+    # performance, per the original ARGoS paper.
+    #
+    # However, PBS does not have an environment variable for # jobs/node, so
+    # we have to rely on the user to set this appropriately.
+    args.physics_n_engines = int(
+        float(os.environ['PBS_NUM_PPN']) / args.exec_jobs_per_node)
+
+    _logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
+                  args.physics_n_engines,
+                  args.exec_jobs_per_node)
+
+    return args
+
+
+def _configure_hpc_slurm(args: argparse.Namespace) -> args: argparse.Namespace:
+    _logger.debug("Configuring ARGoS for SLURM execution")
+    # For HPC, we want to use the the maximum # of simultaneous jobs per
+    # node such that there is no thread oversubscription. We also always
+    # want to allocate each physics engine its own thread for maximum
+    # performance, per the original ARGoS paper.
+    #
+    # We rely on the user to request their job intelligently so that
+    # SLURM_TASKS_PER_NODE is appropriate.
+    if args.exec_jobs_per_node is None:
+        res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
+        assert res is not None, \
+            "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
+                os.environ['SLURM_TASKS_PER_NODE'])
+        args.exec_jobs_per_node = int(res.group(0))
+
+    args.physics_n_engines = int(os.environ['SLURM_CPUS_PER_TASK'])
+
+    _logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
+                  args.physics_n_engines,
+                  args.exec_jobs_per_node)
+
+    return args
+
+
+def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
+    _logger.debug("Configuring ARGoS for LOCAL execution")
+    if any(stage in args.pipeline for stage in [1, 2]):
+        assert args.physics_n_engines is not None, \
+            '--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}'
+
+    ppn_per_run_req = args.physics_n_engines
+
+    if args.exec_jobs_per_node is None:
+        # Every physics engine gets at least 1 core
+        parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
+        if parallel_jobs == 0:
+            _logger.warning(("Local machine has %s logical cores, but "
+                             "%s physics engines/run requested; "
+                             "allocating anyway"),
+                            psutil.cpu_count(),
+                            ppn_per_run_req)
+            parallel_jobs = 1
+
+        # Make sure we don't oversubscribe cores--each simulation needs at
+        # least 1 core.
+        args.exec_jobs_per_node = min(args.n_runs, parallel_jobs)
+
+    _logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
+                  args.physics_n_engines,
+                  args.exec_jobs_per_node)
+
+
+def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
+    _logger.debug("Configuring ARGoS for ADHOC execution")
+
+    nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+    ppn = sys.maxsize
+    for node in nodes:
+        ppn = min(ppn, node.n_cores)
+
+    # For HPC, we want to use the the maximum # of simultaneous jobs per
+    # node such that there is no thread oversubscription. We also always
+    # want to allocate each physics engine its own thread for maximum
+    # performance, per the original ARGoS paper.
+    if args.exec_jobs_per_node is None:
+        args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
+
+    args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
+
+    _logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
+                  args.physics_n_engines,
+                  args.exec_jobs_per_node)
+    return args
 
 
 def population_size_from_pickle(chgs: tp.Union[definition.AttrChangeSet,
