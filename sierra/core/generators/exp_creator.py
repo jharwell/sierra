@@ -159,11 +159,12 @@ class ExpCreator:
         run_output_root = self.exp_output_root / run_output_dir
         stem_path = self._get_launch_file_stempath(run_num)
 
-        per_run.ExpRunDefUniqueGenerator(run_num,
-                                         run_output_root,
-                                         stem_path,
-                                         self.random_seeds[run_num],
-                                         self.cmdopts).generate(run_exp_def)
+        per_run.for_single_exp_run(run_exp_def,
+                                   run_num,
+                                   run_output_root,
+                                   stem_path,
+                                   self.random_seeds[run_num],
+                                   self.cmdopts)
 
         # Write out the experimental run launch file
         run_exp_def.write(stem_path)

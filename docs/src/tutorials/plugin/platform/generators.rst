@@ -1,12 +1,43 @@
-Within this file you must define the ``PlatformExpDefGenerator`` and
-``PlatformExpRunDefGenerator`` classes to generate XML changes common to all
-experiment runs for your platform and per-run changes, respectively.
+Within this file may define the following functions:
+
+.. list-table:: Platform Generator Functions
+   :widths: 50 50
+   :header-rows: 1
+
+   * - Function
+
+     - Required?
+
+     - Purpose
+
+   * - for_all_exp()
+
+     - Yes
+
+     - Generate expdef changes common to all :term:`Experiment Runs<Experimental
+       Run>` in an :term:`Experiment` for your platform.
+
+   * - for_single__exp_run()
+
+     - Yes
+
+     - Generate expdef changes for a single :term:`Experimental Run` for your
+       platform.
+
+Below is a sample/skeleton ``platform_generators.py`` to use and a starting
+point.
 
 .. code-block:: python
 
-   from sierra.core.experiment import definition
+   import pathlib
 
-   class PlatformExpDefGenerator():
+   from sierra.core.experiment import definition
+   from sierra.core import types
+   from sierra.experiment import spec
+
+   def for_all_exp(exp_spec: spec.ExperimentSpec,
+                   cmdopts: types.Cmdopts,
+                   expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
        """
        Create an experiment definition from the
        ``--expdef-template`` and generate XML changes to input files
@@ -16,29 +47,29 @@ experiment runs for your platform and per-run changes, respectively.
 
        Arguments:
 
-           spec: The spec for the experimental run.
+           exp_spec: The spec for the experimental run.
+
            controller: The controller used for the experiment, as passed
-                       via ``--controller.
-       cmdopts: Dictionary of parsed cmdline parameters.
-       kwargs: Additional arguments.
+                       via ``--controller``.
+
+           exp_def_template_path: The path to ``--expdef-template``.
        """
+       pass
 
-       def __init__(self,
-                    spec: ExperimentSpec,
-                    controller: str,
-                    cmdopts: types.Cmdopts,
-                    **kwargs) -> None:
-           pass
-
-       def generate(self) -> definition.XMLExpDef:
-           pass
-
-    class PlatformExpRunDefUniqueGenerator:
+   def for_single_exp_run(
+        exp_def: definition.BaseExpDef,
+        run_num: int,
+        run_output_path: pathlib.Path,
+        launch_stem_path: pathlib.Path,
+        random_seed: int,
+        cmdopts: types.Cmdopts) -> definition.BaseExpDef:
         """
-        Generate XML changes unique to a experimental run within an
+        Generate expdef changes unique to a experimental run within an
         experiment for the matrix platform.
 
         Arguments:
+            exp_def: The experiment definition after ``--platform`` changes
+            common to all experiments have been made.
 
             run_num: The run # in the experiment.
 
@@ -54,10 +85,4 @@ experiment runs for your platform and per-run changes, respectively.
 
             cmdopts: Dictionary containing parsed cmdline options.
         """
-        def __init__(self,
-                     run_num: int,
-                     run_output_path: pathlib.Path,
-                     launch_stem_path: pathlib.Path,
-                     random_seed: int,
-                     cmdopts: types.Cmdopts) -> None:
-            pass
+        pass

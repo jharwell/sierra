@@ -1,5 +1,5 @@
 Within this file you must define the ``PlatformCmdline`` class. A sample
-implementation is shown below to use as a starting bound. All member functions
+implementation is shown below to use as a starting point. All member functions
 are optional.
 
 .. code-block:: python
