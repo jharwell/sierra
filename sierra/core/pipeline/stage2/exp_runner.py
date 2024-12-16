@@ -196,21 +196,31 @@ class BatchExpRunner:
 
             # Run cmds for platform-specific things to setup the experiment
             # (e.g., start daemons) if needed.
-            generator = platform.ExpShellCmdsGenerator(self.cmdopts,
-                                                       exp_num)
-            for spec in generator.pre_exp_cmds():
+            platform_generator = platform.ExpShellCmdsGenerator(self.cmdopts,
+                                                                exp_num)
+            execenv_generator = platform.ExpShellCmdsGenerator(self.cmdopts,
+                                                               exp_num)
+
+            for spec in execenv_generator.pre_exp_cmds():
+                shell.run_from_spec(spec)
+
+            for spec in platform_generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
             runner = ExpRunner(self.pathset,
                                self.cmdopts,
                                exec_times_fpath,
-                               generator,
+                               execenv_generator,
+                               platform_generator,
                                shell)
             runner(exp.name, exp_num)
 
-            # Run cmds to cleanup platform-specific things now that the experiment
-            # is done (if needed).
-            for spec in generator.post_exp_cmds():
+            # Run cmds to cleanup platform-specific things now that the
+            # experiment is done (if needed).
+            for spec in execenv_generator.post_exp_cmds():
+                shell.run_from_spec(spec)
+
+            for spec in platform_generator.post_exp_cmds():
                 shell.run_from_spec(spec)
 
 

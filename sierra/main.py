@@ -85,7 +85,8 @@ class SIERRA():
         # Parse all cmdline args and validate. This is done BEFORE post-hoc
         # configuration, because you shouldn't have to configure things post-hoc
         # in order for them to be valid.
-        nonbootstrap_cmdline = module.Cmdline([platform_parser],
+        parents = [platform_parser] if platform_parser else []
+        nonbootstrap_cmdline = module.Cmdline(parents,
                                               [-1, 1, 2, 3, 4, 5])
 
         self.args = nonbootstrap_cmdline.parser.parse_args(other_args)

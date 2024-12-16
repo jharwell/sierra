@@ -15,12 +15,65 @@ import logging
 import argparse
 
 # 3rd party packages
+import implements
 
 # Project packages
 from sierra.core import utils, types, config
+from sierra.core.experiment import bindings
 import sierra.core.plugin_manager as pm
 
 _logger = logging.getLogger(__name__)
+
+
+@implements.implements(bindings.IExpShellCmdsGenerator)
+class ExpShellCmdsGenerator():
+    """Dispatcher for shell cmd generation for an :term:`Experiment`.
+
+    Dispatches generation to the selected execution environment.  Called during
+    stage 2 to run shell commands immediately before running a given
+    :term:`Experiment`, to run shell commands to actually run the experiment,
+    and to run shell commands immediately after the experiment finishes.
+    """
+
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 exp_num: int) -> None:
+        self.cmdopts = cmdopts
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
+        if hasattr(module, 'ExpShellCmdsGenerator'):
+            _logger.debug(("Skipping generating experiment shell commands "
+                           "for --exec-env=%s"),
+                          self.cmdopts['exec_env'])
+
+            self.env = module.ExpShellCmdsGenerator(self.cmdopts,
+                                                    exp_num)
+        else:
+            self.env = None
+
+    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.env:
+            cmds.extend(self.env.pre_exp_cmds())
+
+        return cmds
+
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.env:
+            cmds.extend(self.env.exec_exp_cmds(exec_opts))
+
+        return cmds
+
+    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.env:
+            cmds.extend(self.env.post_exp_cmds())
+
+        return cmds
 
 
 def cmdline_postparse_configure(exec_env: str,

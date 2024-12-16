@@ -1,7 +1,7 @@
 Within this file may define the following functions:
 
 .. list-table:: Platform Generator Functions
-   :widths: 50 50
+   :widths: 10 10 80
    :header-rows: 1
 
    * - Function

@@ -322,11 +322,11 @@ def get_n_agents(main_config: types.YAMLDict,
                  exp_input_root: pathlib.Path,
                  exp_def: definition.BaseExpDef) -> int:
     """
-    Get the # robots used for a specific :term:`Experiment`.
+    Get the # agents used for a specific :term:`Experiment`.
     """
     module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
 
-    # Get # agent to send to shell cmds generator. We try:
+    # Get # agents to send to shell cmds generator. We try:
     #
     # 1. Getting it from the current experiment definition, which contains all
     #    changes to the template input file EXCEPT those from batch criteria,

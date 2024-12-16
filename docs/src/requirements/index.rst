@@ -187,7 +187,6 @@ your code does not meet these assumptions, then you will need to make some
 
 .. _req/models:
 
-============================
 Model Framework Requirements
 ============================
 

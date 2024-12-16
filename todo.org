@@ -17,6 +17,8 @@
   getting too complicated.
 - [X] Imagizing integration tests
 
+** TODO Make cmdline a first-class plugin, update tutorials
+
 ** TODO Add additional unit tests [0%]
 - [ ] Parser unit tests (for CLI variables that can be used as batch criteria)
 - [ ] Nodefile parsing

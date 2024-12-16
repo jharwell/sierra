@@ -21,19 +21,19 @@ class IExpShellCmdsGenerator(implements.Interface):
 
     This includes:
 
-    - The cmds to run the prior to the experiment (before any
-      :term:`Experimental Runs <Experimental Run>`).
+        - The cmds to run the prior to the experiment (before any
+          :term:`Experimental Runs <Experimental Run>`).
 
-    - The cmds to run the experiment.
+        - The cmds to run the experiment.
 
-    - Any post-experiment cleanup cmds before the next :term:`Experiment` is
-      run.
+        - Any post-experiment cleanup cmds before the next :term:`Experiment` is
+          run.
 
     Arguments:
 
-        cmdopts: Dictionary of parsed cmdline options.
+    cmdopts: Dictionary of parsed cmdline options.
 
-        exp_num: The 0-based index of the experiment in the batch.
+    exp_num: The 0-based index of the experiment in the batch.
     """
 
     def __init__(self,

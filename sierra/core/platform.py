@@ -29,16 +29,17 @@ import sierra.core.variables.batch_criteria as bc
 _logger = logging.getLogger(__name__)
 
 
-def cmdline_parser(platform: str) -> argparse.ArgumentParser:
+def cmdline_parser(platform: str) -> tp.Optional[argparse.ArgumentParser]:
     """
     Dispatches cmdline parser creation to selected platform.
 
-    Since platforms often extend the core cmdline significantly, the returned
-    parser is expected to contain all arguments supported by the core AND the
-    selected platform.
+    If the selected platform does not define a cmdline, None is returned.
     """
     module = pm.pipeline.get_plugin_module(platform)
-    return module.cmdline_parser()
+    if hasattr(module, 'cmdline_parser'):
+        return module.cmdline_parser()
+
+    return None
 
 
 def cmdline_postparse_configure(platform: str,
@@ -88,7 +89,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 class ExpRunShellCmdsGenerator():
     """Dispatcher for shell cmd generation for an :term:`Experimental Run`.
 
-    Dispatches generation to the selected platform and execution environment.
+    Dispatches generation to the selected platform.
     Called during stage 1 to add shell commands which should be run immediately
     before and after the shell command to actually execute a single
     :term:`Experimental Run` to the commands file to be fed to whatever the tool
@@ -114,15 +115,6 @@ class ExpRunShellCmdsGenerator():
         else:
             self.platform = None
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
-        if hasattr(module, 'ExpRunShellCmdsGenerator'):
-            self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
-                                                       self.criteria,
-                                                       n_agents,
-                                                       exp_num)
-        else:
-            self.env = None
-
     def pre_run_cmds(self,
                      host: str,
                      input_fpath: pathlib.Path,
@@ -130,9 +122,6 @@ class ExpRunShellCmdsGenerator():
         cmds = []
         if self.platform:
             cmds.extend(self.platform.pre_run_cmds(host, input_fpath, run_num))
-
-        if self.env:
-            cmds.extend(self.env.pre_run_cmds(host, input_fpath, run_num))
 
         return cmds
 
@@ -145,9 +134,6 @@ class ExpRunShellCmdsGenerator():
         if self.platform:
             cmds.extend(self.platform.exec_run_cmds(host, input_fpath, run_num))
 
-        if self.env:
-            cmds.extend(self.env.exec_run_cmds(host, input_fpath, run_num))
-
         return cmds
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
@@ -156,9 +142,6 @@ class ExpRunShellCmdsGenerator():
         if self.platform:
             cmds.extend(self.platform.post_run_cmds(host))
 
-        if self.env:
-            cmds.extend(self.env.post_run_cmds(host))
-
         return cmds
 
 
@@ -166,12 +149,10 @@ class ExpRunShellCmdsGenerator():
 class ExpShellCmdsGenerator():
     """Dispatcher for shell cmd generation for an :term:`Experiment`.
 
-    Dispatches generation to the selected platform and execution environment.
-    Called during stage 2 to run shell commands immediately before running a
-    given :term:`Experiment`, to run shell commands to actually run the
-    experiment, and to run shell commands immediately after the experiment
-    finishes.
-
+    Dispatches generation to the selected platform.  Called during stage 2 to
+    run shell commands immediately before running a given :term:`Experiment`, to
+    run shell commands to actually run the experiment, and to run shell commands
+    immediately after the experiment finishes.
     """
 
     def __init__(self,
@@ -190,25 +171,11 @@ class ExpShellCmdsGenerator():
         else:
             self.platform = None
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
-        if hasattr(module, 'ExpShellCmdsGenerator'):
-            _logger.debug(("Skipping generating experiment shell commands "
-                           "for --exec-env=%s"),
-                          self.cmdopts['exec_env'])
-
-            self.env = module.ExpShellCmdsGenerator(self.cmdopts,
-                                                    exp_num)
-        else:
-            self.env = None
-
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         cmds = []
 
         if self.platform:
             cmds.extend(self.platform.pre_exp_cmds())
-
-        if self.env:
-            cmds.extend(self.env.pre_exp_cmds())
 
         return cmds
 
@@ -218,9 +185,6 @@ class ExpShellCmdsGenerator():
         if self.platform:
             cmds.extend(self.platform.exec_exp_cmds(exec_opts))
 
-        if self.env:
-            cmds.extend(self.env.exec_exp_cmds(exec_opts))
-
         return cmds
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -228,9 +192,6 @@ class ExpShellCmdsGenerator():
 
         if self.platform:
             cmds.extend(self.platform.post_exp_cmds())
-
-        if self.env:
-            cmds.extend(self.env.post_exp_cmds())
 
         return cmds
 

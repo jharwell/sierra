@@ -86,7 +86,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`. This argument will be non-None
+                       ``gen_exp_names()``. This argument will be non-None
                        when calling this function from within a bivariate batch
                        criteria.
 
@@ -128,7 +128,7 @@ class IBivarBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`.
+                       ``gen_exp_names()``.
         """
         raise NotImplementedError
 
@@ -150,7 +150,7 @@ class IBivarBatchCriteria(implements.Interface):
 
             exp_names: If not None, then these directories will be used to
                        calculate the labels, rather than the results of
-                       :ref:`gen_exp_names()`.
+                       ``gen_exp_names()``.
         """
         raise NotImplementedError
 

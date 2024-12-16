@@ -96,7 +96,7 @@ Creating a New SIERRA Project
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
      plugin/project. This file is required, because all projects have to define
      the ``--controller`` and ``--scenario`` arguments used by SIERRA. See
-     :ref:`tutorials/cmdline` for documentation. See also :doc:`cmdline`.
+     :ref:`tutorials/misc/cmdline` for steps.
 
 #. Configure your project so SIERRA understands how to generate
    :term:`Experimental Run` inputs and process outputs correctly by following
@@ -118,9 +118,3 @@ Optional Steps
 
 #. Define one or more :term:`Models <Model>` to run to compare with empirical
    data.
-
-#. Add additional per-run configuration such as unique output directory
-   names, random seeds, etc. in various python files referenced by
-   ``scenario_generators.py`` and ``exp_generators.py`` beyond what is required
-   for ``--scenario``.  SIERRA can't set stuff like this up in a project
-   agnostic way.

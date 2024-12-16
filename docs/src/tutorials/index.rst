@@ -47,4 +47,4 @@ needs.
    :maxdepth: 1
    :caption: Misc Tutorials
 
-   cmdline.rst
+   misc/cmdline.rst
