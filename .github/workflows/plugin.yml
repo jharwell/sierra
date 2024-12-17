@@ -224,7 +224,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-${{ matrix.platform }}-${{ matrix.exec-env }}-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          name: ci-platform-${{ matrix.platform }}-${{ matrix.exec-env }}-${{ runner.os }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

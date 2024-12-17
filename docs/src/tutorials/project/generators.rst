@@ -12,7 +12,7 @@ Per-Scenario Configuration
 To enable SIERRA to generate experiment definitions based on the ``--scenario``
 you specify, you need to:
 
-#. Create ``generators/scenario_generator_parser.py`` in your ``--project``
+#. Create ``generators/scenario.py`` in your ``--project``
    directory.
 
    Within this file, you must define the ``ScenarioGeneratorParser`` class with
@@ -79,7 +79,7 @@ Per-Experimental Run Configuration
 In order to hook into SIERRA stage 1 experiment generation (doing so is
 optional), you need to:
 
-#. Create ``generators/exp_generators.py`` in your ``--project`` directory.
+#. Create ``generators/experiment.py`` in your ``--project`` directory.
 
 #. Define a ``ExpRunDefUniqueGenerator`` class in this file, overriding the
    ``generate()`` function with your customizations. Your class really should be

@@ -17,7 +17,8 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.experiment import spec, definition
+from sierra.core.experiment import definition
+from sierra.core.experiment import spec as expspec
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config, utils
 
@@ -33,7 +34,7 @@ class ControllerGenerator():
                  controller: str,
                  config_root: pathlib.Path,
                  cmdopts: types.Cmdopts,
-                 exp_spec: spec.ExperimentSpec) -> None:
+                 exp_spec: expspec.ExperimentSpec) -> None:
         controllers_yaml = config_root / config.kYAML.controllers
         with utils.utf8open(controllers_yaml) as f:
             self.controller_config = yaml.load(f, yaml.FullLoader)
@@ -180,7 +181,7 @@ def joint_generator_create(controller, scenario):
                             generate})()
 
 
-def scenario_generator_create(exp_spec: spec.ExperimentSpec,
+def scenario_generator_create(spec: expspec.ExperimentSpec,
                               controller,
                               **kwargs):
     """
@@ -191,16 +192,16 @@ def scenario_generator_create(exp_spec: spec.ExperimentSpec,
         cmdopts = kwargs['cmdopts']
         self.logger = logging.getLogger(__name__)
         module = pm.module_load_tiered(project=cmdopts['project'],
-                                       path='generators.scenario_generators')
-        generator_name = module.gen_generator_name(exp_spec.scenario_name)
-        self.scenario_generator = getattr(module, generator_name)(controller=controller,
-                                                                  exp_spec=exp_spec,
-                                                                  **kwargs)
+                                       path='generators.scenario')
+        self.generator = getattr(module,
+                                 module.gen_generator_name(spec.scenario_name))
 
     def generate(self):
-        return self.scenario_generator.generate()
+        return self.generator(spec=spec,
+                              controller=controller,
+                              **kwargs)
 
-    return type(exp_spec.scenario_name,
+    return type(spec.scenario_name,
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)
@@ -209,16 +210,15 @@ def scenario_generator_create(exp_spec: spec.ExperimentSpec,
 def controller_generator_create(controller: str,
                                 config_root: pathlib.Path,
                                 cmdopts: types.Cmdopts,
-                                exp_spec: spec.ExperimentSpec):
+                                spec: expspec.ExperimentSpec):
     """
     Create a controller generator from the cmdline specification.
     """
-
     return type(controller,
                 (ControllerGenerator,), {})(controller,
                                             config_root,
                                             cmdopts,
-                                            exp_spec)
+                                            spec)
 
 
 __api__ = [

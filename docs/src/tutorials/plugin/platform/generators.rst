@@ -35,9 +35,10 @@ point.
    from sierra.core import types
    from sierra.experiment import spec
 
-   def for_all_exp(exp_spec: spec.ExperimentSpec,
+   def for_all_exp(spec: spec.ExperimentSpec,
+                   controller: str,
                    cmdopts: types.Cmdopts,
-                   expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
+                   expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
        """
        Create an experiment definition from the
        ``--expdef-template`` and generate XML changes to input files
@@ -47,12 +48,12 @@ point.
 
        Arguments:
 
-           exp_spec: The spec for the experimental run.
+           spec: The spec for the experimental run.
 
            controller: The controller used for the experiment, as passed
                        via ``--controller``.
 
-           exp_def_template_path: The path to ``--expdef-template``.
+           exp_def_template_fpath: The path to ``--expdef-template``.
        """
        pass
 

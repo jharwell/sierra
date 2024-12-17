@@ -15,18 +15,21 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.experiment import spec, definition
+from sierra.core.experiment import definition
+from sierra.core.experiment import spec as expspec
 from sierra.core import types, ros1, config, utils
 
 _logger = logging.getLogger(__name__)
 
 
-def for_all_exp(exp_spec: spec.ExperimentSpec,
+def for_all_exp(spec: expspec.ExperimentSpec,
+                controller: str,
                 cmdopts: types.Cmdopts,
-                expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
-    exp_def = ros1.generate.for_all_exp(exp_spec,
-                                        cmdopts,
-                                        expdef_template_path)
+                expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
+    exp_def = ros1.generators.for_all_exp(spec,
+                                          controller,
+                                          cmdopts,
+                                          expdef_template_fpath)
 
     _logger.debug("Writing separate <master> launch file")
     exp_def.write_config.add({
@@ -61,7 +64,12 @@ def for_single_exp_run(
         random_seed: int,
         cmdopts: types.Cmdopts) -> None:
 
-    ros1.generate.for_single_exp_run(exp_def)
+    ros1.generators.for_single_exp_run(exp_def,
+                                       run_num,
+                                       run_output_path,
+                                       launch_stem_path,
+                                       random_seed,
+                                       cmdopts)
 
     main_path = pathlib.Path(cmdopts['project_config_root'],
                              config.kYAML.main)

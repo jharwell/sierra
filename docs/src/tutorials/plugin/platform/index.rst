@@ -118,7 +118,8 @@ In ``generators/platform.py``, you may define the following functions:
       from sierra.core import types
       from sierra.experiment import spec
 
-      def for_all_exp(exp_spec: spec.ExperimentSpec,
+      def for_all_exp(spec: spec.ExperimentSpec,
+                      controller: str,
                       cmdopts: types.Cmdopts,
                       expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
           """
@@ -130,7 +131,7 @@ In ``generators/platform.py``, you may define the following functions:
 
           Arguments:
 
-              exp_spec: The spec for the experimental run.
+              spec: The spec for the experimental run.
 
               controller: The controller used for the experiment, as passed
                           via ``--controller``.
@@ -246,17 +247,25 @@ Running Experiments
          It is used in stage 1 to define the shell commands per-experimental
          run. These are cmds which need to be run before an experimental run,
          the cmds to actually execute the experimental run, and any post-run
-         cleanup cmds before the next run is started for this platform.
+         cleanup cmds before the next run is started for this platform. The
+         generated cmds are written to a text file that GNU parallel (or some
+         other engine of your choice) will run in stage 2.
 
       .. tab:: ExpShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
 
-         It is used in stage 1 to generate shell commands per-experiment. This
-         includes cmds to run prior to any experimental run being executed, the
-         cmd(s) to run the experiment, and any post-experiment cleanup cmds
+         It is used in stage 2 to execute shell commands per-experiment
+         previously written to a text file using GNU parallel (or some other
+         engine of your choice). This includes cmds to run prior to any
+         experimental run being executed and any post-experiment cleanup cmds
          before the next experiment is executed for this platform.
+
+         .. IMPORTANT:: The result of ``exec_exp_cmds()`` for platforms plugins
+                        is ignored, because it doesn't make sense: execution
+                        environments execute experiments (DUH).
+
 
 #. In ``plugin.py``, you may define ``exec_env_check()`` to check the software
    environment (envvars, PATH, etc.) for this platform plugin prior to

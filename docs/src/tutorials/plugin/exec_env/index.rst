@@ -70,28 +70,43 @@ Generating Experiments
 Currently, there is no mechanism for including per-execution environment changes
 to experiment definitions; this may change in the future.
 
-Executing Experiments
-=====================
+Running Experiments
+===================
 
-#. In ``plugin.py``, you may define the ``ExpShellCmdsGenerator`` which is used
-   in stages {1, 2} to generate the cmdline to execute
+#. In ``plugin.py``, you may define the following classes which are used
+   in stages {1, 2} to generate the shell cmd(s) to execute
    :term:`Experiments<Experiment>` and :term:`Experimental Runs<Experimental
    Run>`. SIERRA essentially tries to mimic running experiments using a given
    platform as close as possible to running them on the cmdline directly; thus,
    configuring experiments for platform typically involves putting the needed
    shell commands into a "language" that SIERRA understands.
 
-   This class is optional. If it is defined, it should conform to
-   :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
+   .. tabs::
 
-   It is used in stage 1 to generate shell commands per-experiment. This
-   includes cmds to run prior to any experimental run being executed, and any
-   post-experiment cleanup cmds before the next experiment is executed for this
-   execution environment.
+      .. tab:: ExpRunShellCmdsGenerator
 
-   .. IMPORTANT:: The result of ``exec_exp_cmds()`` for execution environment
-                  plugins is ignored, because it doesn't make sense: platforms
-                  execute experiments.
+         This class is optional. If it is defined, it should conform to
+         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`
+
+         It is used in stage 1 to define the shell commands per-experimental
+         run. These are cmds which need to be run before an experimental run,
+         the cmds to actually execute the experimental run, and any post-run
+         cleanup cmds before the next run is started for this execution
+         environment. The generated cmds are written to a text file that GNU
+         parallel (or some other engine of your choice) will run in stage 2.
+
+      .. tab:: ExpShellCmdsGenerator
+
+         This class is optional. If it is defined, it should conform to
+         :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
+
+         It is used in stage 2 to execute shell commands per-experiment
+         previously written to a text file using GNU parallel (or some other
+         engine of your choice). This includes cmds to run prior to any
+         experimental run being executed, the cmd(s) to run the experiment, and
+         any post-experiment cleanup cmds before the next experiment is executed
+         for this execution environment.
+
 
 #. In ``plugin.py``, you may define ``exec_env_check()`` to check the software
    environment (envvars, PATH, etc.) for this platform plugin prior to
@@ -112,6 +127,16 @@ Executing Experiments
           """
           assert os.environ("MYVAR") != None, "MYVAR must be defined!"
 
+
+A Full Skeleton
+===============
+
+.. tabs::
+
+   .. tab:: ``plugin.py``
+
+      .. literalinclude:: ../../misc/cmdline-platform.py
+         :language: python
 
 Finally--Connect to SIERRA!
 ===========================

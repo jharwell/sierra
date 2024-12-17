@@ -93,7 +93,11 @@ jobs:
             combine \
             $(find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*")
 
-          coverage report --fail-under=80
+          coverage \
+            report \
+            --fail-under=80 \
+            --ignore-errors
+
           coverage xml
 
       - uses: actions/upload-artifact@v3

@@ -165,9 +165,9 @@ class ExperimentSpec():
             self.scenario_name = criteria.exp_scenario_name(exp_num)
 
         else:  # Default case: scenario dimensions read from cmdline
-            sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                        path='generators.scenario_generator_parser')
-            kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
+            module = pm.module_load_tiered(project=cmdopts['project'],
+                                           path='generators.scenario')
+            kw = module.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
             self.arena_dim = ArenaExtent(
                 Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
             self.logger.debug("Read scenario dimensions %s from cmdline spec",

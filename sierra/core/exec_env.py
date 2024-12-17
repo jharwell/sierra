@@ -99,7 +99,7 @@ def cmdline_postparse_configure(exec_env: str,
         args = module.cmdline_postparse_configure(args)
     else:
         logger.debug(("Skipping configuring cmdline from --exec-env='%s': "
-                      "does not define hook"),
+                      "does not define cmdline_postparse_configure()"),
                      exec_env)
 
     return args
@@ -117,7 +117,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
         module.exec_env_check(cmdopts)
     else:
         _logger.debug(("Skipping execution environment check for "
-                       "--exec-env='%s': does not define hook"),
+                       "--exec-env='%s': does not define exec_env_check()"),
                       cmdopts['exec_env'])
 
 
@@ -244,7 +244,7 @@ def check_connectivity(cmdopts: types.Cmdopts,
 
 def check_for_simulator(platform: str,
                         exec_env: str,
-                        name: str) -> None:
+                        name: str):
     shellname = get_executable_shellname(name)
 
     version_cmd = f'{shellname} -v'

@@ -18,7 +18,8 @@ import psutil
 
 # Project packages
 from sierra.core.utils import ArenaExtent
-from sierra.core.experiment import spec, definition
+from sierra.core.experiment import definition
+from sierra.core.experiment import spec as expspec
 from sierra.core import types, config, utils
 import sierra.core.plugin_manager as pm
 
@@ -32,8 +33,8 @@ import sierra.plugins.platform.argos.variables.exp_setup as exp
 _logger = logging.getLogger(__name__)
 
 
-def generate_physics(self,
-                     exp_def: definition.BaseExpDef,
+def generate_physics(exp_def: definition.BaseExpDef,
+                     spec: expspec.ExperimentSpec,
                      cmdopts: types.Cmdopts,
                      engine_type: str,
                      n_engines: int,
@@ -62,10 +63,10 @@ def generate_physics(self,
                   n_engines,
                   engine_type)
     if cmdopts['physics_spatial_hash2D']:
-        assert hasattr(self.spec.criteria, 'n_agents'), \
+        assert hasattr(spec.criteria, 'n_agents'), \
             ("When using the 2D spatial hash, the batch "
              "criteria must implement bc.IQueryableBatchCriteria")
-        n_agents = self.spec.criteria.n_agents(self.spec.exp_num)
+        n_agents = spec.criteria.n_agents(spec.exp_num)
     else:
         n_agents = None
 
@@ -81,8 +82,8 @@ def generate_physics(self,
     utils.apply_to_expdef(pe, exp_def)
 
 
-def generate_arena_shape(self,
-                         exp_def: definition.BaseExpDef,
+def generate_arena_shape(exp_def: definition.BaseExpDef,
+                         spec: expspec.ExperimentSpec,
                          shape: arena_shape.ArenaShape) -> None:
     """
     Generate XML changes for the specified arena shape.
@@ -92,12 +93,13 @@ def generate_arena_shape(self,
     _logger.trace(("Generating changes for arena "    # type: ignore
                    "share (all runs)"))
     _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
-    utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
+    utils.pickle_modifications(adds, chgs, spec.exp_def_fpath)
 
 
-def for_all_exp(exp_spec: spec.ExperimentSpec,
+def for_all_exp(spec: expspec.ExperimentSpec,
+                controller: str,
                 cmdopts: types.Cmdopts,
-                expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
+                expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
     """Generate XML modifications common to all ARGoS experiments."""
     # ARGoS uses a single input file
     wr_config = definition.WriterConfig([{'src_parent': None,
@@ -109,26 +111,26 @@ def for_all_exp(exp_spec: spec.ExperimentSpec,
                                           }])
     module = pm.pipeline.get_plugin_module(cmdopts['expdef'])
 
-    exp_def = module.ExpDef(input_fpath=expdef_template_path,
+    exp_def = module.ExpDef(input_fpath=expdef_template_fpath,
                             write_config=wr_config)
 
     # Generate # robots
-    _generate_all_exp_n_agents(exp_def, exp_spec, cmdopts)
+    _generate_all_exp_n_agents(exp_def, spec, cmdopts)
 
     # Setup library
-    _generate_all_exp_library(exp_def, cmdopts)
+    _generate_all_exp_library(exp_def, spec, cmdopts)
 
     # Setup simulation visualizations
-    _generate_all_exp_visualization(exp_def, exp_spec, cmdopts)
+    _generate_all_exp_visualization(exp_def, spec, cmdopts)
 
     # Setup threading
     _generate_all_exp_threading(exp_def, cmdopts)
 
     # Setup robot sensors/actuators
-    _generate_all_exp_saa(exp_def, exp_spec, cmdopts)
+    _generate_all_exp_saa(exp_def, spec, cmdopts)
 
     # Setup simulation time parameters
-    _generate_all_exp_time(exp_def, cmdopts)
+    _generate_all_exp_time(exp_def, spec, cmdopts)
 
     return exp_def
 
@@ -152,7 +154,10 @@ def for_single_exp_run(
     _generate_single_exp_run_random_seed(exp_def, run_num, random_seed)
 
     # Setup simulation visualization output
-    _generate_single_exp_run_visualization(exp_def)
+    _generate_single_exp_run_visualization(exp_def,
+                                           run_num,
+                                           run_output_path,
+                                           cmdopts)
 
     return exp_def
 
@@ -170,21 +175,24 @@ def _generate_single_exp_run_random_seed(exp_def: definition.BaseExpDef,
                         str(random_seed))
 
 
-def _generate_single_exp_run_visualization(self, exp_def: definition.BaseExpDef):
+def _generate_single_exp_run_visualization(exp_def: definition.BaseExpDef,
+                                           run_num: int,
+                                           run_output_path: pathlib.Path,
+                                           cmdopts: types.Cmdopts):
     """Generate XML changes for visualization for a specific simulation."""
     _logger.trace("Generating visualization changes for run%s",  # type: ignore
-                  self.run_num)
+                  run_num)
 
-    if self.cmdopts['platform_vc']:
+    if cmdopts['platform_vc']:
         argos = config.kRendering['argos']
-        frames_fpath = self.run_output_path / argos['frames_leaf']
+        frames_fpath = run_output_path / argos['frames_leaf']
         exp_def.attr_change(".//qt-opengl/frame_grabbing",
                             "directory",
                             str(frames_fpath))  # probably will not be present
 
 
 def _generate_all_exp_n_agents(exp_def: definition.BaseExpDef,
-                               exp_spec: spec.ExperimentSpec,
+                               spec: expspec.ExperimentSpec,
                                cmdopts: types.Cmdopts) -> None:
     """
     Generate XML changes to setup # robots (if specified on cmdline).
@@ -206,7 +214,7 @@ def _generate_all_exp_n_agents(exp_def: definition.BaseExpDef,
 
 
 def _generate_all_exp_saa(exp_def: definition.BaseExpDef,
-                          exp_spec: spec.ExperimentSpec,
+                          exp_spec: expspec.ExperimentSpec,
                           cmdopts: types.Cmdopts) -> None:
     """Generate XML changes to disable selected sensors/actuators.
 
@@ -240,6 +248,7 @@ def _generate_all_exp_saa(exp_def: definition.BaseExpDef,
 
 
 def _generate_all_exp_time(exp_def: definition.BaseExpDef,
+                           spec: expspec.ExperimentSpec,
                            cmdopts: types.Cmdopts) -> None:
     """
     Generate XML changes to setup simulation time parameters.
@@ -303,6 +312,7 @@ def _generate_all_exp_threading(exp_def: definition.BaseExpDef,
 
 
 def _generate_all_exp_library(exp_def: definition.BaseExpDef,
+                              spec: expspec.ExperimentSpec,
                               cmdopts: types.Cmdopts) -> None:
     """Generate XML changes for ARGoS search paths for controller,loop functions.
 
@@ -317,8 +327,8 @@ def _generate_all_exp_library(exp_def: definition.BaseExpDef,
     file.
 
     """
-    _logger.trace(  # type: ignore
-        "Generating changes for library (all runs)")
+    _logger.trace("Generating changes for library (all runs)")  # type: ignore
+
     run_config = spec.criteria.main_config['sierra']['run']
     lib_name = run_config.get('library_name',
                               'lib' + cmdopts['project'])
@@ -331,7 +341,7 @@ def _generate_all_exp_library(exp_def: definition.BaseExpDef,
 
 
 def _generate_all_exp_visualization(exp_def: definition.BaseExpDef,
-                                    exp_spec: spec.ExperimentSpec,
+                                    spec: expspec.ExperimentSpec,
                                     cmdopts: types.Cmdopts) -> None:
     """Generate XML changes to remove visualization elements from input file.
 

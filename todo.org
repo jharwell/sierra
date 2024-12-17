@@ -19,6 +19,10 @@
 
 ** TODO Make cmdline a first-class plugin, update tutorials
 
+** TODO Update other plugin tutorials {storage, expdef}
+After the {platform, execenv} docs overhaul, these tutorials look really bad by
+comparison.
+
 ** TODO Add additional unit tests [0%]
 - [ ] Parser unit tests (for CLI variables that can be used as batch criteria)
 - [ ] Nodefile parsing

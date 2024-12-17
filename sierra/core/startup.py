@@ -141,12 +141,12 @@ def _osx_pkg_checks() -> None:
         if p1.returncode != 0 and p2.returncode != 0:
             missing.append(pkg)
 
-    if missing:
-        if required:
-            raise RuntimeError((f"Required brew package {missing} missing on "
-                                "OSX. Install all required packages before "
-                                "running SIERRA! (Did you read the \"Getting "
-                                "Started\" docs?)"))
+        if missing:
+            if required:
+                raise RuntimeError((f"Required brew package {missing} missing on "
+                                    "OSX. Install all required packages before "
+                                    "running SIERRA! (Did you read the \"Getting "
+                                    "Started\" docs?)"))
 
         logging.debug(("Recommended brew package %s missing on OSX. "
                        "Some SIERRA functionality will not be available."),

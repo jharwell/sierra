@@ -12,8 +12,7 @@ import logging
 # 3rd party packages
 
 # Project packages
-from sierra.core.generators.exp_generators import BatchExpDefGenerator
-from sierra.core.generators.exp_creator import BatchExpCreator
+from sierra.core.generators.experiment import BatchExpDefGenerator, BatchExpCreator
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types, batchroot
 

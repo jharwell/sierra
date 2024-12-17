@@ -64,6 +64,7 @@ runs:
 
           brew update
           brew install parallel pssh
+          brew install --cask mactex-no-gui
 
     # 2024-12-12 [JRH]: We have to do this after installing homebrew packages,
     # because if any of the packages update/install python, then we start

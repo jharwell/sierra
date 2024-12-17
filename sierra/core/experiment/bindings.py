@@ -4,7 +4,6 @@
 
 # Core packages
 import typing as tp
-import argparse
 import pathlib
 
 # 3rd party packages

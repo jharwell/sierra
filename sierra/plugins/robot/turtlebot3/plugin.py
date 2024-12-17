@@ -179,7 +179,8 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
                             cmdopts['nodefile'],
                             node.hostname)
         if not cmdopts['skip_online_check']:
-            exec_env.check_connectivity(node.login,
+            exec_env.check_connectivity(cmdopts,
+                                        node.login,
                                         node.hostname,
                                         node.port,
                                         'turtlebot3')

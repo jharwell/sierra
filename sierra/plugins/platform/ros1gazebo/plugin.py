@@ -201,7 +201,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
                                    stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
-def cmdline_postparse_configure(exec_env: str,
+def cmdline_postparse_configure(execenv: str,
                                 args: argparse.Namespace) -> argparse.Namespace:
     """
     Configure cmdline args after parsing for the :term:`ROS1+Gazebo` platform.
@@ -221,16 +221,16 @@ def cmdline_postparse_configure(exec_env: str,
     if not any(stage in args.pipeline for stage in [1, 2]):
         return args
 
-    if exec_env == 'hpc.local':
+    if execenv == 'hpc.local':
         return _configure_hpc_local(args)
-    elif exec_env == 'hpc.adhoc':
+    elif execenv == 'hpc.adhoc':
         return _configure_hpc_adhoc(args)
-    elif exec_env == 'hpc.slurm':
+    elif execenv == 'hpc.slurm':
         return _configure_hpc_slurm(args)
-    elif exec_env == 'hpc.pbs':
+    elif execenv == 'hpc.pbs':
         return _configure_hpc_pbs(args)
 
-    raise RuntimeError(f"'{exec_env}' unsupported on ROS1+Gazebo")
+    raise RuntimeError(f"'{execenv}' unsupported on ROS1+Gazebo")
 
 
 def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
@@ -327,7 +327,9 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
         "Wrong ROS version: this plugin is for ROS1"
 
     # Check we can find Gazebo
-    version = exec_env.check_for_simulator(config.kGazebo['launch_cmd'])
+    version = exec_env.check_for_simulator(cmdopts['platform'],
+                                           cmdopts['exec_env'],
+                                           config.kGazebo['launch_cmd'])
 
     # Check Gazebo version
     res = re.search(r'[0-9]+.[0-9]+.[0-9]+', version.stdout.decode('utf-8'))
@@ -359,7 +361,7 @@ def population_size_from_def(exp_def: definition.BaseExpDef,
 
 def agent_prefix_extract(main_config: types.YAMLDict,
                          cmdopts: types.Cmdopts) -> str:
-    return ros1.callbacks.agent_prefix_extract(main_config, cmdopts)
+    return ros1.callbacks.robot_prefix_extract(main_config, cmdopts)
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,

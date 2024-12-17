@@ -14,19 +14,22 @@ import pathlib
 # 3rd party packages
 
 # Project packages
-from sierra.core.experiment import spec, definition
+from sierra.core.experiment import spec as expspec
+from sierra.core.experiment import definition
 from sierra.core import types, ros1, config
 
 _logger = logging.getLogger(__name__)
 
 
-def for_all_exp(exp_spec: spec.ExperimentSpec,
+def for_all_exp(spec: expspec.ExperimentSpec,
+                controller: str,
                 cmdopts: types.Cmdopts,
-                expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
+                expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
     """Generate XML modifications common to all ROS1+Gazebo experiments."""
-    exp_def = ros1.generators.for_all_exp(exp_spec,
+    exp_def = ros1.generators.for_all_exp(spec,
+                                          controller,
                                           cmdopts,
-                                          expdef_template_path)
+                                          expdef_template_fpath)
 
     exp_def.write_config.add({
         'src_parent': ".",
@@ -108,12 +111,12 @@ def _generate_all_exp_gazebo_vis(exp_def: definition.BaseExpDef) -> None:
                         })
 
 
-def for_single_exp_run(*args, **kwargs) -> definition.BaseExpDef:
+def for_single_exp_run(*args, **kwargs) -> None:
     """Generate XML changes unique to each experimental run.
 
-    Wraps :func:`sierra.core.ros1.generators.for_all_exp`().
+    Wraps :func:`sierra.core.ros1.generators.for_single_exp_run`().
     """
-    return ros1.generators.for_all_exp(args, kwargs)
+    return ros1.generators.for_single_exp_run(*args, **kwargs)
 
 
 __api__ = [

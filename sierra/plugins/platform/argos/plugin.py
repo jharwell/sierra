@@ -20,7 +20,7 @@ import packaging.version
 
 # Project packages
 from sierra.plugins.platform.argos import cmdline
-from sierra.core import hpc, config, types, utils, platform, batchroot, exec_env
+from sierra.core import hpc, config, types, utils, batchroot, exec_env
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
@@ -64,7 +64,7 @@ class ExpRunShellCmdsGenerator():
                       host: str,
                       input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        shellname = platform.get_executable_shellname(config.kARGoS['launch_cmd'])
+        shellname = exec_env.get_executable_shellname(config.kARGoS['launch_cmd'])
         cmd = '{0} -c {1}{2}'.format(shellname,
                                      str(input_fpath),
                                      config.kARGoS['launch_file_ext'])
@@ -147,7 +147,9 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
             f"Non-ARGoS environment detected: '{k}' not found"
 
     # Check we can find ARGoS
-    proc = exec_env.check_for_simulator(config.kARGoS['launch_cmd'])
+    proc = exec_env.check_for_simulator(cmdopts['platform'],
+                                        cmdopts['exec_env'],
+                                        config.kARGoS['launch_cmd'])
 
     # Check ARGoS version
     stdout = proc.stdout.decode('utf-8')
@@ -185,7 +187,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
                                    stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
-def cmdline_postparse_configure(exec_env: str,
+def cmdline_postparse_configure(execenv: str,
                                 args: argparse.Namespace) -> argparse.Namespace:
     """
     Configure cmdline args after parsing for the :term:`ARGoS`platform.
@@ -205,18 +207,18 @@ def cmdline_postparse_configure(exec_env: str,
 
     # No configuration needed for stages 3-5
     if not any(stage in args.pipeline for stage in [1, 2]):
-        return
+        return args
 
-    if exec_env == 'hpc.local':
+    if execenv == 'hpc.local':
         return _configure_hpc_local(args)
-    elif exec_env == 'hpc.adhoc':
+    elif execenv == 'hpc.adhoc':
         return _configure_hpc_adhoc(args)
-    elif exec_env == 'hpc.slurm':
+    elif execenv == 'hpc.slurm':
         return _configure_hpc_slurm(args)
-    elif exec_env == 'hpc.pbs':
+    elif execenv == 'hpc.pbs':
         return _configure_hpc_pbs(args)
 
-    raise RuntimeError(f"'{exec_env}' unsupported on ARGoS")
+    raise RuntimeError(f"'{execenv}' unsupported on ARGoS")
 
 
 def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
@@ -289,6 +291,8 @@ def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
     _logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
                   args.physics_n_engines,
                   args.exec_jobs_per_node)
+
+    return args
 
 
 def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:

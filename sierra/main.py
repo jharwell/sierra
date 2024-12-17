@@ -19,7 +19,7 @@ import sierra.core.cmdline as cmd
 from sierra import version
 from sierra.core import platform, plugin, startup, batchroot, exec_env
 from sierra.core.pipeline.pipeline import Pipeline
-from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
+from sierra.core.generators.controller import ControllerGeneratorParser
 import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: ignore
 
@@ -104,6 +104,7 @@ class SIERRA():
         self.args = exec_env.cmdline_postparse_configure(bootstrap_args.exec_env,
                                                          self.args)
         self.args = platform.cmdline_postparse_configure(bootstrap_args.platform,
+                                                         bootstrap_args.exec_env,
                                                          self.args)
 
         self.args.__dict__['project'] = project
@@ -117,9 +118,9 @@ class SIERRA():
 
         if 5 not in self.args.pipeline:
             controller = ControllerGeneratorParser()(self.args)
-            sgp = pm.module_load_tiered(project=self.args.project,
-                                        path='generators.scenario_generator_parser')
-            scenario = sgp.ScenarioGeneratorParser().to_scenario_name(self.args)
+            scenario = pm.module_load_tiered(project=self.args.project,
+                                             path='generators.scenario')
+            scenario = scenario.ScenarioGeneratorParser().to_scenario_name(self.args)
 
             self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
             pathset = batchroot.from_cmdline(self.args)

@@ -14,7 +14,8 @@ import pathlib
 # 3rd party packages
 
 # Project packages
-from sierra.core.experiment import definition, spec
+from sierra.core.experiment import definition
+from sierra.core.experiment import spec as expspec
 import sierra.core.utils as scutils
 from sierra.core import types, config
 import sierra.core.ros1.variables.exp_setup as exp
@@ -23,9 +24,10 @@ from sierra.core import plugin_manager as pm
 _logger = logging.getLogger(__name__)
 
 
-def for_all_exp(exp_spec: spec.ExperimentSpec,
+def for_all_exp(spec: expspec.ExperimentSpec,
+                controller: str,
                 cmdopts: types.Cmdopts,
-                expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
+                expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
     """Generate XML changes to input files that common to all ROS experiments.
 
     ROS1 requires up to 2 input files per run:
@@ -42,7 +44,7 @@ def for_all_exp(exp_spec: spec.ExperimentSpec,
     """
     module = pm.pipeline.get_plugin_module(cmdopts['expdef'])
 
-    exp_def = module.ExpDef(input_fpath=expdef_template_path,
+    exp_def = module.ExpDef(input_fpath=expdef_template_fpath,
                             write_config=None)
 
     wr_config = definition.WriterConfig([])
@@ -84,12 +86,13 @@ def for_all_exp(exp_spec: spec.ExperimentSpec,
                             })
 
     # Generate core experiment definitions
-    _generate_all_exp_experiment(exp_def, cmdopts)
+    _generate_all_exp_experiment(exp_def, spec, cmdopts)
 
     return exp_def
 
 
-def _generate_all_exp_experiment(self, exp_def: definition.BaseExpDef,
+def _generate_all_exp_experiment(exp_def: definition.BaseExpDef,
+                                 spec: expspec.ExperimentSpec,
                                  cmdopts: types.Cmdopts) -> None:
     """
     Generate XML tag changes to setup basic experiment parameters.

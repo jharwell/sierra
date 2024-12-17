@@ -198,7 +198,7 @@ class BatchExpRunner:
             # (e.g., start daemons) if needed.
             platform_generator = platform.ExpShellCmdsGenerator(self.cmdopts,
                                                                 exp_num)
-            execenv_generator = platform.ExpShellCmdsGenerator(self.cmdopts,
+            execenv_generator = exec_env.ExpShellCmdsGenerator(self.cmdopts,
                                                                exp_num)
 
             for spec in execenv_generator.pre_exp_cmds():
@@ -211,12 +211,11 @@ class BatchExpRunner:
                                self.cmdopts,
                                exec_times_fpath,
                                execenv_generator,
-                               platform_generator,
                                shell)
             runner(exp.name, exp_num)
 
-            # Run cmds to cleanup platform-specific things now that the
-            # experiment is done (if needed).
+            # Run cmds to cleanup {execenv, platform}-specific things now that
+            # the experiment is done (if needed).
             for spec in execenv_generator.post_exp_cmds():
                 shell.run_from_spec(spec)
 
@@ -237,7 +236,7 @@ class ExpRunner:
                  pathset: batchroot.PathSet,
                  cmdopts: types.Cmdopts,
                  exec_times_fpath: pathlib.Path,
-                 generator: platform.ExpShellCmdsGenerator,
+                 generator: exec_env.ExpShellCmdsGenerator,
                  shell: ExpShell) -> None:
 
         self.exec_times_fpath = exec_times_fpath
@@ -277,6 +276,7 @@ class ExpRunner:
             'n_jobs': self.cmdopts['exec_jobs_per_node'],
             'nodefile': self.cmdopts['nodefile']
         }
+
         for spec in self.generator.exec_exp_cmds(exec_opts):
             if not self.shell.run_from_spec(spec):
                 self.logger.error("Check outputs in %s for full details",

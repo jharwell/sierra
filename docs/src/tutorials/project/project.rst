@@ -67,20 +67,17 @@ Creating a New SIERRA Project
      XML files needed by your project. This directory is required for all SIERRA
      projects.
 
-     - ``scenario_generator_parser.py`` - Contains the parser for parsing the
-       contents of ``--scenario`` into a dictionary which can be used to
-       configure experiments. This file is required. See
-       :ref:`tutorials/project/generators/scenario-config` for
+     - ``scenario.py`` - Specifies classes and functions to enable SIERRA to
+       generate XML file modifications to the ``--expdef-template`` based on
+       what is passed as ``--scenario`` on the cmdline. Contains the parser for
+       parsing the contents of ``--scenario`` into a dictionary which can be
+       used to configure experiments. This file is required. See
+       :ref:`tutorials/project/generators/scenario-config` for documentation.
+       See :ref:`tutorials/project/generators/scenario-config` for
        documentation.
 
-     - ``scenario_generators.py`` - Specifies classes and functions to enable
-       SIERRA to generate XML file modifications to the
-       ``--expdef-template`` based on what is passed as ``--scenario`` on
-       the cmdline. This file is required. See
-       :ref:`tutorials/project/generators/scenario-config` for documentation.
-
-     - ``exp_generators.py`` - Contains extensions to the per-:term:`Experiment`
-       and per-:term:`Experimental Run` configuration that SIERRA performs. See
+     - ``experiment.py`` - Contains extensions to the per-:term:`Experiment` and
+       per-:term:`Experimental Run` configuration that SIERRA performs. See
        :ref:`tutorials/project/generators/sim-config` for documentation. This
        file is optional.
 

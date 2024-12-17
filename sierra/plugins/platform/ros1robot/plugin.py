@@ -248,7 +248,8 @@ class ExpConfigurer():
             current_username = pwd.getpwuid(os.getuid())[0]
 
             if not self.cmdopts['skip_online_check']:
-                exec_env.check_connectivity(remote_login,
+                exec_env.check_connectivity(self.cmdopts,
+                                            remote_login,
                                             remote_hostname,
                                             remote_port,
                                             self.cmdopts['robot'])
@@ -308,7 +309,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
                                    stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
-def cmdline_postparse_configure(exec_env: str,
+def cmdline_postparse_configure(execenv: str,
                                 args: argparse.Namespace) -> argparse.Namespace:
     """
     Configure cmdline args after parsing for the :term:`ROS1+Robot` platform.

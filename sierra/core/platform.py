@@ -162,13 +162,13 @@ class ExpShellCmdsGenerator():
 
         module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
         if hasattr(module, 'ExpShellCmdsGenerator'):
-            _logger.debug(("Skipping generating experiment shell commands "
-                           "for --platform=%s"),
-                          self.cmdopts['platform'])
-
             self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
                                                          exp_num)
         else:
+            _logger.debug(("Skipping generating experiment shell commands "
+                           "for --platform=%s: does not defined ExpShellCmdsGenerator"),
+                          self.cmdopts['platform'])
+
             self.platform = None
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
