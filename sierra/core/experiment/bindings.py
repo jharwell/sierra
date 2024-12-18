@@ -248,12 +248,28 @@ class IExpConfigurer(implements.Interface):
         raise NotImplementedError
 
     def cmdfile_paradigm(self) -> str:
-        """Return the paradigm for the platform, in terms of GNU parallel cmds.
+        """Return the parallelism paradigm for the platform.
 
-        - ``per-exp`` - A single GNU parallel cmds file per experiment.
+        For most simulator-based platforms, you generally want parallelism
+        *across* multiple experimental runs; that is all experimental runs in an
+        experiment run in parallel, subject to the limits of your selected
+        execution environment, configuration, etc.  For most real hardware-based
+        platforms, such as robots, you generally have to select parallelism
+        *within* an experimental run; that is, each experimental run requires
+        multiple remote sub-processes to execute, one per agent, since you can't
+        have single physical agent/robot be part of multiple experimental runs
+        simultaneously.
 
-        - ``per-run`` - A single GNU parallel cmds file per run.
+            - ``per-exp`` - A single GNU parallel cmds file per
+              :term:`Experiment`.  When executed, each line of the file contains
+              all the {pre, exec, post} cmds for each :term:`Experimental Run`.
+              Runs are generally executed in parallel, up to the limit of the
+              platform, subject to configuration/overrides.
 
+            - ``per-run`` - Each GNU parallel cmds file contains only the cmds
+              for a single :term:`Experimental Run`.  Multiple cmds files may be
+              needed for a single run (e.g., for ROS1 master + slaves).  This is
+              typically the paradigm for platforms targeting real hardware.
         """
         raise NotImplementedError
 

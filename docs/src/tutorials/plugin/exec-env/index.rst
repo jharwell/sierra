@@ -4,21 +4,25 @@
 Creating a New Execution Environment Plugin
 ===========================================
 
+Preliminaries
+=============
+
 For the purposes of this tutorial, I will assume you are creating a new HPC
 :term:`Plugin` ``HAL``, and the code for that plugin lives in
 ``$HOME/git/plugins/hpc/HAL``.
 
-If you are creating a new HPC plugin for an existing platform that comes with
-SIERRA (e.g., :term:`ARGoS`) you have two options:
+If you are creating a new plugin for an existing platform that comes with SIERRA
+(e.g., :term:`ARGoS`) you have two options:
 
 #. Following :ref:`tutorials/plugin/platform` to create a new platform
    to add support for your execution environment within the existing platform.
 
-#. Open a pull request for SIERRA with your created HPC plugin to get it into
-   the main repo. This should be the preferred option, as most execution
-   environment plugins have utility beyond whatever group initially wrote them.
+#. Open a pull request for SIERRA with your created plugin to get it into the
+   main repo. This should be the preferred option, as most execution environment
+   plugins have utility beyond whatever group initially wrote them.
 
-In either case, the steps to actually create the code are below.
+If you are creating a new execution environment plugin for a new platform, then
+you can ignore the above.
 
 Before beginning, create the following filesystem structure in
 ``$HOME/git/plugins/hpc/HAL``.
@@ -57,12 +61,8 @@ Creating The Cmdline Interface
 Configuring The Experimental Environment
 ========================================
 
-#. Define the ``ExpConfigurer`` class in ``plugin.py`` to configure
-   :term:`Experiments<Experiment>` in execution environment-specific ways.
-   This class is required. It should conform to
-   :class:`~sierra.core.experiment.bindings.IExpConfigurer`. It is used in
-   stage 1 *after* experiment generation, in case configuration depends on
-   the contents of the experiment.
+Currently, there is no mechanism for including per-execution environment changes
+to experiment definitions; this may change in the future.
 
 Generating Experiments
 ======================
@@ -86,27 +86,35 @@ Running Experiments
       .. tab:: ExpRunShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
-         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`
+         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
 
-         It is used in stage 1 to define the shell commands per-experimental
-         run. These are cmds which need to be run before an experimental run,
-         the cmds to actually execute the experimental run, and any post-run
-         cleanup cmds before the next run is started for this execution
-         environment. The generated cmds are written to a text file that GNU
-         parallel (or some other engine of your choice) will run in stage 2.
+         It is used in stage 1 to generate (not execute) the shell commands
+         per-experimental run for this execution environment. These are sets of
+         cmds which:
+
+         - Need to be run before an experimental run.
+
+         - Need to be run to actually execute an experimental run.
+
+         - Need to executed post experimental run to cleanup before the next run
+           is started. The generated cmds are written to a text file that GNU
+           parallel (or some other engine of your choice) will run in stage 2.
 
       .. tab:: ExpShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
 
-         It is used in stage 2 to execute shell commands per-experiment
-         previously written to a text file using GNU parallel (or some other
-         engine of your choice). This includes cmds to run prior to any
-         experimental run being executed, the cmd(s) to run the experiment, and
-         any post-experiment cleanup cmds before the next experiment is executed
-         for this execution environment.
+         It is used in stage 2 to execute (not generate) shell commands
+         per-experiment previously written to a text file using GNU parallel (or
+         some other engine of your choice). This includes sets of cmds for:
 
+         - Pre-experiment cmds executed prior to any experimental run being
+           executed.
+
+         - Cmds to execute the experiment for each experimental run.
+
+         - Post-experiment cleanup cmds before the next experiment is executed.
 
 #. In ``plugin.py``, you may define ``exec_env_check()`` to check the software
    environment (envvars, PATH, etc.) for this platform plugin prior to
@@ -135,7 +143,7 @@ A Full Skeleton
 
    .. tab:: ``plugin.py``
 
-      .. literalinclude:: ../../misc/cmdline-platform.py
+      .. literalinclude:: plugin.py
          :language: python
 
 Finally--Connect to SIERRA!
@@ -144,7 +152,10 @@ Finally--Connect to SIERRA!
 After going through all the sections above and creating your plugin, tell SIERRA
 about it by putting ``$HOME/git/plugins`` on your
 :envvar:`SIERRA_PLUGIN_PATH`. Then your plugin can be selected as
-``--exec-env=hpc.HAL``.
+``--exec-env=hpc.HAL``. Note that if you change what directory you put on the
+plugin path, how you selected your platform will change. E.g., if you put
+``$HOME/git/`` on :envvar:`SIERRA_PLUGIN_PATH`, then your new plugin will be
+accessible via ``plugins.platform.HAL`` instead.
 
 .. NOTE:: Execution environment plugin names have the same constraints as python
    package names (e.g., no dots, so ``HAL.dave`` is not a valid plugin name).

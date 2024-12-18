@@ -36,16 +36,16 @@ below.
       that via ``cmdline_postparse_configure()`` -- see
       :ref:`tutorials/plugin/platform` for details.
 
-      Must define must define ``--exp-setup`` and insert it into and the
-      ``cmdopts`` dict via the the ``cmdopts_update()`` function.
+      Must define ``--exp-setup`` and insert it into and the ``cmdopts`` dict
+      via the the ``cmdopts_update()`` function.
 
 
 With that out of the way, the steps to extend the SIERRA cmdline are as follows:
 
 #. Create ``cmdline.py`` in your project/platform plugin directory.
 
-#. Create a ``Cmdline`` class which inherits from the SIERRA cmdline as
-   follows:
+#. Create a ``Cmdline`` class (name up to you) which inherits from the SIERRA
+   cmdline as follows:
 
    .. tabs::
 

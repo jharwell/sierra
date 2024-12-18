@@ -39,7 +39,7 @@ needs.
    :caption: Extending SIERRA with new plugins:
 
    plugin/platform/index.rst
-   plugin/exec_env/index.rst
+   plugin/exec-env/index.rst
    plugin/storage/index.rst
    plugin/expdef/index.rst
 

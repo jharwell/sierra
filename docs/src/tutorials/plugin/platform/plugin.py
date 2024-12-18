@@ -31,13 +31,6 @@ class ExpConfigurer():
     """
 
 
-@implements.implements(bindings.IExpRunConfigurer)
-class ExpRunConfigurer():
-    """A class that conforms to
-    :class:`~sierra.core.experiment.bindings.IExpRunConfigurer`.
-    """
-
-
 def cmdline_parser() -> argparse.Parser:
     """
     Get a cmdline parser supporting the platform. The returned parser

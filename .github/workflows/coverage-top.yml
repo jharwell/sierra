@@ -84,10 +84,12 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          ls -al . || true
-          ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
-          ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
-          find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
+          # ls -al . || true
+          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
+          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
+          # find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
+
+          nox --install-only -p ${{ matrix.python-version }}
 
           coverage \
             combine \
@@ -95,10 +97,10 @@ jobs:
 
           coverage \
             report \
-            --fail-under=80 \
-            --ignore-errors
+            --fail-under=80
 
-          coverage xml
+          coverage \
+            xml
 
       - uses: actions/upload-artifact@v3
         with:

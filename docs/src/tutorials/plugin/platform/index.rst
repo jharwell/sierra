@@ -4,6 +4,12 @@
 Creating a New Platform Plugin
 ==============================
 
+.. IMPORTANT:: There is an example of defining a platform plugin in the
+               :xref:`sample project repo<SIERRA_SAMPLE_PROJECT` for a fictional
+               JSON-based simulator. It is all but functional, because there is
+               no such JSON-based simulator available :_). This can be used in
+               tandem with this guide to build your own platform plugin.
+
 For the purposes of this tutorial, I will assume you are creating a new
 :term:`Platform` :term:`Plugin` ``matrix``, and the code for that plugin lives
 in ``$HOME/git/plugins/platform/matrix``.
@@ -101,94 +107,103 @@ Configuring The Experimental Environment
    - Creating directories not created automatically by the simulator/project
      code.
 
+   - Copying files which :term:`Project` or :term:`Platform` code expects to be
+     found next to the main input file for each :term:`Experiment` or
+     :term:`Experimental Run`.
+
 Generating Experiments
 ======================
 
 In ``generators/platform.py``, you may define the following functions:
 
-#. ``for_all_exp()`` This function is required. It is used to generate expdef
-   changes common to all :term:`Experiment Runs<Experimental Run>` in an
-   :term:`Experiment` for your platform.
+.. tabs::
 
-   .. code-block:: python
+   .. tab:: ``for_all_exp()``
 
-      import pathlib
+      This function is required. It is used to generate expdef
+      changes common to all :term:`Experiment Runs<Experimental Run>` in an
+      :term:`Experiment` for your platform.
 
-      from sierra.core.experiment import definition
-      from sierra.core import types
-      from sierra.experiment import spec
+      .. code-block:: python
 
-      def for_all_exp(spec: spec.ExperimentSpec,
-                      controller: str,
-                      cmdopts: types.Cmdopts,
-                      expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
-          """
-          Create an experiment definition from the
-          ``--expdef-template`` and generate XML changes to input files
-          that are common to all experiments on the platform. All projects
-          using this platform should derive from this class for `their`
-          project-specific changes for the platform.
+         import pathlib
 
-          Arguments:
+         from sierra.core.experiment import definition
+         from sierra.core import types
+         from sierra.experiment import spec
 
-              spec: The spec for the experimental run.
+         def for_all_exp(spec: spec.ExperimentSpec,
+                         controller: str,
+                         cmdopts: types.Cmdopts,
+                         expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
+             """
+             Create an experiment definition from the
+             ``--expdef-template`` and generate XML changes to input files
+             that are common to all experiments on the platform. All projects
+             using this platform should derive from this class for `their`
+             project-specific changes for the platform.
 
-              controller: The controller used for the experiment, as passed
-                          via ``--controller``.
+             Arguments:
 
-              exp_def_template_path: The path to ``--expdef-template``.
-          """
-          pass
+                 spec: The spec for the experimental run.
 
+                 controller: The controller used for the experiment, as passed
+                             via ``--controller``.
 
-#. ``for_single_exp_run()``. This function is required. It is used to generate
-   expdef changes for a single :term:`Experimental Run` for your platform.
-
-
-   .. code-block:: python
-
-       import pathlib
-
-       from sierra.core.experiment import definition
-       from sierra.core import types
-       from sierra.experiment import spec
+                 exp_def_template_path: The path to ``--expdef-template``.
+             """
+             pass
 
 
-       def for_single_exp_run(
-            exp_def: definition.BaseExpDef,
-            run_num: int,
-            run_output_path: pathlib.Path,
-            launch_stem_path: pathlib.Path,
-            random_seed: int,
-            cmdopts: types.Cmdopts) -> definition.BaseExpDef:
-            """
-            Generate expdef changes unique to a experimental run within an
-            experiment for the matrix platform.
+      .. tab:: ``for_single_exp_run()``
 
-            Arguments:
-                exp_def: The experiment definition after ``--platform`` changes
-                common to all experiments have been made.
+         This function is required. It is used to generate expdef changes for a
+         single :term:`Experimental Run` for your platform.
 
-                run_num: The run # in the experiment.
+      .. code-block:: python
 
-                run_output_path: Path to run output directory within
-                                 experiment root (i.e., a leaf).
+          import pathlib
 
-                launch_stem_path: Path to launch file in the input directory
-                                  for the experimental run, sans extension
-                                  or other modifications that the platform
-                                  can impose.
+          from sierra.core.experiment import definition
+          from sierra.core import types
+          from sierra.experiment import spec
 
-                random_seed: The random seed for the run.
 
-                cmdopts: Dictionary containing parsed cmdline options.
-            """
-            pass
+          def for_single_exp_run(
+               exp_def: definition.BaseExpDef,
+               run_num: int,
+               run_output_path: pathlib.Path,
+               launch_stem_path: pathlib.Path,
+               random_seed: int,
+               cmdopts: types.Cmdopts) -> definition.BaseExpDef:
+               """
+               Generate expdef changes unique to a experimental run within an
+               experiment for the matrix platform.
+
+               Arguments:
+                   exp_def: The experiment definition after ``--platform`` changes
+                   common to all experiments have been made.
+
+                   run_num: The run # in the experiment.
+
+                   run_output_path: Path to run output directory within
+                                    experiment root (i.e., a leaf).
+
+                   launch_stem_path: Path to launch file in the input directory
+                                     for the experimental run, sans extension
+                                     or other modifications that the platform
+                                     can impose.
+
+                   random_seed: The random seed for the run.
+
+                   cmdopts: Dictionary containing parsed cmdline options.
+               """
+               pass
 
 .. NOTE:: Neither of these functions is called directly in the SIERRA core;
-          :term:`Projects<Project>` generators for experiments must currently
-          call them directly. This behavior may change in the future, hence
-          these functions are required.
+          :term:`Project` generators for experiments must currently call them
+          directly. This behavior may change in the future, hence these
+          functions are required.
 
 Running Experiments
 ===================
@@ -242,29 +257,42 @@ Running Experiments
       .. tab:: ExpRunShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
-         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`
+         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
 
-         It is used in stage 1 to define the shell commands per-experimental
-         run. These are cmds which need to be run before an experimental run,
-         the cmds to actually execute the experimental run, and any post-run
-         cleanup cmds before the next run is started for this platform. The
-         generated cmds are written to a text file that GNU parallel (or some
-         other engine of your choice) will run in stage 2.
+         It is used in stage 1 to generate (not execute) the shell commands
+         per-experimental run for this platform. These are sets of cmds which:
+
+         - Need to be run before an experimental run.
+
+         - Need to be run to actually execute an experimental run.
+
+         - Need to executed post experimental run to cleanup before the next run
+           is started. The generated cmds are written to a text file that GNU
+           parallel (or some other engine of your choice) will run in stage 2.
+
+         Pay special attention to
+         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator.cmdfile_paradigm()`:
+         this is how you tell SIERRA the type of run-time parallelism for your
+         platform.
 
       .. tab:: ExpShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
 
-         It is used in stage 2 to execute shell commands per-experiment
-         previously written to a text file using GNU parallel (or some other
-         engine of your choice). This includes cmds to run prior to any
-         experimental run being executed and any post-experiment cleanup cmds
-         before the next experiment is executed for this platform.
+         It is used in stage 2 to execute (not generate) shell commands
+         per-experiment previously written to a text file using GNU parallel (or
+         some other engine of your choice). This includes sets of cmds for:
+
+         - Pre-experiment cmds executed prior to any experimental run being
+           executed.
+
+         - Post-experiment cleanup cmds before the next experiment is executed.
 
          .. IMPORTANT:: The result of ``exec_exp_cmds()`` for platforms plugins
                         is ignored, because it doesn't make sense: execution
                         environments execute experiments (DUH).
+
 
 
 #. In ``plugin.py``, you may define ``exec_env_check()`` to check the software
@@ -369,9 +397,12 @@ Finally--Connect to SIERRA!
 ===========================
 
 After going through all the sections above and creating your plugin, tell SIERRA
-about it by putting ``$HOME/git/plugins/platform/matrix`` on your
-:envvar:`SIERRA_PLUGIN_PATH` so that your platform can be selected via
-``--platform=platform.matrix``.
+about it by putting ``$HOME/git/plugins/`` on your :envvar:`SIERRA_PLUGIN_PATH`
+so that your platform can be selected via ``--platform=platform.matrix``. Note
+that if you change what directory you put on the plugin path, how you selected
+your platform will change. E.g., if you put ``$HOME/git/`` on
+:envvar:`SIERRA_PLUGIN_PATH`, then your new plugin will be accessible via
+``plugins.platform.matrix`` instead.
 
 .. NOTE:: Platform names have the same constraints as python package names
    (e.g., no dots, so ``matrix.foo`` is not a valid plugin name).
