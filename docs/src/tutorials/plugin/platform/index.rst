@@ -138,7 +138,7 @@ In ``generators/platform.py``, you may define the following functions:
                          expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
              """
              Create an experiment definition from the
-             ``--expdef-template`` and generate XML changes to input files
+             ``--expdef-template`` and generate expdef changes to input files
              that are common to all experiments on the platform. All projects
              using this platform should derive from this class for `their`
              project-specific changes for the platform.

@@ -1,10 +1,10 @@
 # Copyright 2018 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Factory for combining controller+scenario XML modification generators.
+"""Factory for combining controller+scenario expdef modification generators.
 
 By combining them together, the result can be easily used to apply modifications
-to the template XML file to scaffold the batch experiment.
+to the template expdef file to scaffold the batch experiment.
 
 """
 # Core packages
@@ -24,7 +24,7 @@ from sierra.core import types, config, utils
 
 
 class ControllerGenerator():
-    """Generate XML changes for a selected ``--controller``.
+    """Generate expdef changes for a selected ``--controller``.
 
     If the specified controller is not found in ``controllers.yaml`` for the
     loaded :term:`Project`, an assert will be triggered.
@@ -162,7 +162,7 @@ class ControllerGenerator():
 
 def joint_generator_create(controller, scenario):
     """
-    Combine controller and scenario XML modification generators together.
+    Combine controller and scenario expdef modification generators together.
     """
     joint_name = '+'.join([controller.__class__.__name__,
                            scenario.__class__.__name__])

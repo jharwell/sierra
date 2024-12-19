@@ -208,6 +208,16 @@ class BootstrapCmdline(BaseCmdline):
                                """ + self.stage_usage_doc([1, 2]),
                                default='hpc.local')
 
+        bootstrap.add_argument("--rcfile",
+                               help="""
+
+                                 Specify the rcfile SIERRA should read
+                                 additional cmdline arguments from. Any rcfile
+                                 arguments overriden by cmdline args, if both
+                                 are present. See also :envvar:`SIERRA_RCFILE`.
+
+                                 """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
+
 
 class CoreCmdline(BaseCmdline):
     """Defines the core command line arguments for SIERRA using :class:`argparse`.
@@ -339,9 +349,9 @@ class CoreCmdline(BaseCmdline):
                                      The template ``.xml`` input file for the
                                      batch experiment. Beyond the requirements
                                      for the specific ``--platform``, the
-                                     content of the file can be any valid XML,
-                                     with the exception of the SIERRA
-                                     requirements detailed in
+                                     content of the file can be anything valid
+                                     for the format, with the exception of the
+                                     SIERRA requirements detailed in
                                      :ref:`tutorials/project/expdef-template`.
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))

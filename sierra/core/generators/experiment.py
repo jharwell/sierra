@@ -44,7 +44,7 @@ class BatchExpDefGenerator:
 
     Attributes:
 
-        batch_config_template: Absolute path to the root template XML
+        batch_config_template: Absolute path to the root template expdef
                                configuration file.
 
         criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
@@ -140,10 +140,10 @@ class ExpCreator:
 
     Attributes:
 
-        template_ipath: Absolute path to the template XML configuration file.
+        template_ipath: Absolute path to the template expdef configuration file.
 
         exp_input_root: Absolute path to experiment directory where generated
-                         XML input files for this experiment should be written.
+                         expdef input files for this experiment should be written.
 
         exp_output_root: Absolute path to root directory for run outputs
                          for this experiment.
@@ -384,10 +384,10 @@ class BatchExpCreator:
 
     Attributes:
 
-        batch_config_template: Absolute path to the root template XML
+        batch_config_template: Absolute path to the root template expdef
                                configuration file.
 
-        batch_input_root: Root directory for all generated XML input files all
+        batch_input_root: Root directory for all generated expdef input files all
                           experiments should be stored (relative to current dir
                           or absolute). Each experiment will get a directory
                           within this root to store the xml input files for the
@@ -420,8 +420,8 @@ class BatchExpCreator:
                                  self.cmdopts['exp_overwrite'])
 
         # Scaffold the batch experiment, creating experiment directories and
-        # writing template XML input files for each experiment in the batch with
-        # changes from the batch criteria added.
+        # writing template expdef input files for each experiment in the batch
+        # with changes from the batch criteria added.
         module = pm.pipeline.get_plugin_module(self.cmdopts['expdef'])
 
         exp_def = module.ExpDef(input_fpath=self.batch_config_template,

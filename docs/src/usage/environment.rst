@@ -24,6 +24,19 @@ Environment Variables
    :envvar:`PYTHONPATH` because SIERRA uses this path for other things
    internally (e.g., computing the paths to YAML config files).
 
+.. envvar:: SIERRA_RCFILE
+
+   Used to specify the path to a file to put cmdline args in to reduce the size
+   of cmdlines. Can also be passed directly via ``--rcfile``. Priority:
+
+   - ``--rcfile``
+
+   - ``SIERRA_RCFILE``
+
+   - ``~/.sierrarc``
+
+   .. NOTE:: You can't pass shortform cmdline arguments in the rcfile.
+
 .. envvar:: PYTHONPATH
 
    Used for locating projects per the usual python mechanisms.

@@ -90,11 +90,11 @@ Steps
        graph generation, if stage 4 is run. See :doc:`models` for documentation.
 
    - ``generators/`` - Classes to enable SIERRA to generate changes to template
-     XML files needed by your project. This directory is required for all SIERRA
-     projects.
+     expdef files needed by your project. This directory is required for all
+     SIERRA projects.
 
      - ``scenario.py`` - Specifies classes and functions to enable SIERRA to
-       generate XML file modifications to the ``--expdef-template`` based on
+       generate expdef file modifications to the ``--expdef-template`` based on
        what is passed as ``--scenario`` on the cmdline. Contains the parser for
        parsing the contents of ``--scenario`` into a dictionary which can be
        used to configure experiments. This file is required. See

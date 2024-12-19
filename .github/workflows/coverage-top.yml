@@ -89,6 +89,9 @@ jobs:
           # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
           # find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
 
+          # This is necessary for coverage since we run all integration tests in
+          # nox, otherwise coverage can't find e.g., the sierra-cli executable
+          # and we can't upload coverage.
           nox --install-only -p ${{ matrix.python-version }}
 
           coverage \

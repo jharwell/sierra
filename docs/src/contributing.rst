@@ -62,7 +62,7 @@ repository.
     - ``experiment/`` - Various interfaces and bindings for use by plugins.
 
     - ``generators/`` - Generic controller and scenario generators used to
-      modify template XML files to provide the setting/context for running
+      modify template expdef files to provide the setting/context for running
       experiments with variables.
 
     - ``graphs/`` - Generic code to generate graphs of different types.
@@ -75,7 +75,7 @@ repository.
     - ``ros1/`` - Common :term:`ROS1` bindings.
 
     - ``variables/`` - Generic generators for experimental variables to modify
-      template XML files in order to run experiments with a given controller.
+      template expdef files in order to run experiments with a given controller.
 
   - ``plugins/`` - Plugins which provide broad customization of SIERRA, and
     enables it to adapt to a wide variety of platforms and experiment outputs.

@@ -34,22 +34,22 @@ class SimpleBatchScaffoldSpec():
         self.is_compound = False
 
         assert len(self.rms) == 0, \
-            "Batch criteria cannot remove XML tags"
+            "Batch criteria cannot remove expdef elements"
 
         if self.chgs:
             self.mods = self.chgs
             self.n_exps = len(self.chgs)
             if log:
                 self.logger.info(("Calculating scaffold: cli='%s': Modify %s "
-                                  "XML tags per experiment"),
+                                  "expdef elements per experiment"),
                                  self.criteria.cli_arg,
                                  len(self.chgs[0]))
         elif self.adds:
             self.mods = self.adds
             self.n_exps = len(self.adds)
             if log:
-                self.logger.info(("Calculating scaffold: cli='%s': Add %s XML "
-                                  "tags per experiment"),
+                self.logger.info(("Calculating scaffold: cli='%s': Add %s expdef "
+                                  "elements per experiment"),
                                  self.criteria.cli_arg,
                                  len(self.adds[0]))
         else:
@@ -80,7 +80,7 @@ class CompoundBatchScaffoldSpec():
         self.mods = []
 
         assert len(self.rms) == 0, \
-            "Batch criteria cannot remove XML tags"
+            "Batch criteria cannot remove expdef elements"
 
         if self.chgs and self.adds:
             for addlist in self.adds:
@@ -91,8 +91,8 @@ class CompoundBatchScaffoldSpec():
 
             if log:
                 self.logger.info(("Calculating scaffold: cli='%s': Add  "
-                                  "%s XML tags AND modify %s XML tags per "
-                                  "per experiment"),
+                                  "%s expdef elements AND modify %s expdef  "
+                                  "elements per experiment"),
                                  self.criteria.cli_arg,
                                  len(self.adds[0]),
                                  len(self.chgs[0]))

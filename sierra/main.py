@@ -11,6 +11,8 @@ from collections.abc import Iterable
 import os
 import multiprocessing as mp
 import pathlib
+import argparse
+import typing as tp
 
 # 3rd party packages
 
@@ -33,10 +35,15 @@ class SIERRA():
         # Bootstrap the cmdline
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
+        if bootstrap_args.rcfile:
+            bootstrap_args.rcfile = os.path.expanduser(bootstrap_args.rcfile)
+
         # Setup logging customizations
         sierra.core.logging.initialize(bootstrap_args.log_level)
         self.logger = logging.getLogger(__name__)
         self.logger.info("This is SIERRA %s.", version.__version__)
+
+        bootstrap_args = self._handle_rc(bootstrap_args.rcfile, bootstrap_args)
 
         # Check SIERRA runtime environment
         startup.startup_checks(not bootstrap_args.skip_pkg_checks)
@@ -90,6 +97,8 @@ class SIERRA():
                                               [-1, 1, 2, 3, 4, 5])
 
         self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
+        self.args = self._handle_rc(bootstrap_args.rcfile, self.args)
+
         nonbootstrap_cmdline.validate(self.args)
 
         # Verify storage plugin (declared as part of core cmdline arguments
@@ -134,6 +143,77 @@ class SIERRA():
         except KeyboardInterrupt:
             self.logger.info("Exiting on user cancel")
             sys.exit()
+
+    def _handle_rc(self,
+                   rcfile_path: tp.Optional[str],
+                   args: argparse.Namespace) -> argparse.Namespace:
+        """
+        Populate cmdline arguments from a .sierrarc file.
+
+        In order of priority:
+
+        #. ``--rcfile``
+
+        #. ``SIERRA_RCFILE``
+
+        #. ``~/.sierrarc``
+
+
+        Anything passed on the cmdline overrides, if both are present.
+
+        """
+        # Check rcfile envvar first, so that you can override it on cmdline if
+        # desired.
+        realpath = os.getenv('SIERRA_RCFILE', None)
+
+        if realpath:
+            self.logger.debug("Reading rcfile from envvar")
+
+        if rcfile_path:
+            self.logger.debug("Reading rcfile from cmdline")
+            realpath = rcfile_path
+
+        if not realpath and os.path.exists(os.path.expanduser("~/.sierrarc")):
+            self.logger.debug("Reading rcfile from ~/.sierrarc")
+            realpath = "~/.sierrarc"
+
+        if not realpath:
+            return args
+
+        path = pathlib.Path(realpath).expanduser()
+
+        with open(path, 'r') as rcfile:
+            for line in rcfile.readlines():
+                # There are 3 ways to pass arguments in the rcfile:
+                #
+                # 1. --arg
+                # 2. --arg=foo
+                # 3. --arg foo
+                #
+                # If you encounter a ~, we assume its a path, so we expand it to
+                # match cmdline behavior.
+                line = line.strip('\n')
+                components = line.split()
+
+                if len(components) == 1 and '=' not in components[0]:  # boolean
+                    key = line[2:].replace("-", "_")
+                    args.__dict__[key] = True
+
+                elif len(components) == 1 and '=' in components[0]:
+                    key = line.split('=')[0][2:].replace("-", "_")
+                    value = os.path.expanduser(line.split('=')[1])
+
+                    args.__dict__[key] = value
+                else:
+                    key = line.split()[0][2:].replace("-", "_")
+                    value = os.path.expanduser(line.split()[1])
+                    args.__dict__[key] = value
+
+                self.logger.trace("Applied cmdline arg from rcfile='%s': %s",
+                                  path,
+                                  line)
+
+        return args
 
 
 def excepthook(exc_type, exc_value, exc_traceback):

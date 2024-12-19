@@ -5,7 +5,7 @@ import implements
 
 from sierra.core.experiment import bindings, definition
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import hpc, platform
+from sierra.core import hpc, platform, types, utils
 
 from platform.matrix import cmdline as cmd
 
@@ -66,12 +66,12 @@ def exec_env_check(cmdopts: types.Cmdopts):
     """
 
 
-def population_size_from_pickle(exp_def: tp.Union[xml.AttrChangeSet,
-                                                  xml.ElementAddList]) -> int:
+def population_size_from_pickle(exp_def: tp.Union[definition.AttrChangeSet,
+                                                  definition.ElementAddList]) -> int:
     """
     Given an experiment definition, main configuration, and cmdopts,
-             get the # agents in the experiment.Size can be obtained from added tags or changed attributes; platform
-    specific.
+    get the # agents in the experiment.Size can be obtained from added
+    tags or changed attributes; platform specific.
 
     Arguments:
 
@@ -80,7 +80,7 @@ def population_size_from_pickle(exp_def: tp.Union[xml.AttrChangeSet,
   """
 
 
-def population_size_from_def(exp_def: definition.XMLExpDef) -> int:
+def population_size_from_def(exp_def: definition.BaseExpDef) -> int:
     """
     Arguments:
 
@@ -116,5 +116,5 @@ def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaE
     """
     Arguments:
 
-       criteria: The batch criteria built from cmdline specification
+       criteria: The batch criteria built from cmdline specification.
     """

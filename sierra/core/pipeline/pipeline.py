@@ -12,6 +12,7 @@ import typing as tp
 import logging
 import argparse
 import pathlib
+import os
 
 # 3rd party packages
 import yaml
@@ -53,7 +54,7 @@ class Pipeline:
         self.cmdopts = {
             # multistage
             'pipeline': self.args.pipeline,
-            'sierra_root': self.args.sierra_root,
+            'sierra_root': os.path.expanduser(self.args.sierra_root),
             'scenario': self.args.scenario,
             'expdef_template': self.args.expdef_template,
             'project': self.args.project,
@@ -185,6 +186,7 @@ class Pipeline:
         this is required.
 
         """
+
         shortform_map = {
             'p': 'plot',
             'e': 'exp',

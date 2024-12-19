@@ -18,7 +18,7 @@ class IBaseVariable(implements.Interface):
     """
 
     def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
-        """Generate XML attributes to change in a batch experiment definition.
+        """Generate expdef attributes to change in a batch experiment definition.
 
         Modifications are sets, one per experiment in the batch, because the
         order you apply them doesn't matter.
@@ -27,7 +27,7 @@ class IBaseVariable(implements.Interface):
         raise NotImplementedError
 
     def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
-        """Generate XML tags to remove from the batch experiment definition.
+        """Generate expdef tags to remove from the batch experiment definition.
 
         Modifications are lists, one per experiment in the batch, because the
         order you apply them matters.
@@ -36,7 +36,7 @@ class IBaseVariable(implements.Interface):
         raise NotImplementedError
 
     def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
-        """Generate XML tags to add to the batch experiment definition.
+        """Generate expdef elelemnts to add to the batch experiment definition.
 
         Modifications are lists, one per experiment in the batch, because the
         order you apply them matters.

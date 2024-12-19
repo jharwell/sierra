@@ -199,7 +199,7 @@ it runs:
             batch (there are 3 such directories in this example), there will be
             a `directory` (rather than a file, as was the case for inputs) for
             each experimental run's output, including metrics, grabbed frames,
-            etc., as configured in the XML input file.
+            etc., as configured in the expdef input file.
 
             - ``my-template_run0_output``
 

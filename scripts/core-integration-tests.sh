@@ -38,6 +38,8 @@ setup_env() {
     echo ":" >> /tmp/nodefile
     export SIERRA_NODEFILE=/tmp/nodefile
 
+    rm -rf ~/.sierrarc
+
     export COVERAGE_CMD="coverage \
     run \
      --debug=debug \
@@ -132,6 +134,7 @@ cmdline_opts_test() {
         $SIERRA_CMD --pipeline 4 --plot-log-yscale
         $SIERRA_CMD --pipeline 4 --plot-large-text
     done
+
     rm -rf $SIERRA_ROOT
 
     # Check serial processing
@@ -139,6 +142,35 @@ cmdline_opts_test() {
 
     # Check version
     $SIERRA_CMD --version
+
+    # Check rcfile
+    rm -rf ~/test2
+
+    echo "--sierra-root=~/test2" > /tmp/tmpfile
+    $SIERRA_CMD --rcfile=/tmp/tmpfile
+    [ -d "$HOME/test2/" ] || false
+
+    rm -rf $HOME/test2
+
+    echo "--sierra-root $HOME/test3" > /tmp/tmpfile2
+    $SIERRA_CMD --rcfile=/tmp/tmpfile2
+    [ -d "$HOME/test3/" ] || false
+
+    rm -rf $HOME/test3
+
+    export SIERRA_RCFILE=/tmp/tmpfile2
+    $SIERRA_CMD
+    [ -d "$HOME/test3/" ] || false
+
+    rm -rf $HOME/test3
+
+    export -n SIERRA_RCFILE
+    mv /tmp/tmpfile2 ~/.sierrarc
+    $SIERRA_CMD
+    [ -d "$HOME/test3/" ] || false
+
+    rm -rf $HOME/test3
+
 }
 ################################################################################
 # Run Tests

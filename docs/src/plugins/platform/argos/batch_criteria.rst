@@ -21,9 +21,9 @@ Population Size
 Changing the population size to investigate behavior across scales within a
 static arena size (i.e., variable density). This criteria is functionally
 identical to :ref:`plugins/platform/argos/bc/population-variable-density` in
-terms of changes to the template XML file, but has a different semantic meaning
-which can make generated deliverables more immediately understandable, depending
-on the context of what is being investigated (e.g., population size
+terms of changes to the template expdef file, but has a different semantic
+meaning which can make generated deliverables more immediately understandable,
+depending on the context of what is being investigated (e.g., population size
 vs. population density on the X axis).
 
 .. _plugins/platform/argos/bc/population-size-cmdline:

@@ -254,13 +254,13 @@ def apply_to_expdef(var,
                                                                 tp.Optional[definition.ElementAddList],
                                                                 tp.Optional[definition.AttrChangeSet]]:
     """
-    Apply a generated XML modifictions to an experiment definition.
+    Apply a generated expdef modifictions to an experiment definition.
 
     In this order:
 
-    #. Remove existing XML tags
-    #. Add new XML tags
-    #. Change existing XML attributes
+    #. Remove existing expdef elements
+    #. Add new expdef elements
+    #. Change existing expdef element attributes
     """
     rmsl = var.gen_tag_rmlist()  # type: tp.List[definition.ElementRmList]
     addsl = var.gen_element_addlist()  # type: tp.List[definition.ElementAddList]
@@ -295,7 +295,7 @@ def pickle_modifications(adds: tp.Optional[definition.ElementAddList],
                          chgs: tp.Optional[definition.AttrChangeSet],
                          path: pathlib.Path) -> None:
     """
-    After applying XML modifications, pickle changes for later retrieval.
+    After applying expdef modifications, pickle changes for later retrieval.
     """
     if adds is not None:
         adds.pickle(path)

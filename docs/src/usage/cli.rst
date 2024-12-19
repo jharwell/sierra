@@ -10,6 +10,8 @@ apply to a subset of the available :term:`Batch Criteria`.
 
 If an option is given more than once, the last such occurrence is used.
 
+To help shorten cmdlines, SIERRA supports the usual rcfile mechanism via
+``--rcfile`` / :envvar:`SIERRA_RCFILE`.
 
 SIERRA Core
 ===========
