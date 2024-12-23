@@ -37,6 +37,8 @@ Environment Variables
 
    .. NOTE:: You can't pass shortform cmdline arguments in the rcfile.
 
+   .. versionadded:: 1.3.18
+
 .. envvar:: PYTHONPATH
 
    Used for locating projects per the usual python mechanisms.

@@ -21,7 +21,6 @@ import sierra.core.cmdline as cmd
 from sierra import version
 from sierra.core import platform, plugin, startup, batchroot, exec_env
 from sierra.core.pipeline.pipeline import Pipeline
-from sierra.core.generators.controller import ControllerGeneratorParser
 import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: ignore
 
@@ -126,15 +125,12 @@ class SIERRA():
             self.args.pipeline = [self.args.pipeline]
 
         if 5 not in self.args.pipeline:
-            controller = ControllerGeneratorParser()(self.args)
-            scenario = pm.module_load_tiered(project=self.args.project,
-                                             path='generators.scenario')
-            scenario = scenario.ScenarioGeneratorParser().to_scenario_name(self.args)
-
-            self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
+            self.logger.info("Controller=%s, Scenario=%s",
+                             self.args.controller,
+                             self.args.scenario)
             pathset = batchroot.from_cmdline(self.args)
 
-            pipeline = Pipeline(self.args, controller, pathset)
+            pipeline = Pipeline(self.args, self.args.controller, pathset)
         else:
             pipeline = Pipeline(self.args, None)
 

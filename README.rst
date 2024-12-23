@@ -94,38 +94,38 @@ Why SIERRA?
 
   to::
 
-    "OK SIERRA: Here is the environment and simulator/robot platform I want to
-    use, the deliverables I want to generate, and the data I want to appear on
-    them for my research query--GO!"
+    "OK SIERRA: Here is the environment and simulator/agent platform(s) I want
+    to use, the deliverables I want to generate, and the data I want to appear
+    on them for my research query--GO!"
 
   Essentially, SIERRA handles the “engineering” parts of research on the
-  backend, such as: generating experiments, configuring execution environments
-  or platforms, running the generated experiments, and processing experimental
-  results to generate statistics, and/or visualizations. It also handles random
-  seeds, algorithm stochasticity, and other low-level details.
+  backend, acting as a compiler of sorts, turning research queries into
+  executable objects by generating experiments, configuring execution
+  environments or platforms, running the generated experiments, and processing
+  experimental results to generate statistics, and/or visualizations. It also
+  handles random seeds, algorithm stochasticity, and other low-level
+  details.
 
-- It eliminates manual reconfiguration of experiments across simulator/robot
-  platforms by decoupling the concepts of execution environment and platform;
-  any supported pair can be selected in a mix-and-match fashion (see `SIERRA
-  Support Matrix`_). Thus, it removes the need for throw-away scripts for data
-  processing and deliverable generation.
+- It eliminates manual reconfiguration of experiments across simulator/agent
+  platforms by decoupling the concepts of execution environment and target
+  platform; any supported pair can be selected in a mix-and-match fashion (see
+  `SIERRA Support Matrix`_). Thus, it removes the need for throw-away scripts
+  for data processing and deliverable generation.
 
 - SIERRA can be used with code written in any language; only bindings must be
   written in python.
 
 - SIERRA has a rich model framework allowing you to run arbitrary models,
-  generate data, and plot it on the same figure as empirical results,
-  automatically.
+  generate data, and plot it on the same figure as empirical
+  results--automatically.
 
 - Its deeply modular architecture makes it easy to customize for the needs
   of a specific project.
 
-Not sure if SIERRA makes sense for your research? Check out some of the
-`use cases<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for
-which SIERRA was designed.
-
-If aspects of any sound familiar, then there is a strong chance SIERRA could
-help you! SIERRA is well documented--see the `SIERRA docs
+Not sure if SIERRA makes sense for your research? Check out some of the `use
+cases<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which
+SIERRA was designed.  If aspects of any sound familiar, then there is a strong
+chance SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
 <https://sierra.readthedocs.io/en/master/>`_ to get started.
 
 
@@ -148,25 +148,20 @@ robots <https://sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
 
 SIERRA also supports multiple formats for experimental inputs and outputs.
 
-The set of built-in plugins which come with SIERRA are below. If your desired
-platform/execution environment/etc is not listed, see the `plugin tutorials
-<https://sierra.readthedocs.io/en/master/src/tutorials.html>`_ for how to add
-it via a new plugin. SIERRA supports full mix-and-match between plugins from the
-table above--this is one of the most powerful features of SIERRA!
-
-While SIERRA itself supports arbitrary sets of plugins, there are necessarily
-restrictions on which plugins can be used together. For example, if you are
-using a platform mapping to a custom in-house simulator which takes JSON as
-input, you can't use the XML plugin for experimental inputs. For more details on
-which sets of plugins are valid which built-in platforms, see the
-`support matrix <https://sierra.readthedocs.io/en/master/src/matrix.html>`_.
+The complete set of built-in plugins which come with SIERRA are `here
+<https://sierra.readthedocs.io/en/master/src/matrix.html>`_. SIERRA supports
+full mix-and-match between plugins from the table above--this is one of its most
+powerful features! While SIERRA itself supports arbitrary sets of plugins, there
+are necessarily restrictions on which plugins can be used together. For example,
+if you are using a platform mapping to a custom in-house simulator which takes
+JSON as input, you can't use the XML plugin for experimental inputs.
 
 Requirements To Use SIERRA
 ==========================
 
 The basic requirements are:
 
-- Recent OSX (tested with 12+) or Linux (tested with ubuntu 20.04+).
+- Recent OSX (tested with 13+) or Linux (tested with ubuntu 20.04+).
 
 - python >= 3.8.
 

@@ -32,75 +32,34 @@ since none of the currently supported platforms do that.
 Adding this would also make SIERRA more appealing/using to researchers outside
 of robotics.
 
-Supporting multiple types of experiment input files (not just XML)
-==================================================================
+Better Deliverable Generation Backend + Configurability
+=======================================================
 
-This is a fairly involved change, as it affects the SIERRA core. One way I
-*cannot* do this is to define yet another plain text format for template inputs
-files and say "to use SIERRA you have to use this format". That makes it easier
-for me as a developer, but will turn off 90% of people who want a nice plug and
-play approach to automating their research.
+Right now, stage {4,5} are tied to matplotlib, and cannot be easily made to work
+using a different engine. Holoviews is a superset of matplotlib; matplotlib is
+one selectable backend. Making the switch will make generating static plots, web
+plots, etc. seamless. There should be a core set of graph types (StackedLine,
+Summary, etc.) which are defined by each plugin; custom plugins can choose not
+to define/implement those graphs, but then you get an error if configuration
+tells SIERRA to generate a type of graph that the selected plugin doesn't
+define.
 
-There are a couple of ways of doing this which might work:
+In addition, the configurability/hooks available in stage {4,5} for specifying
+what data goes on what graphs fees a bit clunky, as it was developed mostly for
+my thesis/hacked on as needed.. In *theory* you can just slot in whatever
+deliverable generation code you want to, but it feels like an afterthought. What
+*should* happen is:
 
-Option 1
---------
+- Deliverable generation for stage 4 is broken into two plugins: inter/intra,
+  which (well, or maybe one plugin, depending), and treated as a "first class"
+  SIERRA plugin.
 
-Finding an AST tool or stitching a few together to make a toolchain which can
-parse to and from arbitrary plain text formats and replace the XML experimental
-definition class. All batch criteria and variables would have to be rewritten to
-express their changes, additions, or removals from the template input file in
-terms of operations on this AST.  Pandoc might be a good starting point, but it
-does not support XML out of the box. You would have to do XML -> html with xlst,
-and then do html -> whatever with pandoc. No idea if this would be a viable
-toolchain which could support pretty much any simulator/platform.
+- Configurability still is via YAML, BUT now you have different sections for
+  different plugins (if you want), maybe different categories for different
+  plugins, etc.
 
-Pros: Makes it easier for SIERRA to support any plain text input format the AST
-tool supports.
-
-Cons: Expressing things in terms of operations on an AST instead of changes to a
-textual input file is likely to be more confusing and difficult for users as
-they create new variables. This change would not be backwards compatible.
-
-Option 2
---------
-
-Keep using XML as the language for the template input files that SIERRA
-processes. To support other formats needed by a given simulator or platform,
-define a translation layer/engine which takes in XML and outputs the desired
-format, or reads it in and transforms it to XML for SIERRA to manipulate.
-
-Pros: Keeps the SIERRA core mostly the same. Reduces the type
-restrictions on template input files to "plain text" rather than
-strictly XML. Would be backwards compatible.
-
-Cons: Difficult to translate to/from XML/other plaintext formats. xlst
-can output plain text from XML, or read plain text and convert it to
-XML, but you need to define a schema for how to do that, which may be
-very non-trivial. This would make the process of defining platform
-plugins for non-XML inputs/outputs much trickier. From SIERRA's
-perspective, the changes would be relatively minor.
-
-Option 3
---------
-
-Reworking the SIERRA core to support a set of types of experimental
-definitions which would be implemented as plugins: you would have an
-XMLExpDef, PythonExpDef, etc. The type of experiment definition and
-therefore the type of the template input file could be inferred from
-the contents of ``--expdef-template``, or specified on the
-cmdline.
-
-Pros: SIERRA core would remain relatively easier to understand, and
-this paradigm is in line with SIERRA's plugin philosophy. Would be
-backwards compatible.
-
-Cons: You would need multiple versions of a batch criteria or variable
-if you wanted that particular criteria to work across platforms which
-did not all support XML. You could get around this with a base class
-for a given batch criteria/variable which implemented everything but
-the actual generation of changes/additions/removals to the
-experimental definition, and just have adapter classes for each type
-of experimental definition you wanted to be able to use that batch
-criteria with. However, there will probably still be cases which would
-result in lots of code duplication.
+Finally, there need to be several new tutorials for not only how to write
+hooks/plugins for stages {4,5}, but also how to *use* what is defined in an
+end-user workflow. The current examples don't show *any* of this, and the
+question of "How do I use SIERRA to generate what I really care about" isn't
+really answered anywhere.

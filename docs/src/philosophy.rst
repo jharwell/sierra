@@ -32,14 +32,14 @@ higher levels.
 Never Delete Things
 ===================
 
-Because SIERRA is intended for academic research, and experimental data can be
-hard fought, SIERRA tries to guard against accidental deletions/overwrites of
-said data that users actually want to keep, but forgot to change parameters to
-direct SIERRA to keep it. Therefore, we force the user to explicitly say that
-deleting/overwriting is OK when it might cause irreparable damage to experiment
-results (i.e., only pipeline stages 1 and 2). Overwriting is OK in later
-pipeline stages since those files are built from stage 1 and 2 files, and can be
-easily regenerated if overwritten.
+Because SIERRA is intended for academic/industry research, and experimental data
+can be hard fought, SIERRA tries to guard against accidental
+deletions/overwrites of said data that users actually want to keep, but forgot
+to change parameters to direct SIERRA to keep it. Therefore, we force the user
+to explicitly say that deleting/overwriting is OK when it might cause
+irreparable damage to experiment results (i.e., only pipeline stages 1 and
+2). Overwriting is OK in later pipeline stages since those files are built from
+stage 1 and 2 files, and can be easily regenerated if overwritten.
 
 Better Too Much Configuration Than Too Little
 =============================================

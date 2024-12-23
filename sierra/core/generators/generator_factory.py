@@ -194,7 +194,7 @@ def scenario_generator_create(spec: expspec.ExperimentSpec,
         module = pm.module_load_tiered(project=cmdopts['project'],
                                        path='generators.scenario')
         self.generator = getattr(module,
-                                 module.gen_generator_name(spec.scenario_name))
+                                 module.to_generator_name(spec.scenario_name))
 
     def generate(self):
         return self.generator(spec=spec,

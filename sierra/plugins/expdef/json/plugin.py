@@ -113,6 +113,67 @@ class ExpDef:
         writer = Writer(self.tree)
         writer(self.write_config, base_opath)
 
+    def flatten(self, paths: tp.List[str]) -> None:
+        # For each query path
+        for p in paths:
+            expr = jpparse(p)
+
+            # Paths like '$.path' are valid, so we have to iterate over the
+            # matches
+            for m in expr.find(self.tree):
+
+                # If the path matched to something OTHER than a literal
+                # attribute, warning and continue.
+                if isinstance(m.value, (dict, list)):
+                    self.logger.warn(("Path '%s' mapped to a dict/list in '%s', "
+                                      "instead of a path-like string--ignoring "
+                                      "during flattening"),
+                                     p,
+                                     self.input_fpath)
+                    continue
+
+                # All paths are interpreted relative to the parent dir of the
+                # file for this experiment definition.
+                fpath = self.input_fpath.parent / m.value
+                blob = json.load(open(fpath, 'r', encoding='utf-8'))
+
+                # We want to effectively replace:
+                #
+                # {
+                #  'path' : './some/relative-path'
+                # }
+                #
+                # with the file contents, so we need both the parent AND
+                # grandparent nodes to update the tree properly. The parent node
+                # will map to the subtree rooted at 'path' above, and the
+                # grandparent node will contain the parent.
+                parent = jpparse(p + '.`parent`').find(self.tree)
+                grandparent = jpparse(p + '.`parent`.`parent`')
+
+                gnode = grandparent.find(self.tree)[0].value
+
+                # There are two types of grandparent nodes:
+                #
+                # - Those which are a dict for which the parent node is a
+                #   member.
+                #
+                # - Those which are a list for which the parent node is a
+                #   member.
+                #
+                # Each needs unique handling.
+                if not isinstance(gnode, list):
+                    gnode[str(parent[0].path)] = blob
+                else:
+                    key = list(parent[0].value.keys())[0]
+
+                    # You CANNOT replace this with a list comprehension and
+                    # assign to gnode, because that just updates the local
+                    # variable--NOT the overall tree. We have to iterate like
+                    # this afaict.
+                    for idx, g in enumerate(gnode):
+                        if key in g.keys():
+                            gnode[idx] = blob
+
     def attr_get(self, path: str, attr: str) -> tp.Union[str, None]:
         expr = jpparse(path)
         matches = expr.find(self.tree)

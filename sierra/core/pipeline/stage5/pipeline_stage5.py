@@ -20,7 +20,6 @@ from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 from sierra.core.pipeline.stage5 import outputroot
 from sierra.core import types, utils, config, batchroot
-from sierra.core.generators.controller import ControllerGeneratorParser
 
 
 class PipelineStage5:
@@ -155,7 +154,7 @@ class PipelineStage5:
         else:
             legend = self.scenarios
 
-        controller = ControllerGeneratorParser()(cli_args)
+        controller = cli_args.controller
 
         self.logger.info("Inter-batch  comparison of %s across %s...",
                          controller,

@@ -55,7 +55,7 @@ Basic Setup
               Install the following required packages with ``brew install``:
 
               - ``parallel``
-              - ``--cask mactex``
+              - ``--cask mactex-no-gui``
               - ``pssh``
 
               Install the following optional packages with ``brew install``:
@@ -79,28 +79,8 @@ Project Plugin Setup
 ====================
 
 Now that you have some sense of what SIERRA is/how it works, you can define a
-:term:`Project` plugin to interface between your code and SIERRA. The steps to
-do so are:
-
-#. Select which :term:`Platform` SIERRA should target (what platform it targets
-   will partially define how you create your project plugin). See
-   :ref:`plugins/platform` for supported platforms. If your desired
-   platform is not in the list, never fear! It's easy to create a new platform
-   plugin, see :ref:`tutorials/plugin/platform`.
-
-#. Setup the interface between your code and SIERRA by following
-   :ref:`tutorials/project/project`.
-
-#. Select an execution environment for SIERRA that matches your available
-   computational resources:
-
-   - :ref:`plugins/exec-env/hpc`
-
-   - :ref:`plugins/exec-env/realrobot`
-
-   and following the appropriate setup guide. If
-   there is nothing suitable, never fear! It's easy to create a new execution
-   environment plugin, see :ref:`tutorials/plugin/exec-env`.
+:term:`Project` plugin to interface between your code and SIERRA by following
+:ref:`tutorials/project/project`.
 
 Usage Setup
 ===========
@@ -111,8 +91,7 @@ SIERRA! The steps to do so are:
 #. Decide what variable you are interested in investigating by consulting the
    :term:`Batch Criteria` available for your project (i.e., what variable(s) you
    want to change across some range and see how system behavior changes, or
-   doesn't change). Which criteria are available to use depends on your
-   :term:`Platform`; if you don't see something suitable, you can
+   doesn't change).  If you don't see something suitable, you can
    :ref:`Define A New Batch Criteria <tutorials/project/new-bc>`.
 
 #. Look at the :ref:`usage/cli` to understand how to invoke SIERRA in
@@ -143,14 +122,14 @@ SIERRA! The steps to do so are:
      ``--n-runs``.
 
    - Where it is running/how to run experiments: ``--exec-env``. See
-     :ref:`plugins/exec-env/hpc` for available plugins.
+     :ref:`plugins/exec-env` for available plugins.
 
    - What controller to run: ``--controller``. See
      :ref:`tutorials/project/main-config` for details on how valid
      controllers are defined for a :term:`Project`. Project dependent.
 
-   - How large the arena should be, what block distribution type to use (for
-     example), etc. ``--scenario``. Project dependent.
+   - How large the arena should be (for example), etc., which can be drawn from
+     ``--scenario``, or the batch criteria.
 
    - What you are investigating; that is, what variable are you interested in
      varying: ``--batch-criteria``.
@@ -171,9 +150,12 @@ SIERRA! The steps to do so are:
                   to production as R&D code gets) which is compiled with
                   optimizations enabled.
 
-#. Setup the cmdline environment you are going to invoke SIERRA in.
+#. Setup the cmdline environment you are going to invoke SIERRA in:
 
-   - Set :envvar:`SIERRA_PLUGIN_PATH` appropriately.
+   - Set ``PYTHONPATH`` (if necessary) so python can find the SIERRA package.
+
+   - Set :envvar:`SIERRA_PLUGIN_PATH` appropriately so SIERRA can find plugins
+     you define.
 
    Different platforms may require additional environments to be set.
 

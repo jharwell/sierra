@@ -286,8 +286,8 @@ class UnivarInterScenarioComparator:
 
             with utils.utf8open(legend_opath, 'a') as f:
                 sgp = pm.module_load_tiered(project=project,
-                                            path='generators.scenario_generator')
-                kw = sgp.ScenarioGeneratorParser().to_dict(batch_leaf.scenario)
+                                            path='generators.scenario')
+                kw = sgp.to_dict(batch_leaf.scenario)
                 f.write("{0} Prediction\n".format(kw['scenario_tag']))
 
     def _accum_df(self,

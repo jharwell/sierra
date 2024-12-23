@@ -2,6 +2,7 @@ import typing as tp
 import argparse
 
 import sierra.core.cmdline as cmd
+from sierra.core import types
 
 
 class Cmdline(cmd.BaseCmdline):
@@ -25,33 +26,9 @@ class Cmdline(cmd.BaseCmdline):
 
     """
 
-   def __init__(self,
-                parents: tp.Optional[tp.List[argparse.ArgumentParser]],
-                stages: tp.List[int]) -> None:
-
-        # Normal operation when running sierra-cli
-        if parents is not None:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  parents=parents,
-                                                  allow_abbrev=False)
-        else:
-            # Optional--only needed for generating sphinx documentation
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  allow_abbrev=False)
-
-        # Initialize arguments according to configuration
-        self.init_cli(stages)
-
-    def init_cli(self, stages: tp.List[int]) -> None:
-        if -1 in stages:
-            self.init_multistage()
-
-        if 1 in stages:
-            self.init_stage1()
-
-        # And so on...
-
     def init_stage1(self) -> None:
+        super().init_stage1()
+
         # Experiment options
         experiment = self.parser.add_argument_group(
             'Stage1: Red pill or blue pill')
@@ -62,6 +39,8 @@ class Cmdline(cmd.BaseCmdline):
                                 default="red")
 
     def init_multistage(self) -> None:
+        super().init_multistage()
+
         neo = self.parser.add_argument_group('Neo Options')
 
         neo.add_argument("--using-powers",
@@ -69,9 +48,9 @@ class Cmdline(cmd.BaseCmdline):
                          action='store_true')
 
     @staticmethod
-    def cmdopts_update(args: argparse.Namespace, cmdopts: types.Cmdopts):
+    def cmdopts_update(args: argparse.Namespace, cmdopts: types.Cmdopts) -> None:
         updates = {
-            'pill_type': args.pill_type
+            'pill_type': args.pill_type,
             'using_powers': args.using_powers
         }
         cmdopts.update(updates)

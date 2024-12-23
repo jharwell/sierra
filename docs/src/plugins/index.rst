@@ -1,8 +1,10 @@
 .. _plugins:
 
-==============
-SIERRA Plugins
-==============
+========================
+SIERRA Plugins Reference
+========================
+
+This page details the plugins which currently come with SIERRA.
 
 .. toctree::
    :maxdepth: 1
@@ -11,3 +13,4 @@ SIERRA Plugins
    platform/index.rst
    exec-env/index.rst
    storage/index.rst
+   expdef/index.rst

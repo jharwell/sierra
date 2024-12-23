@@ -52,21 +52,21 @@ template file, with some restrictions depending on the file format (XML, JSON,
 General
 -------
 
-#. Experimental inputs must be specified as a single file
+#. Strictly speaking, experimental inputs must be specified as a single file
    (``--expdef-template``); SIERRA uses this to generate multiple input files
-   defining :term:`Experiments <Experiment>`.  If your experiments use require
-   multiple input files, you will either have to consolidate them all into a
-   single file, or point SIERRA to the "main" file in order to use SIERRA to
-   generate experiments from some portion of your experimental definitions.
+   defining :term:`Experiments <Experiment>`; any configuration which isn't in
+   the single input file cannot be modified by SIERRA, limiting effectiveness.
+   E.g.,  :term:`Experimental Runs<Experimental Run>` within each
+   :term:`Experiment` are entirely defined by the contents of the
+   ``--expdef-template`` (which is modified by SIERRA before being written out
+   as one or more platform input files which can be executed during stage 2).
 
-   :term:`Experimental Runs<Experimental Run>` within each :term:`Experiment`
-   are entirely defined by the contents of the ``--expdef-template`` (which is
-   modified by SIERRA before being written out as one or more platform input
-   files which can be executed by the platform/simulator during stage 2).
+   If your experiments use/require/support multiple input files, never fear!
+   You can still use SIERRA. you just have to "flatten" your configuration
+   hierarchy into a single file; this is typically done at the :term:`Platform`
+   level via a simple expdef plugin hook; see :ref:`tutorials/plugin/platform`.
 
-   There is not currently a mechanism for having SIERRA do consolidation of
-   multiple input files via path tag/element replacement, though adding one
-   would not be that hard.
+   See also :ref:`philosophy`.
 
 #. All experiments from which you want to generate statistics/graphs are:
 

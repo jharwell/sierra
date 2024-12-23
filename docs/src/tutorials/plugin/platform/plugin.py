@@ -1,5 +1,6 @@
 import typing as tp
 import argparse
+import logging
 
 import implements
 
@@ -50,7 +51,7 @@ def cmdline_parser() -> argparse.Parser:
                                stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
-def cmdline_postparse_configure(argparse.Namespace) -> argparse.Namespace:
+def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     """
     Additional configuration and/or validation of the passed cmdline
     arguments pertaining to this platform. Validation should be performed

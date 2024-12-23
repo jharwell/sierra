@@ -7,7 +7,7 @@ Creating a New Platform Plugin
 .. IMPORTANT:: There is an example of defining a platform plugin in the
                :xref:`sample project repo<SIERRA_SAMPLE_PROJECT` for a fictional
                JSON-based simulator. It is all but functional, because there is
-               no such JSON-based simulator available :_). This can be used in
+               no such JSON-based simulator available :-). This can be used in
                tandem with this guide to build your own platform plugin.
 
 For the purposes of this tutorial, I will assume you are creating a new
@@ -124,18 +124,22 @@ In ``generators/platform.py``, you may define the following functions:
       changes common to all :term:`Experiment Runs<Experimental Run>` in an
       :term:`Experiment` for your platform.
 
+      .. NOTE:: If your platform supports nested configuration files, this is
+                the place to call ``flatten()`` using the selected expdef
+                plugin. See code sample below for suggested implementation.
+
       .. code-block:: python
 
          import pathlib
 
-         from sierra.core.experiment import definition
+         from sierra.core.experiment import definition, spec
          from sierra.core import types
-         from sierra.experiment import spec
+         from sierra.core import plugin_manager as pm
 
          def for_all_exp(spec: spec.ExperimentSpec,
                          controller: str,
                          cmdopts: types.Cmdopts,
-                         expdef_template_path: pathlib.Path) -> definition.BaseExpDef:
+                         expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
              """
              Create an experiment definition from the
              ``--expdef-template`` and generate expdef changes to input files
@@ -150,15 +154,17 @@ In ``generators/platform.py``, you may define the following functions:
                  controller: The controller used for the experiment, as passed
                              via ``--controller``.
 
-                 exp_def_template_path: The path to ``--expdef-template``.
+                 expdef_template_fpath: The path to ``--expdef-template``.
              """
-             pass
+             # Optional, only needed if your platform supports nested
+             # configuration files.
+             plugin = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+             expdef = plugin.flatten(["pathstring1", "pathstring2"])
 
+   .. tab:: ``for_single_exp_run()``
 
-      .. tab:: ``for_single_exp_run()``
-
-         This function is required. It is used to generate expdef changes for a
-         single :term:`Experimental Run` for your platform.
+      This function is required. It is used to generate expdef changes for a
+      single :term:`Experimental Run` for your platform.
 
       .. code-block:: python
 
@@ -198,7 +204,6 @@ In ``generators/platform.py``, you may define the following functions:
 
                    cmdopts: Dictionary containing parsed cmdline options.
                """
-               pass
 
 .. NOTE:: Neither of these functions is called directly in the SIERRA core;
           :term:`Project` generators for experiments must currently call them
@@ -372,7 +377,6 @@ Running Experiments
              criteria: The batch criteria built from cmdline specification
           """
 
-
 A Full Skeleton
 ===============
 
@@ -390,7 +394,8 @@ A Full Skeleton
 
    .. tab:: ``generators/platform.py``
 
-      .. include:: generators.rst
+      .. literalinclude:: generators.py
+         :language: python
 
 
 Finally--Connect to SIERRA!

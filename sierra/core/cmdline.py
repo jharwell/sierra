@@ -638,56 +638,60 @@ class CoreCmdline(BaseCmdline):
 
         self.multistage.add_argument("--plot-large-text",
                                      help="""
-
-                                    This option specifies that the title, X/Y
-                                    axis labels/tick labels should be larger
-                                    than the SIERRA default. This is useful when
-                                    generating graphs suitable for two column
-                                    paper format where the default text size for
-                                    rendered graphs will be too small to see
-                                    easily. The SIERRA defaults are generally
-                                    fine for the one column/journal paper
-                                    format.
-
-                                     """ + self.stage_usage_doc([4, 5]),
+                                          This option specifies that the title,
+                                          X/Y axis labels/tick labels should be
+                                          larger than the SIERRA default.  This
+                                          is useful when generating graphs
+                                          suitable for two column paper format
+                                          where the default text size for
+                                          rendered graphs will be too small to
+                                          see easily.  The SIERRA defaults are
+                                          generally fine for the one
+                                          column/journal paper format.
+                                          """ + self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
         self.multistage.add_argument("--plot-transpose-graphs",
                                      help="""
+                                          Transpose the X, Y axes in generated
+                                          graphs.  Useful as a general way to
+                                          tweak graphs for best use of space
+                                          within a paper.
 
-                                    Transpose the X, Y axes in generated
-                                    graphs. Useful as a general way to tweak
-                                    graphs for best use of space within a paper.
+                                          .. versionchanged:: 1.2.20
 
-                                    .. versionchanged:: 1.2.20
-
-                                       Renamed from ``--transpose-graphs`` to
-                                       make its relation to other plotting
-                                       options clearer.
-
-                                 """ +
+                                          Renamed from ``--transpose-graphs`` to
+                                          make its relation to other plotting
+                                          options clearer.
+                                          """ +
                                      self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`']) +
                                      self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
         self.multistage.add_argument("--expdef", choices=['expdef.xml'],
                                      help="""
+                                          Specify the experiment definition
+                                          format, so that SIERRA can select an
+                                          appropriate plugin to read/write files
+                                          of that format, and manipulate
+                                          in-memory representations to create
+                                          runnable experiments.  Any plugin on
+                                          :envvar:`SIERRA_PLUGIN_PATH` can be
+                                          used, but the ones that come with
+                                          SIERRA are:
 
-                                 Specify the experiment definition format, so
-                                 that SIERRA can select an appropriate plugin to
-                                 read/write files of that format, and manipulate
-                                 in-memory representations to create runnable
-                                 experiments.
-                                 them. Any plugin on :envvar:`SIERRA_PLUGIN_PATH`
-                                 can be used, but the ones that come with SIERRA
-                                 are:
+                                              - ``expdef.xml`` - Experimental
+                                                definitions are created from XML
+                                                files.  This causes
+                                                ``--expdef-template`` to be
+                                                parsed as XML.
 
-                                 - ``expdef.xml`` - Experimental definitions are
-                                   created from XML files. This causes
-                                   ``--expdef-template`` to be parsed
-                                   as XML.
-
-                                 """ + self.stage_usage_doc([1, 4, 5]),
+                                              - ``expdef.json`` - Experimental
+                                                definitions are created from
+                                                json files.  This causes
+                                                ``--expdef-template`` to be
+                                                parsed as JSON.
+                                          """ + self.stage_usage_doc([1, 4, 5]),
                                      default='expdef.xml')
 
     def init_stage1(self) -> None:

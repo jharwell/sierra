@@ -198,6 +198,10 @@ class ExpDef:
         writer = Writer(self.tree)
         writer(self.write_config, base_opath)
 
+    def flatten(self, paths: tp.List[str]) -> None:
+        raise NotImplementedError(
+            "The XML expdef plugin does not support flattening")
+
     def attr_get(self, path: str, attr: str) -> tp.Union[str, None]:
         el = self.root.find(path)
         if el is not None and attr in el.attrib:

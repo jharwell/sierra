@@ -121,7 +121,6 @@ you clone things somewhere else.
 
            git clone https://github.com/jharwell/sierra-sample-project.git
            cd sierra-sample-project/argos
-           git checkout devel
            mkdir -p build && cd build
            cmake -DARGOS_INSTALL_DIR=<path> ..
            make
@@ -139,7 +138,6 @@ you clone things somewhere else.
 
            git clone https://github.com/jharwell/sierra-sample-project.git
            cd sierra-sample-project/ros1gazebo
-           git checkout devel
            catkin init
            catkin config --extend=$HOME/.local/ros/noetic
            catkin build

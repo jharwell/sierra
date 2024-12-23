@@ -109,6 +109,15 @@ class BaseExpDef(implements.Interface):
         """
         raise NotImplementedError
 
+    def flatten(self, paths: tp.List[str]) -> None:
+        """
+        Replace the specified filepath attributes with their contents.
+
+        Filepaths are interpreted relative to the directory in which the
+        original experiment definition template resides.
+        """
+        raise NotImplementedError
+
     def attr_get(self, path: str, attr: str) -> tp.Union[str, None]:
         """Retrieve the specified attribute of the element at the specified path.
 

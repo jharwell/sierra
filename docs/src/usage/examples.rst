@@ -30,6 +30,9 @@ If your setup is different, adjust paths in the commands below as needed.
                platform. Non-uniformities in which commands are below are more a
                limitation of the sample project than SIERRA itself.
 
+.. TIP:: To help shorten cmdlines, SIERRA supports the usual rcfile mechanism
+         via ``--rcfile`` / :envvar:`SIERRA_RCFILE`.
+
 ==============
 ARGoS Examples
 ==============

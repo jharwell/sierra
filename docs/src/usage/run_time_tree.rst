@@ -140,143 +140,194 @@ following partial SIERRA option set to explain the experiment tree::
 
 
 This invocation will cause SIERRA to create the following directory structure as
-it runs:
+it runs::
+
+  $HOME/exp
+  |-- fordyca
+      |-- CATEGORY.my_controller
+          |-- mytemplate-SS.12x6
+              |-- exp-inputs
+                 |-- exp0
+                     commands.txt
+                     my-template_run0.argos
+                     my-template_run1.argos
+                     my-template_run2.argos
+                     my-template_run3.argos
+                 |-- exp1
+                     commands.txt
+                     my-template_run0.argos
+                     my-template_run1.argos
+                     my-template_run2.argos
+                     my-template_run3.argos
+                 |-- exp2
+                     ...
+                 |-- exp3
+                     ...
+                 |-- statistics
+                     |-- exp0
+                     |-- exp1
+                     |-- exp2
+                     |-- exp3
+                     |-- collated
+                     |-- exec
+                 |-- imagize
+                     |-- exp0
+                     |-- exp1
+                     |-- exp2
+                     |-- exp3
+                 |-- videos
+                     |-- exp0
+                     |-- exp1
+                     |-- exp2
+                     |-- exp3
+                 |-- models
+                     |-- exp0
+                     |-- exp1
+                     |-- exp2
+                     |-- exp3
+                 |-- graphs
+                     |-- exp0
+                     |-- exp1
+                     |-- exp2
+                     |-- exp3
+                     |-- collated
+
+
+The meaning of each directory is discussed below.
 
 - ``$HOME/exp`` - This is the root of the directory structure (``--sierra-root``),
   and is **NOT** deleted on subsequent runs.
 
-  - ``fordyca`` - Each project gets their own directory, so you can disambiguate
-    otherwise identical SIERRA invocations and don't overwrite the directories
-    for a previously used project on subsequent runs.
+- ``fordyca/`` - Each project gets their own directory, so you can disambiguate
+  otherwise identical SIERRA invocations and don't overwrite the directories for
+  a previously used project on subsequent runs.
 
-    - ``CATEGORY.my_controller`` - Each controller gets their own directory in the
-      project root, which is **NOT** deleted on subsequent runs.
+- ``CATEGORY.my_controller/`` - Each controller gets their own directory in the
+  project root, which is **NOT** deleted on subsequent runs.
 
-      - ``mytemplate-SS.12x6`` - The directory for the :term:`Batch Experiment`
-        is named from a combination of the template input file used
-        (``--expdef-template``) and the scenario (``--scenario``).
+- ``mytemplate-SS.12x6/`` - The directory for the :term:`Batch Experiment` is
+  named from a combination of the template input file used
+  (``--expdef-template``) and the scenario (``--scenario``).
 
-        - ``exp-inputs`` - Root directory for :term:`Experimental<Experiment>`
-          inputs; each experiment in the batch gets their own directory in here.
+- ``exp-inputs`` - Root directory for :term:`Experimental<Experiment>` inputs;
+  each experiment in the batch gets their own directory in here.
 
-          - ``exp0`` - Within the input directory for each experiment in the
-            batch (there are 4 such directories in this example), there will be
-            an input file for each :term:`Experimental Run` in the experiment,
-            as well as a ``commands.txt`` used by GNU parallel to run them all
-            in parallel. The leaf of the ``--expdef-template``, sans
-            extension, has the experimental run # appended to it
-            (e.g. ``my-template_run0.argos`` is the input file for simulation 0).
+  - ``exp0/`` - Within the input directory for each experiment in the batch
+    (there are 4 such directories in this example), there will be an input file
+    for each :term:`Experimental Run` in the experiment, as well as a
+    ``commands.txt`` used by GNU parallel to run them all in parallel. The leaf
+    of the ``--expdef-template``, sans extension, has the experimental run #
+    appended to it (e.g. ``my-template_run0.argos`` is the input file for
+    simulation 0).
 
-              - ``commands.txt``
+      - ``commands.txt``
 
-              - ``my-template_run0.argos``
+      - ``my-template_run0.argos``
 
-              - ``my-template_run1.argos``
+      - ``my-template_run1.argos``
 
-              - ``my-template_run2.argos``
+      - ``my-template_run2.argos``
 
-              - ``my-template_run3.argos``
+      - ``my-template_run3.argos``
 
-          - ``exp1``
+  - ``exp1/``
 
-            - ``my-template_run0.argos``
+    - ``my-template_run0.argos``
 
-            - ``my-template_run1.argos``
+    - ``my-template_run1.argos``
 
-            - ``my-template_run2.argos``
+    - ``my-template_run2.argos``
 
-            - ``my-template_run3.argos``
+    - ``my-template_run3.argos``
 
-          - ``exp2``
+  - ``exp2/``
 
-            - ``...``
+    - ``...``
 
-        - ``exp-outputs`` - Root directory for experimental outputs; each
-          experiment gets their own directory in here (just like for experiment
-          inputs). Directory name is controlled by the main YAML configuration.
+- ``exp-outputs/`` - Root directory for experimental outputs; each experiment
+  gets their own directory in here (just like for experiment inputs). Directory
+  name is controlled by the main YAML configuration.
 
-          - ``exp0`` - Within the output directory for each experiment in the
-            batch (there are 3 such directories in this example), there will be
-            a `directory` (rather than a file, as was the case for inputs) for
-            each experimental run's output, including metrics, grabbed frames,
-            etc., as configured in the expdef input file.
+  - ``exp0/`` - Within the output directory for each experiment in the batch
+    (there are 3 such directories in this example), there will be a `directory`
+    (rather than a file, as was the case for inputs) for each experimental run's
+    output, including metrics, grabbed frames, etc., as configured in the expdef
+    input file.
 
-            - ``my-template_run0_output``
+    - ``my-template_run0_output``
 
-            - ``my-template_run1_output``
+    - ``my-template_run1_output``
 
-            - ``my-template_run2_output``
+    - ``my-template_run2_output``
 
-            - ``my-template_run3_output``
+    - ``my-template_run3_output``
 
-          - ``exp1``
+  - ``exp1/``
 
-            - ``my-template_run0_output``
+    - ``my-template_run0_output``
 
-            - ``my-template_run1_output``
+    - ``my-template_run1_output``
 
-            - ``my-template_run2_output``
+    - ``my-template_run2_output``
 
-            - ``my-template_run3_output``
+    - ``my-template_run3_output``
 
-          - ``exp2``
+  - ``exp2/``
 
-            - ``...``
+    - ``...``
 
 
-          - ``statistics`` - Root directory for holding statistics calculated
-            during stage3 for use during stage4.
+- ``statistics/`` - Root directory for holding statistics calculated during
+  stage3 for use during stage4.
 
-            - ``exp0`` - Contains the results of statistics generation for exp0
-              (mean, stddev, etc., as configured).
+  - ``exp0/`` - Contains the results of statistics generation for exp0
+    (mean, stddev, etc., as configured).
 
-            - ``exp1``
+  - ``exp1/``
 
-            - ``exp2``
+  - ``exp2/``
 
-            - ``...``
+  - ``...``
 
-            - ``collated`` - Contains :term:`Collated .csv` files. During
-              stage4, SIERRA will draw specific columns from .csv files under
-              ``statistics`` according to configuration, and collate them under
-              here for graph generation of `inter`\-experiment graphs.
+  - ``collated/`` - Contains :term:`Collated .csv` files. During stage4, SIERRA
+    will draw specific columns from .csv files under ``statistics`` according to
+    configuration, and collate them under here for graph generation of
+    `inter`\-experiment graphs.
 
-            - ``exec`` - Statistics about SIERRA runtime. Useful for capturing
-              runtime of specific experiments to better plan/schedule time on
-              HPC clusters.
+  - ``exec/`` - Statistics about SIERRA runtime. Useful for capturing runtime of
+    specific experiments to better plan/schedule time on HPC clusters.
 
-        - ``imagize`` - Root directory for holding imagized files (averaged run
-          outputs which have been converted to graphs) which can be patched
-          together in stage 4 to generated videos. Each experiment will get its
-          own directory under here, with unique sub-directories for each
-          different type of :term:`Experimental Run` data captured for
-          imagizing. See :ref:`usage/rendering/project` for more
-          details.
+- ``imagize/`` - Root directory for holding imagized files (averaged run outputs
+  which have been converted to graphs) which can be patched together in stage 4
+  to generated videos. Each experiment will get its own directory under here,
+  with unique sub-directories for each different type of :term:`Experimental
+  Run` data captured for imagizing. See :ref:`usage/rendering/project` for more
+  details.
 
-        - ``videos`` - Root directory for holding rendered videos generated
-          during stage 4 from either captured simulator frames for imagized
-          project files. Each experiment will get its own directory under here,
-          with See :ref:`usage/rendering` for more details.
+- ``videos/`` - Root directory for holding rendered videos generated during
+  stage 4 from either captured simulator frames for imagized project files. Each
+  experiment will get its own directory under here, with See
+  :ref:`usage/rendering` for more details.
 
-        - ``models`` - During stage4, the dataframes generated by all executed
-          models are stored under this directory. Each experiment in the batch
-          gets their own directory for `intra`\-experiment models.
+- ``models/`` - During stage4, the dataframes generated by all executed models
+  are stored under this directory. Each experiment in the batch gets their own
+  directory for `intra`\-experiment models.
 
-        - ``graphs`` - During stage4, all generated graphs are output under this
-          directory. Each experiment in the batch gets their own directory for
-          `intra`\-experiment graphs.
+- ``graphs/`` - During stage4, all generated graphs are output under this
+  directory. Each experiment in the batch gets their own directory for
+  `intra`\-experiment graphs.
 
-          - ``exp0``
+  - ``exp0/``
 
-          - ``exp1``
+  - ``exp1/``
 
-          - ``exp2``
+  - ``exp2/``
 
-          - ``exp3``
+  - ``exp3/``
 
-          - ``collated`` - Graphs which are generated across experiments in the
-            batch from collated .csv data, rather than from the averaged results
-            within each experiment, are output here.
+  - ``collated/`` - Graphs which are generated across experiments in the batch
+    from collated .csv data, rather than from the averaged results within each
+    experiment, are output here.
 
 Stage 5 Directory Tree
 ----------------------
@@ -296,18 +347,18 @@ First, the experiment tree for `scenario comparison`::
 
 
 This invocation will cause SIERRA to create the following directory structure as
-it runs:
+it runs::
 
-- ``$HOME/exp``
+  $HOME/exp/
+  |-- RN.16x16x2+PL.16x16x2-sc-graphs/
 
-  - ``RN.16x16x2+PL.16x16x2-sc-graphs``
 
-    This is the directory holding the comparison graphs for all controllers
-    which were previously run on the scenarios ``RN.16x16x2`` and ``PL.16x16x2``
-    (scenario names are arbitrary for the purposes of stage 5 and entirely
-    depend on the project). Inside this directory will be all graphs generated
-    according to the configuration specified in
-    :ref:`tutorials/project/stage5-config`.
+``RN.16x16x2+PL.16x16x2-sc-graphs/`` is the directory holding the comparison
+graphs for all controllers which were previously run on the scenarios
+``RN.16x16x2`` and ``PL.16x16x2`` (scenario names are arbitrary for the purposes
+of stage 5 and entirely depend on the project). Inside this directory will be
+all graphs generated according to the configuration specified in
+:ref:`tutorials/project/stage5-config`.
 
 Second, the experiment tree for `controller comparison` ::
 
@@ -319,15 +370,15 @@ Second, the experiment tree for `controller comparison` ::
 
 
 This invocation will cause SIERRA to create the following directory structure as
-it runs:
+it runs::
 
-- ``$HOME/exp``
 
-  - ``d0.CRW+d0.DPO-cc-graphs``
+  $HOME/exp
+  |-- d0.CRW+d0.DPO-cc-graphs/
 
-    This is the directory holding the comparison graphs for each scenario for
-    which ``d0.CRW`` and ``d0.DPO`` were run (scenarios are computed by
-    examining the directory tree for stages 1-4). Controller names are arbitrary
-    for the purposes of stage 5 and entirely depend on the project). Inside this
-    directory will be all graphs generated according to the configuration
-    specified in :ref:`tutorials/project/stage5-config`.
+``d0.CRW+d0.DPO-cc-graphs/`` is the directory holding the comparison graphs for
+each scenario for which ``d0.CRW`` and ``d0.DPO`` were run (scenarios are
+computed by examining the directory tree for stages 1-4). Controller names are
+arbitrary for the purposes of stage 5 and entirely depend on the
+project). Inside this directory will be all graphs generated according to the
+configuration specified in :ref:`tutorials/project/stage5-config`.

@@ -377,9 +377,7 @@ def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
 
     module = pm.module_load_tiered(project=cmdopts['project'],
                                    path='generators.scenario')
-    kw = module.ScenarioGeneratorParser().to_dict(scenario)
-
-    return kw
+    return module.to_dict(scenario)
 
 
 def sphinx_ref(ref: str) -> str:

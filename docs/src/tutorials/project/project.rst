@@ -29,7 +29,8 @@ Before beginning, determine the following:
   environment, see :ref:`tutorials/plugin/execenv`.
 
   If you want to use SIERRA with some sort of real hardware (e.g., a specific
-  robot), you probably will have to create a new execution environment plugin.
+  robot), you probably will have to create a new execution environment
+  plugin. See :ref:`tutorials/plugin/exec-env` for details.
 
 The distinction between execution environments and platforms is important, and
 gets to one of the core ways in which SIERRA was designed, so it is worth taking
@@ -54,56 +55,78 @@ Steps
      for all projects. Within this directory, the following files are used (not
      all files are required when running a stage that utilizes them):
 
-     - ``main.yaml`` - Main SIERRA configuration file. This file is required for
-       all pipeline stages. See :ref:`tutorials/project/main-config`
-       for documentation.
+     .. tabs::
 
-     - ``controllers.yaml`` - Configuration for controllers (input file/graph
-       generation). This file is required for all pipeline stages. See
-       :ref:`tutorials/project/main-config` for documentation.
+        .. tab:: ``main.yaml``
 
-     - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
-       linegraphs. This file is optional. If it is present, graphs defined in it
-       will be added to those specified in
-       ``<sierra>/core/config/intra-graphs-line.yaml``, and will be generated if
-       stage 4 is run. See :doc:`graphs_config` for documentation.
+           Main SIERRA configuration file. This file is required for all
+           pipeline stages. See :ref:`tutorials/project/main-config` for
+           documentation.
 
-     - ``intra-graphs-hm.yaml`` - Configuration for intra-experiment
-       heatmaps. This file is optional. If it is present, graphs defined in it
-       will be added to those specified in
-       ``<sierra>/core/config/intra-graphs-hm.yaml``, and will be generated if
-       stage 4 is run. See :doc:`graphs_config` for documentation.
+        .. tab:: ``controllers.yaml``
 
-     - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs. This
-       file is optional. If it is present, graphs defined in it will be added to
-       those specified in ``<sierra>/core/config/inter-graphs-line.yaml``, and
-       will be generated if stage 4 is run. See :doc:`graphs_config` for
-       documentation.
+           Configuration for controllers (input file/graph generation). This
+           file is required for all pipeline stages. See
+           :ref:`tutorials/project/main-config` for documentation.
 
-     - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This
-       file is required if stage 5 is run, and optional otherwise. See
-       :doc:`stage5_config` for documentation.
+        .. tab:: ``intra-graphs-line.yaml``
 
-     - ``models.yaml`` - Configuration for intra- and inter-experiment
-       models. This file is optional. If it is present, models defined and
-       enabled in it will be run before stage 4 intra- and/or inter-experiment
-       graph generation, if stage 4 is run. See :doc:`models` for documentation.
+           Configuration for intra-experiment linegraphs. This file is
+           optional. If it is present, graphs defined in it will be added to
+           those specified in ``<sierra>/core/config/intra-graphs-line.yaml``,
+           and will be generated if stage 4 is run. See :doc:`graphs_config` for
+           documentation.
+
+        .. tab:: ``intra-graphs-hm.yaml``
+
+           Configuration for intra-experiment heatmaps. This file is
+           optional. If it is present, graphs defined in it will be added to
+           those specified in ``<sierra>/core/config/intra-graphs-hm.yaml``, and
+           will be generated if stage 4 is run. See :doc:`graphs_config` for
+           documentation.
+
+        .. tab:: ``inter-graphs.yaml``
+
+           Configuration for inter-experiment graphs. This file is optional. If
+           it is present, graphs defined in it will be added to those specified
+           in ``<sierra>/core/config/inter-graphs-line.yaml``, and will be
+           generated if stage 4 is run. See :doc:`graphs_config` for
+           documentation.
+
+        .. tab:: ``stage5.yaml``
+
+           Configuration for stage5 controller comparisons. This file is
+           required if stage 5 is run, and optional otherwise. See
+           :doc:`stage5_config` for documentation.
+
+        .. tab:: ``models.yaml``
+
+           Configuration for intra- and inter-experiment models. This file is
+           optional. If it is present, models defined and enabled in it will be
+           run before stage 4 intra- and/or inter-experiment graph generation,
+           if stage 4 is run. See :doc:`models` for documentation.
 
    - ``generators/`` - Classes to enable SIERRA to generate changes to template
      expdef files needed by your project. This directory is required for all
      SIERRA projects.
 
-     - ``scenario.py`` - Specifies classes and functions to enable SIERRA to
-       generate expdef file modifications to the ``--expdef-template`` based on
-       what is passed as ``--scenario`` on the cmdline. Contains the parser for
-       parsing the contents of ``--scenario`` into a dictionary which can be
-       used to configure experiments. This file is required. See
-       :ref:`tutorials/project/generators/scenario-config` for documentation.
+     .. tabs::
 
-     - ``experiment.py`` - Contains extensions to the per-:term:`Experiment` and
-       per-:term:`Experimental Run` configuration that SIERRA performs. See
-       :ref:`tutorials/project/generators/sim-config` for documentation. This
-       file is optional.
+        .. tab::  ``scenario.py``
+
+           Specifies classes and functions to enable SIERRA to generate expdef
+           file modifications to the ``--expdef-template`` based on what is
+           passed as ``--scenario`` on the cmdline. Contains the parser for
+           parsing the contents of ``--scenario`` into a dictionary which can be
+           used to configure experiments. This file is required. See
+           :ref:`tutorials/project/generators/scenario` for documentation.
+
+        .. tab:: ``experiment.py``
+
+           Contains extensions to the per-:term:`Experiment` and
+           per-:term:`Experimental Run` configuration that SIERRA performs. See
+           :ref:`tutorials/project/generators/exp` for documentation. This file
+           is optional.
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
      the plugin/project that can be directly or indirectly used by the

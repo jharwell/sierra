@@ -257,7 +257,8 @@ class ExpCreator:
         run_output_dir = f"{self.template_stem}_run{run_num}_output"
 
         # If the project defined per-run configuration, apply
-        # it. Otherwise, just apply the configuration in the SIERRA core.
+        # it. Otherwise, the already-applied configuration for the platform is
+        # all that will be used per-run.
         per_run = pm.module_load_tiered(project=self.cmdopts['project'],
                                         path='generators.experiment')
 
