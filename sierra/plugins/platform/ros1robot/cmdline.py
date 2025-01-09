@@ -136,27 +136,28 @@ class PlatformCmdline(cmd.BaseCmdline):
                                  action='store_true',
                                  default=False)
 
-    @staticmethod
-    def cmdopts_update(args: argparse.Namespace, cmdopts: types.Cmdopts) -> None:
-        """Update cmdopts with ROS1+robot-specific cmdline options.
 
-        """
-        ros1.cmdline.ROSCmdline.cmdopts_update(args, cmdopts)
-        updates = {
-            # Multistage
-            'exec_jobs_per_node': 1,  # (1 job/robot)
-            'skip_online_check': args.skip_online_check,
-            'online_check_method': args.online_check_method,
+def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+    """Update cmdopts with ROS1+robot-specific cmdline options.
 
-            # stage 1
-            'skip_sync': args.skip_sync,
+    """
+    opts = ros1.cmdline.to_cmdopts(args)
+    self_updates = {
+        # Multistage
+        'exec_jobs_per_node': 1,  # (1 job/robot)
+        'skip_online_check': args.skip_online_check,
+        'online_check_method': args.online_check_method,
 
-            # stage 2
-            'exec_resume': args.exec_resume,
-            'exec_inter_run_pause': args.exec_inter_run_pause
-        }
+        # stage 1
+        'skip_sync': args.skip_sync,
 
-        cmdopts.update(updates)
+        # stage 2
+        'exec_resume': args.exec_resume,
+        'exec_inter_run_pause': args.exec_inter_run_pause
+    }
+
+    opts |= self_updates
+    return opts
 
 
 def sphinx_cmdline_stage1():

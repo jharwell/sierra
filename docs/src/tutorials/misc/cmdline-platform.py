@@ -47,10 +47,9 @@ class Cmdline(cmd.BaseCmdline):
                          help="""Do you believe you're the one or not?""",
                          action='store_true')
 
-    @staticmethod
-    def cmdopts_update(args: argparse.Namespace, cmdopts: types.Cmdopts) -> None:
-        updates = {
-            'pill_type': args.pill_type,
-            'using_powers': args.using_powers
-        }
-        cmdopts.update(updates)
+
+def to_cmdopts(args: argparse.Namespace) -> cmdopts: types.Cmdopts:
+    return {
+        'pill_type': args.pill_type,
+        'using_powers': args.using_powers
+    }

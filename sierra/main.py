@@ -96,6 +96,8 @@ class SIERRA():
                                               [-1, 1, 2, 3, 4, 5])
 
         self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
+        self.args.sierra_root = os.path.expanduser(self.args.sierra_root)
+
         self.args = self._handle_rc(bootstrap_args.rcfile, self.args)
 
         nonbootstrap_cmdline.validate(self.args)

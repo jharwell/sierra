@@ -56,14 +56,15 @@ class Cmdline(cmd.PlatformCmdline):
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))
 
-    @staticmethod
-    def cmdopts_update(cli_args: argparse.Namespace, cmdopts: types.Cmdopts):
-        updates = {
-              'scenario': cli_args.scenario,
-              'controller': cli_args.controller,
-
-        }
-        cmdopts.update(updates)
-
     def validate(self, args: argparse.Namespace) -> None:
         assert args.scenario != 'scooter', "Scooter scenario not supported"
+
+
+
+def to_cmdopts(args: argparse.Namespace) -> cmdopts: types.Cmdopts:
+    return {
+          'scenario': args.scenario,
+          'controller': args.controller,
+
+    }
+    cmdopts.update(updates)

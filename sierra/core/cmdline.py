@@ -13,7 +13,7 @@ import typing as tp
 
 # Project packages
 import sierra.version
-from sierra.core import utils
+from sierra.core import utils, types
 
 kVersionMsg = ("reSearch pIpEline for Reproducibility, Reusability and "
                f"Automation (SIERRA) v{sierra.version.__version__}.\n"
@@ -91,6 +91,7 @@ class BootstrapCmdline(BaseCmdline):
                                                    'Bare-bones options for bootstrapping SIERRA')
 
         bootstrap.add_argument("--project",
+                               required=True,
                                help="""
 
                                  Specify which :term:`Project` to load.
@@ -236,11 +237,13 @@ class CoreCmdline(BaseCmdline):
         Scaffold CLI by defining the parser and common argument groups.
         """
         if parents is not None:
-            self.parser = ArgumentParser(parents=parents,
+            self.parser = ArgumentParser(prog='sierra-cli',
+                                         parents=parents,
                                          add_help=False,
                                          allow_abbrev=False)
         else:
-            self.parser = ArgumentParser(add_help=False,
+            self.parser = ArgumentParser(prog='sierra-cli',
+                                         add_help=False,
                                          allow_abbrev=False)
 
         self.multistage = self.parser.add_argument_group('Multi-stage options',
@@ -505,6 +508,7 @@ class CoreCmdline(BaseCmdline):
 
         self.multistage.add_argument("--n-runs",
                                      type=int,
+                                     default=1,
                                      help="""
 
                                     The # of experimental runs that will be
@@ -668,7 +672,7 @@ class CoreCmdline(BaseCmdline):
                                      self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
-        self.multistage.add_argument("--expdef", choices=['expdef.xml'],
+        self.multistage.add_argument("--expdef", choices=['expdef.xml', 'expdef.json'],
                                      help="""
                                           Specify the experiment definition
                                           format, so that SIERRA can select an
@@ -1241,12 +1245,12 @@ class CoreCmdline(BaseCmdline):
 
     def _validate_check_pipeline(self, args: argparse.Namespace) -> None:
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
-            assert args.n_runs is not None, \
-                '--n-runs is required for running stage 1'
             assert args.expdef_template is not None, \
                 '--expdef-template is required for running stage 1'
             assert args.scenario is not None, \
                 '--scenario is required for running stage 1'
+            assert args.n_runs is not None, \
+                '--n-runs is required for running stage 1'
 
         assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
             'Only 1-5 are valid pipeline stages'
@@ -1265,6 +1269,15 @@ class CoreCmdline(BaseCmdline):
             if args.scenario_comparison:
                 assert args.controller is not None, \
                     '--controller is required for --scenario-comparison'
+
+
+def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+    """
+    Fallback if the selected platform cmdline doesn't define this function.
+
+    Totally fine to not define this function.
+    """
+    return {}
 
 
 def sphinx_cmdline_multistage():

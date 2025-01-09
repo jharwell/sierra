@@ -1,6 +1,7 @@
 import typing as tp
 import argparse
 import logging
+import pathlib
 
 import implements
 
@@ -17,12 +18,45 @@ class ExpShellCmdsGenerator():
     :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
     """
 
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 exp_num: int) -> None:
+        pass
+
+    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
     """
+
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 criteria: bc.BatchCriteria,
+                 n_agents: int,
+                 exp_num: int) -> None:
+        pass
+
+    def pre_run_cmds(self,
+                     host: str,
+                     input_fpath: pathlib.Path,
+                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_run_cmds(self,
+                      host: str,
+                      input_fpath: pathlib.Path,
+                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+        return []
 
 
 @implements.implements(bindings.IExpConfigurer)
@@ -31,8 +65,22 @@ class ExpConfigurer():
     :class:`~sierra.core.experiment.bindings.IExpConfigurer`.
     """
 
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        self.cmdopts = cmdopts
 
-def cmdline_parser() -> argparse.Parser:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
+        pass
+
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
+        pass
+
+    def cmdfile_paradigm(self) -> str:
+        return 'per-exp'
+
+
+def cmdline_parser() -> argparse.ArgumentParser:
     """
     Get a cmdline parser supporting the platform. The returned parser
     should extend :class:`~sierra.core.cmdline.BaseCmdline`.
@@ -68,7 +116,9 @@ def exec_env_check(cmdopts: types.Cmdopts):
 
 
 def population_size_from_pickle(exp_def: tp.Union[definition.AttrChangeSet,
-                                                  definition.ElementAddList]) -> int:
+                                                  definition.ElementAddList],
+                                main_config: types.YAMLDict,
+                                cmdopts: types.Cmdopts) -> int:
     """
     Given an experiment definition, main configuration, and cmdopts,
     get the # agents in the experiment.Size can be obtained from added
@@ -78,14 +128,24 @@ def population_size_from_pickle(exp_def: tp.Union[definition.AttrChangeSet,
 
         exp_def: *Part* of the pickled experiment definition object.
 
+        main_config: Main project configuration.
+
+        cmdopts: Dictionary of parsed cmdline options.
+
   """
 
 
-def population_size_from_def(exp_def: definition.BaseExpDef) -> int:
+def population_size_from_def(exp_def: definition.BaseExpDef,
+                             main_config: types.YAMLDict,
+                             cmdopts: types.Cmdopts) -> int:
     """
     Arguments:
 
         exp_def: The *entire* experiment definition object.
+
+        main_config: Main project configuration.
+
+        cmdopts: Dictionary of parsed cmdline options.
 
     """
 

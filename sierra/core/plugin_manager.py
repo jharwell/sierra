@@ -150,7 +150,13 @@ class DirectoryPluginManager(BasePluginManager):
         self.main_module = 'plugin'
 
     def initialize(self, project: str) -> None:
-        pass
+        # Update PYTHONPATH with the directory containing the project so imports
+        # of the form 'import project.module' work. This is needed so projects
+        # which define e.g., platform plugins work as expected.
+        #
+        # 2021/07/19: If you put the entries at the end of sys.path it
+        # doesn't work for some reason...
+        sys.path = [str(self.search_root)] + sys.path[0:]
 
     def available_plugins(self):
         """
@@ -176,7 +182,7 @@ class DirectoryPluginManager(BasePluginManager):
 
 
 class ProjectPluginManager(BasePluginManager):
-    """Plugins are `directories` found in a root plugin directory.
+    """Plugins are *directories* found in a root plugin directory.
 
     Intended for use with :term:`Project plugins <plugin>`.
 

@@ -8,7 +8,10 @@ If you have a new experimental variable that you have added to your C++ library,
 **AND** which is exposed via the input file, then you need to do the
 following to get it to work with SIERRA as a :term:`Batch Criteria`. For the
 purposes of this tutorial, we will assume that the :term:`Platform` you are
-using supports XML.
+using supports XML; analogous steps apply for other file formats.
+
+Required Steps
+==============
 
 #. Make your variable (``MyVar`` in this tutorial) inherit from
    :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria` and place
@@ -133,3 +136,15 @@ using supports XML.
 
    See ``<sierra>/plugins/argos/variables/population_size.py`` for a simple
    example of this.
+
+Optional Steps
+==============
+
+#. Define the :func:`sierra.core.batch_criteria.BatchCriteria.arena_dims()`
+   function. This will enable SIERRA to determine the size of the experimeont
+   space from batch criteria, instead of the cmdline.
+
+   .. NOTE:: This function is one of the two ways in which the requirement that
+             the size of the arena (i.e., the volume or plane of real or
+             simulation space) to use during experiments is known to SIERRA can
+             be communicated. For more details, see :ref:`req/exp`.

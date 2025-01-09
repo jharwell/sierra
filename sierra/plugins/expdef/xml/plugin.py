@@ -160,6 +160,10 @@ class Writer():
         return (tree_out, src_root, opath)
 
 
+def root_querypath() -> str:
+    return "."
+
+
 @implements.implements(definition.BaseExpDef)
 class ExpDef:
     """Read, write, and modify parsed XML files into experiment definitions.

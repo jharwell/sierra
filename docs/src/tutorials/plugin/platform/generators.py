@@ -2,7 +2,7 @@ import pathlib
 
 from sierra.core.experiment import definition
 from sierra.core import types
-from sierra.experiment import spec
+from sierra.core.experiment import spec
 from sierra.core import plugin_manager as pm
 
 
@@ -26,10 +26,26 @@ def for_all_exp(spec: spec.ExperimentSpec,
 
         exp_def_template_fpath: The path to ``--expdef-template``.
     """
+    # Only needed if your platform supports multiple input formats. Otherwise
+    # just hardcode the string identifying the root element.
+    fmt = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+
+    # Assuming platform takes a single file as input
+    wr_config = definition.WriterConfig([{'src_parent': None,
+                                          'src_tag': fmt.root_querypath(),
+                                          'opath_leaf': '.myextension',
+                                          'new_children': None,
+                                          'new_children_parent': None,
+                                          'rename_to': None
+                                          }])
+    module = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+
+    expdef = module.ExpDef(input_fpath=expdef_template_fpath,
+                           write_config=wr_config)
+
     # Optional, only needed if your platform supports nested
     # configuration files.
-    plugin = pm.pipeline.get_plugin_module(cmdopts['expdef'])
-    expdef = plugin.flatten(["pathstring1", "pathstring2"])
+    expdef.flatten(["pathstring1", "pathstring2"])
 
     return expdef
 

@@ -60,6 +60,12 @@ Within this file, you must define the following functions:
                  """
                  ...
 
+         .. NOTE:: This function is one of the two ways in which the requirement
+                   that the size of the arena (i.e., the volume or plane of real
+                   or simulation space) to use during experiments is known to
+                   SIERRA can be communicated. For more details, see
+                   :ref:`req/exp`.
+
 .. _tutorials/project/generators/exp:
 
 Generating Experiments
@@ -115,4 +121,3 @@ In ``generators/experiment.py``, you may define the following functions:
                cmdopts: Dictionary containing parsed cmdline options.
            """
            pass
-

@@ -59,7 +59,7 @@ Creating The Cmdline Interface
 
    .. code-block:: python
 
-       def cmdline_parser() -> argparse.Parser:
+       def cmdline_parser() -> argparse.ArgumentParser:
            """
            Get a cmdline parser supporting the platform. The returned parser
            should extend :class:`~sierra.core.cmdline.BaseCmdline`.
@@ -73,7 +73,7 @@ Creating The Cmdline Interface
            """
            # Initialize all stages and return the initialized
            # parser to SIERRA for use.
-           parser = hpc.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+           parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
            return cmd.PlatformCmdline(parents=[parser],
                                       stages=[-1, 1, 2, 3, 4, 5]).parser
 
@@ -157,9 +157,10 @@ In ``generators/platform.py``, you may define the following functions:
                  expdef_template_fpath: The path to ``--expdef-template``.
              """
              # Optional, only needed if your platform supports nested
-             # configuration files.
-             plugin = pm.pipeline.get_plugin_module(cmdopts['expdef'])
-             expdef = plugin.flatten(["pathstring1", "pathstring2"])
+             # configuration files. Note that this snippet assumes that you have
+             # already created the experiment definition object in a variable
+             # called 'expdef'.
+             expdef.flatten(["pathstring1", "pathstring2"])
 
    .. tab:: ``for_single_exp_run()``
 
@@ -172,7 +173,7 @@ In ``generators/platform.py``, you may define the following functions:
 
           from sierra.core.experiment import definition
           from sierra.core import types
-          from sierra.experiment import spec
+          from sierra.core.experiment import spec
 
 
           def for_single_exp_run(
@@ -213,7 +214,7 @@ In ``generators/platform.py``, you may define the following functions:
 Running Experiments
 ===================
 
-#. In ``plugin.py``, you must define two required functions:
+#. In ``plugin.py``, you may define the following functions:
 
    .. tabs::
 
@@ -246,7 +247,15 @@ Running Experiments
 
    so that SIERRA can extract the # agents used in a given experiment, which
    some platforms need when defining their shell commands for executing an
-   experiment (e.g., ROS).
+   experiment (e.g., ROS). These functions are optional. HOWEVER, if neither is
+   defined, then:
+
+   - You MUST define ``arena_dims_from_criteria()`` in your platform plugin.
+
+   - All :term:`Batch Criteria` that you use must have the arena dimensions
+     extractable when passed to ``arena_dims_from_criteria()``.
+
+   See :ref:`req/exp` for more details.
 
 
 #. In ``plugin.py``, you may define the following classes which are used in
@@ -258,6 +267,49 @@ Running Experiments
    shell commands into a "language" that SIERRA understands.
 
    .. tabs::
+
+      .. tab:: ExpShellCmdsGenerator
+
+         This class is optional. If it is defined, it should conform to
+         :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
+
+         It is used in stage 2 to execute (not generate) shell commands
+         per-experiment previously written to a text file using GNU parallel (or
+         some other engine of your choice). This includes sets of cmds for:
+
+         - Pre-experiment cmds executed prior to any experimental run being
+           executed.
+
+         - Post-experiment cleanup cmds before the next experiment is executed.
+
+         .. IMPORTANT:: The result of ``exec_exp_cmds()`` for platforms plugins
+                        is ignored, because it doesn't make sense: execution
+                        environments execute experiments (DUH), so you don't
+                        need to define it.
+
+         .. code-block:: python
+
+            import typing as tp
+
+            import implements
+
+            from sierra.core.experiment import bindings
+            from sierra.core import types, utils
+
+            @implements.implements(bindings.IExpRunShellCmdsGenerator)
+            class ExpShellCmdsGenerator():
+                def __init__(self,
+                             cmdopts: types.Cmdopts,
+                             exp_num: int) -> None:
+                    pass
+
+                def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+                    return []
+
+                def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+                    return []
+
+
 
       .. tab:: ExpRunShellCmdsGenerator
 
@@ -280,23 +332,40 @@ Running Experiments
          this is how you tell SIERRA the type of run-time parallelism for your
          platform.
 
-      .. tab:: ExpShellCmdsGenerator
+         .. code-block:: python
 
-         This class is optional. If it is defined, it should conform to
-         :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
+            import typing as tp
+            import pathlib
 
-         It is used in stage 2 to execute (not generate) shell commands
-         per-experiment previously written to a text file using GNU parallel (or
-         some other engine of your choice). This includes sets of cmds for:
+            import implements
 
-         - Pre-experiment cmds executed prior to any experimental run being
-           executed.
+            from sierra.core.experiment import bindings
+            from sierra.core.variables import batch_criteria as bc
+            from sierra.core import types, utils
 
-         - Post-experiment cleanup cmds before the next experiment is executed.
+            @implements.implements(bindings.IExpRunShellCmdsGenerator)
+            class ExpRunShellCmdsGenerator():
+                def __init__(self,
+                     cmdopts: types.Cmdopts,
+                     criteria: bc.BatchCriteria,
+                     n_agents: int,
+                     exp_num: int) -> None:
+                     pass
 
-         .. IMPORTANT:: The result of ``exec_exp_cmds()`` for platforms plugins
-                        is ignored, because it doesn't make sense: execution
-                        environments execute experiments (DUH).
+                 def pre_run_cmds(self,
+                                  host: str,
+                                  input_fpath: pathlib.Path,
+                                  run_num: int) -> tp.List[types.ShellCmdSpec]:
+                     return []
+
+                 def exec_run_cmds(self,
+                                   host: str,
+                                   input_fpath: pathlib.Path,
+                                   run_num: int) -> tp.List[types.ShellCmdSpec]:
+                     return []
+
+             def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+                 return []
 
 
 

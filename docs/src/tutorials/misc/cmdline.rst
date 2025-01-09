@@ -20,6 +20,11 @@ below.
       Must define the ``--scenario`` and ``--controller`` cmdline arguments to
       interact with the SIERRA core.
 
+      .. NOTE:: The ``--scenario`` argument can be used to encode the arena
+                dimensions used in an experiment; this is one of two ways to
+                communicate to SIERRA that size of the experimental arena for
+                each :term:`Experiment`. See :ref:`req/exp` for more details.
+
       Can define the ``validate()`` function in their derived cmdline classes.
       This function is optional, and should assert() as needed to check cmdline
       arg validity. For most cases, you shouldn't need to define this function;
@@ -36,16 +41,16 @@ below.
       that via ``cmdline_postparse_configure()`` -- see
       :ref:`tutorials/plugin/platform` for details.
 
-      Must define ``--exp-setup`` and insert it into and the ``cmdopts`` dict
-      via the the ``cmdopts_update()`` function.
+      Must define ``--exp-setup`` and make it available to SIERRA via the
+      ``to_cmdopts()`` function.
 
 
 With that out of the way, the steps to extend the SIERRA cmdline are as follows:
 
 #. Create ``cmdline.py`` in your project/platform plugin directory.
 
-#. Create a ``Cmdline`` class (name up to you) which inherits from the SIERRA
-   cmdline as follows:
+#. Create a ``Cmdline`` class (MUST be named this way) which inherits from the
+   SIERRA cmdline as follows:
 
    .. tabs::
 
@@ -69,10 +74,27 @@ With that out of the way, the steps to extend the SIERRA cmdline are as follows:
                   otherwise the cmdline arguments defined by SIERRA will not be
                   setup properly.
 
-   The ``cmdopts_update()`` function inserts the parsed cmdline arguments into
-   the main ``cmdopts`` dictionary used throughout SIERRA. Keys can have any
-   name, though in general it is best to make them the same as the name of the
-   argument (principle of least surprise).
+   The ``to_cmdopts()`` function creates a dictionary from the parsed cmdline
+   arguments which SIERRA uses to create an internal ``cmdopts`` dictionary used
+   throughout. Keys can have any name, though in general it is best to make them
+   the same as the name of the argument (principle of least surprise). The
+   following required keys must be made available during stage 2:
+
+   - ``exec_jobs_per_node`` - This is usually provided by the ``--exec-env``
+     plugin via a nested update call like::
+
+       from sierra.core import hpc, types
+       ...
+
+       def to_cmdopts(args) -> types.Cmdopts:
+
+           opts = hpc.cmdline.cmdopts_update(args)
+           ...
+           return opts
+
+     in the *platform* ``to_cmdopts()`` function. You can also hardcode this
+     to whatever you like.
+
 
 #. Hook your created cmdline into SIERRA.
 

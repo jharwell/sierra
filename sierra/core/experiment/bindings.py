@@ -61,7 +61,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         """Generate shell commands to execute an :term:`Experiment`.
 
         This is (usually) a single GNU parallel command, but it does not have to
-        be. These commands are run in the `same` sub-shell as the pre- and
+        be. These commands are run in the *same* sub-shell as the pre- and
         post-exp commands during stage 2.
 
         Called during stage 2.

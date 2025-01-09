@@ -382,8 +382,9 @@ class BatchCriteria():
 
         # This will be the "template" input file used to generate the input
         # files for each experimental run in the experiment
+        fmt = pm.pipeline.get_plugin_module(cmdopts['expdef'])
         wr_config = definition.WriterConfig([{'src_parent': None,
-                                              'src_tag': '.',
+                                              'src_tag': fmt.root_querypath(),
                                               'opath_leaf': None,
                                               'new_children': None,
                                               'new_children_parent': None

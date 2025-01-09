@@ -63,7 +63,7 @@ class Writer():
         if config['src_parent'] is None:
             src_root = config['src_tag']
         else:
-            src_root = "{0}/{1}".format(config['src_parent'],
+            src_root = "{0}.{1}".format(config['src_parent'],
                                         config['src_tag'])
 
         expr = jpparse(src_root)
@@ -78,6 +78,10 @@ class Writer():
             opath = base_opath
 
         return (tree_out, src_root, opath)
+
+
+def root_querypath() -> str:
+    return "$"
 
 
 @implements.implements(definition.BaseExpDef)
@@ -199,6 +203,7 @@ class ExpDef:
                     attr: str,
                     value: str,
                     noprint: bool = False) -> bool:
+
         expr = jpparse(path)
         matches = expr.find(self.tree)
 
@@ -262,8 +267,6 @@ class ExpDef:
         assert len(el) <= 1, \
             (f"Path '{path}' to element was not unique! Perhaps "
              "you have malform JSON?")
-
-        print(json.dumps(self.tree))
 
         if el:
             # If path maps to a literal, then we are pointing to an attribute,

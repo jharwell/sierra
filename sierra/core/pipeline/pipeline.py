@@ -116,7 +116,7 @@ class Pipeline:
                           self.cmdopts['platform'])
         module = pm.module_load_tiered("cmdline",
                                        platform=self.cmdopts['platform'])
-        module.PlatformCmdline.cmdopts_update(self.args, self.cmdopts)
+        self.cmdopts |= module.to_cmdopts(self.args)
 
         if self.pathset is not None:
             # Load additional cmdline options from project. This is mandatory,
@@ -127,7 +127,7 @@ class Pipeline:
             path = "{0}.cmdline".format(self.cmdopts['project'])
             module = pm.module_load(path)
 
-            module.Cmdline.cmdopts_update(self.args, self.cmdopts)
+            self.cmdopts |= module.to_cmdopts(self.args)
 
         project = pm.pipeline.get_plugin(self.cmdopts['project'])
         path = project['parent_dir'] / self.cmdopts['project']

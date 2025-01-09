@@ -43,6 +43,13 @@ class ControllerGenerator():
         with utils.utf8open(main_yaml) as f:
             self.main_config = yaml.load(f, yaml.FullLoader)
 
+        n_components = len(controller.split('.'))
+        if n_components != 2:
+            raise RuntimeError(("Expected 2 controller components, got "
+                                f"{n_components}. Arguments to --controller "
+                                "must be of the form CATEGORY.TYPE (i.e., 2 "
+                                "components separated by a '.')."))
+
         self.category, self.name = controller.split('.')
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
