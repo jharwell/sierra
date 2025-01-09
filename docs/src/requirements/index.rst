@@ -36,7 +36,7 @@ One of the following:
 Python Requirements
 ===================
 
-Python 3.8+. Tested with 3.8-3.10. It may work for newer versions, probably
+Python 3.9+. Tested with 3.9-3.10. It may work for newer versions, probably
 won't for older.
 
 .. _req/exp:
@@ -62,7 +62,10 @@ Experimental Design Requirements
    communicated to SIERRA, which SIERRA tries in the following order:
 
    #. Through :term:`Batch Criteria` defining the ``arena_dims()`` function. See
-      :ref:`tutorials/project/new_bc` to see how to implement this method.
+      :ref:`tutorials/project/new-bc` to see how to implement this method. This
+      method also requires additional hooks to be defined in the
+      :term:`Platform`--see :ref:`tutorials/plugin/platform/generate` for
+      specifics.
 
    #. Through the cmdline, by encoding it as part of what is passed to
       ``--scenario``. See :ref:`tutorials/project/generators/scenario` to see

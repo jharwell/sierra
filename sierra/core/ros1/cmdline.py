@@ -99,11 +99,11 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     """
     return {
         # multistage
-        'no_master_node': cli_args.no_master_node,
+        'no_master_node': args.no_master_node,
 
         # stage 1
-        'robot': cli_args.robot,
-        'exp_setup': cli_args.exp_setup,
+        'robot': args.robot,
+        'exp_setup': args.exp_setup,
 
     }
 

@@ -19,7 +19,7 @@ needs.
    project/stage5_config.rst
    project/expdef-template/index.rst
    project/generators.rst
-   project/new_bc.rst
+   project/new-bc.rst
    project/hooks.rst
    project/models.rst
 

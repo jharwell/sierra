@@ -111,6 +111,8 @@ Configuring The Experimental Environment
      found next to the main input file for each :term:`Experiment` or
      :term:`Experimental Run`.
 
+.. _tutorials/plugin/platform/generate:
+
 Generating Experiments
 ======================
 
@@ -206,13 +208,31 @@ In ``generators/platform.py``, you may define the following functions:
                    cmdopts: Dictionary containing parsed cmdline options.
                """
 
+   .. tab:: ``arena_dims_from_criteria()``
+
+      This function is optional; only needed if the dimensions are not specified
+      on the cmdline, which can be useful if the batch criteria involves
+      changing them; e.g., evaluating behavior with different arena shapes. See
+      :ref:`req/exp` for more details.
+
+   .. code-block:: python
+
+      import typing as tp
+
+      from sierra.core import batch_criteria as bc
+
+      def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
+          """
+          Arguments:
+
+             criteria: The batch criteria built from cmdline specification
+          """
+
+
 .. NOTE:: Neither of these functions is called directly in the SIERRA core;
           :term:`Project` generators for experiments must currently call them
           directly. This behavior may change in the future, hence these
           functions are required.
-
-Running Experiments
-===================
 
 #. In ``plugin.py``, you may define the following functions:
 
@@ -408,43 +428,6 @@ Running Experiments
           environment configuration to the terminal as a sanity check.
           """
           logger.info("Starting batch experiment using MATRIX!")
-
-#. In ``plugin.py``, you may define ``agent_prefix_extract()``, which can be
-   used to return the alpha-numeric prefix that will be prepended to each
-   agent's numeric ID to create a UUID for the agent. This function is optional.
-
-   .. todo:: is this even used anywhere???
-
-   .. code-block:: python
-
-      def agent_prefix_extract(main_config: types.YAMLDict,
-                               cmdopts: types.Cmdopts) -> str:
-          """
-          Arguments:
-
-              main_config: Parsed dictionary of main YAML configuration.
-
-              cmdopts: Dictionary of parsed command line options.
-           """
-
-
-#. In ``plugin.py``, you may define ``arena_dims_from_criteria()``, which can be
-   used get a list of the arena dimensions used in each generated
-   experiment. This function is optional; only needed if the dimensions are not
-   specified on the cmdline, which can be useful if the batch criteria involves
-   changing them; e.g., evaluating behavior with different arena shapes.
-
-   .. code-block:: python
-
-      import typing as tp
-
-      from sierra.core import batch_criteria as bc
-      def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
-          """
-          Arguments:
-
-             criteria: The batch criteria built from cmdline specification
-          """
 
 A Full Skeleton
 ===============

@@ -91,7 +91,6 @@ class BootstrapCmdline(BaseCmdline):
                                                    'Bare-bones options for bootstrapping SIERRA')
 
         bootstrap.add_argument("--project",
-                               required=True,
                                help="""
 
                                  Specify which :term:`Project` to load.
