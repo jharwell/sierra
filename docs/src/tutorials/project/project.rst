@@ -26,7 +26,7 @@ Before beginning, determine the following:
   you are targeting a simulator of some sort, you probably don't have to, at
   least initially, as SIERRA supports running simulators locally out of the
   box. If you want/need to run on e.g., some sort of exotic cluster-based
-  environment, see :ref:`tutorials/plugin/execenv`.
+  environment, see :ref:`tutorials/plugin/exec-env`.
 
   If you want to use SIERRA with some sort of real hardware (e.g., a specific
   robot), you probably will have to create a new execution environment

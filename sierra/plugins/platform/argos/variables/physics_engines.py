@@ -107,7 +107,7 @@ class PhysicsEngines():
                 self.element_adds = [self._gen24_engines(s) for s in self.extents]
             else:
                 raise RuntimeError(
-                    "Bad # of physics engines specified: {0}".format(self.n_engines))
+                    f"Bad # of physics engines specified: {self.n_engines}")
 
         return self.element_adds
 

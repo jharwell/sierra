@@ -17,7 +17,7 @@ from jsonpath_ng.ext import parse as jpparse
 
 # Project packages
 from sierra.core.experiment import definition
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class Writer():
@@ -53,7 +53,8 @@ class Writer():
 
         to_write = tree
 
-        json.dump(to_write, open(opath, 'w', encoding='utf-8'))
+        with utils.utf8open(opath, 'w') as f:
+            json.dump(to_write, f)
 
     def _write_prepare_tree(self,
                             base_opath: pathlib.Path,
@@ -63,7 +64,7 @@ class Writer():
         if config['src_parent'] is None:
             src_root = config['src_tag']
         else:
-            src_root = "{0}/{1}".format(config['src_parent'],
+            src_root = "{0}.{1}".format(config['src_parent'],
                                         config['src_tag'])
 
         expr = jpparse(src_root)
@@ -80,6 +81,10 @@ class Writer():
         return (tree_out, src_root, opath)
 
 
+def root_querypath() -> str:
+    return "$"
+
+
 @implements.implements(definition.BaseExpDef)
 class ExpDef:
     """Read, write, and modify parsed XML files into experiment definitions.
@@ -91,7 +96,8 @@ class ExpDef:
 
         self.write_config = write_config
         self.input_fpath = input_fpath
-        self.tree = json.load(open(self.input_fpath, 'r', encoding='utf-8'))
+        with utils.utf8open(self.input_fpath, 'r') as f:
+            self.tree = json.load(f)
         self.element_adds = definition.ElementAddList()
         self.attr_chgs = definition.AttrChangeSet()
 
@@ -125,17 +131,18 @@ class ExpDef:
                 # If the path matched to something OTHER than a literal
                 # attribute, warning and continue.
                 if isinstance(m.value, (dict, list)):
-                    self.logger.warn(("Path '%s' mapped to a dict/list in '%s', "
-                                      "instead of a path-like string--ignoring "
-                                      "during flattening"),
-                                     p,
-                                     self.input_fpath)
+                    self.logger.warning(("Path '%s' mapped to a dict/list in '%s', "
+                                         "instead of a path-like string--ignoring "
+                                         "during flattening"),
+                                        p,
+                                        self.input_fpath)
                     continue
 
                 # All paths are interpreted relative to the parent dir of the
                 # file for this experiment definition.
                 fpath = self.input_fpath.parent / m.value
-                blob = json.load(open(fpath, 'r', encoding='utf-8'))
+                with utils.utf8open(fpath, 'r') as f:
+                    blob = json.load(f)
 
                 # We want to effectively replace:
                 #
@@ -174,7 +181,7 @@ class ExpDef:
                         if key in g.keys():
                             gnode[idx] = blob
 
-    def attr_get(self, path: str, attr: str) -> tp.Union[str, None]:
+    def attr_get(self, path: str, attr: str) -> tp.Optional[str]:
         expr = jpparse(path)
         matches = expr.find(self.tree)
 
@@ -199,6 +206,7 @@ class ExpDef:
                     attr: str,
                     value: str,
                     noprint: bool = False) -> bool:
+
         expr = jpparse(path)
         matches = expr.find(self.tree)
 
@@ -262,8 +270,6 @@ class ExpDef:
         assert len(el) <= 1, \
             (f"Path '{path}' to element was not unique! Perhaps "
              "you have malform JSON?")
-
-        print(json.dumps(self.tree))
 
         if el:
             # If path maps to a literal, then we are pointing to an attribute,
@@ -380,7 +386,7 @@ class ExpDef:
     def element_add(self,
                     path: str,
                     tag: str,
-                    attr: types.StrDict = {},
+                    attr: tp.Optional[types.StrDict] = None,
                     allow_dup: bool = True,
                     noprint: bool = False) -> bool:
         """

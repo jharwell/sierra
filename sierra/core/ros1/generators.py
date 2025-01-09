@@ -109,7 +109,7 @@ def _generate_all_exp_experiment(exp_def: definition.BaseExpDef,
     setup = exp.factory(cmdopts["exp_setup"],
                         use_barrier_start,
                         robots_need_timekeeper)()
-    rms, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
+    _, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
 
     # Write setup info to file for later retrieval
     scutils.pickle_modifications(adds, chgs, spec.exp_def_fpath)

@@ -54,7 +54,6 @@ setup(
               'reusability'],
     classifiers=[
         # "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -138,7 +137,7 @@ setup(
             "graphviz"
         ]
     },
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     entry_points={
         "console_scripts": [
             "sierra-cli=sierra.main:main",

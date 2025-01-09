@@ -57,9 +57,11 @@ class BasePluginManager():
                     'parent_dir': plugins[name]['parent_dir'],
                     'module': module
                 }
-                self.logger.debug("Loaded pipeline plugin '%s' from '%s'",
+                self.logger.debug(("Loaded pipeline plugin '%s' from '%s': "
+                                   "accessible as %s"),
                                   scoped_name,
-                                  plugins[name]['parent_dir'])
+                                  plugins[name]['parent_dir'],
+                                  scoped_name)
             else:
                 self.logger.warning("Pipeline plugin '%s' already loaded", name)
         elif plugins[name]['type'] == 'project':
@@ -71,9 +73,11 @@ class BasePluginManager():
                     'spec': plugins[name]['spec'],
                     'parent_dir': plugins[name]['parent_dir'],
                 }
-                self.logger.debug("Loaded project plugin '%s' from '%s'",
+                self.logger.debug(("Loaded project plugin '%s' from '%s' "
+                                  "accessible as %s"),
                                   scoped_name,
-                                  plugins[name]['parent_dir'])
+                                  plugins[name]['parent_dir'],
+                                  scoped_name)
             else:
                 self.logger.warning("Project plugin '%s' already loaded", name)
 
@@ -113,6 +117,7 @@ class FilePluginManager(BasePluginManager):
     def __init__(self) -> None:
         super().__init__()
         self.search_root = None  # type: tp.Optional[pathlib.Path]
+        self.plugins = {}
 
     def initialize(self, project: str, search_root: pathlib.Path) -> None:
         self.search_root = search_root
@@ -121,26 +126,28 @@ class FilePluginManager(BasePluginManager):
         """Get the available plugins in the configured plugin root.
 
         """
-        plugins = {}
         assert self.search_root is not None, \
             "FilePluginManager not initialized!"
+
+        if self.plugins:
+            return self.plugins
 
         for candidate in self.search_root.iterdir():
             if candidate.is_file() and '.py' in candidate.name:
                 name = candidate.stem
                 spec = importlib.util.spec_from_file_location(name, candidate)
-                plugins[name] = {
+                self.plugins[name] = {
                     'spec': spec,
                     'parent_dir': self.search_root,
                     'type': 'pipeline'
                 }
-        return plugins
+        return self.plugins
 
 
-class DirectoryPluginManager(BasePluginManager):
-    """Plugins are `directories` found in a root plugin directory.
+class PipelinePluginManager(BasePluginManager):
+    """Plugins are *subdirs* in a directory on :envvar`SIERRA_PLUGIN_PATH`.
 
-    Intended for use with :term:`Pipeline plugins <plugin>`.
+    Used with :term:`Pipeline plugins <plugin>`.
 
     """
 
@@ -148,23 +155,41 @@ class DirectoryPluginManager(BasePluginManager):
         super().__init__()
         self.search_root = search_root
         self.main_module = 'plugin'
+        self.plugins = {}
 
     def initialize(self, project: str) -> None:
-        pass
+        # Update PYTHONPATH with the directory containing the project so imports
+        # of the form 'import project.module' work. This is needed so projects
+        # which define e.g., platform plugins work as expected.
+        #
+        # 2021/07/19: If you put the entries at the end of sys.path it
+        # doesn't work for some reason...
+        sys.path = [str(self.search_root)] + sys.path[0:]
 
     def available_plugins(self):
         """
         Find all pipeline plugins in all directories within the search root.
         """
-        plugins = {}
+        if self.plugins:
+            return self.plugins
+
+        self.logger.debug("Searching for directory-based plugins in '%s'",
+                          self.search_root)
+
         try:
             for location in self.search_root.iterdir():
                 plugin = location / (self.main_module + '.py')
-
+                self.logger.trace("Trying directory '%s': has %s: %s",
+                                  plugin,
+                                  (self.main_module + '.py'),
+                                  plugin in location.iterdir() if
+                                  location.is_dir() else False)
                 if location.is_dir() and plugin in location.iterdir():
+                    self.logger.debug("Found directory-based plugin in '%s'",
+                                      location)
                     spec = importlib.util.spec_from_file_location(location.name,
                                                                   plugin)
-                    plugins[location.name] = {
+                    self.plugins[location.name] = {
                         'parent_dir': self.search_root,
                         'spec': spec,
                         'type': 'pipeline'
@@ -172,11 +197,11 @@ class DirectoryPluginManager(BasePluginManager):
         except FileNotFoundError:
             pass
 
-        return plugins
+        return self.plugins
 
 
 class ProjectPluginManager(BasePluginManager):
-    """Plugins are `directories` found in a root plugin directory.
+    """Plugins are *directories* found in a root plugin directory.
 
     Intended for use with :term:`Project plugins <plugin>`.
 
@@ -187,6 +212,7 @@ class ProjectPluginManager(BasePluginManager):
 
         self.search_root = search_root
         self.project = project
+        self.plugins = {}
 
     def initialize(self, project: str) -> None:
         # Update PYTHONPATH with the directory containing the project so imports
@@ -200,11 +226,16 @@ class ProjectPluginManager(BasePluginManager):
         """
         Find all pipeline plugins in all directories within the search root.
         """
-        plugins = {}
+        if self.plugins:
+            return self.plugins
+
+        self.logger.debug("Searching for project plugins in '%s'",
+                          self.search_root)
         try:
             for location in self.search_root.iterdir():
                 if self.project in location.name:
-                    plugins[location.name] = {
+                    self.logger.debug("Found project plugin in '%s'", location)
+                    self.plugins[location.name] = {
                         'parent_dir': self.search_root,
                         'spec': None,
                         'type': 'project'
@@ -213,10 +244,12 @@ class ProjectPluginManager(BasePluginManager):
         except FileNotFoundError:
             pass
 
-        return plugins
+        return self.plugins
 
 
 class CompositePluginManager(BasePluginManager):
+    """Container for managing multiple types of plugins via multiple managers."""
+
     def __init__(self) -> None:
         super().__init__()
         self.components = []  # type: tp.List[tp.Union[DirectoryPluginManager,ProjectPluginManager]]
@@ -229,11 +262,14 @@ class CompositePluginManager(BasePluginManager):
         for d in search_path:
             project_path = d / project
 
-            if utils.path_exists(project_path):
+            if utils.path_exists(d) and not utils.path_exists(project_path):
+                pipeline_plugin = PipelinePluginManager(d)
+                self.components.append(pipeline_plugin)
+            elif utils.path_exists(project_path):
                 project_plugin = ProjectPluginManager(d, project)
                 self.components.append(project_plugin)
             else:
-                pipeline_plugin = DirectoryPluginManager(d)
+                pipeline_plugin = PipelinePluginManager(d)
                 self.components.append(pipeline_plugin)
 
         for c in self.components:
@@ -324,18 +360,47 @@ def module_load_tiered(path: str,
 
     # If that didn't work, check the platform plugin
     if platform is not None:
-        # We manually add 'sierra.plugins' here, rather than adding the
-        # necessary directory to PYTHONPATH so that we don't accidentally get
-        # the files from other non-platform plugins with the same name as the
-        # platform plugin file we are interested in getting picked.
-        platform_path = f'sierra.plugins.{platform}.{path}'
-        if module_exists(platform_path):
-            logging.trace("Using platform component path '%s'",  # type: ignore
-                          platform_path)
-            return module_load(platform_path)
-        else:
-            logging.trace("Platform component path '%s' does not exist",  # type: ignore
-                          platform_path)
+
+        # 2025-01-13 [JRH]: We handle two types of platform plugins:
+        #
+        # - Those defined in the SIERRA core. sierra/plugins is on PYTHONPATH
+        #   since those paths/modules are all known, we don't have to worry
+        #   about getting the files from other non-platform plugin with the same
+        #   name as a file in the platform plugin picked during import.
+        #
+        # - Those defined outside the SIERRA core. Since the directory they
+        #   reside in can be anywhere on SIERRA_PLUGIN_PATH, AND we can't know
+        #   if there is ANOTHER directory on PYTHONPATH containing a file with
+        #   the same name as the one we are trying to match with AND we can't
+        #   depend on the order of PYTHONPATH, we have to get creative to avoid
+        #   picking up a false positive match. Specifically, we try each of the
+        #   sub-paths of the path we are trying to lookup to see if we get a hit
+        #   relative to a directory which IS on PYTHONPATH.
+        #
+        #   The case where the user puts platform plugins on SIERRA_PLUGIN_PATH
+        #   as e.g., ~/plugins/myplugin, and then uses --platform=myplugin is a
+        #   special case of the above.
+        #
+        #   This approach is a bit hacky, but I don't know of a better way to do
+        #   it.
+
+        platform_path = f'{platform}.{path}'
+        substr = platform_path
+
+        while '.' in substr:
+            if module_exists(substr):
+                logging.trace(("Using platform component path '%s' with matched "
+                               "PYTHONPATH fragment '%s'"),
+                              platform_path,
+                              substr)  # type: ignore
+                return module_load(substr)
+            else:
+                logging.trace(("Platform component path '%s' does not exist with "
+                               "matched component fragment '%s'"),
+                              platform_path,
+                              substr)   # type: ignore
+
+            substr = '.'.join(substr.split('.')[1:])
 
     # If that didn't work, then check the SIERRA core
     core_path = f'sierra.core.{path}'

@@ -4,6 +4,15 @@
 FAQ
 ===
 
+#. Q: I'm getting an error about the output directory for my simulation run
+   being missing--what is wrong? I told SIERRA where outputs should be created
+   by following :ref:`tutorials/project/main-config`.
+
+   A: SIERRA does *not* create the output directory you tell it that all outputs
+   for a simulation run will lie under--that is the responsibility of the
+   :term:`Platform` and/or :term:`Project`. SIERRA just reads outputs from the
+   specified location.
+
 #. Q: I'm really confused by all the terminology that SIERRA uses--how can I
    better understand the documentation?
 

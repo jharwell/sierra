@@ -93,21 +93,19 @@ class ROSCmdline(cmd.BaseCmdline):
 
                             """.format(config.kYAML.main) + self.stage_usage_doc([1]))
 
-    @staticmethod
-    def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """Update cmdopts with ROS-specific cmdline options.
-        """
-        updates = {
-            # multistagev
-            'no_master_node': cli_args.no_master_node,
 
-            # stage 1
-            'robot': cli_args.robot,
-            'exp_setup': cli_args.exp_setup,
+def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+    """Update cmdopts with ROS-specific cmdline options.
+    """
+    return {
+        # multistage
+        'no_master_node': args.no_master_node,
 
-        }
+        # stage 1
+        'robot': args.robot,
+        'exp_setup': args.exp_setup,
 
-        cmdopts.update(updates)
+    }
 
 
 __api__ = [

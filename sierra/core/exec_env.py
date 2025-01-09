@@ -259,10 +259,8 @@ def check_for_simulator(platform: str,
                              shell=True)
         return res
     else:
-        error = "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(exec_env,
-                                                                                    platform,
-                                                                                    name)
-        raise RuntimeError(error)
+        raise RuntimeError(
+            f"Bad --exec-env '{exec_env}' for platform '{platform}': cannot find '{name}'")
 
 
 def get_executable_shellname(base: str) -> str:

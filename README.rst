@@ -47,7 +47,7 @@ What is SIERRA? See `What is SIERRA?`_
 
 Why should you use SIERRA? See `Why SIERRA?`_
 
-To install SIERRA (requires python 3.8+):
+To install SIERRA (requires python 3.9+):
 
 ::
 
@@ -163,7 +163,7 @@ The basic requirements are:
 
 - Recent OSX (tested with 13+) or Linux (tested with ubuntu 20.04+).
 
-- python >= 3.8.
+- python >= 3.9.
 
 .. NOTE:: Windows is not supported currently. Not because it can't be supported,
           but because there are not currently any platform plugins that which

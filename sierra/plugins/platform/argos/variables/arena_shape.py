@@ -1,6 +1,7 @@
 # Copyright 2018 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
+"""Functionality for modifying/setting the size of the arena in ARGoS."""
 
 # Core packages
 import typing as tp

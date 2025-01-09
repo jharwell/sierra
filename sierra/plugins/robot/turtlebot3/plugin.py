@@ -103,64 +103,74 @@ class ExpShellCmdsGenerator():
         # 1 GNU parallel command to launch each experimental run, because each
         # run might use all available nodes/robots.
         for i in range(self.cmdopts['n_runs']):
+            ret.extend(self._generate_for_run(i, exec_opts, resume, nodelist))
 
-            # GNU parallel cmd for robots (slaves)
-            robots = 'parallel {2} ' \
-                '--jobs {1} ' \
-                '--results {4} ' \
-                '--joblog {3} ' \
-                '--sshloginfile {0} ' \
-                '--workdir {4} < "{5}"'
+        return ret
 
-            robots_ipath = exec_opts['cmdfile_stem_path'] + \
-                f"_run{i}_slave" + exec_opts['cmdfile_ext']
+    def _generate_for_run(self,
+                          i: int,
+                          exec_opts: dict,
+                          resume: str,
+                          nodelist: pathlib.Path) -> tp.List[types.ShellCmdSpec]:
+        ret = []
+        # GNU parallel cmd for robots (slaves)
+        robots = 'parallel {2} ' \
+            '--jobs {1} ' \
+            '--results {4} ' \
+            '--joblog {3} ' \
+            '--sshloginfile {0} ' \
+            '--workdir {4} < "{5}"'
 
-            robot_log = pathlib.Path(exec_opts['scratch_dir'],
-                                     f"parallel-slaves-run{i}.log")
+        robots_ipath = exec_opts['cmdfile_stem_path'] + \
+            f"_run{i}_slave" + exec_opts['cmdfile_ext']
 
-            robots = robots.format(nodelist,
-                                   exec_opts['n_jobs'],
-                                   resume,
-                                   robot_log,
-                                   exec_opts['scratch_dir'],
-                                   robots_ipath)
+        robot_log = pathlib.Path(exec_opts['scratch_dir'],
+                                 f"parallel-slaves-run{i}.log")
 
-            # If no master is spawned, then we need to wait for this GNU
-            # parallel cmd. If the master is spawned, then we wait for THAT
-            # command; waiting for both results in the master never starting
-            # because that cmd is never run.
-            robots_spec = types.ShellCmdSpec(cmd=robots,
+        robots = robots.format(nodelist,
+                               exec_opts['n_jobs'],
+                               resume,
+                               robot_log,
+                               exec_opts['scratch_dir'],
+                               robots_ipath)
+
+        # If no master is spawned, then we need to wait for this GNU
+        # parallel cmd. If the master is spawned, then we wait for THAT
+        # command; waiting for both results in the master never starting
+        # because that cmd is never run.
+        robots_spec = types.ShellCmdSpec(cmd=robots,
+                                         shell=True,
+                                         wait=self.cmdopts['no_master_node'])
+        ret.append(robots_spec)
+
+        if not self.cmdopts['no_master_node']:
+            ros_master = 'parallel {3} ' \
+                '--results {1} ' \
+                '--joblog {0} ' \
+                '--workdir {1} < "{2}"'
+
+            ros_master_ipath = exec_opts['cmdfile_stem_path'] + \
+                f"_run{i}_master" + exec_opts['cmdfile_ext']
+
+            master_log = pathlib.Path(exec_opts['scratch_dir'],
+                                      f"parallel-master-run{i}.log")
+            ros_master = ros_master.format(master_log,
+                                           exec_opts['scratch_dir'],
+                                           ros_master_ipath,
+                                           resume)
+
+            master_spec = types.ShellCmdSpec(cmd=ros_master,
                                              shell=True,
-                                             wait=self.cmdopts['no_master_node'])
-            ret.append(robots_spec)
+                                             wait=not self.cmdopts['no_master_node'])
+            ret.append(master_spec)
 
-            if not self.cmdopts['no_master_node']:
-                ros_master = 'parallel {3} ' \
-                    '--results {1} ' \
-                    '--joblog {0} ' \
-                    '--workdir {1} < "{2}"'
+        wait = ('echo "{0} seconds until launching next run!"; '
+                'sleep {0}s ;'.format(self.cmdopts['exec_inter_run_pause']))
+        wait_spec = types.ShellCmdSpec(cmd=wait,
+                                       shell=True,
+                                       wait=True)
+        ret.append(wait_spec)
 
-                ros_master_ipath = exec_opts['cmdfile_stem_path'] + \
-                    f"_run{i}_master" + exec_opts['cmdfile_ext']
-
-                master_log = pathlib.Path(exec_opts['scratch_dir'],
-                                          f"parallel-master-run{i}.log")
-                ros_master = ros_master.format(master_log,
-                                               exec_opts['scratch_dir'],
-                                               ros_master_ipath,
-                                               resume)
-
-                master_spec = types.ShellCmdSpec(cmd=ros_master,
-                                                 shell=True,
-                                                 wait=not self.cmdopts['no_master_node'])
-                ret.append(master_spec)
-
-            wait = ('echo  "{0} seconds until launching next run!"; '
-                    'sleep {0}s ;'.format(self.cmdopts['exec_inter_run_pause']))
-            wait_spec = types.ShellCmdSpec(cmd=wait,
-                                           shell=True,
-                                           wait=True)
-            ret.append(wait_spec)
         return ret
 
 

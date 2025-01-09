@@ -38,6 +38,7 @@ def generate(cmdopts: types.Cmdopts,
             try:
                 _logger.trace('\n' +  # type: ignore
                               json.dumps(graph, indent=4))
+
                 StackedLineGraph(stats_root=pathset.stat_root,
                                  input_stem=graph['src_stem'],
                                  output_fpath=output_fpath,

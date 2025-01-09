@@ -3,7 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
-
+"""Functionality for managing the SIERRA directory structure for experiments."""
 # Core packages
 import typing as tp
 

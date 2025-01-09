@@ -36,9 +36,45 @@ One of the following:
 Python Requirements
 ===================
 
-Python 3.8+. Tested with 3.8-3.10. It may work for newer versions, probably
+Python 3.9+. Tested with 3.9-3.10. It may work for newer versions, probably
 won't for older.
 
+.. _req/exp:
+
+Experimental Design Requirements
+================================
+
+#. The experimental arena size for each :term:`Experiment` in all :term:`Batch
+   Experiments <Batch Experiment>` is defined. The size of the arena in which
+   the agent(s) operate is used by SIERRA for a number of things, such as
+   creating unique directory paths, computing metrics, etc.
+
+   For experiments which will run in simulation, this is usually obtained from
+   the configured limits on the simulated space set in the simulator input
+   files(s). If your simulation environment is more of a "treadmill" (i.e., it
+   renders around agents as they move and is effectively infinite), then you
+   will have to create some mechanism for a set size for the simulation.
+
+   For real-world experiments, this is usually just an estimate of the lab/test
+   range space size.
+
+   There are two ways in which the arena size used in experiments can be
+   communicated to SIERRA, which SIERRA tries in the following order:
+
+   #. Through :term:`Batch Criteria` defining the ``arena_dims()`` function. See
+      :ref:`tutorials/project/new-bc` to see how to implement this method. This
+      method also requires additional hooks to be defined in the
+      :term:`Platform`--see :ref:`tutorials/plugin/platform/generate` for
+      specifics.
+
+   #. Through the cmdline, by encoding it as part of what is passed to
+      ``--scenario``. See :ref:`tutorials/project/generators/scenario` to see
+      how to implement this method.
+
+   Both methods can be made to work equivalently, and can be mixed within and
+   across platforms and batch criteria. That is, you can define some experiments
+   where the arena size is pulled from batch criteria, and some where it is
+   pulled from ``--scenario`` within the same platform/project.
 
 .. _req/expdef:
 

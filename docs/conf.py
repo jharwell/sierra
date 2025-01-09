@@ -171,7 +171,7 @@ xref_links = {
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
     "2022-aamas-demo": ("2022 AAMAS Demo",
-                        "https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo")
+                        "https://jharwell.github.io/showcase/aamas-2022-demo/")
 
 }
 

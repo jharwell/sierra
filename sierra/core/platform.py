@@ -62,7 +62,7 @@ def cmdline_postparse_configure(platform: str,
         args = module.cmdline_postparse_configure(exec_env, args)
     else:
         _logger.debug(("Skipping configuring cmdline from --platform='%s': "
-                      "does not define hook"),
+                      "does not define cmdline_postparse_configure()"),
                       platform)
 
     return args
@@ -81,7 +81,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
         module.exec_env_check(cmdopts)
     else:
         _logger.debug(("Skipping execution environment check for "
-                       "--platform='%s': does not define hook"),
+                       "--platform='%s': does not define exec_env_hook()"),
                       cmdopts['platform'])
 
 

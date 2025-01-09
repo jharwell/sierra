@@ -173,26 +173,25 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          """ + self.stage_usage_doc([1]),
                                          default=0)
 
-    @staticmethod
-    def cmdopts_update(cli_args: argparse.Namespace,
-                       cmdopts: types.Cmdopts) -> None:
-        """Update cmdopts with ROS1+Gazebo-specific cmdline options.
 
-        """
-        hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
-        ros1.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
+def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+    """Update cmdopts with ROS1+Gazebo-specific cmdline options.
 
-        updates = {
-            # stage 1
-            'robot_positions': cli_args.robot_positions,
+    """
+    opts = hpc.cmdline.to_cmdopts(args) | ros1.cmdline.to_cmdopts(args)
 
-            'physics_n_engines': 1,  # Always 1 for gazebo...
-            'physics_n_threads': cli_args.physics_n_threads,
-            'physics_engine_type': cli_args.physics_engine_type,
-            'physics_iter_per_tick': cli_args.physics_iter_per_tick,
-        }
+    for_self = {
+        # stage 1
+        'robot_positions': args.robot_positions,
 
-        cmdopts.update(updates)
+        'physics_n_engines': 1,  # Always 1 for gazebo...
+        'physics_n_threads': args.physics_n_threads,
+        'physics_engine_type': args.physics_engine_type,
+        'physics_iter_per_tick': args.physics_iter_per_tick,
+    }
+
+    opts |= for_self
+    return opts
 
 
 def sphinx_cmdline_stage1():

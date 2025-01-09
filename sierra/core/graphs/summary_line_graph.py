@@ -155,17 +155,17 @@ class SummaryLineGraph:
     def _plot_lines(self,
                     data_dfy: pd.DataFrame,
                     model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
-        for i in range(0, len(data_dfy.values)):
-            assert len(data_dfy.values[i]) == len(self.xticks),\
+        for i, value in enumerate(data_dfy.values):
+            assert len(value) == len(self.xticks), \
                 "Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
                     len(self.xticks),
-                    len(data_dfy.values[i]),
+                    len(value),
                     self.xticks,
-                    data_dfy.values[i])
+                    value)
 
             # Plot data
             plt.plot(self.xticks,
-                     data_dfy.values[i],
+                     value,
                      marker=self.kMarkStyles[i],
                      color=f"C{i}")
 
@@ -185,7 +185,7 @@ class SummaryLineGraph:
                          xvals,
                          '--',
                          marker=self.kMarkStyles[i],
-                         color="C{}".format(i + len(data_dfy.index)))
+                         color=f"C{i + len(data_dfy.index)}")
 
     def _plot_stats(self,
                     ax,
@@ -212,14 +212,14 @@ class SummaryLineGraph:
                                 config.kStats['conf95'].exts)
             return
 
-        for i in range(0, len(data_dfy.values)):
+        for i, value in enumerate(data_dfy.values):
             stddev_i = stat_dfs['stddev'].abs().values[i]
             # 95% interval = 2 std stdeviations
             plt.fill_between(xticks,
-                             data_dfy.values[i] - 2 * stddev_i,
-                             data_dfy.values[i] + 2 * stddev_i,
+                             value - 2 * stddev_i,
+                             value + 2 * stddev_i,
                              alpha=0.25,
-                             color="C{}".format(i),
+                             color=f"C{i}",
                              interpolate=True)
 
     def _plot_bw_stats(self,

@@ -121,20 +121,18 @@ class HPCCmdline(cmdline.BaseCmdline):
                               """,
                               action='store_true')
 
-    @staticmethod
-    def cmdopts_update(cli_args: argparse.Namespace,
-                       cmdopts: types.Cmdopts) -> None:
-        """Update cmdopts dictionary with the HPC-specific cmdline options.
 
-        """
-        updates = {
-            # Multistage
-            'exec_devnull': cli_args.exec_devnull,
-            'exec_jobs_per_node': cli_args.exec_jobs_per_node,
-            'exec_resume': cli_args.exec_resume,
-            'exec_strict': cli_args.exec_strict
-        }
-        cmdopts.update(updates)
+def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+    """Update cmdopts dictionary with the HPC-specific cmdline options.
+
+    """
+    return {
+        # Multistage
+        'exec_devnull': args.exec_devnull,
+        'exec_jobs_per_node': args.exec_jobs_per_node,
+        'exec_resume': args.exec_resume,
+        'exec_strict': args.exec_strict
+    }
 
 
 __api__ = [

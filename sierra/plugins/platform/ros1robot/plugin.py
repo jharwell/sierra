@@ -1,7 +1,7 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-
+"""Plugin for :term:`ROS`-based robot :term:`Platforms <Platform>`."""
 # Core packages
 import argparse
 import logging
@@ -288,8 +288,8 @@ class ExpConfigurer():
             _logger.fatal("Unable to sync %s with %s: stdout=%s,stderr=%s",
                           exp_input_root,
                           robot_input_root,
-                          res.stdout.decode('utf-8'),
-                          res.stderr.decode('utf-8'))
+                          res.stdout.decode('utf-8') if res else None,
+                          res.stderr.decode('utf-8') if res else None)
             raise
 
 
@@ -353,8 +353,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
     for k in keys:
         assert k in os.environ, \
-            "Non-ROS1+robot environment detected: '{0}' not found".format(
-                k)
+            f"Non-ROS1+robot environment detected: '{k}' not found"
 
     # Check ROS distro
     assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \

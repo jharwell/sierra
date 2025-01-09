@@ -280,34 +280,36 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         type=int,
                                         default=None)
 
-    @staticmethod
-    def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """Update cmdopts with ARGoS-specific cmdline options.
 
-        """
-        hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
-        updates = {
-            # Stage 1
-            'n_agents': cli_args.n_agents,
+def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+    """Update cmdopts with ARGoS-specific cmdline options.
 
-            'exp_setup': cli_args.exp_setup,
+    """
+    opts = hpc.cmdline.to_cmdopts(args)
 
-            'physics_n_engines': cli_args.physics_n_engines,
-            'physics_n_threads': cli_args.physics_n_engines,  # alias
-            "physics_engine_type2D": cli_args.physics_engine_type2D,
-            "physics_engine_type3D": cli_args.physics_engine_type3D,
-            "physics_iter_per_tick": cli_args.physics_iter_per_tick,
-            "physics_spatial_hash2D": cli_args.physics_spatial_hash2D,
+    self_updates = {
+        # Stage 1
+        'n_agents': args.n_agents,
 
-            "with_robot_rab": cli_args.with_robot_rab,
-            "with_robot_leds": cli_args.with_robot_leds,
-            "with_robot_battery": cli_args.with_robot_battery,
+        'exp_setup': args.exp_setup,
 
-            'camera_config': cli_args.camera_config,
+        'physics_n_engines': args.physics_n_engines,
+        'physics_n_threads': args.physics_n_engines,  # alias
+        "physics_engine_type2D": args.physics_engine_type2D,
+        "physics_engine_type3D": args.physics_engine_type3D,
+        "physics_iter_per_tick": args.physics_iter_per_tick,
+        "physics_spatial_hash2D": args.physics_spatial_hash2D,
 
-        }
+        "with_robot_rab": args.with_robot_rab,
+        "with_robot_leds": args.with_robot_leds,
+        "with_robot_battery": args.with_robot_battery,
 
-        cmdopts.update(updates)
+        'camera_config': args.camera_config,
+
+    }
+
+    opts |= self_updates
+    return opts
 
 
 def sphinx_cmdline_stage1():

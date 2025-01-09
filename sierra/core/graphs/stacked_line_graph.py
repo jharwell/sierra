@@ -115,6 +115,7 @@ class StackedLineGraph:
         fig = ax.get_figure()
         fig.set_size_inches(config.kGraphBaseSize,
                             config.kGraphBaseSize)
+        print(self.output_fpath)
         fig.savefig(self.output_fpath,
                     bbox_inches='tight',
                     dpi=config.kGraphDPI)

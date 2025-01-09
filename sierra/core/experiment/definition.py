@@ -240,7 +240,7 @@ class BaseExpDef(implements.Interface):
     def element_add(self,
                     path: str,
                     tag: str,
-                    attr: types.StrDict = {},
+                    attr: tp.Optional[types.StrDict] = None,
                     allow_dup: bool = True,
                     noprint: bool = False) -> bool:
         """
