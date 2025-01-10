@@ -1,7 +1,9 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-
+"""
+The plugin for the :term:`ARGoS` :term:`Plaform`.
+"""
 # Core packages
 import argparse
 import os

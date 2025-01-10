@@ -21,7 +21,7 @@ fail-on=redefined-outer-name,
 
 
 # Specify a score threshold to be exceeded before program exits with error.
-fail-under=9.0
+fail-under=9.7
 
 # Files or directories to be skipped. They should be base names, not paths.
 ignore=third_party
@@ -86,21 +86,14 @@ disable=missing-function-docstring,
         line-too-long,
         import-error,
         no-member,
-        not-an-iterable,
         unsubscriptable-object,
         raw-checker-failed,
         bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead,
         too-many-instance-attributes,
         no-else-return,
         unused-argument,
-        no-self-use,
-        abstract-method
+        abstract-method,
+        useless-import-alias
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -164,7 +157,6 @@ attr-rgx=[a-z_][a-z0-9_]{2,30}$
 
 # Bad variable names which should always be refused, separated by a comma.
 bad-names=foo,
-          bar,
           baz,
           toto,
           tutu,
@@ -211,7 +203,7 @@ function-naming-style=snake_case
 
 # Regular expression matching correct function names. Overrides function-
 # naming-style.
-function-rgx=[a-z__][a-z0-9_]{2,30}$
+function-rgx=[a-z__][a-z0-9_]{2,40}$
 
 # Good variable names which should always be accepted, separated by a comma.
 good-names=i,
@@ -226,6 +218,9 @@ good-names=i,
            X,
            Y,
            q,
+           bc,
+           ll,
+           ur,
            alpha_S,
            alpha_T,
            alpha_R,
@@ -235,7 +230,12 @@ good-names=i,
            LN_config,
            LN_targets,
            HM_config,
-           HM_targets
+           HM_targets,
+           intra_LN_config,
+           intra_HM_config,
+           inter_LN_config,
+           LN_keys,
+           HM_keys
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -305,7 +305,7 @@ indent-string='    '
 max-line-length=100
 
 # Maximum number of lines in a module.
-max-module-lines=1000
+max-module-lines=1500
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.

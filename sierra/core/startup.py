@@ -70,7 +70,8 @@ def _linux_pkg_checks() -> None:
     """Check that all the packages required by SIERRA are installed on Linux.
 
     """
-    import distro  # will fail on OSX
+    # This will fail on OSX if at global scope
+    import distro  # pylint: disable=import-outside-toplevel
 
     dist = distro.id()
     os_info = distro.os_release_info()
@@ -87,7 +88,8 @@ def _linux_pkg_checks() -> None:
 
 def _apt_pkg_checks(dist: str) -> None:
     try:
-        import apt  # pytype: disable=import-error
+        # This will fail on OSX if at global scope
+        import apt  # pytype: disable=import-error # pylint: disable=import-outside-toplevel
 
     except ImportError:
         logging.warning(("Cannot check for required .deb packages: 'apt' "

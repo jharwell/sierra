@@ -43,7 +43,7 @@ class ArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         self.print_usage(sys.stderr)
         # self.print_help(sys.stderr)
-        self.exit(2, '{0}: error: {1}\n'.format(self.prog, message))
+        self.exit(2, f'{self.prog}: error: {message}\n')
 
     def print_help(self, file=None):
         if file is None:

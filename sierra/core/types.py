@@ -7,7 +7,7 @@
 # Core packages
 import typing as tp
 import sys
-from types import ModuleType  # noqa: F401
+from types import ModuleType  # noqa: F401 pylint: disable=unused-import
 
 # 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
 # can be replaced unilaterally with tp.TypeAlias.

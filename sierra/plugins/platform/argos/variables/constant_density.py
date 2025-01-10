@@ -2,7 +2,9 @@
 #
 #  SPDX-License-Identifier: MIT
 #
-
+"""
+Functionality for mapping arena size -> swarm size to maintain a constant ratio.
+"""
 # Core packages
 import re
 import typing as tp

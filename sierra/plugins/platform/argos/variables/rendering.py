@@ -60,30 +60,32 @@ class ARGoSQTHeadlessRendering():
 
     def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
         if not self.element_adds:
-            self.element_adds = [definition.ElementAddList(definition.ElementAdd('.',
-                                                                                 'visualization',
-                                                                                 {},
-                                                                                 False),
-                                                           definition.ElementAdd('./visualization',
-                                                                                 'qt-opengl',
-                                                                                 {'autoplay': "true"},
-                                                                                 False
-                                                                                 ),
-                                                           definition.ElementAdd('./visualization/qt-opengl',
-                                                                                 'frame_grabbing',
-                                                                                 {
-                                                                                     'directory': 'frames',
-                                                                                     'base_name': 'frame_',
-                                                                                     'format': sierra.core.config.kImageExt[1:],
-                                                                                     'headless_grabbing': "true",
-                                                                                     'headless_frame_size': "{0}".format(self.kFrameSize),
-                                                                                     'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
-                                                                                 },
-                                                                                 False),
-                                                           definition.ElementAdd('visualization/qt-opengl',
-                                                                                 'user_functions',
-                                                                                 {'label': '__EMPTY__'},
-                                                                                 False))]
+            self.element_adds = [
+                definition.ElementAddList(definition.ElementAdd('.',
+                                                                'visualization',
+                                                                {},
+                                                                False),
+                                          definition.ElementAdd('./visualization',
+                                                                'qt-opengl',
+                                                                {'autoplay': "true"},
+                                                                False
+                                                                ),
+                                          definition.ElementAdd('./visualization/qt-opengl',
+                                                                'frame_grabbing',
+                                                                {
+                                                                    'directory': 'frames',
+                                                                    'base_name': 'frame_',
+                                                                    'format': sierra.core.config.kImageExt[1:],
+                                                                    'headless_grabbing': "true",
+                                                                    'headless_frame_size': "{0}".format(self.kFrameSize),
+                                                                    'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
+                                                                },
+                                                                False),
+                                          definition.ElementAdd('visualization/qt-opengl',
+                                                                'user_functions',
+                                                                {'label': '__EMPTY__'},
+                                                                False))
+            ]
 
         return self.element_adds
 

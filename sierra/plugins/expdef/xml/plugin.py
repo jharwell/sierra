@@ -10,7 +10,6 @@ import pathlib
 import logging
 import xml.etree.ElementTree as ET
 import typing as tp
-import sys
 
 # 3rd party packages
 import implements
@@ -72,18 +71,8 @@ class Writer():
         to_write = ET.ElementTree(tree)
 
         ET.indent(to_write.getroot(), space="\t", level=0)
-
-        # Write out pretty XML to make it easier to read to see if things
-        # have been generated correctly.
-        if sys.version_info < (3, 9):
-            with open(opath, "w", encoding='utf-8') as f:
-                raw = ET.tostring(to_write.getroot())
-                from definition.dom import minidom
-                pretty = minidom.parseString(raw).toprettyxml(indent="  ")
-                f.write(pretty)
-        else:
-            ET.indent(to_write, space="\t", level=0)
-            to_write.write(opath, encoding='utf-8')
+        ET.indent(to_write, space="\t", level=0)
+        to_write.write(opath, encoding='utf-8')
 
     def _add_grafts(self,
                     config: dict,
@@ -182,10 +171,6 @@ class ExpDef:
 
         self.logger = logging.getLogger(__name__)
 
-        if sys.version_info < (3, 9):
-            self.logger.warning(("XML files written with python < 3.9 "
-                                 "are not human readable"))
-
     def write_config_set(self, config: definition.WriterConfig) -> None:
         """Set the write config for the object.
 
@@ -206,7 +191,7 @@ class ExpDef:
         raise NotImplementedError(
             "The XML expdef plugin does not support flattening")
 
-    def attr_get(self, path: str, attr: str) -> tp.Union[str, None]:
+    def attr_get(self, path: str, attr: str) -> tp.Optional[str]:
         el = self.root.find(path)
         if el is not None and attr in el.attrib:
             return el.attrib[attr]
@@ -342,7 +327,7 @@ class ExpDef:
     def element_add(self,
                     path: str,
                     tag: str,
-                    attr: types.StrDict = {},
+                    attr: tp.Optional[types.StrDict] = None,
                     allow_dup: bool = True,
                     noprint: bool = False) -> bool:
         """
@@ -363,7 +348,7 @@ class ExpDef:
                                         path)
                 return False
 
-            ET.SubElement(parent, tag, attrib=attr)
+            ET.SubElement(parent, tag, attrib=attr if attr else {})
             self.logger.trace("Add new unique element: '%s/%s' = '%s'",  # type: ignore
                               path,
                               tag,
@@ -371,7 +356,7 @@ class ExpDef:
         else:
             # Use ET.Element instead of ET.SubElement so that child nodes with
             # the same 'tag' don't overwrite each other.
-            child = ET.Element(tag, attrib=attr)
+            child = ET.Element(tag, attrib=attr if attr else {})
             parent.append(child)
             self.logger.trace("Add new element: '%s/%s' = '%s'",  # type: ignore
                               path,

@@ -14,9 +14,9 @@ needs.
    :caption: Configuring SIERRA projects:
 
    project/project.rst
-   project/main_config/index.rst
-   project/graphs_config.rst
-   project/stage5_config.rst
+   project/main-config/index.rst
+   project/graphs-config.rst
+   project/stage5-config.rst
    project/expdef-template/index.rst
    project/generators.rst
    project/new-bc.rst
