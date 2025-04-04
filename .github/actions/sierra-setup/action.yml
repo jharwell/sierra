@@ -51,7 +51,7 @@ runs:
       if: runner.os == 'macOS'
       uses: Homebrew/actions/setup-homebrew@master
 
-    - uses: nick-fields/retry@v2
+    - uses: nick-fields/retry@v3
       name: Install system deps (OSX)
       if: runner.os == 'macOS'
       with:

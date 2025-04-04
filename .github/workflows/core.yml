@@ -39,7 +39,7 @@ jobs:
         with:
           platform: argos
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         with:
           timeout_minutes: 3600
           max_attempts: 3
@@ -88,7 +88,7 @@ jobs:
           platform: ros1gazebo
           rosdistro: noetic
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Bivariate batch criteria sanity (${{ matrix.platform }})
         with:
           timeout_minutes: 3600
@@ -145,7 +145,7 @@ jobs:
           platform: ros1gazebo
           rosdistro: noetic
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Bivariate batch criteria stage 1 (${{ matrix.platform }}
         with:
           timeout_minutes: 3600
@@ -187,7 +187,7 @@ jobs:
         with:
           platform: argos
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Stage3 univariate tests
         with:
           timeout_minutes: 3600
@@ -229,7 +229,7 @@ jobs:
         with:
           platform: argos
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Stage3 bivariate tests
         with:
           timeout_minutes: 3600
@@ -271,7 +271,7 @@ jobs:
         with:
           platform: argos
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Stage4 univariate tests
         with:
           timeout_minutes: 3600
@@ -312,7 +312,7 @@ jobs:
         with:
           platform: argos
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Stage5 univariate tests
         with:
           timeout_minutes: 3600
@@ -355,7 +355,7 @@ jobs:
         with:
           platform: argos
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Stage5 bivariate tests
         with:
           timeout_minutes: 3600

@@ -63,7 +63,7 @@ runs:
     ############################################################################
     # ARGoS setup
     ############################################################################
-    - uses: nick-fields/retry@v2
+    - uses: nick-fields/retry@v3
       name: Install ARGoS deps (OSX)
       if: runner.os == 'macOS'
       with:
