@@ -45,6 +45,6 @@ class PipelineStage2:
         self.logger.info("Execution complete in %s", str(sec))
 
 
-__api__ = [
+__all__ = [
     'PipelineStage2'
 ]

@@ -1,0 +1,65 @@
+name: Publishing
+description: Publish SIERRA to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/sierra-setup
+    - name: Build package
+      shell: bash
+      run: |
+        uv sync --extra devel
+        cd docs
+        # In case the zenodo badge from the release we just created hasn't fully
+        # propagated yet. The docs successfully built several times to get to
+        # this point, so I think this is fine to do.
+        sphinx-build -b linkcheck . _build || true
+        cd ..
+        uv build
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: pypi-dist
+        path: dist/
+
+  upload:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: pypi-dist
+        path: dist
+
+    - name: Publish to PyPI
+      if: ${{ !contains(github.ref, 'beta') }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip_existing: true
+        password: ${{ inputs.pypi-token }}
+
+    - name: Publish to TestPyPI
+      if: ${{ contains(github.ref, 'beta') }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true
+        password: ${{ inputs.testpypi-token }}
+        repository-url: https://test.pypi.org/legacy/

@@ -400,7 +400,7 @@ Explictly specify that the type of file being opened is UTF-8, which is should
 be for almost everything in SIERRA.
 """
 
-__api__ = [
+__all__ = [
     'ArenaExtent',
     'Sigmoid',
     'ReLu',

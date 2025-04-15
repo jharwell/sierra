@@ -39,7 +39,6 @@ class UnivarIntraScenarioComparator:
     Univariate batch criteria only.
 
     Attributes:
-
         controllers: List of controller names to compare.
 
         stage5_roots: Set of directory paths for stage 5 file generation.
@@ -253,7 +252,6 @@ class BivarIntraScenarioComparator:
     Bivariate batch criteria only.
 
     Attributes:
-
         controllers: List of controller names to compare.
 
         cmdopts: Dictionary of parsed cmdline parameters.
@@ -428,7 +426,7 @@ class BivarIntraScenarioComparator:
         1 CSV per controller, for 2D/3D comparison types only. Because each CSV
         file corresponding to performance measures are 2D arrays, we actually
         just copy and rename the performance measure CSV files for each
-        controllers into :attr:`stage5_roots.csv_root`.
+        controllers into :py:attr:`~sierra.core.pipeline.stage5.outputroot.PathSet.csv_root`.
 
         :class:`~sierra.core.graphs.stacked_surface_graph.StackedSurfaceGraph`
         expects an ``_[0-9]+.csv`` pattern for each 2D surfaces to graph in
@@ -650,7 +648,8 @@ class BivarIntraScenarioComparator:
 
         Uses a configured controller of primary interest against all other
         controllers (one graph per pairing), after input files have been
-        gathered from each controller into :attr:`stage5_roots.csv_root`. 
+        gathered from each controller into
+        :py:attr:`~sierra.core.pipeline.stage5.outputroot.PathSet.csv_root`. 
 
         """
         opath_leaf = namecalc.for_output(batch_leaf,
@@ -722,9 +721,9 @@ class BivarIntraScenarioComparator:
 
         Graphs contain all pairings of (primary controller, other), one per
         graph, within the specified scenario after input files have been
-        gathered from each controller into :attr:`stage5_roots.csv_root`. Only valid if
-        the comparison type is ``HMraw``.
-
+        gathered from each controller into
+        :py:attr:`~sierra.core.pipeline.stage5.outputroot.PathSet.csv_root` the
+        comparison type is ``HMraw``.
         """
         opath_leaf = namecalc.for_output(batch_leaf,
                                          dest_stem,
@@ -763,12 +762,11 @@ class BivarIntraScenarioComparator:
                      zlabel: str,
                      legend: tp.List[str],
                      comp_type: str) -> None:
-        """Generate a graph comparing the specified controllers within a scenario.
+        """Generate 3D comparative graph for within a scenario.
 
-        Graph contains the specified controllers within thes pecified scenario
+        Graph contains the specified controllers within the specified scenario
         after input files have been gathered from each controllers into
-        :attr:`stage5_roots.csv_root`.
-
+        :py:attr:`~sierra.core.pipeline.stage5.outputroot.PathSet.csv_root`.
         """
         opath_leaf = namecalc.for_output(batch_leaf,
                                          dest_stem,
@@ -810,4 +808,4 @@ class BivarIntraScenarioComparator:
         return label
 
 
-__api__ = ['UnivarIntraScenarioComparator', 'BivarIntraScenarioComparator']
+__all__ = ['UnivarIntraScenarioComparator', 'BivarIntraScenarioComparator']

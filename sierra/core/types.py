@@ -8,6 +8,7 @@
 import typing as tp
 import sys
 from types import ModuleType  # noqa: F401 pylint: disable=unused-import
+from dataclasses import dataclass
 
 # 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
 # can be replaced unilaterally with tp.TypeAlias.
@@ -26,9 +27,9 @@ import pathlib
 # Type Definitions
 ################################################################################
 
-Cmdopts = tp.Dict[str, tp.Any]
-YAMLDict = tp.Dict[str, tp.Any]
-SimpleDict = tp.Dict[str, tp.Union[str, int]]
+Cmdopts: TypeAlias = tp.Dict[str, tp.Any]
+YAMLDict: TypeAlias = tp.Dict[str, tp.Any]
+SimpleDict: TypeAlias = tp.Dict[str, tp.Union[str, int]]
 
 # 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
 # can be replaced with the '|' syntax, which is much nicer. Also the TypeAlias
@@ -41,67 +42,74 @@ JSON: TypeAlias = tp.Union[dict[str, "JSON"],
                            bool,
                            None]
 
-StrDict = tp.Dict[str, str]
-IntDict = tp.Dict[str, int]
-CLIArgSpec = tp.Dict[str, tp.Any]
-PathList = tp.List[pathlib.Path]
+StrDict: TypeAlias = tp.Dict[str, str]
+IntDict: TypeAlias = tp.Dict[str, int]
+CLIArgSpec: TypeAlias = tp.Dict[str, tp.Any]
+PathList: TypeAlias = tp.List[pathlib.Path]
 
 
+@dataclass
 class ShellCmdSpec():
-    def __init__(self,
-                 cmd: str,
-                 shell: bool,
-                 wait: bool,
-                 env: tp.Optional[bool] = False) -> None:
-        self.cmd = cmd
-        self.shell = shell
-        self.wait = wait
-        self.env = env
+    """
+    Dataclass containing info to run shell cmds.
+
+    Contains:
+
+        - The cmd to run.
+
+        - Whether or not it should be strictly run in a shell via
+          ``shell=True``.
+
+        - Whether to wait for it to finish before returning.
+
+        - Whether to inherit the environment from the calling process.
+    """
+    cmd: str
+    shell: bool
+    wait: bool
+    env: tp.Optional[bool] = False
 
 
+@dataclass
 class YAMLConfigFileSpec():
-    def __init__(self,
-                 main: str,
-                 controllers: str,
-                 models: str,
-                 stage5: str) -> None:
-        self.main = main
-        self.controllers = controllers
-        self.models = models
-        self.stage5 = stage5
+    main: str
+    controllers: str
+    models: str
+    stage5: str
 
 
+@dataclass
 class ParsedNodefileSpec():
-    def __init__(self,
-                 hostname: str,
-                 n_cores: int,
-                 login: str,
-                 port: int) -> None:
-        self.hostname = hostname
-        self.n_cores = n_cores
-        self.login = login
-        self.port = port
+    hostname: str
+    n_cores: int
+    login: str
+    port: int
 
 
+@dataclass
 class OSPackagesSpec():
-    def __init__(self,
-                 kernel: str,
-                 name: str,
-                 pkgs: tp.Dict[str, bool]) -> None:
-        self.kernel = kernel
-        self.name = name
-        self.pkgs = pkgs
+    kernel: str
+    name: str
+    pkgs: tp.Dict[str, bool]
 
 
+@dataclass
 class StatisticsSpec():
-    def __init__(self,
-                 exts: StrDict) -> None:
-        self.exts = exts
+    exts: StrDict
 
 
-__api__ = [
+__all__ = [
     'ShellCmdSpec',
     'YAMLConfigFileSpec',
     'ParsedNodefileSpec',
-    'OSPackagesSpec'
+    'OSPackagesSpec',
+    'StatisticsSpec',
+    'Cmdopts',
+    'YAMLDict',
+    'SimpleDict',
+    'JSON',
+    'StrDict',
+    'IntDict',
+    'CLIArgSpec',
+    'PathList'
 ]

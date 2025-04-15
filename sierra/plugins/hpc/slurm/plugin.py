@@ -125,8 +125,8 @@ class ExpShellCmdsGenerator():
         return [unique_nodes, use_bash, parallel_spec]
 
 
-__api__ = [
-    'cmdline_postparse_configurer',
+__all__ = [
+    'cmdline_postparse_configure',
     'ExpShellCmdsGenerator'
 
 

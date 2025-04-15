@@ -19,17 +19,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  analyze-ci-ubuntu-2004:
-    uses: ./.github/workflows/analyze-nox.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
   analyze-ci-ubuntu-2204:
     uses: ./.github/workflows/analyze-nox.yml
     secrets: inherit
     with:
       os: ubuntu-22.04
+
+  analyze-ci-ubuntu-2404:
+    uses: ./.github/workflows/analyze-nox.yml
+    secrets: inherit
+    with:
+      os: ubuntu-24.04
 
   analyze-ci-osx:
     uses: ./.github/workflows/analyze-nox.yml

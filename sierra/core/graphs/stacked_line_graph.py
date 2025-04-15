@@ -2,6 +2,9 @@
 #
 #  SPDX-License-Identifier: MIT
 #
+"""
+Intra-experiment line graph generation classes for stage{4,5}.
+"""
 
 # Core packages
 import typing as tp
@@ -115,7 +118,6 @@ class StackedLineGraph:
         fig = ax.get_figure()
         fig.set_size_inches(config.kGraphBaseSize,
                             config.kGraphBaseSize)
-        print(self.output_fpath)
         fig.savefig(self.output_fpath,
                     bbox_inches='tight',
                     dpi=config.kGraphDPI)
@@ -247,6 +249,6 @@ class StackedLineGraph:
         return (None, [])
 
 
-__api__ = [
+__all__ = [
     'StackedLineGraph'
 ]

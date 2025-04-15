@@ -18,7 +18,7 @@ OS Requirements
 
 One of the following:
 
-- Recent linux. SIERRA is tested with Ubuntu 20.04+, though it will probably
+- Recent linux. SIERRA is tested with Ubuntu 22.04+, though it will probably
   work on less recent versions/other distros as well.
 
 - Recent OSX. SIERRA is tested with OSX 12+, though it *might* work on less
@@ -36,8 +36,10 @@ One of the following:
 Python Requirements
 ===================
 
-Python 3.9+. Tested with 3.9-3.10. It may work for newer versions, probably
-won't for older.
+Python 3.9+. Tested with 3.9-3.12. It may work for newer versions, probably
+won't for older; as older versions become EOL support for them is dropped and no
+effort is made at compatibility, in order to take advantage of newer language
+features.
 
 .. _req/exp:
 
@@ -106,9 +108,9 @@ General
 
 #. All experiments from which you want to generate statistics/graphs are:
 
-   - The same length
+   - Nominally The same length
 
-   - Capture the same number of datapoints
+   - Nominally capture the same number of datapoints
 
    That is, experiments always obey ``--exp-setup``, regardless if early
    stopping conditions are met. For :term:`ROS1` platforms, the SIERRA
@@ -134,14 +136,23 @@ General
    continue to collect data as you normally would until the end of the
    experiment.
 
+   The use of "nominally" in this requirement is important. It is possible with
+   real robot/hardware-based experiments that only partial data is
+   recovered/transferred onto something stable for processing, due to network
+   issues, etc. SIERRA wouldn't be very useful in those situations if it
+   strictly enforced the above requirements; some cmdline options are provided
+   to mitigate. You should not abuse them in order to circumvent these
+   requirements. If you do, then the types of meaningful statistics that can be
+   nominally extracted from your results will be limited.
+
    If you do **NOT** want to use SIERRA to generate statistics/graphs from
    experimental data (e.g., you want to use it to capture videos only), then you
    can ignore this requirement.
 
 .. _req/expef:
 
-Experiment Definition Formation-based Restrictions
---------------------------------------------------
+Experiment Definition Format-based Restrictions
+-----------------------------------------------
 
 .. tabs::
 

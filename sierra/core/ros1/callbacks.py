@@ -38,7 +38,7 @@ def robot_prefix_extract(main_config: types.YAMLDict,
     return main_config['ros']['robots'][cmdopts['robot']]['prefix']
 
 
-__api__ = [
+__all__ = [
     'population_size_from_pickle',
     'population_size_from_def',
     'robot_prefix_extract'

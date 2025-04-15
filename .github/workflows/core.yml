@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  argos:
+  plumbing:
     runs-on: ${{ inputs.os }}
     strategy:
       matrix:
@@ -19,166 +19,18 @@ jobs:
         # up CI.
         python-version:
           - 3.9
-          - 3.11
+          - 3.12
 
         function:
           - cmdline_opts_test
           - env_vars_test
 
         exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        with:
-          platform: argos
-
-      - uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s core_integration -p ${{ matrix.python-version }} -- -f ${{ matrix.function }}
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-${{ matrix.function }}-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-          if-no-files-found: error
-
-
-
-  bc-bivar-sanity:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-        os:
-          - ${{ inputs.os }}
-
-        platform:
-          - argos
-          - ros1gazebo
-
-        python-version:
-          - 3.9
-          - 3.9
-
-        exclude:
           - os: ubuntu-22.04
-            platform: ros1gazebo
+            python-version: 3.12
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        if: matrix.platform == 'argos'
-        with:
-          platform: argos
-
-      - uses: ./.github/actions/sample-project-setup
-        if: matrix.platform == 'ros1gazebo'
-        with:
-          platform: ros1gazebo
-          rosdistro: noetic
-
-      - uses: nick-fields/retry@v3
-        name: Bivariate batch criteria sanity (${{ matrix.platform }})
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s plugin_${{ matrix.platform }}_integration -p ${{ matrix.python-version }} -- -f bc_bivar_sanity_test
-
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-${{ matrix.platform }}-bc-bivar-sanity-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-          if-no-files-found: error
-
-  stage1-bivar:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-        os:
-          - ${{ inputs.os }}
-
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
-        python-version:
-          - 3.9
-          - 3.11
-
-        platform:
-          - argos
-          - ros1gazebo
-
-        exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
-
-          - os: ubuntu-22.04
-            platform: ros1gazebo
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        if: matrix.platform == 'argos'
-        with:
-          platform: argos
-
-      - uses: ./.github/actions/sample-project-setup
-        if: matrix.platform == 'ros1gazebo'
-        with:
-          platform: ros1gazebo
-          rosdistro: noetic
-
-      - uses: nick-fields/retry@v3
-        name: Bivariate batch criteria stage 1 (${{ matrix.platform }}
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s plugin_${{ matrix.platform }}_integration -p ${{ matrix.python-version }} -- -f stage1_bivar_test
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-${{ matrix.platform }}-stage1-bivar-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-          if-no-files-found: error
-
-  stage3-univar:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-        os:
-          - ${{ inputs.os }}
-
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
-        python-version:
-          - 3.9
-          - 3.11
-
-        exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
+          - os: ubuntu-24.04
+            python-version: 3.9
 
     steps:
       - uses: actions/checkout@v3
@@ -188,184 +40,15 @@ jobs:
           platform: argos
 
       - uses: nick-fields/retry@v3
-        name: Stage3 univariate tests
         with:
-          timeout_minutes: 3600
+          timeout_minutes: 30
           max_attempts: 3
           shell: bash
-          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage3_univar_test
+          command: uv run -p ${{ matrix.python-version }} nox -s core_integration -p ${{ matrix.python-version }} --default-venv-backend=uv -- -f ${{ matrix.function }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: ci-core-argos-stage3-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-          if-no-files-found: error
-
-  stage3-bivar:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-        os:
-          - ${{ inputs.os }}
-
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
-        python-version:
-          - 3.9
-          - 3.11
-
-        exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        with:
-          platform: argos
-
-      - uses: nick-fields/retry@v3
-        name: Stage3 bivariate tests
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage3_bivar_test
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-argos-stage3-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-          if-no-files-found: error
-
-  stage4-univar:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-        os:
-          - ${{ inputs.os }}
-
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
-        python-version:
-          - 3.9
-          - 3.11
-
-        exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        with:
-          platform: argos
-
-      - uses: nick-fields/retry@v3
-        name: Stage4 univariate tests
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage4_univar_test
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-argos-stage4-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-
-  stage5-univar:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-        os:
-          - ${{ inputs.os }}
-
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
-        python-version:
-          - 3.9
-          - 3.11
-
-        exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        with:
-          platform: argos
-
-      - uses: nick-fields/retry@v3
-        name: Stage5 univariate tests
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage5_univar_test
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-argos-stage5-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
-          path: .coverage.*
-          include-hidden-files: true
-          if-no-files-found: error
-
-  stage5-bivar:
-    runs-on: ${{ inputs.os }}
-    strategy:
-      matrix:
-
-        os:
-          - ${{ inputs.os }}
-
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
-        python-version:
-          - 3.9
-          - 3.11
-
-        exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
-
-          - python-version: 3.9
-            os: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-      - uses: ./.github/actions/sample-project-setup
-        with:
-          platform: argos
-
-      - uses: nick-fields/retry@v3
-        name: Stage5 bivariate tests
-        with:
-          timeout_minutes: 3600
-          max_attempts: 3
-          shell: bash
-          command: nox -s plugin_argos_integration -p ${{ matrix.python-version }} -- -f stage5_bivar_test
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ci-core-argos-stage5-bivar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          name: ci-core-${{ matrix.function }}-${{ matrix.os }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

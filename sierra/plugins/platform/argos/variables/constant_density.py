@@ -26,7 +26,6 @@ class ConstantDensity(bc.UnivarBatchCriteria):
     increased. This class is a base class which should NEVER be used on its own.
 
     Attributes:
-
         target_density: The target density.
 
         dimensions: List of (X,Y) dimensions to use (creates rectangular
@@ -133,6 +132,6 @@ class Parser():
         return ret
 
 
-__api__ = [
+__all__ = [
     'ConstantDensity'
 ]

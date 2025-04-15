@@ -37,9 +37,7 @@ class WriterConfig():
 
         - Adding grafts
 
-    Attributes:
-
-    values: Dict with the following possible key, value pairs:
+    Attributes: values: Dict with the following possible key, value pairs:
 
         - ``src_parent`` - The parent of the root of the AST specifying a
           sub-tree to write out as a child of ``new_children_parent``, or
@@ -82,7 +80,6 @@ class WriterConfig():
         - ``child_grafts`` - Additional bits of the current AST to add under
           ``child_grafts_parent`` in the written out experiment definition,
           specified as a list of query path strings.  This key is optional.
-
     """
 
     def __init__(self, values: tp.List[dict]) -> None:
@@ -220,7 +217,7 @@ class BaseExpDef(implements.Interface):
                            path: str,
                            tag: str,
                            noprint: bool = False) -> bool:
-        """Remove the specified child ``tag``(s) in the enclosing parent.
+        """Remove the specified child tag(s) in the enclosing parent.
 
         If more than one tag matches in the parent, all matching child tags are
         removed.
@@ -495,7 +492,7 @@ class ElementAddList():
             utils.pickle_dump(self.adds, f)
 
 
-__api__ = [
+__all__ = [
     'BaseExpDef',
     'WriterConfig',
     'AttrChange',

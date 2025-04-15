@@ -114,12 +114,12 @@ def _generate_all_exp_gazebo_vis(exp_def: definition.BaseExpDef) -> None:
 def for_single_exp_run(*args, **kwargs) -> None:
     """Generate XML changes unique to each experimental run.
 
-    Wraps :func:`sierra.core.ros1.generators.for_single_exp_run`().
+    Wraps :py:func:`sierra.core.ros1.generators.for_single_exp_run`.
     """
     return ros1.generators.for_single_exp_run(*args, **kwargs)
 
 
-__api__ = [
+__all__ = [
     'for_all_exp',
     'for_single_exp_run'
 ]

@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Inter-experiment linegraph generation in stage 4."""
 
 # Core packages
 import typing as tp
@@ -96,6 +97,6 @@ def _gen_stacked_linegraph(graph: types.YAMLDict,
     ln.generate()
 
 
-__api__ = [
+__all__ = [
     "generate"
 ]

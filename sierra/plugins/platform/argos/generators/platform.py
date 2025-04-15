@@ -369,7 +369,7 @@ def _generate_all_exp_visualization(exp_def: definition.BaseExpDef,
         utils.apply_to_expdef(cams, exp_def)
 
 
-__api__ = [
+__all__ = [
     'for_all_exp',
     'for_single_exp_run'
 ]

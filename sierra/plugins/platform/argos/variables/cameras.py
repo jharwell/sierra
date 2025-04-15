@@ -30,7 +30,6 @@ class QTCameraTimeline():
     """Defines when/how to switch between camera perspectives within ARGoS.
 
     Attributes:
-
         interpolate: Should we interpolate between camera positions on our
                       timeline ?
 
@@ -164,7 +163,6 @@ class QTCameraOverhead():
     """Defines a single overhead camera perspective within ARGoS.
 
     Attributes:
-
         extents: List of (X,Y,Z) tuple of dimensions of arena areas to generate
                  camera definitions for.
 
@@ -236,7 +234,7 @@ def factory(cmdopts: types.Cmdopts, extents: tp.List[ArenaExtent]):
                                 extents)
 
 
-__api__ = [
+__all__ = [
     'QTCameraTimeline', 'QTCameraOverhead',
 
 

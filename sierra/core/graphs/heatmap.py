@@ -2,6 +2,9 @@
 #
 #  SPDX-License-Identifier: MIT
 #
+"""
+Heatmap graph generation classes for stage{4,5}.
+"""
 
 # Core packages
 import textwrap
@@ -349,7 +352,7 @@ class HeatmapSet():
             hm.generate()
 
 
-__api__ = [
+__all__ = [
     'Heatmap',
     'DualHeatmap',
     'HeatmapSet'

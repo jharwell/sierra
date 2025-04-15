@@ -74,7 +74,7 @@ Steps
            Configuration for intra-experiment linegraphs. This file is
            optional. If it is present, graphs defined in it will be added to
            those specified in ``<sierra>/core/config/intra-graphs-line.yaml``,
-           and will be generated if stage 4 is run. See :doc:`graphs_config` for
+           and will be generated if stage 4 is run. See :doc:`graphs-config` for
            documentation.
 
         .. tab:: ``intra-graphs-hm.yaml``
@@ -82,7 +82,7 @@ Steps
            Configuration for intra-experiment heatmaps. This file is
            optional. If it is present, graphs defined in it will be added to
            those specified in ``<sierra>/core/config/intra-graphs-hm.yaml``, and
-           will be generated if stage 4 is run. See :doc:`graphs_config` for
+           will be generated if stage 4 is run. See :doc:`graphs-config` for
            documentation.
 
         .. tab:: ``inter-graphs.yaml``
@@ -90,14 +90,14 @@ Steps
            Configuration for inter-experiment graphs. This file is optional. If
            it is present, graphs defined in it will be added to those specified
            in ``<sierra>/core/config/inter-graphs-line.yaml``, and will be
-           generated if stage 4 is run. See :doc:`graphs_config` for
+           generated if stage 4 is run. See :doc:`graphs-config` for
            documentation.
 
         .. tab:: ``stage5.yaml``
 
            Configuration for stage5 controller comparisons. This file is
            required if stage 5 is run, and optional otherwise. See
-           :doc:`stage5_config` for documentation.
+           :doc:`stage5-config` for documentation.
 
         .. tab:: ``models.yaml``
 
@@ -147,7 +147,7 @@ Steps
    :ref:`tutorials/project/main-config`.
 
 #. Define graphs to be generated from :term:`Experiment` outputs by following
-   :doc:`graphs_config`. Strictly speaking this is optional, but automated graph
+   :doc:`graphs-config`. Strictly speaking this is optional, but automated graph
    generation during stage 4 is one of the most useful parts of SIERRA, so its
    kind of silly if you don't do this.
 

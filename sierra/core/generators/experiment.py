@@ -41,19 +41,6 @@ class BatchExpDefGenerator:
     """Generate experiment definitions for a :term:`Batch Experiment`.
 
     Does not create the batch experiment after generation.
-
-    Attributes:
-
-        batch_config_template: Absolute path to the root template expdef
-                               configuration file.
-
-        criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
-                  derived object instance created from cmdline definition.
-
-        controller_name: Name of controller generator to use.
-
-        scenario_basename: Name of scenario generator to use.
-
     """
 
     def __init__(self,
@@ -62,6 +49,8 @@ class BatchExpDefGenerator:
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: types.Cmdopts) -> None:
+        #: batch_config_template: Absolute path to the root template expdef
+        # configuration file.
         self.batch_config_template = pathlib.Path(cmdopts['expdef_template'])
 
         assert self.batch_config_template.is_file(), \
@@ -72,8 +61,14 @@ class BatchExpDefGenerator:
 
         self.pathset = pathset
 
+        #: controller_name: Name of controller generator to use.
         self.controller_name = controller_name
+
+        #: scenario_basename: Name of scenario generator to use.
         self.scenario_basename = scenario_basename
+
+        #: criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+        #       derived object instance created from cmdline definition.
         self.criteria = criteria
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
@@ -138,18 +133,8 @@ class ExpCreator:
     Takes generated :term:`Experiment` definitions and writes them to the
     filesystem.
 
-    Attributes:
-
+    Args:
         template_ipath: Absolute path to the template expdef configuration file.
-
-        exp_input_root: Absolute path to experiment directory where generated
-                         expdef input files for this experiment should be written.
-
-        exp_output_root: Absolute path to root directory for run outputs
-                         for this experiment.
-
-        cmdopts: Dictionary containing parsed cmdline options.
-
     """
 
     def __init__(self,
@@ -163,12 +148,14 @@ class ExpCreator:
         # filename of template file, sans extension and parent directory path
         self.template_stem = template_ipath.resolve().stem
 
-        # where the generated config and command files should be stored
+        #: exp_input_root: Absolute path to experiment directory where generated
+        # expdef input files for this experiment should be written.
         self.exp_input_root = exp_input_root
 
-        # where experimental outputs should be stored
+        #: Absolute path to root directory for run outputs for this experiment.
         self.exp_output_root = exp_output_root
 
+        #: Dictionary containing parsed cmdline options.
         self.cmdopts = cmdopts
         self.criteria = criteria
         self.exp_num = exp_num
@@ -382,26 +369,6 @@ class BatchExpCreator:
 
     Calls :class:`~sierra.core.generators.experiment.ExpCreator` on each
     experimental definition in the batch
-
-    Attributes:
-
-        batch_config_template: Absolute path to the root template expdef
-                               configuration file.
-
-        batch_input_root: Root directory for all generated expdef input files all
-                          experiments should be stored (relative to current dir
-                          or absolute). Each experiment will get a directory
-                          within this root to store the xml input files for the
-                          experimental runs comprising an experiment; directory
-                          name determined by the batch criteria used.
-
-        batch_output_root: Root directory for all experiment outputs. Each
-                           experiment will get a directory 'exp<n>' in this
-                           directory for its outputs.
-
-        criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
-                  derived object instance created from cmdline definition.
-
     """
 
     def __init__(self,
@@ -409,10 +376,24 @@ class BatchExpCreator:
                  cmdopts: types.Cmdopts,
                  pathset: batchroot.PathSet) -> None:
 
+        #: Absolute path to the root template expdef configuration file.
         self.batch_config_template = pathlib.Path(cmdopts['expdef_template'])
+
+        #: Root directory for all generated expdef input files
+        # all experiments should be stored (relative to current dir or
+        # absolute). Each experiment will get a directory within this root to
+        # store the xml input files for the experimental runs comprising an
+        # experiment; directory name determined by the batch criteria used.
         self.batch_input_root = pathset.input_root
+
+        #: Root directory for all experiment outputs. Each experiment will get a
+        # directory 'exp<n>' in this directory for its outputs.
         self.batch_output_root = pathset.output_root
+
+        #: :class:`~sierra.core.variables.batch_criteria.BatchCriteria` derived
+        # object instance created from cmdline definition.
         self.criteria = criteria
+
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
@@ -456,7 +437,7 @@ class BatchExpCreator:
                        i).from_def(defi)
 
 
-__api__ = [
+__all__ = [
     'ExpCreator',
     'BatchExpCreator',
     'BatchExpDefGenerator'

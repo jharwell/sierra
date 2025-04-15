@@ -1,7 +1,9 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-
+"""
+Functionality for loading stage 4 configuration from YAML.
+"""
 # Core packages
 import typing as tp
 import logging
@@ -87,6 +89,6 @@ def load_config(cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
     }
 
 
-__api__ = [
+__all__ = [
     'load_config'
 ]
