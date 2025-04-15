@@ -60,7 +60,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
             exp_names: If not None, then this list of directories will be used
                        to calculate the ticks, rather than the results of
-                       :ref:`gen_exp_names()`. This argument will be non-None
+                       :py:func:`BatchCriteria.gen_exp_names`. This argument will be non-None
                        when calling this function from within a bivariate batch
                        criteria.
 
@@ -200,7 +200,6 @@ class BatchCriteria():
     """Defines experiments via  lists of sets of changes to make to an expdef.
 
     Attributes:
-
         cli_arg: Unparsed batch criteria string from command line.
 
         main_config: Parsed dictionary of main YAML configuration.
@@ -454,8 +453,8 @@ class BivarBatchCriteria(BatchCriteria):
 
     .. versionchanged:: 1.2.20
 
-         Bivariate batch criteria can be compound: one criteria can create and
-         the other modify expdef elements to create an experiment definition.
+       Bivariate batch criteria can be compound: one criteria can create and
+       the other modify expdef elements to create an experiment definition.
 
     """
 
@@ -634,10 +633,10 @@ class BivarBatchCriteria(BatchCriteria):
 
         This bivariate function is one of the reasons the ``exp_names`` argument
         is needed as an optional: when calculating xticks using say criteria1,
-        if the criteria uses :ref:`populations()` in the process, the criteria's
-        OWN ``gen_exp_names()`` will be used, which will result in bad directory
-        name calculations. This can be overcome by passing the list of exp names
-        to use at THIS level.
+        if the criteria uses :py:func:`populations()` in the process, the
+        criteria's OWN ``gen_exp_names()`` will be used, which will result in
+        bad directory name calculations.  This can be overcome by passing the
+        list of exp names to use at THIS level.
         """
         names = []
         all_dirs = utils.exp_range_calc(cmdopts['exp_range'],
@@ -662,11 +661,11 @@ class BivarBatchCriteria(BatchCriteria):
         """Generate y-axis labels.
 
         This bivariate function is one of the reasons the ``exp_names`` argument
-        is needed as an optional: when calculating yticks using criteria2,
-        if the criteria uses :ref:`populations()` in the process, the criteria's
-        OWN ``gen_exp_names()`` will be used, which will result in bad directory
-        name calculations. This can be overcome by passing the list of exp names
-        to use at THIS level.
+        is needed as an optional: when calculating yticks using criteria2, if
+        the criteria uses :py:func:`populations()` in the process, the
+        criteria's OWN ``gen_exp_names()`` will be used, which will result in
+        bad directory name calculations.  This can be overcome by passing the
+        list of exp names to use at THIS level.
         """
         names = []
         all_dirs = utils.exp_range_calc(cmdopts['exp_range'],
@@ -794,7 +793,7 @@ def __bivar_factory(main_config: types.YAMLDict,
     return ret  # type: ignore
 
 
-__api__ = [
+__all__ = [
     'BatchCriteria',
     'IConcreteBatchCriteria',
     'UnivarBatchCriteria',

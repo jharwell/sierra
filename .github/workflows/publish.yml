@@ -1,0 +1,24 @@
+name: Publishing
+description: Publish SIERRA to PyPI and Github
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./.github/actions/sierra-setup
+    - name: Build package
+      shell: bash
+      run: |
+        uv sync --extra devel
+        cd docs && sphinx-build -b linkcheck . _build && cd ..
+        uv build
+
+    - name: Publish to PyPI
+      if: github.ref == 'refs/heads/master'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip_existing: true

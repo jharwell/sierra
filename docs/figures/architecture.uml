@@ -1,0 +1,167 @@
+@startuml
+' Basic configuration
+!theme cyborg
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam RoundCorner 10
+skinparam ArrowColor #black
+skinparam BackgroundColor #white
+skinparam stateFontSize 48
+skinparam linetype ortho
+skinparam stateBorderThickness 8
+skinparam stateFontStyle bold
+hide empty description
+skinparam stateFontColor #black
+
+' Title configuration
+skinparam titleBorderThickness 8
+skinparam titleFontSize 48
+skinparam titleFontColor #black
+skinparam titleBorderColor #white
+
+title SIERRA Overview and Architecture
+
+' Pipeline
+state "Pipeline" as pipeline
+
+
+' Labels for rows
+state "Stage\nInputs" as stage_inputs #lightcyan
+state "Stage\nOutputs" as stage_outputs #paleturquoise
+state "Active\nPlugins" as plugins #Lightblue
+state "Active\nComputing\nresources" as resources #Lightsteelblue
+
+' Stage 1
+state "1. Generate\nExperimental\nInputs" as stage1  {
+   state "Experiment input\ntemplate" as input1 #lightcyan
+   state "Experiment\ninput files" as output1 #paleturquoise
+   output1: .xml,.json,\n.launch,...
+   state " " as plugin1 #white ##white {
+      state "Platform" as platform1 #lightblue
+      state "Execution env" as exec_env1 #lightblue
+      state "Exp. input format" as expdef1 #lightblue
+
+     platform1 -[hidden]d-> exec_env1
+     exec_env1 -[hidden]d-> expdef1
+   }
+   state "Host\nmachine\n" as resources1 #Lightsteelblue
+   }
+
+' Stage 2
+state "2. Execute\nExperiments\n" as stage2  {
+   state "Experimental\ninput files" as input2 #lightcyan
+   input2: .xml,.json,\n.launch,...
+   state "Experimental\nOutputs" as output2 #paleturquoise
+   output2: .csv,.arrow,...
+   state " " as plugin2 #white ##white {
+      state "Platform" as platform2 #lightblue
+      state "Execution env" as exec_env2 #lightblue
+
+     platform2 -[hidden]d-> exec_env2
+   }
+   state "Host machine,\nHPC cluster,\nReal robots,..." as resources2  #Lightsteelblue
+}
+
+' Stage 3
+state "3. Process\nExperimental\nOutputs" as stage3  {
+   state "Exp. Outputs" as input3 #lightcyan
+   input3:  .csv,.arrow,...
+   state "Processed\nExp. outputs" as output3 #paleturquoise
+   output3: .csv,.arrow,\nImages from\n.csv,...
+
+   state " " as plugin3 #white ##white {
+      state "Platform" as platform3 #lightblue
+      state "Processor set" as proc_set3 #lightblue
+      state "Storage" as storage3 #lightblue
+
+      platform3 -[hidden]d-> proc_set3
+      proc_set3 -[hidden]d-> storage3
+   }
+   state "Host\nmachine\n" as resources3 #Lightsteelblue
+}
+
+' Stage 4
+state "4. Generate\nDeliverables\n" as stage4  {
+   state "Processed\nexp. outputs" as input4 #lightcyan
+   input4: .csv,.arrow,...
+   state "Graphs, videos\n(.png,.mp4,...),\nBatch exp.\nsummary (.csv)" as output4 #paleturquoise
+   state " "  as plugin4 #white ##white {
+   top to bottom direction
+      state "Platform" as platform4 #lightblue
+      state "Deliverable\ngenerators" as deliverables4 #lightblue
+      state "Storage" as storage4 #lightblue
+
+      platform4 -[hidden]d-> deliverables4
+      deliverables4 -[hidden]d-> storage4
+   }
+   state "Host\nmachine\n" as resources4 #Lightsteelblue
+}
+
+' Stage 5
+state "5. Compare\nDeliverables\n" as stage5  {
+   state "Batch exp.\nsummary (.csv)" as input5 #lightcyan
+   state "Graphs (.png,...)" as output5 #paleturquoise
+   state " " as plugin5 #white ##white {
+      state "Platform" as platform5 #lightblue
+      state "Comparator" as comparator5 #lightblue
+      state "Storage" as storage5 #lightblue
+
+     platform5 -[hidden]d-> comparator5
+     comparator5 -[hidden]d-> storage5
+   }
+
+
+state "Host\nmachine\n" as resources5 #Lightsteelblue
+}
+
+' Stages horizontal layout
+pipeline -right-> stage1
+stage1 -right-> stage2
+stage2 -right-> stage3
+stage3 -right-> stage4
+stage4 -right-> stage5
+
+' Vertical flows for each stage
+top to bottom direction
+input1 --> output1
+output1 -[hidden]-> plugin1
+plugin1 -[hidden]-> resources1
+input2 --> output2
+output2 -[hidden]-> plugin2
+plugin2 -[hidden]-> resources2
+input3 --> output3
+output3 -[hidden]-> plugin3
+plugin3 -[hidden]-> resources3
+input4 --> output4
+output4 -[hidden]-> plugin4
+plugin4 -[hidden]-> resources4
+input5 --> output5
+output5 -[hidden]-> plugin5
+plugin5 -[hidden]-> resources5
+
+' Connect the categories
+pipeline -[hidden]d-> stage_inputs
+stage_inputs --> stage_outputs
+stage_outputs -[hidden]d-> plugins
+plugins -[hidden]d-> resources
+
+' Pipeline connection
+pipeline -[hidden]d->stage_inputs
+stage_inputs -[hidden]r->input1
+
+' Layout hints
+stage1 -[hidden]d-> input1
+stage2 -[hidden]d-> input2
+stage3 -[hidden]d-> input3
+stage4 -[hidden]d-> input4
+stage5 -[hidden]d-> input5
+
+caption
+SIERRA architecture, organized by pipeline stage. Stages are listed left to
+right, and an approximate joint architectural/functional stack is top to
+bottom for each stage. “...” indicates areas where SIERRA is designed via
+plugins to be easily extensible. “Host machine” indicates the machine SIERRA
+was invoked on.
+endcaption
+
+@enduml

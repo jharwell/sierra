@@ -1,6 +1,9 @@
 # Copyright 2020 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
+"""
+Contains experiment specification bits in the interest of DRY.
+"""
 
 # Core packages
 import typing as tp
@@ -192,4 +195,4 @@ def scaffold_spec_factory(criteria: bc.BatchCriteria,
         return SimpleBatchScaffoldSpec(criteria, **kwargs)
 
 
-__api__ = ['ExperimentSpec']
+__all__ = ['ExperimentSpec']

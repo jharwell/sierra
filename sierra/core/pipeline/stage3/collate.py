@@ -162,19 +162,20 @@ class ExpRunCSVGatherer:
     :ref:`tutorials/project/hooks` for details.
 
     Attributes:
+        processq: The multiprocessing-safe producer-consumer queue that the data
+                  gathered from experimental runs will be placed in for
+                  processing.
 
-    processq: The multiprocessing-safe producer-consumer queue that the data
-    gathered from experimental runs will be placed in for processing.
+        storage: The name of the storage medium plugin to use to extract
+                  dataframes from when reading run data.
 
-    storage: The name of the storage medium plugin to use to extract
-    dataframes from when reading run data.
+        main_config: Parsed dictionary of main YAML configuration.
 
-    main_config: Parsed dictionary of main YAML configuration.
-
-    logger: The handle to the logger for this class.  If you extend this class,
-    you should save/restore this variable in tandem with overriding it in order
-    to get logging messages with unique logger names between this class and your
-    derived class, in order to reduce confusion.
+        logger: The handle to the logger for this class.  If you extend this
+                class, you should save/restore this variable in tandem with
+                overriding it in order to get logging messages with unique
+                logger names between this class and your derived class, in order
+                to reduce confusion.
     """
 
     def __init__(self,
@@ -309,7 +310,7 @@ class ExpRunCollator:
             writer(df, opath, index=False)
 
 
-__api__ = [
+__all__ = [
     'ExpParallelCollator',
     'ExpRunCSVGatherer',
     'ExpRunCollator'

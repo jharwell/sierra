@@ -144,6 +144,6 @@ def _proc_single_exp(HM_config: types.YAMLDict,
                             imagize_opts['graph_stem'])
 
 
-__api__ = [
+__all__ = [
     'proc_batch_exp',
 ]

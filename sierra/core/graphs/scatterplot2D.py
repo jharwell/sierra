@@ -2,6 +2,9 @@
 #
 #  SPDX-License-Identifier: MIT
 #
+"""
+2D scatterplot graph generation classes for stage{4,5}.
+"""
 
 # Core packages
 import logging
@@ -104,6 +107,6 @@ class Scatterplot2D:
         plt.legend(fontsize=self.text_size['legend_label'])
 
 
-__api__ = [
+__all__ = [
     'Scatterplot2D'
 ]

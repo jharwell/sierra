@@ -87,7 +87,6 @@ class IntraExpGraphGenerator:
     :ref:`tutorials/project/hooks` for details.
 
     Attributes:
-
         cmdopts: Dictionary of parsed cmdline attributes.
 
         main_config: Parsed dictionary of main YAML configuration
@@ -190,7 +189,7 @@ class IntraExpGraphGenerator:
         return LN_targets, HM_targets
 
 
-__api__ = [
+__all__ = [
     'generate',
     'IntraExpGraphGenerator',
 ]

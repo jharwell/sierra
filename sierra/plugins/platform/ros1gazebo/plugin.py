@@ -308,7 +308,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
         - :envvar:`ROS_VERSION` is ROS1.
 
-        - :envvar:`ROS_DISTO` is {kinetic/noetic}.
+        - :envvar:`ROS_DISTRO` is {kinetic/noetic}.
 
         - :program:`gazebo` can be found and the version is supported.
     """
@@ -375,7 +375,7 @@ def pre_exp_diagnostics(cmdopts: types.Cmdopts,
                 cmdopts['exec_jobs_per_node'])
 
 
-__api__ = [
+__all__ = [
     'cmdline_parser',
     'cmdline_postparse_configure',
     'exec_env_check'

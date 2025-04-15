@@ -7,19 +7,20 @@ runs:
     ############################################################################
     # Common setup
     ############################################################################
-    - name: Setup python (all OSes)
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-
-    - name: Install python packages (all OSes)
+    - name: Bootstrap system packages (ubuntu)
+      if: runner.os == 'Linux'
       shell: bash
       run: |
-        python3 --version
-        which python3
-        python3 -m pip install wheel
-        python3 -m pip install -r docs/requirements.txt
+        # When running in a container, sudo doesn't exist
+        if ! command -v "sudo" &> /dev/null; then
+           export DEBIAN_FRONTEND=noninteractive;
+           apt update && apt-get install -y lsb-release git parallel cmake
+        fi
+
+    - name: Install uv (all OSes)
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
     - uses: kenchan0130/actions-system-info@master
       id: system-info
@@ -31,7 +32,7 @@ runs:
       if: runner.os == 'Linux'
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: parallel cm-super dvipng pssh ffmpeg xvfb
+        packages: parallel cm-super dvipng pssh ffmpeg xvfb libblas-dev
         version: ${{ runner.os }}
 
     # 2024/09/24: Needed because caching + texlive don't play well
@@ -42,11 +43,39 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        sudo apt update && sudo apt-get install -y texlive-fonts-recommended texlive-latex-extra
+        export DEBIAN_FRONTEND=noninteractive;
+
+        # 2025-04-22 [JRH]: In ubuntu 24.04, the libblas and liblapack used by
+        # ffmpeg aren't on the  default loader search path, and so the ARGoS
+        # vc_test doesn't work. Manually linking the libs into one of the
+        # default locations works, but is icky. Hopefully this gets fixed in the
+        # next github runner ubuntu version.
+        #
+        # This isn't an issue on 22.04
+        if command -v "sudo" &> /dev/null; then
+           sudo apt update && sudo apt-get install -y texlive-fonts-recommended texlive-latex-extra
+           if [[ ! -f /usr/lib/x86_64-linux-gnu/libblas.so.3 ]]; then
+              sudo ln -s /usr/lib/x86_64-linux-gnu/blas/libblas.so.3 /usr/lib/x86_64-linux-gnu/
+           fi
+           if [[ ! -f /usr/lib/x86_64-linux-gnu/liblapack.so.3 ]]; then
+              sudo ln -s /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3 /usr/lib/x86_64-linux-gnu/
+           fi
+        else
+           apt update && apt-get install -y texlive-fonts-recommended texlive-latex-extra
+           ln -s /usr/lib/x86_64-linux-gnu/blas/libblas.so.3 /usr/lib/x86_64-linux-gnu/
+           ln -s /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3 /usr/lib/x86_64-linux-gnu/
+        fi
 
     ############################################################################
     # OSX setup
     ############################################################################
+    - name: Disable homebrew updates (OSX)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        echo "HOMEBREW_NO_AUTO_UPDATE=1" >> $GITHUB_ENV
+        echo "HOMEBREW_NO_INSTALL_UPGRADE=1"  >> $GITHUB_ENV
+
     - name: Enable homebrew (OSX)
       if: runner.os == 'macOS'
       uses: Homebrew/actions/setup-homebrew@master
@@ -64,7 +93,8 @@ runs:
 
           brew update
           brew install parallel pssh
-          brew install --cask mactex-no-gui
+          # No stage4 jobs are run in the pipeline, so we don't need mactex
+          # brew install --cask mactex-no-gui
 
     # 2024-12-12 [JRH]: We have to do this after installing homebrew packages,
     # because if any of the packages update/install python, then we start
@@ -72,10 +102,9 @@ runs:
     # which we setup earlier.
     - name: Re-setup python (OSX)
       if: runner.os == 'macOS'
-      uses: actions/setup-python@v5
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
 
     ############################################################################
     # SIERRA install
@@ -83,17 +112,27 @@ runs:
     - name: Install SIERRA
       shell: bash
       run: |
-        python3 --version
+        # Install without generating manpages. Sphinx 7.4.0 needs an upgraded
+        # version of astroid+autoapi without crashing, so we install them. I
+        # don't know why the separate upgrade step is necessary: I don't pin
+        # those packages to specific versions/passing --upgrade to 'uv sync'
+        # doesn't work.
+        uv sync -p ${{ matrix.python-version }} --extra docs
+        uv pip install -p ${{ matrix.python-version }} --upgrade .[docs]
+        source .venv/bin/activate
+
+        # Build manpages
+        cd docs
+        sphinx-build -b man . _build/man
+        cd ..
+
+        # Very gross, but necessary for now. See pyproject.toml for more info.
+        # cat docs/pyproject-man.txt >> pyproject.toml
+
+        # Install a second time to get the manpages included
+        uv sync -p ${{ matrix.python-version }} --extra devel
+
         which python3
-
-        cd docs && make man && cd ..
-
-        # 2024-12-12 [JRH]: This is necessary on OSX until msgspec releases the
-        # necessary package in pypi; not a problem on linux.
-        python3 -m pip install git+https://github.com/jcrist/msgspec.git@main
-
-        python3 -m pip install .
-        python3 -m pip install .[devel]
-
         which sierra-cli
         sierra-cli --version
+        which nox

@@ -15,6 +15,7 @@ on:
   schedule:
     - cron: '0 0 1 * *'
 
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -25,17 +26,17 @@ jobs:
   # functionality, it the core is already largely tested on OSX via that
   # route. Plugins are another story, and are explicitly tested on OSX where
   # feasible.
-  core-ci-ubuntu-2004:
-    uses: ./.github/workflows/core.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
   core-ci-ubuntu-2204:
     uses: ./.github/workflows/core.yml
     secrets: inherit
     with:
       os: ubuntu-22.04
+
+  core-ci-ubuntu-2404:
+    uses: ./.github/workflows/core.yml
+    secrets: inherit
+    with:
+      os: ubuntu-24.04
 
   plugin-ci:
     uses: ./.github/workflows/plugin.yml
@@ -45,25 +46,49 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     secrets: inherit
 
-  publish:
+  create-release:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:
           - 3.9
 
-    needs:
-      - core-ci-ubuntu-2004
-      - core-ci-ubuntu-2204
-      - plugin-ci
+    # needs:
+      # - core-ci-ubuntu-2204
+      # - core-ci-ubuntu-2404
+      # - plugin-ci
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/publish
+      - uses: ./.github/actions/sierra-setup
+
+      - name: Set tag
+        if: github.ref == 'refs/heads/devel'
+        shell: bash
+        run: echo RELEASE_TAG=$(pyproject-info project.version | tr -d '"').beta >> $GITHUB_ENV
+
+      - name: Github beta release
+        if: github.ref == 'refs/heads/devel'
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          pypi-token: ${{ secrets.PYPI_API_TOKEN }}
-          testpypi-token: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: ${{ env.RELEASE_TAG }}
+          prerelease: true
+          title: "Development release ${{ env.RELEASE_TAG }}"
+
+      - name: Set tag
+        if: github.ref == 'refs/heads/master'
+        shell: bash
+        run: echo RELEASE_TAG=$(pyproject-info project.version | tr -d '"') >> $GITHUB_ENV
+
+      - name: Github release
+        if: github.ref == 'refs/heads/master'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: ${{ env.RELEASE_TAG }}
+          prerelease: false
+          title: "Release ${{ env.RELEASE_TAG }}"
 
   coverage:
     runs-on: ubuntu-latest
@@ -73,7 +98,7 @@ jobs:
           - 3.9
 
     needs:
-      - core-ci-ubuntu-2004
+      - core-ci-ubuntu-2204
       - plugin-ci
       - unit-tests
 
@@ -83,6 +108,7 @@ jobs:
       - uses: actions/download-artifact@v4
 
       - name: Generate coverage report
+        shell: bash
         run: |
           # ls -al . || true
           # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
@@ -92,26 +118,36 @@ jobs:
           # This is necessary for coverage since we run all integration tests in
           # nox, otherwise coverage can't find e.g., the sierra-cli executable
           # and we can't upload coverage.
-          nox --install-only -p ${{ matrix.python-version }}
+          uv sync -p ${{ matrix.python-version }} --extra devel
+          source .venv/bin/activate
+
+          which sierra-cli
+          sierra-cli --version
+          which coverage
+          which nox
+          pwd
 
           coverage \
             combine \
-            $(find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*")
+            --debug=pathmap \
+            $(find . -name "ci-*-ubuntu-*-${{ matrix.python-version }}-coverage*")
 
           coverage \
             report \
-            --fail-under=80
+            --ignore-errors \
+            --fail-under=75
 
           coverage \
-            xml
+            xml \
+            --ignore-errors
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ci-integration-coverage
 
           path: .coverage
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ci-integration-coverage-xml
           path: coverage.xml

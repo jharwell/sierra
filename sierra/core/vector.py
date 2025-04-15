@@ -122,4 +122,4 @@ class Vector3D:
         return m
 
 
-__api__ = ['Vector3D']
+__all__ = ['Vector3D']

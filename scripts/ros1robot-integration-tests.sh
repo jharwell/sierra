@@ -9,7 +9,7 @@ setup_env() {
     if [ "$GITHUB_ACTIONS" = true ]; then
         export SAMPLE_ROOT=$GITHUB_WORKSPACE/sierra-sample-project
     else
-        export SAMPLE_ROOT=$HOME/git/sierra-sample-project
+        export SAMPLE_ROOT=$HOME/git/thesis/sierra-sample-project
     fi
     # Since this is CI, we want to avoid being surprised by deprecated
     # features, so treat them all as errors.
@@ -54,7 +54,7 @@ setup_env() {
 ################################################################################
 # Check that the batch criteria that come with SIERRA for ROS1+robot work.
 ################################################################################
-bc_univar_sanity_test() {
+sanity_univar_test() {
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --batch-criteria population_size.Linear3.C3"
 

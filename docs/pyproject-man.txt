@@ -1,0 +1,8 @@
+[tool.pdm.build.targets.wheel-data]
+"docs/_build/man/sierra.7" = "share/man/sierra.7"
+"docs/_build/man/sierra-cli.1" = "share/man/sierra-cli.1"
+"docs/_build/man/sierra-examples.7" = "share/man/sierra-examples.7"
+"docs/_build/man/sierra-exec-envs.7" = "share/man/sierra-exec-envs.7"
+"docs/_build/man/sierra-glossary.7" = "share/man/sierra-glossary.7"
+"docs/_build/man/sierra-platforms.7" = "share/man/sierra-platforms.7"
+"docs/_build/man/sierra-usage.7" = "share/man/sierra-usage.7"

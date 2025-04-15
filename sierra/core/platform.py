@@ -243,10 +243,9 @@ def get_local_ip():
     return s.getsockname()[0]
 
 
-__api__ = [
+__all__ = [
     'cmdline_parser',
     'cmdline_postparse_configure',
-    'exec_env_checker',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
     'ExpRunShellCmdsGenerator',

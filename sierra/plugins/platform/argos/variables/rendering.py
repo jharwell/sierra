@@ -27,7 +27,6 @@ class ARGoSQTHeadlessRendering():
     Sets up ARGoS headless rendering with QT.
 
     Attributes:
-
         tsetup: Simulation time definitions.
 
         extents: List of (X,Y,Zs) tuple of dimensions of area to assign to
@@ -101,6 +100,6 @@ def factory(cmdopts: types.Cmdopts) -> ARGoSQTHeadlessRendering:
     return ARGoSQTHeadlessRendering(exp.factory(cmdopts["exp_setup"]))
 
 
-__api__ = [
+__all__ = [
     'ARGoSQTHeadlessRendering',
 ]

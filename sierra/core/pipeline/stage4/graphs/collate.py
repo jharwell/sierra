@@ -1,7 +1,7 @@
 # Copyright 2018 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-
+"""Collation functionality for stage3 outputs according to configuration."""
 
 # Core packages
 import multiprocessing as mp
@@ -118,7 +118,6 @@ class UnivarGraphCollator:
         for stat in stats:
             csv_ipath = pathlib.Path(exp_stat_root,
                                      target['src_stem'] + stat.df_ext)
-            print(csv_ipath)
             if not utils.path_exists(csv_ipath):
                 stat.all_srcs_exist = False
                 continue
@@ -317,7 +316,7 @@ class ParallelCollator():
                 break
 
 
-__api__ = [
+__all__ = [
     'UnivarGraphCollator',
     'BivarGraphCollator',
     'UnivarGraphCollationInfo',

@@ -27,7 +27,6 @@ class ExpSetup():
     Defines the simulation duration.
 
     Attributes:
-
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
@@ -108,6 +107,6 @@ def factory(arg: str) -> ExpSetup:
                 {"__init__": __init__})  # type: ignore
 
 
-__api__ = [
+__all__ = [
     'ExpSetup',
 ]

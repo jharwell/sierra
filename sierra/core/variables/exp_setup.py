@@ -62,7 +62,7 @@ class Parser():
         return ret
 
 
-__api__ = [
+__all__ = [
     'Parser'
 
 

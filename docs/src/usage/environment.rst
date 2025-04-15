@@ -133,3 +133,46 @@ Environment Variables
    The resolvable hostname for a ROS node. Unless you have DNS configured within
    the network that things are running on, best not to rely on this (at least
    for real robots).
+
+.. envvar:: ROS_DISTRO
+
+   The active ROS distribution (versioned set of ROS packages).
+
+.. envvar:: ROS_VERSION
+
+            The version of ROS. Currently SIERRA only supports ROS1.
+
+.. envvar:: PBS_NUM_PPN
+
+            # CPUs/node on a compute node allocated to a job on a HPC cluster
+            managed by the PBS scheduler.
+
+.. envvar:: PBS_NODEFILE
+
+            Newline delimited list of compute nodes allocated to the current job
+            on an HPC cluster managed by the PBS scheduler.
+
+.. envvar:: PBS_JOBID
+
+            Globally unique ID for a job on a HPC cluster managed by the PBS
+            scheduler. Useful for creating unique output files/logging paths.
+
+.. envvar:: SLURM_CPUS_PER_TASK
+
+            # CPUs/node on a compute node allocated to a job on a HPC cluster
+            managed by the SLURM scheduler.
+
+.. envvar:: SLURM_TASKS_PER_NODE
+
+            # tasks requested/allocated per compute node on a job on a HPC
+            cluster managed by the SLURM scheduler.
+
+.. envvar:: SLURM_JOB_NODELIST
+
+            Newline delimited list of compute nodes allocated to the current job
+            on an HPC cluster managed by the SLURM scheduler.
+
+.. envvar:: SLURM_JOB_ID
+
+            Globally unique ID for a job on a HPC cluster managed by the SLURM
+            scheduler. Useful for creating unique output files/logging paths.

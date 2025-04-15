@@ -62,7 +62,8 @@ class BaseCmdline:
     def stage_usage_doc(stages: tp.List[int],
                         omitted: str = "If omitted: N/A.") -> str:
         lst = ",".join(map(str, stages))
-        header = f"\n.. TIP:: Used by stage {lst}; can be omitted otherwise. {omitted}\n"
+        header = "\n.. TIP:: Used by stage {0}; can be omitted otherwise. {1}\n".format(
+            lst, omitted)
         return header
 
     @staticmethod
@@ -185,7 +186,7 @@ class BootstrapCmdline(BaseCmdline):
                                  nodes in an HPC computing environment managed
                                  by TORQUE-PBS. See
                                  :ref:`plugins/exec-env/hpc/pbs` for a detailed
-                                 description. 
+                                 description.
 
                                - ``hpc.slurm`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
@@ -635,7 +636,7 @@ class CoreCmdline(BaseCmdline):
                                     """
                                      +
                                      self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`',
-                                                                 ':class:`~sierra.core.graphs.staced_line_graph.StackedLineGraph`']) +
+                                                                 ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`']) +
                                      self.stage_usage_doc([4, 5]),
                                      default=None)
 
@@ -1044,7 +1045,8 @@ class CoreCmdline(BaseCmdline):
                                  within ``--sierra-root``.
 
                                  The first controller in this list will be used
-                                 for as the controller of primary interest if ``--comparison-type`` is passed.
+                                 for as the controller of primary interest if
+                                 ``--comparison-type`` is passed.
 
                                  """ + self.stage_usage_doc([5]))
 
@@ -1079,29 +1081,33 @@ class CoreCmdline(BaseCmdline):
 
                                  """ + self.stage_usage_doc([5],
                                                             "If omitted: the raw scenario names will be used."))
-        self.stage5.add_argument("--scenario-comparison", help="""
+        self.stage5.add_argument("--scenario-comparison",
+                                 help="""
 
                                  Perform a comparison of ``--controller`` across
                                  ``--scenarios-list`` (univariate batch criteria
-                                 only).  """
-                                 + self.stage_usage_doc([5],
-                                                        """Either ``--scenario-comparison`` or ``--controller-comparison`` must be
-                                 passed."""), action='store_true')
+                                 only).
+
+                                 """ + self.stage_usage_doc([5],
+                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                 action='store_true')
 
         self.stage5.add_argument("--controller-comparison",
                                  help="""
 
                                  Perform a comparison of ``--controllers-list``
                                  across all scenarios at least one controller
-                                 has been run on.  """ + self.stage_usage_doc([5],
-                                                                              "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                 has been run on.
+
+                                 """ + self.stage_usage_doc([5],
+                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
                                  action='store_true')
 
         self.stage5.add_argument("--comparison-type",
                                  choices=['LNraw',
                                           'HMraw', 'HMdiff', 'HMscale',
                                           'SUraw', 'SUscale', 'SUdiff'],
-                                 help="""
+                                 help=r"""
 
                                  Specify how controller comparisons should be
                                  performed.
@@ -1110,25 +1116,18 @@ class CoreCmdline(BaseCmdline):
                                  options are:
 
                                  - ``LNraw`` - Output raw 1D performance
-                                   measures using a single """ +
-
-                                 utils.sphinx_ref(':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`') +
-
-                                 """ for each measure, with all ``--controllers-list`` controllers shown on the
-                                   same graph.
+                                   measures using a single {0} for each measure,
+                                   with all ``--controllers-list`` controllers
+                                   shown on the same graph.
 
                                  If the batch criteria is bivariate, the options
                                  are:
 
                                  - ``LNraw`` - Output raw performance measures
-                                   as a set of """ +
-
-                                 utils.sphinx_ref(':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`') +
-
-                                 r"""s, where each
-                                   line graph is constructed from the i-th
-                                   row/column for the 2D dataframe for the
-                                   performance results for all controllers.
+                                   as a set of {0}, where each line graph is
+                                   constructed from the i-th row/column for the
+                                   2D dataframe for the performance results for
+                                   all controllers.
 
                                    .. NOTE:: SIERRA cannot currently plot
                                       statistics on the linegraphs built from
@@ -1174,12 +1173,11 @@ class CoreCmdline(BaseCmdline):
                                    which the controller of primary interest
                                    forms an(X, Y) plane at Z=0.
 
-
                                  For all comparison types,
                                  ``--controllers-legend`` is used if passed for
                                  legend.
 
-                                 """ + self.stage_usage_doc([5]))
+                                 """.format(utils.sphinx_ref(':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`')) + self.stage_usage_doc([5]))
 
         self.stage5.add_argument("--bc-univar",
                                  help="""
@@ -1295,7 +1293,7 @@ def sphinx_cmdline_stage5():
     return CoreCmdline(None, [5]).parser
 
 
-__api__ = [
+__all__ = [
     'ArgumentParser',
     'BaseCmdline',
     'BootstrapCmdline',

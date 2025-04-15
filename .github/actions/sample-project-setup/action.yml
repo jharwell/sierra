@@ -14,12 +14,6 @@ runs:
     ############################################################################
     # Common setup
     ############################################################################
-    - name: Setup python (all OSes)
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-
     - name: Get branch for sample project
       shell: bash
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
@@ -85,10 +79,9 @@ runs:
 
     - name: Re-setup python (OSX)
       if: runner.os == 'macOS'
-      uses: actions/setup-python@v5
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
 
     - name: Install and cache ARGoS dependencies (Linux)
       if: runner.os == 'Linux'
@@ -97,6 +90,12 @@ runs:
         packages: libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache
         version: ${{ runner.os }}
 
+    - name: Install ARGoS deps into container
+      shell: bash
+      run: |
+        if ! command -v "sudo" &> /dev/null; then
+           apt install libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache -y
+        fi
     - name: Install ARGoS
       if: inputs.platform == 'argos'
       shell: bash
@@ -111,7 +110,13 @@ runs:
           -DARGOS_DOCUMENTATION=OFF \
           ../src
         make -j ${{ steps.cpu-cores.outputs.count }}
-        sudo make install
+        if command -v "sudo" &> /dev/null; then
+           sudo make install
+        else
+           make install
+        fi
+        cd ../../
+        rm -rf argos3
 
     - name: Build SIERRA project for ARGoS
       if: inputs.platform == 'argos'
@@ -141,7 +146,7 @@ runs:
       if: inputs.platform == 'ros1gazebo'
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy
+        packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy python3-pip
         version: ${{ runner.os }}
 
     - name: Install SIERRA ROSbridge python dependencies (Linux)
@@ -153,7 +158,7 @@ runs:
         # know why.
         which python3
         python3 --version
-        python3 -m pip install empy \
+        uv pip install empy \
                      rospkg \
                      wheel \
                      pyparsing \
@@ -183,9 +188,17 @@ runs:
         catkin config --extend /opt/ros/${{ inputs.rosdistro }}
         catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local
         catkin build
+        cd ..
+        rm -rf sierra_rosbridge
 
     ############################################################################
     # ROS1+Robot setup
+    ############################################################################
+
+    # None needed for the moment--stage 1 XML generation only.
+
+    ############################################################################
+    # JSONSim setup
     ############################################################################
 
     # None needed for the moment--stage 1 XML generation only.

@@ -96,7 +96,7 @@ def for_single_exp_run(
         })
 
 
-__api__ = [
+__all__ = [
     'for_all_exp',
     'for_single_exp_run'
 ]

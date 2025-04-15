@@ -123,7 +123,7 @@ class PipelineStage4:
 
         #. Model generation for each enabled and loaded model.
 
-        #. :ref:`~sierra.core.pipeline.stage4.graphs.intra.generate()
+        #. :py:func:`~sierra.core.pipeline.stage4.graphs.intra.generate`
            to generate graphs for each experiment in the batch, or a subset.
 
         Inter-experiment graph generation: if inter-experiment graphs should be
@@ -138,7 +138,7 @@ class PipelineStage4:
 
         #. Model generation for each enabled and loaded model.
 
-        #. :func:`~sierra.core.pipeline.stage4.graphs.inter.generate()`
+        #. :py:func:`~sierra.core.pipeline.stage4.graphs.inter.generate`
            to perform graph generation from collated CSV files.
 
 
@@ -420,6 +420,6 @@ class PipelineStage4:
                          str(sec))
 
 
-__api__ = [
+__all__ = [
     'PipelineStage4'
 ]

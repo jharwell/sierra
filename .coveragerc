@@ -10,6 +10,11 @@ exclude_lines =
     raise NotImplementedError
 
 [run]
+relative_files = True
+source =
+    sierra
+    /__w/sierra/sierra
+    /home/runner/work/sierra/sierra
 
 concurrency = multiprocessing
 parallel = true
@@ -21,3 +26,5 @@ omit =
      /usr/*
 
      */docs/*
+
+     */sierra-cli
