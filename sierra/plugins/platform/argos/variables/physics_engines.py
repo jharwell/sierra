@@ -27,7 +27,6 @@ class PhysicsEngines():
     """Defines 2D/3D physics engines within ARGoS and how they are laid out.
 
     Attributes:
-
         engine_type: The type of physics engine to use (one supported by ARGoS).
 
         n_engines: # of engines. Can be one of [1,4,8,16,24].
@@ -153,10 +152,6 @@ class PhysicsEngines():
 
             extent: The mapped extent for ALL physics engines.
 
-            exceptions: List of lists of points defining polygons which should
-                        NOT be managed by any of the engines currently being
-                        processed.
-
             n_engines_x: # engines in the x direction.
 
             n_engines_y: # engines in the y direction.
@@ -189,14 +184,14 @@ class PhysicsEngines():
                                           "top",
                                           {
                                               'height': str(size_z)
-                                          },
-                                          True))
+        },
+            True))
         adds.append(definition.ElementAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                                           "bottom",
                                           {
                                               'height': '0.0'
-                                          },
-                                          True))
+        },
+            True))
         adds.append(definition.ElementAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                                           "sides",
                                           {},
@@ -235,8 +230,8 @@ class PhysicsEngines():
                                               "vertex",
                                               {
                                                   "point": "{0}, {1}".format(v[0], v[1])
-                                              },
-                                              True))
+            },
+                True))
         return adds
 
     def _gen1_engines(self) -> definition.ElementAddList:
@@ -448,8 +443,8 @@ class PhysicsEngines2D(PhysicsEngines):
                                               {
                                                   'cell_size': str(self.spatial_hash_info['cell_size']),
                                                   'cell_num': str(self.spatial_hash_info['cell_num'])
-                                              },
-                                              True))
+            },
+                True))
         return adds
 
 
@@ -512,7 +507,7 @@ def factory(engine_type: str,
                                 extents)
 
 
-__api__ = [
+__all__ = [
     'PhysicsEngines',
     'PhysicsEngines2D',
     'PhysicsEngines3D',

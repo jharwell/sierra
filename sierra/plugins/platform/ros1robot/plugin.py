@@ -1,7 +1,7 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Plugin for :term:`ROS`-based robot :term:`Platforms <Platform>`."""
+"""Plugin for :term:`ROS1`-based robot :term:`Platforms <Platform>`."""
 # Core packages
 import argparse
 import logging
@@ -344,7 +344,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
         - :envvar:`ROS_VERSION` is ROS1.
 
-        - :envvar:`ROS_DISTO` is {kinetic/noetic}.
+        - :envvar:`ROS_DISTRO` is {kinetic/noetic}.
 
         - :program:`gazebo` can be found and the version is supported.
     """

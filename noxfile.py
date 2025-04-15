@@ -22,7 +22,7 @@ import psutil
 
 # Project packages
 
-versions = ['3.9', '3.10', '3.11']
+versions = ['3.9', '3.10', '3.11', '3.12']
 
 
 @nox.session(python=versions)
@@ -203,3 +203,10 @@ def plugin_ros1robot_integration(session):
     session.install('.')  # same as 'pip3 install .'
 
     session.run('./scripts/ros1robot-integration-tests.sh', *session.posargs)
+
+
+@nox.session(python=versions)
+def plugin_jsonsim_integration(session):
+    session.install('.')  # same as 'pip3 install .'
+
+    session.run('./scripts/jsonsim-integration-tests.sh', *session.posargs)

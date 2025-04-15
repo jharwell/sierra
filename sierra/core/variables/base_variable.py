@@ -52,6 +52,6 @@ class IBaseVariable(implements.Interface):
         """
 
 
-__api__ = [
+__all__ = [
     'IBaseVariable'
 ]

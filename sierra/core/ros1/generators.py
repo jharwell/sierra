@@ -208,7 +208,7 @@ def _generate_single_exp_run_paramfile(exp_def: definition.BaseExpDef,
                         })
 
 
-__api__ = [
+__all__ = [
     'for_all_exp',
     'for_single_exp_run'
 ]

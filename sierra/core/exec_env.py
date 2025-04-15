@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Common functionality for ``--exec-env`` plugins to use."""
 
 # Core packages
 import typing as tp
@@ -269,3 +270,13 @@ def get_executable_shellname(base: str) -> str:
         return f'{base}-{arch}'
     else:
         return base
+
+
+__all__ = [
+    "ExpShellCmdsGenerator",
+    "cmdline_postparse_configure",
+    "parse_nodefile",
+    "check_connectivity",
+    "check_for_simulator",
+    "get_executable_shellname"
+]

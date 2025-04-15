@@ -123,7 +123,7 @@ Why SIERRA?
   of a specific project.
 
 Not sure if SIERRA makes sense for your research? Check out some of the `use
-cases<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which
+cases <https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which
 SIERRA was designed.  If aspects of any sound familiar, then there is a strong
 chance SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
 <https://sierra.readthedocs.io/en/master/>`_ to get started.
@@ -148,9 +148,9 @@ robots <https://sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
 
 SIERRA also supports multiple formats for experimental inputs and outputs.
 
-The complete set of built-in plugins which come with SIERRA are `here
-<https://sierra.readthedocs.io/en/master/src/matrix.html>`_. SIERRA supports
-full mix-and-match between plugins from the table above--this is one of its most
+`Here <https://sierra.readthedocs.io/en/master/src/matrix.html>`_ is complete
+set of built-in plugins which come with SIERRA. SIERRA supports full
+mix-and-match between plugins from the table above--this is one of its most
 powerful features! While SIERRA itself supports arbitrary sets of plugins, there
 are necessarily restrictions on which plugins can be used together. For example,
 if you are using a platform mapping to a custom in-house simulator which takes
@@ -161,7 +161,7 @@ Requirements To Use SIERRA
 
 The basic requirements are:
 
-- Recent OSX (tested with 13+) or Linux (tested with ubuntu 20.04+).
+- Recent OSX (tested with 13+) or Linux (tested with ubuntu 22.04+).
 
 - python >= 3.9.
 
@@ -206,6 +206,7 @@ Contributing
 ============
 
 I welcome all types of contributions, no matter how large or how small, and if
-you have an idea, I'm happy to talk about it at any point :-). See `here
-<https://sierra.readthedocs.io/en/master/src/contributing.html>`_
-for the general procedure.
+you have an idea, I'm happy to talk about it at any point :-). See the
+`contributing guide
+<https://sierra.readthedocs.io/en/master/src/contributing.html>`_ for the
+general procedure.
