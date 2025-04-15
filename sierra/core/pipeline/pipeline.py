@@ -253,6 +253,6 @@ class Pipeline:
         self.main_config['sierra'].update(perf_config)
 
 
-__api__ = [
+__all__ = [
     'Pipeline'
 ]

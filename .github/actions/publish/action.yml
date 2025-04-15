@@ -11,17 +11,17 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: ./.github/actions/sierra-setup
     - name: Build package
       shell: bash
       run: |
-        python3 -m build
-        cd docs && make linkcheck
+        uv sync --extra devel
+        cd docs && sphinx-build -b linkcheck . _build && cd ..
+        uv build
 
     - name: Set tag
       if: github.ref == 'refs/heads/devel'
       shell: bash
-      run: echo "RELEASE_TAG=$(python3 setup.py --version).beta" >> $GITHUB_ENV
+      run: echo RELEASE_TAG=$(pyproject-info project.version | tr -d '"') >> $GITHUB_ENV
 
     - name: Github beta release
       if: github.ref == 'refs/heads/devel'
@@ -40,12 +40,12 @@ runs:
         skip-existing: true
         user: __token__
         password: ${{ inputs.testpypi-token }}
-        repository_url: https://test.pypi.org/legacy/
+        repository-url: https://test.pypi.org/legacy/
 
     - name: Set tag
       if: github.ref == 'refs/heads/master'
       shell: bash
-      run: echo "RELEASE_TAG=$(python3 setup.py --version)" >> $GITHUB_ENV
+      run: echo RELEASE_TAG=$(pyproject-info project.version | tr -d '"') >> $GITHUB_ENV
 
     - name: Github release
       if: github.ref == 'refs/heads/master'

@@ -37,7 +37,6 @@ class PopulationSize(population_size.BasePopulationSize):
     Note: Usage of this class assumes homogeneous systems.
 
     Attributes:
-
         size_list: List of integer system sizes defining the range of the
                    variable for the batch experiment.
 
@@ -121,8 +120,8 @@ class PopulationSize(population_size.BasePopulationSize):
                                                           {
                                                               "name": "tf_prefix",
                                                               "value": ns
-                                                          },
-                                                          True))
+                    },
+                        True))
 
                     # These two tag adds are OK to use because:
                     #
@@ -136,8 +135,8 @@ class PopulationSize(population_size.BasePopulationSize):
                                                           {
                                                               "name": "robot_description",
                                                               "command": desc_cmd
-                                                          },
-                                                          True))
+                    },
+                        True))
 
                     exp_adds.append(definition.ElementAdd(f"./robot/group/[@ns='{ns}']",
                                                           "node",
@@ -146,8 +145,8 @@ class PopulationSize(population_size.BasePopulationSize):
                                                               "pkg": "gazebo_ros",
                                                               "type": "spawn_model",
                                                               "args": spawn_cmd_args
-                                                          },
-                                                          True))
+                    },
+                        True))
 
                 self.element_adds.append(exp_adds)
 
@@ -200,6 +199,6 @@ def factory(cli_arg: str,
                 {"__init__": __init__})
 
 
-__api__ = [
+__all__ = [
     'PopulationSize'
 ]

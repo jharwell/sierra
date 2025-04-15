@@ -115,8 +115,8 @@ def platform_sanity_checks(module) -> None:
                           f)
 
 
-__api__ = {
+__all__ = [
     'storage_sanity_checks',
     'exec_env_sanity_checks',
     'platform_sanity_checks'
-}
+]

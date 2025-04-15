@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Container module for intra-experiment graph generation in stage 4."""
 
 # Core packages
 

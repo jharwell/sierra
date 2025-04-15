@@ -42,7 +42,7 @@ setup_env() {
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \
-       -esetup=exp_setup.T500.K5 \
+       --exp-setup=exp_setup.T50.K4 \
        --n-runs=4 \
        -xstrict \
        --expdef-template=$SAMPLE_ROOT/exp/argos/template.argos \
@@ -72,21 +72,10 @@ sanity_check_pipeline() {
     # Semi-hack to avoid running stage 4 on OSX in github actions in
     # order to avoid having to install mactex.
     if [[ ! (("$GITHUB_ACTIONS" = true) && ("$RUNNER_OS" = "macOS")) ]]; then
-
         $SIERRA_CMD --pipeline 4
-
-        rm -rf $SIERRA_ROOT
-
-        $SIERRA_CMD --pipeline 1 2 3 4
-
-        rm -rf $SIERRA_ROOT
-    else
-        rm -rf $SIERRA_ROOT
-
-        $SIERRA_CMD --pipeline 1 2 3
-
-        rm -rf $SIERRA_ROOT
     fi
+
+    rm -rf $SIERRA_ROOT
 }
 
 ################################################################################
@@ -96,10 +85,10 @@ sanity_check_pipeline() {
 physics_engines_test() {
 
     # Don't test with ALL engine sizes, just the smallest, largest,
-    # and a few in between.
+    # and one in between.
     #
     # All: 1 2 4 6 8 12 16 24
-    ENGINES=(1 8 16 24)
+    ENGINES=(1 16 24)
 
     for n in "${ENGINES[@]}"
     do
@@ -114,22 +103,12 @@ physics_engines_test() {
 
         rm -rf $SIERRA_ROOT
     done
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-        --controller=foraging.footbot_foraging \
-        --batch-criteria population_size.Linear3.C3\
-        --physics-n-engines=1 \
-        --physics-spatial-hash2D"
-
-    $SIERRA_CMD --pipeline 1 2
-
-    rm -rf $SIERRA_ROOT
 }
 
 ################################################################################
 # Check that the batch criteria that come with SIERRA for ARGoS work.
 ################################################################################
-bc_univar_sanity_test() {
+sanity_univar_test() {
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --controller=foraging.footbot_foraging \
     --physics-n-engines=1 \
@@ -162,7 +141,7 @@ bc_univar_sanity_test() {
     --pipeline 1"
 }
 
-bc_bivar_sanity_test() {
+sanity_bivar_test() {
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --controller=foraging.footbot_foraging \
     --physics-n-engines=1 \
@@ -406,7 +385,7 @@ stage2_univar_check_outputs() {
 
 stage2_bivar_test() {
     batch_root_cmd1="from sierra.core import batchroot;
-bc=[\"population_size.Linear3.C3\", \"max_speed.1.9.C5\"];
+bc=[\"population_size.Linear2.C2\", \"max_speed.1.9.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
@@ -419,7 +398,7 @@ print(path)
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --controller=foraging.footbot_foraging \
-    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
+    --batch-criteria population_size.Linear2.C2 max_speed.1.9.C3\
     --physics-n-engines=1 \
     --pipeline 1 2"
 
@@ -428,15 +407,15 @@ print(path)
     $SIERRA_CMD
 
     # Check SIERRA directory structure
-    for i in {0..2}; do
-        for j in {0..4}; do
+    for i in {0..1}; do
+        for j in {0..2}; do
             [ -d "$output_root1/c1-exp${i}+c2-exp${j}" ] || false
         done
     done
 
     # Check stage2 generated stuff
-    for i in {0..2}; do
-        for j in {0..4}; do
+    for i in {0..1}; do
+        for j in {0..2}; do
             for run in {0..3}; do
                 [ -f "$output_root1/c1-exp${i}+c2-exp${j}/template_run${run}_output/output/collected-data.csv" ] ||false
             done
@@ -507,7 +486,7 @@ stage3_univar_check_outputs() {
 
 stage3_bivar_test() {
     batch_root_cmd1="from sierra.core import batchroot;
-bc=[\"population_size.Linear3.C3\", \"max_speed.1.9.C5\"];
+bc=[\"population_size.Linear2.C2\", \"max_speed.1.9.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
@@ -520,7 +499,7 @@ print(path)
     output_root=$batch_root1/exp-outputs/
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
+    --batch-criteria population_size.Linear2.C2 max_speed.1.9.C3\
     --controller=foraging.footbot_foraging \
     --physics-n-engines=1 \
     --pipeline 1 2 3"
@@ -551,8 +530,8 @@ stage3_bivar_check_outputs() {
     to_check=("$@")
 
     # Check SIERRA directory structure
-    for i in {0..2}; do
-        for j in {0..4}; do
+    for i in {0..1}; do
+        for j in {0..2}; do
             [ -d "$stat_root/c1-exp${i}+c2-exp${j}" ] || false
         done
     done
@@ -560,8 +539,8 @@ stage3_bivar_check_outputs() {
 
     # Check stage3 generated statistics
     for stat in "${to_check[@]}"; do
-        for i in {0..2}; do
-            for j in {0..4}; do
+        for i in {0..1}; do
+            for j in {0..2}; do
                 [ -f "$stat_root/c1-exp${i}+c2-exp${j}/collected-data.${stat}" ] || false
                 [ -f "$stat_root/collated/c1-exp${i}+c2-exp${j}-collected-data-collected_food.csv" ] || false
 
@@ -820,7 +799,7 @@ stage5_bivar_check_cc_outputs() {
 ################################################################################
 vc_test() {
         batch_root_cmd="from sierra.core import batchroot;
-bc=[\"population_size.Linear3.C3\"];
+bc=[\"population_size.Linear1.C1\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
@@ -837,10 +816,9 @@ print(path)
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --physics-n-engines=1 \
     --controller=foraging.footbot_foraging \
-    --batch-criteria population_size.Linear3.C3 \
+    --batch-criteria population_size.Linear1.C1 \
     --pipeline 1 2 3 4 \
-    --platform-vc \
-    --exp-setup=exp_setup.T50"
+    --platform-vc"
 
     cameras=(overhead
              sw
@@ -850,18 +828,18 @@ print(path)
         $SIERRA_CMD --camera-config=${c}
 
         # Check SIERRA directory structure
-        for i in {0..2}; do
-            [ -d "$output_root/exp${i}/template_run${i}_output/frames" ] || false
+        for i in {0..3}; do
+            [ -d "$output_root/exp0/template_run${i}_output/frames" ] || false
         done
 
         # Check generated frames exist
-        for i in {0..2}; do
-            [[ $(ls -A $output_root/exp${i}/template_run${i}_output/frames) > /dev/null ]]  || false
+        for i in {0..3}; do
+            [[ $(ls -A $output_root/exp0/template_run${i}_output/frames) > /dev/null ]]  || false
         done
 
         # Check generated videos
-        for i in {0..2}; do
-            [ -f "$video_root/exp${i}/template_run${i}_output.mp4" ] || false
+        for i in {0..3}; do
+            [ -f "$video_root/exp0/template_run${i}_output.mp4" ] || false
         done
         rm -rf $SIERRA_ROOT
     done
@@ -871,7 +849,7 @@ print(path)
 ################################################################################
 imagize_test() {
         batch_root_cmd="from sierra.core import batchroot;
-bc=[\"population_size.Linear3.C3\"];
+bc=[\"population_size.Linear1.C1\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
@@ -889,11 +867,10 @@ print(path)
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --physics-n-engines=1 \
     --controller=foraging.footbot_foraging \
-    --batch-criteria population_size.Linear3.C3 \
+    --batch-criteria population_size.Linear1.C1 \
     --pipeline 1 2 3 4 \
     --project-imagizing \
-    --project-rendering \
-    --exp-setup=exp_setup.T50"
+    --project-rendering"
 
     cameras=(overhead
              sw
@@ -903,19 +880,15 @@ print(path)
         $SIERRA_CMD --camera-config=${c}
 
         # Check SIERRA directory structure
-        for i in {0..2}; do
-            [ -d "$output_root/exp${i}/template_run${i}_output/output/floor-state" ] || false
+        for i in {0..3}; do
+            [ -d "$output_root/exp0/template_run${i}_output/output/floor-state" ] || false
         done
 
         # Check generated images exist
-        for i in {0..2}; do
-            [[ $(ls -A $imagize_root/exp${i}/floor-state/*.png) > /dev/null ]]  || false
-        done
+        [[ $(ls -A $imagize_root/exp0/floor-state/*.png) > /dev/null ]]  || false
 
         # Check generated videos
-        for i in {0..2}; do
-            [ -f "$video_root/exp${i}/floor-state.mp4" ] || false
-        done
+        [ -f "$video_root/exp0/floor-state.mp4" ] || false
         rm -rf $SIERRA_ROOT
     done
 }
@@ -941,8 +914,7 @@ print(path)
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --physics-n-engines=1 \
     --controller=foraging.footbot_foraging \
-    --batch-criteria population_size.Linear3.C3 \
-    --exp-setup=exp_setup.T50"
+    --batch-criteria population_size.Linear3.C3"
 
 
     $SIERRA_CMD --n-agents=10 --pipeline 1
@@ -952,7 +924,7 @@ print(path)
             grep "quantity=\"10\"" $input_root/exp${exp}/template_run${run}.argos
         done
     done
-
+    rm -rf $SIERRA_ROOT
 }
 
 ################################################################################

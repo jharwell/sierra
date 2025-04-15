@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Utility module for calculating path names."""
 
 # Core packages
 import typing as tp

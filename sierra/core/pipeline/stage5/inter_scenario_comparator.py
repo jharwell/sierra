@@ -37,7 +37,6 @@ class UnivarInterScenarioComparator:
     Univariate batch criteria only.
 
     Attributes:
-
         controller: Controller to use.
 
         scenarios: List of scenario names to compare ``controller`` across.
@@ -324,4 +323,4 @@ class UnivarInterScenarioComparator:
         return None
 
 
-__api__ = ['UnivarInterScenarioComparator']
+__all__ = ['UnivarInterScenarioComparator']

@@ -184,15 +184,12 @@ def from_exp(sierra_root: str,
 
     Arguments:
 
-        sierra_rpath: The path to the root directory where SIERRA should store
-                      everything.
+        sierra_root: The path to the root directory where SIERRA should store
+                     everything.
 
         project: The name of the project plugin used.
 
-        criteria: List of strings from the cmdline specification of the batch
-                  criteria.
-
-        batch_root: The name of the directory that will be the root of the batch
+        batch_leaf: The name of the directory that will be the root of the batch
                     experiment (not including its parent).
 
         controller: The name of the controller used.
@@ -206,7 +203,7 @@ def from_exp(sierra_root: str,
     return PathSet(root)
 
 
-__api__ = [
+__all__ = [
     "from_exp",
     "from_cmdline",
     "PathSet",

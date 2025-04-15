@@ -387,7 +387,7 @@ def unpickle(fpath: pathlib.Path) -> tp.Optional[tp.Union[definition.AttrChangeS
     raise NotImplementedError
 
 
-__api__ = [
+__all__ = [
     'ExpDef',
     'unpickle'
 ]

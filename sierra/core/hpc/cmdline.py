@@ -1,8 +1,8 @@
 # Copyright 2020 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Common cmdline classes for the various HPC plugins.
-
+"""
+Common cmdline classes for the various HPC plugins.
 """
 
 # Core packages
@@ -135,6 +135,6 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     }
 
 
-__api__ = [
+__all__ = [
     'HPCCmdline',
 ]

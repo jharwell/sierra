@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-The plugin for the :term:`ARGoS` :term:`Plaform`.
+The plugin for the :term:`ARGoS` :term:`Platform`.
 """
 # Core packages
 import argparse
@@ -192,9 +192,9 @@ def cmdline_parser() -> argparse.ArgumentParser:
 def cmdline_postparse_configure(execenv: str,
                                 args: argparse.Namespace) -> argparse.Namespace:
     """
-    Configure cmdline args after parsing for the :term:`ARGoS`platform.
+    Configure cmdline args after parsing for the :term:`ARGoS` platform.
 
-    This sets arguments appropriately depending on what HPC environment s
+    This sets arguments appropriately depending on what HPC environment is
     selected with ``--exec-env``.
 
     - hpc.local

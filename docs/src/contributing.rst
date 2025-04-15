@@ -20,13 +20,11 @@ Mechanics
 Writing the code
 ----------------
 
-To contribute to the SIERRA core, in you should follow the general workflow and
-python development guide outlined in :ref:`libra:dev/python-guide` and
-:ref:`libra:dev/workflow`. For the static analysis step:
-
 #. Install development packages for SIERRA (from the SIERRA repo root)::
 
      pip3 install .[devel]
+
+#. Do development!
 
 #. Run ``nox`` to check most things prior to commiting/pushing your changes. If
    there are errors *you* have introduced, fix them. Some checkers (such as
@@ -34,16 +32,6 @@ python development guide outlined in :ref:`libra:dev/python-guide` and
    in progress::
 
      nox
-
-#. Run the following on any module directories you changed, from the root of
-   SIERRA::
-
-     mypy --ignore-missing-imports --warn-unreachable sierra
-
-   Fix relevant errors your changes have introduced (there will probably still
-   be errors in the my output, because cleaning up the code is always a work in
-   progress), and mypy just gives a lot of false positives in general; this is
-   also why it's not part of what runs with ``nox``.
 
 
 SIERRA Source Code Directory Structure

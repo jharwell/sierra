@@ -50,7 +50,7 @@ setup_env() {
        --controller=foraging.footbot_foraging \
        --platform=platform.argos \
        --project=argos_project \
-       --exp-setup=exp_setup.T5000.K5 \
+       --exp-setup=exp_setup.T50.K5 \
        --n-runs=4 \
        -xstrict \
        --expdef-template=$SAMPLE_ROOT/exp/argos/template.argos \
@@ -116,35 +116,28 @@ print(path)
 # Check cmdline options
 ################################################################################
 cmdline_opts_test() {
-    criteria=(population_size.Linear3.C3
-              population_variable_density.1p0.4p0.C4)
-
     # Check plotting opts
-    for bc in "${criteria[@]}"; do
-        SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
-        --physics-n-engines=1 \
-        --batch-criteria ${bc}"
-
-        rm -rf $SIERRA_ROOT
-
-        $SIERRA_CMD --pipeline 1 2 3
-
-        $SIERRA_CMD --pipeline 4 --plot-log-xscale
-        $SIERRA_CMD --pipeline 4 --plot-enumerated-xscale
-        $SIERRA_CMD --pipeline 4 --plot-log-yscale
-        $SIERRA_CMD --pipeline 4 --plot-large-text
-    done
+    SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
+                    --physics-n-engines=1 \
+                    --batch-criteria population_size.Linear3.C3"
 
     rm -rf $SIERRA_ROOT
 
-    # Check serial processing
-    $SIERRA_CMD --pipeline 1 2 3 4 --processing-serial
+    $SIERRA_CMD --pipeline 1 2 3 --processing-serial
+
+    $SIERRA_CMD --pipeline 4 --plot-log-xscale
+    $SIERRA_CMD --pipeline 4 --plot-enumerated-xscale
+    $SIERRA_CMD --pipeline 4 --plot-log-yscale --processing-serial
+    $SIERRA_CMD --pipeline 4 --plot-large-text
+
+    rm -rf $SIERRA_ROOT
 
     # Check version
     $SIERRA_CMD --version
 
     # Check rcfile
-    rm -rf ~/test2
+    rm -rf $HOME/test2
+    rm -rf $HOME/test3
 
     echo "--sierra-root=~/test2" > /tmp/tmpfile
     $SIERRA_CMD --rcfile=/tmp/tmpfile

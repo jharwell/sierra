@@ -318,7 +318,7 @@ class ExpDef:
         for child in el:
             if child.tag == tag:
                 child.tag = value
-                self.logger.trace("Modify tag: '%s/%s' = '%s'",  # type: ignore
+                self.logger.trace("Modify tag: '%s.%s' = '%s'",  # type: ignore
                                   path,
                                   tag,
                                   value)
@@ -415,7 +415,7 @@ class ExpDef:
 
             # Child doesn't exist--just assign to single sub-element.
             parent[tag] = attr
-            self.logger.trace("Add new unique element: '%s/%s' = '%s'",  # type: ignore
+            self.logger.trace("Add new unique element: '%s.%s' = '%s'",  # type: ignore
                               path,
                               tag,
                               str(attr))
@@ -455,7 +455,7 @@ def unpickle(fpath: pathlib.Path) -> tp.Optional[tp.Union[definition.AttrChangeS
     raise NotImplementedError
 
 
-__api__ = [
+__all__ = [
     'ExpDef',
     'unpickle'
 

@@ -108,8 +108,9 @@ def _worker(q: mp.Queue, main_config: types.YAMLDict) -> None:
                 stdout_str = stdout_raw.decode("ascii")
                 stderr_str = stderr_raw.decode("ascii")
 
-                _logger.error(stdout_str)
-                _logger.error(stderr_str)
+                _logger.error("Return code=%d", proc.returncode)
+                _logger.error("stdout: %s", stdout_str)
+                _logger.error("stderr: %s", stderr_str)
 
             q.task_done()
 
@@ -247,7 +248,7 @@ def from_bivar_heatmaps(main_config: types.YAMLDict,
     _parallel(main_config, cmdopts, inputs)
 
 
-__api__ = [
+__all__ = [
     'from_project_imagized',
     'from_platform',
     'from_bivar_heatmaps'

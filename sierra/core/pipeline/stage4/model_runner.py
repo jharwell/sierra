@@ -153,7 +153,7 @@ class InterExpModelRunner:
                                 break
 
 
-__api__ = [
+__all__ = [
     'IntraExpModelRunner',
     'InterExpModelRunner'
 ]

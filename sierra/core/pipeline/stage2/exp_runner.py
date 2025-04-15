@@ -114,7 +114,6 @@ class BatchExpRunner:
     """Runs each :term:`Experiment` in :term:`Batch Experiment` in sequence.
 
     Attributes:
-
         batch_exp_root: Absolute path to the root directory for the batch
                         experiment inputs (i.e. experiment directories are
                         placed in here).
@@ -290,7 +289,7 @@ class ExpRunner:
             f.write('exp' + str(exp_num) + ': ' + str(sec) + '\n')
 
 
-__api__ = [
+__all__ = [
     'BatchExpRunner',
     'ExpRunner',
     'ExpShell'

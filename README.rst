@@ -123,7 +123,7 @@ Why SIERRA?
   of a specific project.
 
 Not sure if SIERRA makes sense for your research? Check out some of the `use
-cases<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which
+cases <https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which
 SIERRA was designed.  If aspects of any sound familiar, then there is a strong
 chance SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
 <https://sierra.readthedocs.io/en/master/>`_ to get started.
@@ -161,7 +161,7 @@ Requirements To Use SIERRA
 
 The basic requirements are:
 
-- Recent OSX (tested with 13+) or Linux (tested with ubuntu 20.04+).
+- Recent OSX (tested with 13+) or Linux (tested with ubuntu 22.04+).
 
 - python >= 3.9.
 

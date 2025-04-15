@@ -83,6 +83,6 @@ class PipelineStage1:
                          n_exp_in_batch)
 
 
-__api__ = [
+__all__ = [
     'PipelineStage1'
 ]

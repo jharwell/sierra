@@ -348,7 +348,7 @@ In ``generators/platform.py``, you may define the following functions:
            parallel (or some other engine of your choice) will run in stage 2.
 
          Pay special attention to
-         :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator.cmdfile_paradigm()`:
+         :py:func:`~sierra.core.experiment.bindings.IExpConfigurer.cmdfile_paradigm`:
          this is how you tell SIERRA the type of run-time parallelism for your
          platform.
 

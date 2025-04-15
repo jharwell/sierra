@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Inter-experiment heatmap generation in stage 4."""
 
 # Core packages
 import typing as tp
@@ -88,6 +89,6 @@ def _generate_hm(graph: types.YAMLDict,
     hm.generate()
 
 
-__api__ = [
+__all__ = [
     'generate'
 ]

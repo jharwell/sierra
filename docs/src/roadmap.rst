@@ -7,8 +7,92 @@ Development Roadmap
 This page shows a brief overview of some of the ways I think SIERRA could be
 improved. Big picture stuff, not "add more unit tests".
 
+SIERRA2
+=======
+
+SIERRA is beginning to really mature, and so I think it isappropriate to lay out
+the improvements needed to go into a 2.0 version. Most of this is
+maturing/improving the plugin framework.
+
+Right now there are plugins for platforms, execution environments, and storage
+media for experimental outputs, which cover stages {1,2} well in terms of ease
+of use/adoption. Stages {3,4,5} are plugin-ish, but really not, because they
+only provide options for tweaking what is there, not loading entirely new
+plugins. The configuration hooks for overriding/extending them are plugin-ish,
+but also seem kind of like a band-aid.
+
+So I think an important shift would be to remove usage of all the configuration
+hooks (or at least most of them), and replace with plugins, with the idea being
+that if a given plugin doesn't work for a given user's desires, they can
+copy/modify it so that it works for them and then just put it on SIERRA's plugin
+path.
+
+Stage 3
+-------
+
+In stage 3, the plugins will be post-processors (probably called ``proc``
+plugins). Currently in the core we have:
+
+- Statistics generation
+
+- Imagizing
+
+- Run collation
+
+The first two should be easy to convert to plugins, because their functionality
+is clearly optional from a user perspective, and thus not really tied to the
+SIERRA core per-se. It's easy to imagine someone who doesn't care about
+statistics, because they are only generating videos, or isn't generating images
+from .csv files. Run collation is a little trickier, because it *is* tied into
+the SIERRA core in that that is how you build .csv files which can be directly
+used to generate deliverables in stage 4 for inter-experiment graphs. But again,
+someone might not be interested in those types of graphs for whatever reason,
+and so wouldn't be interested in collating things.
+
+Stage {4,5}
+-----------
+
+In stage 4, the plugins will be deliverable generators (probably called
+``deliverable`` plugins). Currently in the core we have:
+
+- Intra/inter experiment graphs
+
+- Models
+
+- Video generation from images
+
+Models are already plugin-based. Graphs would need to be updated to be plugins.
+Right now, stage {4,5} are tied to matplotlib, and cannot be easily made to work
+using a different engine. Holoviews is a superset of matplotlib; matplotlib is
+one selectable backend. Making the switch will make generating static plots, web
+plots, etc. seamless. All of the current set of graph types (StackedLine,
+Summary, etc.) should be localized to the new ``hv`` plugin.
+
+In addition, the configurability/hooks available in stage {4,5} for specifying
+what data goes on what graphs fees a bit clunky, as it was developed mostly for
+my thesis/hacked on as needed.. In *theory* you can just slot in whatever
+deliverable generation code you want to, but it feels like an afterthought. What
+*should* happen is:
+
+- Deliverable generation for stage 4 is defined on a per-plugin basis:
+  inter/intra graphs for the ``hv`` plugin, for example.
+
+- Configurability still is via YAML, BUT now you have different files for
+  different plugins.
+
+Finally, there need to be several new tutorials for not only how to write
+hooks/plugins for stages {4,5}, but also how to *use* what is defined in an
+end-user workflow. The current examples don't show *any* of this, and the
+question of "How do I use SIERRA to generate what I really care about" isn't
+really answered anywhere.
+
+Beyond SIERRA2
+==============
+
+Once the 2.0 release is done, that will set the stage for adding more plugins.
+
 Supporting ROS2
-===============
+---------------
 
 This would require adding several new platform plugin (one for each simulator
 that SIERRA supports that supports ROS1, and a new ROS2 real robot
@@ -16,13 +100,13 @@ plugin). Since ROS2 still supports XML, this should actually be a fairly
 self-contained improvement.
 
 Supporting WeBots
-=================
+-----------------
 
 This would require adding a new platform plugin. Should be a fairly
 self-contained improvement.
 
 Supporting NetLogo
-==================
+------------------
 
 This would require adding a new platform plugin. I *think* netlogo can take in
 XML, so this should be a fairly self-contained improvement. netlogo handles
@@ -32,34 +116,3 @@ since none of the currently supported platforms do that.
 Adding this would also make SIERRA more appealing/using to researchers outside
 of robotics.
 
-Better Deliverable Generation Backend + Configurability
-=======================================================
-
-Right now, stage {4,5} are tied to matplotlib, and cannot be easily made to work
-using a different engine. Holoviews is a superset of matplotlib; matplotlib is
-one selectable backend. Making the switch will make generating static plots, web
-plots, etc. seamless. There should be a core set of graph types (StackedLine,
-Summary, etc.) which are defined by each plugin; custom plugins can choose not
-to define/implement those graphs, but then you get an error if configuration
-tells SIERRA to generate a type of graph that the selected plugin doesn't
-define.
-
-In addition, the configurability/hooks available in stage {4,5} for specifying
-what data goes on what graphs fees a bit clunky, as it was developed mostly for
-my thesis/hacked on as needed.. In *theory* you can just slot in whatever
-deliverable generation code you want to, but it feels like an afterthought. What
-*should* happen is:
-
-- Deliverable generation for stage 4 is broken into two plugins: inter/intra,
-  which (well, or maybe one plugin, depending), and treated as a "first class"
-  SIERRA plugin.
-
-- Configurability still is via YAML, BUT now you have different sections for
-  different plugins (if you want), maybe different categories for different
-  plugins, etc.
-
-Finally, there need to be several new tutorials for not only how to write
-hooks/plugins for stages {4,5}, but also how to *use* what is defined in an
-end-user workflow. The current examples don't show *any* of this, and the
-question of "How do I use SIERRA to generate what I really care about" isn't
-really answered anywhere.

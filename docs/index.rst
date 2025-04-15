@@ -11,11 +11,10 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 
 .. figure:: figures/architecture.png
 
-   SIERRA architecture, organized by pipeline stage. Stages are listed left to
-   right, and an approximate joint architectural/functional stack is top to
-   bottom for each stage. “...” indicates areas where SIERRA is designed via
-   plugins to be easily extensible. “Host machine” indicates the machine SIERRA
-   was invoked on.
+   SIERRA architecture, organized by pipeline stage, left to right. High-level
+   inputs/outputs and active plugins and shown for each stage. “...”  indicates
+   areas of further extensibility and customization via new plugins. “Host
+   machine” indicates the machine SIERRA was invoked on.
 
 .. include:: src/description.rst
 
@@ -42,7 +41,7 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    src/contributing.rst
    src/roadmap.rst
    src/glossary.rst
-   src/api.rst
+   /autoapi/index.rst
 
 Citing SIERRA
 =============
@@ -88,12 +87,6 @@ Papers
 - :xref:`Harwell2019a-metrics`
 - :xref:`White2019-social`
 - :xref:`Chen2019-battery`
-
-Projects
---------
-
-- :xref:`FORDYCA`
-- :xref:`PRISM`
 
 Demos
 -----

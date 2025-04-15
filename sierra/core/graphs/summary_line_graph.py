@@ -27,7 +27,6 @@ class SummaryLineGraph:
     according to configuration.
 
     Attributes:
-
         stats_root: The absolute path to the ``statistics/`` directory for the
                     batch experiment.
 
@@ -185,7 +184,7 @@ class SummaryLineGraph:
                          xvals,
                          '--',
                          marker=self.kMarkStyles[i],
-                         color=f"C{i + len(data_dfy.index)}")
+                         color="C{}".format(i + len(data_dfy.index)))
 
     def _plot_stats(self,
                     ax,
@@ -212,14 +211,14 @@ class SummaryLineGraph:
                                 config.kStats['conf95'].exts)
             return
 
-        for i, value in enumerate(data_dfy.values):
+        for i in range(0, len(data_dfy.values)):
             stddev_i = stat_dfs['stddev'].abs().values[i]
             # 95% interval = 2 std stdeviations
             plt.fill_between(xticks,
-                             value - 2 * stddev_i,
-                             value + 2 * stddev_i,
+                             data_dfy.values[i] - 2 * stddev_i,
+                             data_dfy.values[i] + 2 * stddev_i,
                              alpha=0.25,
-                             color=f"C{i}",
+                             color="C{}".format(i),
                              interpolate=True)
 
     def _plot_bw_stats(self,
