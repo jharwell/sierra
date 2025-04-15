@@ -1,6 +1,11 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
+"""
+Container module for the Turtlebot3 robot execution environment plugin.
+
+See :ref:`plugins/exec-env/real-robot/turtlebot3`.
+"""
 
 # Core packages
 

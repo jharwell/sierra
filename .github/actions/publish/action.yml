@@ -11,12 +11,12 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: ./.github/actions/sierra-setup
     - name: Build package
       shell: bash
       run: |
-        python3 -m build
-        cd docs && make linkcheck
+        uv sync --extra docs
+        cd docs && sphinx-build -b linkcheck . _build && cd ..
+        uv build
 
     - name: Set tag
       if: github.ref == 'refs/heads/devel'

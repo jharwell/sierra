@@ -26,7 +26,6 @@ class ArenaShape():
     own. Instead, derived classes defined in this file should be used instead.
 
     Attributes:
-
         extents: List of arena extents.
 
     """
@@ -140,7 +139,7 @@ class ArenaShape():
         pass
 
 
-__api__ = [
+__all__ = [
     'kWALL_WIDTH',
     'ArenaShape',
 ]

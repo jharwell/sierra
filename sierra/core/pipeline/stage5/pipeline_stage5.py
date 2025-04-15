@@ -36,7 +36,6 @@ class PipelineStage5:
     This stage is idempotent.
 
     Attributes:
-
         cmdopts: Dictionary of parsed cmdline parameters.
 
         controllers: List of controllers to compare.
@@ -214,6 +213,6 @@ class PipelineStage5:
                                             collate_root1)
 
 
-__api__ = [
+__all__ = [
     'PipelineStage5'
 ]

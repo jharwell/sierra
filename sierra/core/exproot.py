@@ -3,7 +3,10 @@
 #
 # SPDX-License Identifier: MIT
 #
-"""Functionality for managing the SIERRA directory structure for experiments."""
+"""
+Container module for functionality for managing paths used by SIERRA.
+"""
+
 # Core packages
 import typing as tp
 
@@ -36,6 +39,6 @@ class PathSet():
             self.exp0_stat_root = batch.stat_root / exp0_name
 
 
-__api__ = [
+__all__ = [
     "PathSet"
 ]

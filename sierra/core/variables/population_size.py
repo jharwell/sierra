@@ -119,7 +119,7 @@ class Parser():
             raise AssertionError
 
 
-__api__ = [
+__all__ = [
     'BasePopulationSize',
     'Parser',
 ]

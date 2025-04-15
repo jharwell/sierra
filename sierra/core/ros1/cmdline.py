@@ -108,6 +108,6 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     }
 
 
-__api__ = [
+__all__ = [
     'ROSCmdline',
 ]

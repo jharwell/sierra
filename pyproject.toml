@@ -1,0 +1,128 @@
+[project]
+name = "sierra-research"
+
+################################################################################
+# The one and only place where the current SIERRA version is recorded.
+################################################################################
+version = "1.3.22"
+
+description = "Automation framework for the scientific method in AI research"
+authors = [
+    {name= "John Harwell", email = "john.r.harwell@gmail.com"},
+]
+dependencies = [
+    "uv",
+    "hatchling",
+    "coloredlogs",
+    "distro",
+    "haggis",
+    "implements",
+    "jsonpath-ng",
+    "matplotlib",
+    "netifaces",
+    "numpy",
+    "pandas",
+    "psutil",
+    "pyyaml",
+    "retry",
+    "sympy",
+]
+requires-python = ">=3.9"
+readme = "README.rst"
+license = "MIT"
+keywords = ["research", "automation", "robotics",
+            "agent-based modeling", "reproducibility", "reusability"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+[project.urls]
+Homepage = "https://github.com/jharwell/sierra"
+
+[project.optional-dependencies]
+analysis = [
+     # Only compatible with python <= 3.10. Latest version (3.3.6) not
+     # compatible with 3.11 or 3.12, so pinning for now. Hopefully
+     # this will be fixed eventually.
+    'pylint==2.14.5',
+    'pytype',
+    'pydocstyle',
+    'xenon',
+    'flake8',
+    'ruff',
+    'mypy-runner',
+    'mypy',
+]
+
+ci = [
+    'nox',
+    'psutil',
+    'pytest',
+    'pytest-cov',
+    'xmldiff',
+    'jsondiff',
+    'coverage',
+    'coveralls',
+]
+
+docs = [
+    "sphinx==7.4.0",
+    "docutils==0.20",
+    "sphinx-rtd-theme",
+    "sphinx-argparse",
+    "sphinx-tabs",
+    "sphinxcontrib-napoleon",
+    "psutil",
+    "sphinx-last-updated-by-git",
+    "graphviz",
+    "sphinx-autoapi",
+    "toml",
+    "sphinx-autobuild",
+    "sphinxcontrib-plantuml"
+]
+devel = ["sierra-research[docs,analysis,ci]"]
+
+[project.scripts]
+sierra-cli = "sierra.main:main"
+
+# Want to use hatchling, but doesn't work on OSX yet in 3.12.
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sierra"]
+
+# There should be a way to do this an the directory level with
+# excludes, but there doesn't seem to be, so listing out each man page
+# is required in order to avoid installing some of the artifacts
+# sphinx generates when building man pages.
+#
+# BUT, doing it this way also causes a bootstrapping problem, because
+# you can't install SIERRA without building the docs, and you can't do
+# that with uv until you install SIERRA. So we punt for now, and
+# modify this file in CI to generate the man pages as needed.
+# [tool.hatch.build.targets.wheel.force-include]
+# "docs/_build/man/sierra.7" = "share/man/sierra.7"
+# "docs/_build/man/sierra-cli.1" = "share/man/sierra-cli.1"
+# "docs/_build/man/sierra-examples.7" = "share/man/sierra-examples.7"
+# "docs/_build/man/sierra-exec-envs.7" = "share/man/sierra-exec-envs.7"
+# "docs/_build/man/sierra-glossary.7" = "share/man/sierra-glossary.7"
+# "docs/_build/man/sierra-platforms.7" = "share/man/sierra-platforms.7"
+# "docs/_build/man/sierra-usage.7" = "share/man/sierra-usage.7"
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true

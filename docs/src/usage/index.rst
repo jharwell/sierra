@@ -24,5 +24,6 @@ SIERRA.
    :maxdepth: 1
    :caption: Advanced Usage
 
+   deep-dive.rst
    rendering.rst
    stage5.rst

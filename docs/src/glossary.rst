@@ -143,7 +143,7 @@ works/is designed the way it is, and to help you find your way around.
       All runs in within an :term:`Experiment` are identical, with the exception
       of:
 
-      - Different values for the XML changes resulting from the different
+      - Different values for the expdef changes resulting from the different
         experiments they are part of, as defined by the batch criteria
         generating the batch experiment.
 
@@ -214,7 +214,7 @@ works/is designed the way it is, and to help you find your way around.
       robots allocate tasks, you might create a ``LN_task_alloc`` label, so that
       you can enable/disable all task allocation related graphs for one or more
       controllers easily when :doc:`configuring
-      </src/tutorials/project/graphs_config>` your project.
+      </src/tutorials/project/graphs-config>` your project.
 
    Controller Category
 

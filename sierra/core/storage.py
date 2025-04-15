@@ -50,7 +50,7 @@ class DataFrameReader():
         return storage.df_read(path, **kwargs)  # type: ignore
 
 
-__api__ = [
+__all__ = [
     'DataFrameWriter',
     'DataFrameReader'
 ]

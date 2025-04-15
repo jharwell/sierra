@@ -35,7 +35,6 @@ class PopulationSize(population_size.BasePopulationSize):
     Note: Usage of this class assumes homogeneous systems.
 
     Attributes:
-
         size_list: List of integer system sizes defining the range of the
                    variable for the batch experiment.
 
@@ -102,8 +101,8 @@ class PopulationSize(population_size.BasePopulationSize):
                                                            {
                                                                "name": "tf_prefix",
                                                                "value": ns
-                                                           },
-                                                           True))
+                    },
+                        True))
 
                 self.element_adds.append(per_robot)
 
@@ -142,6 +141,6 @@ def factory(cli_arg: str,
                 {"__init__": __init__})
 
 
-__api__ = [
+__all__ = [
     'PopulationSize'
 ]

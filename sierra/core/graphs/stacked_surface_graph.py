@@ -2,6 +2,11 @@
 #
 #  SPDX-License-Identifier: MIT
 #
+"""
+Intra-experiment surface graph generation classes for stage{4,5}.
+
+Bivariate batch criteria only.
+"""
 
 # Core packages
 import typing as tp
@@ -215,6 +220,6 @@ class HandlerColormap(mpl.legend_handler.HandlerBase):
         return stripes
 
 
-__api__ = [
+__all__ = [
     'StackedSurfaceGraph'
 ]

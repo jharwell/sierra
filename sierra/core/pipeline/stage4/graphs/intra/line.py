@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Generate linegraphs within a single :term:`Experiment`."""
 
 # Core packages
 import typing as tp
@@ -69,6 +70,6 @@ def generate(cmdopts: types.Cmdopts,
                 raise
 
 
-__api__ = [
+__all__ = [
     'generate'
 ]

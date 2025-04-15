@@ -197,7 +197,7 @@ class BatchExpCalculator:
 
 
 class ExpCSVGatherer:
-    """Gather all :term:`Output .csv`s from all exp runs in an experiment.
+    """Gather all :term:`Output .csv` files from all exp runs in an experiment.
 
     "Gathering" in this context means creating a dictionary mapping which .csv
     came from where, so that statistics can be generated both across and within
@@ -471,7 +471,7 @@ class ExpCalculator:
             writer(df, opath, index=False)
 
 
-__api__ = [
+__all__ = [
     'GatherSpec',
     'BatchExpCalculator',
     'ExpCSVGatherer',

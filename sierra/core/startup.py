@@ -22,7 +22,7 @@ kOSXPackages = types.OSPackagesSpec('darwin',
                                     'OSX',
                                     pkgs={
                                         'parallel': True,
-                                        'mactex': True,
+                                        'mactex': False,
                                         'xquartz': False,
                                         'pssh': False
                                     })
@@ -34,10 +34,10 @@ kDebianPackages = types.OSPackagesSpec('linux',
                                        'debian',
                                        pkgs={
                                            'parallel': True,
-                                           'cm-super': True,
-                                           'texlive-fonts-recommended': True,
-                                           'texlive-latex-extra': True,
-                                           'dvipng': True,
+                                           'cm-super': False,
+                                           'texlive-fonts-recommended': False,
+                                           'texlive-latex-extra': False,
+                                           'dvipng': False,
                                            'psmisc': True,
                                            'pssh': False,
                                            'ffmpeg': False,

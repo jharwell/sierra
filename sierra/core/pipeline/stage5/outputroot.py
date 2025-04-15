@@ -3,7 +3,9 @@
 #
 # SPDX-License Identifier: MIT
 #
-
+"""
+Utility module for functionality for managing all the paths used in stage5.
+"""
 # Core packages
 import pathlib
 import typing as tp
@@ -19,6 +21,14 @@ class PathSet:
     The set of filesystem paths used during stage 5.
 
     Collected here in the interest of DRY.
+
+    Attributes:
+        graph_root: The path where all graphs will be created.
+
+        csv_root: The path where all collated CSVs will be stored.
+
+        model_root: The path where all CSVs resulting from model execution will
+                    be stored.
     """
 
     def __init__(self,
@@ -58,6 +68,6 @@ class PathSet:
                                            '+'.join(scenarios) + "-sc-models")
 
 
-__api__ = [
+__all__ = [
     "PathSet"
 ]

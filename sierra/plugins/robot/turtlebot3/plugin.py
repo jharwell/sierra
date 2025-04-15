@@ -196,8 +196,8 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
                                         'turtlebot3')
 
 
-__api__ = [
-    'cmdline_postparse_configurer',
+__all__ = [
+    'cmdline_postparse_configure',
     'exec_env_check',
     'ExpShellCmdsGenerator'
 ]
