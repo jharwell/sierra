@@ -8,11 +8,12 @@
 Basically, gather statistics generated from controllers for graph generation in
 previous stages into the correct files(s) for comparison.
 
-If the batch criteria is univariate, then only :func:`across_rows` is valid;
-for bivariate batch criteria, either :func:`across_rows` or
-:func:`across_cols` is valid, depending on what the primary axis is.
-
-    """
+If the batch criteria is univariate, then only
+:func:`IntraExpPreparer.across_rows` is valid; for bivariate batch criteria,
+either :func:`IntraExpPreparer.across_rows` or
+:func:`IntraExpPreparer.across_cols` is valid, depending on what the primary
+axis is.
+"""
 
 # Core packages
 import pathlib
@@ -180,3 +181,8 @@ class IntraExpPreparer():
             return cum_df
 
         return None
+
+
+__all__ = [
+    "IntraExpPreparer"
+]

@@ -33,7 +33,6 @@ class PopulationSize(population_size.BasePopulationSize):
     Note: Usage of this class assumes homogeneous swarms.
 
     Attributes:
-
         size_list: List of integer swarm sizes defining the range of the
                    variable for the batch experiment.
 
@@ -98,6 +97,6 @@ def factory(cli_arg: str,
                 {"__init__": __init__})
 
 
-__api__ = [
+__all__ = [
     'PopulationSize'
 ]

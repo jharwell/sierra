@@ -174,6 +174,6 @@ def factory(cli_arg: str,
                 {"__init__": __init__})
 
 
-__api__ = [
+__all__ = [
     'PopulationConstantDensity'
 ]

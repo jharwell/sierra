@@ -27,7 +27,6 @@ class ExpSetup():
     Defines the experimental setup for ROS experiments.
 
     Attributes:
-
         n_secs_per_run: The :term:`Experimental Run` duration in seconds, NOT
                         :term:`Ticks <Tick>` or timesteps.
 
@@ -181,7 +180,7 @@ def factory(arg: str,
                 {"__init__": __init__})  # type: ignore
 
 
-__api__ = [
+__all__ = [
     'ExpSetup',
 
 

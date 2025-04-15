@@ -16,10 +16,11 @@ jobs:
           - ${{ inputs.os }}
 
         # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
+        # up CI. Well, that's what it should do, but linting doesn't work for >
+        # 3.10 (see pyproject.toml for details).
         python-version:
           - 3.9
-          - 3.11
+          - "3.10"
 
         session:
           - lint
@@ -28,11 +29,12 @@ jobs:
           - analyze_mypy
 
         exclude:
-          - python-version: 3.11
-            os: ubuntu-20.04
+          - os: ubuntu-22.04
+            python-version: 3.10
 
-          - python-version: 3.9
-            os: ubuntu-22.04
+          - os: ubuntu-24.04
+            python-version: 3.9
+
 
     steps:
       - uses: actions/checkout@v3
@@ -42,6 +44,8 @@ jobs:
 
       - name: Run nox
         run: |
+          uv sync -p ${{ matrix.python-version }} --extra devel && \
           nox \
             --pythons ${{ matrix.python-version }} \
-            --sessions ${{ matrix.session }}
+            --sessions ${{ matrix.session }} \
+            --default-venv-backend=uv

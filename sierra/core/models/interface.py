@@ -198,6 +198,6 @@ class IConcreteInterExpModel1D(implements.Interface):
         raise NotImplementedError
 
 
-__api__ = ['IConcreteIntraExpModel1D',
+__all__ = ['IConcreteIntraExpModel1D',
            'IConcreteIntraExpModel2D',
            'IConcreteInterExpModel1D']

@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Generate heatmaps within a single :term:`Experiment`."""
 
 # Core packages
 import typing as tp
@@ -58,6 +59,6 @@ def generate(cmdopts: types.Cmdopts,
                         large_text=large_text).generate()
 
 
-__api__ = [
+__all__ = [
     'generate'
 ]

@@ -24,7 +24,6 @@ class VariableDensity(UnivarBatchCriteria):
     class which should NEVER be used on its own.
 
     Attributes:
-
         densities: List of densities to use.
 
         dist_type: The type of block distribution to use.
@@ -105,7 +104,7 @@ class Parser():
         return characteristic + mantissa
 
 
-__api__ = [
+__all__ = [
     'VariableDensity',
     'Parser'
 

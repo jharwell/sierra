@@ -1,6 +1,11 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
+"""
+Container module for interfaces for things related to experiments.
+
+Interfaces are implemented by {platforms, exec envs}.
+"""
 
 # Core packages
 import typing as tp
@@ -274,7 +279,7 @@ class IExpConfigurer(implements.Interface):
         raise NotImplementedError
 
 
-__api__ = [
+__all__ = [
     'IExpRunShellCmdsGenerator',
     'IExpShellCmdsGenerator',
     'IExpConfigurer',

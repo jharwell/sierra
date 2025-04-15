@@ -96,7 +96,7 @@ class ControllerGenerator():
             n_agents = self.spec.criteria.n_agents(self.spec.exp_num)
 
             assert n_agents > 0, \
-                "Batch criteria {self.spec.criteria} returned 0 robots?"
+                "Batch criteria {self.spec.criteria} returned 0 agents?"
 
             for robot_id in range(0, n_agents):
                 to_pp = copy.deepcopy(add)
@@ -228,7 +228,7 @@ def controller_generator_create(controller: str,
                                             spec)
 
 
-__api__ = [
+__all__ = [
     'ControllerGenerator',
     'joint_generator_create',
     'scenario_generator_create',

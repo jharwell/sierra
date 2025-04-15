@@ -76,6 +76,6 @@ class ExpShellCmdsGenerator():
         return [use_bash, parallel_spec]
 
 
-__api__ = [
+__all__ = [
     'ExpShellCmdsGenerator'
 ]

@@ -162,7 +162,7 @@ def _fillna(df_like: tp.Union[pd.DataFrame, np.float64, float]) -> tp.Union[pd.D
     raise TypeError(f"Unknown type={type(df_like)}, value={df_like}")
 
 
-__api__ = [
+__all__ = [
     'conf95',
     'mean',
     'bw'

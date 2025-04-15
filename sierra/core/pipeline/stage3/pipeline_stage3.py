@@ -117,6 +117,6 @@ class PipelineStage3:
         self.logger.info("Imagizing complete: %s", str(sec))
 
 
-__api__ = [
+__all__ = [
     'PipelineStage3'
 ]

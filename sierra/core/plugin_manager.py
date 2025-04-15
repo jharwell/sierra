@@ -117,7 +117,7 @@ class FilePluginManager(BasePluginManager):
     def __init__(self) -> None:
         super().__init__()
         self.search_root = None  # type: tp.Optional[pathlib.Path]
-        self.plugins = {}
+        self.plugins = {}  # type: tp.Dict[str, tp.Dict]
 
     def initialize(self, project: str, search_root: pathlib.Path) -> None:
         self.search_root = search_root
@@ -155,7 +155,7 @@ class PipelinePluginManager(BasePluginManager):
         super().__init__()
         self.search_root = search_root
         self.main_module = 'plugin'
-        self.plugins = {}
+        self.plugins = {}  # type: tp.Dict[str, tp.Dict]
 
     def initialize(self, project: str) -> None:
         # Update PYTHONPATH with the directory containing the project so imports
@@ -171,6 +171,11 @@ class PipelinePluginManager(BasePluginManager):
         Find all pipeline plugins in all directories within the search root.
         """
         if self.plugins:
+            return self.plugins
+
+        if not self.search_root.exists():
+            self.logger.warning("Non-existent path '%s' on SIERRA_PLUGIN_PATH",
+                                self.search_root)
             return self.plugins
 
         self.logger.debug("Searching for directory-based plugins in '%s'",
@@ -212,7 +217,7 @@ class ProjectPluginManager(BasePluginManager):
 
         self.search_root = search_root
         self.project = project
-        self.plugins = {}
+        self.plugins = {}  # type: tp.Dict[str, tp.Dict]
 
     def initialize(self, project: str) -> None:
         # Update PYTHONPATH with the directory containing the project so imports
@@ -229,8 +234,14 @@ class ProjectPluginManager(BasePluginManager):
         if self.plugins:
             return self.plugins
 
+        if not self.search_root.exists():
+            self.logger.warning(
+                "Non-existent path '%s' on SIERRA_PLUGIN_PATH", self.search_root)
+            return self.plugins
+
         self.logger.debug("Searching for project plugins in '%s'",
                           self.search_root)
+
         try:
             for location in self.search_root.iterdir():
                 if self.project in location.name:
@@ -252,7 +263,7 @@ class CompositePluginManager(BasePluginManager):
 
     def __init__(self) -> None:
         super().__init__()
-        self.components = []  # type: tp.List[tp.Union[DirectoryPluginManager,ProjectPluginManager]]
+        self.components = []  # type: tp.List[tp.Union[PipelinePluginManager,ProjectPluginManager]]
 
     def initialize(self,
                    project: str,
@@ -420,10 +431,9 @@ def module_load_tiered(path: str,
     raise ImportError(error)
 
 
-__api__ = [
+__all__ = [
     'BasePluginManager',
     'FilePluginManager',
-    'DirectoryPluginManager',
     'ProjectPluginManager',
     'CompositePluginManager',
     'module_exists',

@@ -1,6 +1,7 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
+"""Container module for things related to :term:`ROS1`."""
 
 # Core packages
 

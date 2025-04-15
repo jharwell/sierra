@@ -29,11 +29,11 @@ def generate(main_config: types.YAMLDict,
 
     Performs the following steps:
 
-    #. :func:`~sierra.core.pipeline.stage4.graphs.inter.line.generate()` to
-        generate linegraphs (univariate batch criteria only).
+        #. :func:`~sierra.core.pipeline.stage4.graphs.inter.line.generate()` to
+           generate linegraphs (univariate batch criteria only).
 
-    #. :func:`~sierra.core.pipeline.stage4.graphs.inter.heatmap.generate()`
-        to generate heatmaps (bivariate batch criteria only).
+        #. :func:`~sierra.core.pipeline.stage4.graphs.inter.heatmap.generate()`
+           to generate heatmaps (bivariate batch criteria only).
 
     Which graphs are generated can be controlled by YAML configuration files
     parsed in
@@ -43,21 +43,20 @@ def generate(main_config: types.YAMLDict,
     :ref:`tutorials/project/hooks` for details.
 
     Attributes:
+        cmdopts: Dictionary of parsed cmdline attributes.
 
-    cmdopts: Dictionary of parsed cmdline attributes.
+        main_config: Parsed dictionary of main YAML configuration
 
-    main_config: Parsed dictionary of main YAML configuration
+        LN_targets: A list of dictionaries, where each dictionary defines an
+        inter-experiment linegraph to generate.
 
-    LN_targets: A list of dictionaries, where each dictionary defines an
-    inter-experiment linegraph to generate.
+        HM_targets: A list of dictionaries, where each dictionary defines an
+        inter-experiment heatmap to generate.
 
-    HM_targets: A list of dictionaries, where each dictionary defines an
-    inter-experiment heatmap to generate.
-
-    logger: The handle to the logger for this class .  If you extend this class
-    you should save/restore this variable in tandem with overriding it in order
-    to get logging messages have unique logger names between this class and your
-    derived class , in order to reduce confusion.
+        logger: The handle to the logger for this class .  If you extend this
+        class you should save/restore this variable in tandem with overriding it
+        in order to get logging messages have unique logger names between this
+        class and your derived class , in order to reduce confusion.
     """
     utils.dir_create_checked(pathset.graph_collate_root, exist_ok=True)
 
@@ -75,6 +74,6 @@ def generate(main_config: types.YAMLDict,
                              criteria)
 
 
-__api__ = [
+__all__ = [
     'generate',
 ]
