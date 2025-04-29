@@ -39,6 +39,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - uses: kenchan0130/actions-system-info@master
         id: system-info
 

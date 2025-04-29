@@ -22,6 +22,7 @@ import builtins
 import pathlib
 import datetime
 import toml
+import os
 builtins.__sphinx_build__ = True
 
 sys.path.insert(0, str(pathlib.Path('..').resolve()))
@@ -91,21 +92,22 @@ language = 'en'
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'flycheck']
 
-if 'html' in sys.argv:
-    builtins.__sphinx_build_html__ = True
-    exclude_patterns = ['man/*.rst']
-elif 'man' in sys.argv:
-    builtins.__sphinx_build_man__ = True
-    exclude_patterns.extend(['src/tutorials',
-                             'src/api.rst',
-                             'src/contributing.rst',
-                             'src/quickstart.rst',
-                             'src/faq.rst',
-                             'src/usage/index.rst'])
-elif 'linkcheck' in sys.argv:
-    pass
-else:
-    assert False, "Must pass -b {html,man,linkcheck} to build docs"
+if not os.getenv('READTHEDOCS'):
+    if 'html' in sys.argv:
+        builtins.__sphinx_build_html__ = True
+        exclude_patterns = ['man/*.rst']
+    elif 'man' in sys.argv:
+        builtins.__sphinx_build_man__ = True
+        exclude_patterns.extend(['src/tutorials',
+                                 'src/api.rst',
+                                 'src/contributing.rst',
+                                 'src/quickstart.rst',
+                                 'src/faq.rst',
+                                 'src/usage/index.rst'])
+    elif 'linkcheck' in sys.argv:
+        pass
+    else:
+        assert False, "Must pass -b {html,man,linkcheck} to build docs"
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -203,7 +205,7 @@ sphinx_tabs_disable_tab_closing = True
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-plantuml = 'java -jar /home/jharwell/Downloads/plantuml-1.2025.2.jar'
+plantuml = 'java -jar /tmp/plantuml'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

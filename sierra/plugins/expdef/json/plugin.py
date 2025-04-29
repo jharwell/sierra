@@ -41,12 +41,6 @@ class Writer():
                            config: dict) -> None:
         tree, src_root, opath = self._write_prepare_tree(base_opath, config)
 
-        if tree is None:
-            self.logger.warning("Cannot write non-existent tree@%s to %s",
-                                src_root,
-                                opath)
-            return
-
         self.logger.trace("Write tree@%s to %s",  # type: ignore
                           src_root,
                           opath)
@@ -129,12 +123,13 @@ class ExpDef:
             for m in expr.find(self.tree):
 
                 # If the path matched to something OTHER than a literal
-                # attribute, warning and continue.
+                # attribute, warn and continue.
                 if isinstance(m.value, (dict, list)):
-                    self.logger.warning(("Path '%s' mapped to a dict/list in '%s', "
-                                         "instead of a path-like string--ignoring "
-                                         "during flattening"),
+                    self.logger.warning(("Path '%s' mapped to a dict/list '%s' "
+                                         "in '%s', instead of a path-like "
+                                         "string--ignoring during flatten()"),
                                         p,
+                                        m.value,
                                         self.input_fpath)
                     continue
 
@@ -152,9 +147,20 @@ class ExpDef:
                 #
                 # with the file contents, so we need both the parent AND
                 # grandparent nodes to update the tree properly. The parent node
-                # will map to the subtree rooted at 'path' above, and the
+                # will map to the subtree rooted at 'p' above, and the
                 # grandparent node will contain the parent.
-                parent = jpparse(p + '.`parent`').find(self.tree)
+                parents = jpparse(p + '.`parent`').find(m)
+
+                # If the parent of the expression passed is not unique, then the
+                # expression needs to be refined.
+                assert len(parents) == 1, \
+                    ("Non-unique parents present in file for expression '{0}' "
+                     "of element {{'{1}': '{2}'}}: jpath input expression must "
+                     "be refined").format(p + '.`parent`',
+                                          m.path,
+                                          m.value)
+
+                parent = parents[0]
                 grandparent = jpparse(p + '.`parent`.`parent`')
 
                 gnode = grandparent.find(self.tree)[0].value
@@ -169,10 +175,9 @@ class ExpDef:
                 #
                 # Each needs unique handling.
                 if not isinstance(gnode, list):
-                    gnode[str(parent[0].path)] = blob
+                    gnode[str(parent.path)] = blob
                 else:
-                    key = list(parent[0].value.keys())[0]
-
+                    key = list(parent.value.keys())[0]
                     # You CANNOT replace this with a list comprehension and
                     # assign to gnode, because that just updates the local
                     # variable--NOT the overall tree. We have to iterate like

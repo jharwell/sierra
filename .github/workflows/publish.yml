@@ -1,6 +1,12 @@
 name: Publishing
 description: Publish SIERRA to PyPI
 
+# 2025-04-29 [JRH]: Note that per github actions guidance, the publish job has
+# to be in a separate workflow than anything else; if it is in the same workflow
+# it is unsupported/still might work.
+#
+# Note also that the 'published' release type will trigger for both prelease
+# (what I call beta releases) and formal releases.
 on:
   release:
     types: [published]
@@ -8,16 +14,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-          - 3.9
-
     steps:
     - uses: actions/checkout@v3
       with:
         persist-credentials: false
     - uses: ./.github/actions/sierra-setup
+      with:
+        python-version: 3.9
     - name: Build package
       shell: bash
       run: |
@@ -40,6 +43,8 @@ jobs:
     needs:
       - build
 
+    # 2025-04-29 [JRH]: Magic sauce to get trusted publishing to work with
+    # pypi+github actions.
     permissions:
       id-token: write
 

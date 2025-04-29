@@ -170,10 +170,12 @@ def test_flatten():
                                        'src_tag': '$'}])
     f1 = ExpDef(input_fpath=pathlib.Path("./tests/expdef/flatten.json"),
                 write_config=config)
-    f1.flatten(["$..path"])
+    f1.flatten(["$.batters.path",
+                "$.topping[?(@.path =~ json)].path",
+                ])
     f1.write("/tmp/flatten-out.json")
 
-    diff = jsondiff.diff(json.load(open("./tests/expdef/f4.json")),
+    diff = jsondiff.diff(json.load(open("./tests/expdef/flatten-out.json")),
                          json.load(open("/tmp/flatten-out.json")))
 
     assert len(diff) == 0

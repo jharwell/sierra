@@ -67,6 +67,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - uses: ./.github/actions/sample-project-setup
         with:
           platform: argos
@@ -104,6 +107,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - uses: ./.github/actions/sample-project-setup
         with:
           platform: ros1robot
@@ -146,6 +152,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - uses: ./.github/actions/sample-project-setup
         with:
           platform: ros1gazebo
@@ -189,6 +198,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - uses: ./.github/actions/sample-project-setup
       - name: Integration tests
         run: |
@@ -218,7 +230,7 @@ jobs:
         # You CANNOT use python 3.9 with ubuntu 20.04 with ROS, because 3.9 is
         # the system python and things just don't work otherwise...
         python-version:
-          - 3.12
+          - 3.9
 
         platform:
           - argos
@@ -230,6 +242,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - uses: ./.github/actions/sample-project-setup
         if: matrix.platform == 'argos'
         with:
@@ -256,7 +271,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-platform-${{ matrix.platform }}-${{ matrix.exec-env }}-ubuntu-20.04-${{ matrix.python-version }}-coverage
+          name: ci-platform-${{ matrix.platform }}-${{ matrix.exec-env }}-ubuntu-22.04-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

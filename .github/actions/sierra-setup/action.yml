@@ -1,5 +1,9 @@
 name: 'Setup SIERRA'
 description: 'Setup SIERRA for CI and testing'
+inputs:
+  python-version:
+    required: true
+
 runs:
   using: 'composite'
   steps:
@@ -20,7 +24,7 @@ runs:
     - name: Install uv (all OSes)
       uses: astral-sh/setup-uv@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ inputs.python-version }}
 
     - uses: kenchan0130/actions-system-info@master
       id: system-info
@@ -104,7 +108,7 @@ runs:
       if: runner.os == 'macOS'
       uses: astral-sh/setup-uv@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ inputs.python-version }}
 
     ############################################################################
     # SIERRA install
@@ -117,8 +121,8 @@ runs:
         # don't know why the separate upgrade step is necessary: I don't pin
         # those packages to specific versions/passing --upgrade to 'uv sync'
         # doesn't work.
-        uv sync -p ${{ matrix.python-version }} --extra docs
-        uv pip install -p ${{ matrix.python-version }} --upgrade .[docs]
+        uv sync -p ${{ inputs.python-version }} --extra docs
+        uv pip install -p ${{ inputs.python-version }} --upgrade .[docs]
         source .venv/bin/activate
 
         # Build manpages
@@ -130,7 +134,7 @@ runs:
         # cat docs/pyproject-man.txt >> pyproject.toml
 
         # Install a second time to get the manpages included
-        uv sync -p ${{ matrix.python-version }} --extra devel
+        uv sync -p ${{ inputs.python-version }} --extra devel
 
         which python3
         which sierra-cli
