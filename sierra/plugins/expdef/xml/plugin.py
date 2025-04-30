@@ -187,7 +187,7 @@ class ExpDef:
         writer = Writer(self.tree)
         writer(self.write_config, base_opath)
 
-    def flatten(self, paths: tp.List[str]) -> None:
+    def flatten(self, keys: tp.List[str]) -> None:
         raise NotImplementedError(
             "The XML expdef plugin does not support flattening")
 

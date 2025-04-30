@@ -60,7 +60,7 @@ The following plugins are active in this stage:
 
 See also:
 
-- :ref:`support-matrix`
+- :ref:`plugins`
 
 - :ref:`usage/cli`
 
@@ -108,7 +108,7 @@ The following plugins are active in this stage:
 
 See also:
 
-- :ref:`support-matrix`
+- :ref:`plugins`
 
 Part of default pipeline.
 

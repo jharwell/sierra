@@ -25,8 +25,6 @@ Basic Setup
 
 #. Install SIERRA
 
-   - Install SIERRA packages by following :ref:`packages`.
-
    - Install OS packages (if you don't see your OS below you will have to find
      and install the equivalent packages).
 
@@ -74,6 +72,9 @@ Basic Setup
                     you are using it to do. If you are missing an optional
                     package for a feature you try to use, you will get an
                     error.
+
+   - Install SIERRA packages by following :ref:`packages`.
+
 
 Project Plugin Setup
 ====================
@@ -142,13 +143,6 @@ SIERRA! The steps to do so are:
    Full documentation of all command line options it accepts is in
    :ref:`usage/cli`, and there are many useful options that SIERRA
    accepts, so skimming the CLI docs is **very** worthwhile.
-
-   .. IMPORTANT:: Generally speaking, do not try to run SIERRA on HPC
-                  environments with a debug build of whatever project you are
-                  using. It will work but be obnoxiously/irritatingly
-                  slow. SIERRA is intended for *production* code (well, as close
-                  to production as R&D code gets) which is compiled with
-                  optimizations enabled.
 
 #. Setup the cmdline environment you are going to invoke SIERRA in:
 

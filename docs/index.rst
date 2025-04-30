@@ -14,7 +14,8 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    SIERRA architecture, organized by pipeline stage, left to right. High-level
    inputs/outputs and active plugins and shown for each stage. “...”  indicates
    areas of further extensibility and customization via new plugins. “Host
-   machine” indicates the machine SIERRA was invoked on.
+   machine” indicates the machine SIERRA was invoked on. The active plugins in
+   each stage and what they cumulatively enable are highlighted in red.
 
 .. include:: src/description.rst
 
@@ -27,13 +28,12 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    src/getting_started.rst
 
    src/requirements/index.rst
-   src/matrix.rst
+   src/plugins/index.rst
 
    src/usage/examples.rst
    src/usage/index.rst
 
    src/tutorials/index.rst
-   src/plugins/index.rst
    src/packages.rst
 
    src/philosophy.rst

@@ -65,11 +65,11 @@ What is SIERRA?
 
 .. figure:: https://raw.githubusercontent.com/jharwell/sierra/master/docs/figures/architecture.png
 
-   SIERRA architecture, organized by pipeline stage. Stages are listed left to
-   right, and an approximate joint architectural/functional stack is top to
-   bottom for each stage. “...” indicates areas where SIERRA is designed via
-   plugins to be easily extensible. “Host machine” indicates the machine SIERRA
-   was invoked on.
+   SIERRA architecture, organized by pipeline stage, left to right. High-level
+   inputs/outputs and active plugins and shown for each stage. “...”  indicates
+   areas of further extensibility and customization via new plugins. “Host
+   machine” indicates the machine SIERRA was invoked on. The active plugins in
+   each stage and what they cumulatively enable are highlighted in red.
 
 SIERRA is a command line tool and plugin framework for:
 
@@ -78,15 +78,15 @@ SIERRA is a command line tool and plugin framework for:
 
 - Accelerating R&D cycles by allowing researchers/developers to focus on the
   “science” aspects: developing new things and designing experiments to test
-  them.
+  them, rather than the engineering aspects (writing scripts, configuring
+  environments, etc.).
 
 - Improving the reproducibility of scientific research, particularly in AI.
-
 
 Why SIERRA?
 ===========
 
-- SIERRA changes the paradigm of the engineering tasks researchers must perform
+- It changes the paradigm of the engineering tasks researchers must perform
   from manual and procedural to declarative and automated. That is, from::
 
     "I need to perform these steps to run the experiment, process the data and
@@ -106,11 +106,12 @@ Why SIERRA?
   handles random seeds, algorithm stochasticity, and other low-level
   details.
 
-- It eliminates manual reconfiguration of experiments across simulator/agent
-  platforms by decoupling the concepts of execution environment and target
-  platform; any supported pair can be selected in a mix-and-match fashion (see
-  `SIERRA Support Matrix`_). Thus, it removes the need for throw-away scripts
-  for data processing and deliverable generation.
+- It supports a wide range of platforms, execution environments, and
+  experiment input/output formats via plugins. SIERRA supports mix-and-match
+  between all plugin types, subject to restrictions within the plugins
+  themselves. This is and makes it very easy to run experiments on different
+  hardware, targeting different simulators, generating different outputs, etc.,
+  all with little to no configuration changes by the user.
 
 - SIERRA can be used with code written in any language; only bindings must be
   written in python.
@@ -119,61 +120,23 @@ Why SIERRA?
   generate data, and plot it on the same figure as empirical
   results--automatically.
 
-- Its deeply modular architecture makes it easy to customize for the needs
-  of a specific project.
-
-Not sure if SIERRA makes sense for your research? Check out some of the `use
-cases <https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which
-SIERRA was designed.  If aspects of any sound familiar, then there is a strong
-chance SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
+Not sure if SIERRA makes sense for you? Check out some of the `use cases
+<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which SIERRA
+was designed.  If aspects of any sound familiar, then there is a strong chance
+SIERRA could help you! See the `SIERRA docs
 <https://sierra.readthedocs.io/en/master/>`_ to get started.
-
-
-SIERRA Support Matrix
-=====================
-
-SIERRA supports multiple `platforms
-<https://sierra.readthedocs.io/en/master/src/platform/index.html>`_ which you
-can write code to target. In SIERRA terminology, a platform is a "thing"
-(usually a simulator or real hardware) that you want to write to code to run
-on. Note that platform != OS, in SIERRA terminology. If a SIERRA platform runs
-on a given OS, then SIERRA supports doing so; if it does not, then SIERRA does
-not. For example, SIERRA does not support running ARGoS on windows, because
-ARGoS does not support windows.
-
-SIERRA supports multiple execution environments for execution of experiments,
-such as `High Performance Computing (HPC) environments
-<https://sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_ and `real
-robots <https://sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
-
-SIERRA also supports multiple formats for experimental inputs and outputs.
-
-`Here <https://sierra.readthedocs.io/en/master/src/matrix.html>`_ is complete
-set of built-in plugins which come with SIERRA. SIERRA supports full
-mix-and-match between plugins from the table above--this is one of its most
-powerful features! While SIERRA itself supports arbitrary sets of plugins, there
-are necessarily restrictions on which plugins can be used together. For example,
-if you are using a platform mapping to a custom in-house simulator which takes
-JSON as input, you can't use the XML plugin for experimental inputs.
 
 Requirements To Use SIERRA
 ==========================
 
 The basic requirements are:
 
-- Recent OSX (tested with 13+) or Linux (tested with ubuntu 22.04+).
+- Recent OSX (tested with 13+) or Linux (tested with ubuntu 22.04+). Windows is
+  not currently supported; if windows support would be helpful for your intended
+  usage, please get in touch. SIERRA is written in pure python and can
+  definitely be made to work on windows
 
 - python >= 3.9.
-
-.. NOTE:: Windows is not supported currently. Not because it can't be supported,
-          but because there are not currently any platform plugins that which
-          work on windows. That is, SIERRA's OS support is dictated by the OS
-          support of its current platform plugins, none of which support
-          windows.
-
-          If windows support would be helpful for your intended usage of
-          SIERRA, please get in touch with me--SIERRA is written in pure
-          python and can definitely be made to work on windows.
 
 For more details, including the requirements for project code, see the `SIERRA
 requirements <https://sierra.readthedocs.io/en/master/src/requirements.html>`_.

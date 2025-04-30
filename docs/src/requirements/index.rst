@@ -94,11 +94,6 @@ General
    (``--expdef-template``); SIERRA uses this to generate multiple input files
    defining :term:`Experiments <Experiment>`; any configuration which isn't in
    the single input file cannot be modified by SIERRA, limiting effectiveness.
-   E.g.,  :term:`Experimental Runs<Experimental Run>` within each
-   :term:`Experiment` are entirely defined by the contents of the
-   ``--expdef-template`` (which is modified by SIERRA before being written out
-   as one or more platform input files which can be executed during stage 2).
-
    If your experiments use/require/support multiple input files, never fear!
    You can still use SIERRA. you just have to "flatten" your configuration
    hierarchy into a single file; this is typically done at the :term:`Platform`
