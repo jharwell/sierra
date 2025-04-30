@@ -242,6 +242,9 @@ class Pipeline:
             self.logger.fatal("%s must exist!", main_path)
             raise
 
+        if 'perf' not in self.main_config['sierra']:
+            return
+
         perf_path = pathlib.Path(self.cmdopts['project_config_root'],
                                  self.main_config['sierra']['perf'])
         try:

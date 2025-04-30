@@ -13,7 +13,7 @@ platforms out of the box too):
 
 - :ref:`plugins/platform/ros1robot`
 
-.. _plugins/exec-env/real-robot/turtlebot3:
+.. _plugins/exec-env/realrobot/turtlebot3:
 
 Turtlebot3
 ==========

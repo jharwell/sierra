@@ -21,14 +21,14 @@ SIERRA Core
 :term:`ARGoS` Platform
 ======================
 
-.. include:: cli-argos.rst
+.. include:: cli-platform-argos.rst
 
 :term:`ROS1+Gazebo` Platform
 ============================
 
-.. include:: cli-ros1gazebo.rst
+.. include:: cli-platform-ros1gazebo.rst
 
 :term:`ROS1+Robot` Platform
 ===========================
 
-.. include:: cli-ros1robot.rst
+.. include:: cli-platform-ros1robot.rst

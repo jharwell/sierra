@@ -168,14 +168,13 @@ def test_flatten():
     sierra.core.logging.initialize('INFO')
     config = definition.WriterConfig([{'src_parent': None,
                                        'src_tag': '$'}])
-    f1 = ExpDef(input_fpath=pathlib.Path("./tests/expdef/flatten.json"),
-                write_config=config)
-    f1.flatten(["$.batters.path",
-                "$.topping[?(@.path =~ json)].path",
-                ])
-    f1.write("/tmp/flatten-out.json")
+    for i in range(1, 5):
+        f1 = ExpDef(input_fpath=pathlib.Path(f"./tests/expdef/flatten{i}.json"),
+                    write_config=config)
+        f1.flatten(["path"])
+        f1.write(f"/tmp/flatten{i}-out.json")
 
-    diff = jsondiff.diff(json.load(open("./tests/expdef/flatten-out.json")),
-                         json.load(open("/tmp/flatten-out.json")))
+        diff = jsondiff.diff(json.load(open(f"./tests/expdef/flatten{i}-out.json")),
+                             json.load(open(f"/tmp/flatten{i}-out.json")))
 
-    assert len(diff) == 0
+        assert len(diff) == 0

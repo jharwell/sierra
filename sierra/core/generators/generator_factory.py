@@ -36,8 +36,14 @@ class ControllerGenerator():
                  cmdopts: types.Cmdopts,
                  exp_spec: expspec.ExperimentSpec) -> None:
         controllers_yaml = config_root / config.kYAML.controllers
-        with utils.utf8open(controllers_yaml) as f:
-            self.controller_config = yaml.load(f, yaml.FullLoader)
+        self.logger = logging.getLogger(__name__)
+
+        try:
+            with utils.utf8open(controllers_yaml) as f:
+                self.controller_config = yaml.load(f, yaml.FullLoader)
+        except FileNotFoundError:
+            self.logger.warning("%s does not exist!", controllers_yaml)
+            self.controller_config = {}
 
         main_yaml = config_root / config.kYAML.main
         with utils.utf8open(main_yaml) as f:
@@ -135,14 +141,14 @@ class ControllerGenerator():
 
     def _generate_controller(self, exp_def: definition.BaseExpDef) -> None:
         if self.category not in self.controller_config:
-            self.logger.fatal("Controller category '%s' not found in YAML configuration",
-                              self.category)
-            raise RuntimeError
+            self.logger.warning("Controller category '%s' not found in YAML configuration",
+                                self.category)
+            return
 
         if not any(self.name in config['name'] for config in self.controller_config[self.category]['controllers']):
-            self.logger.fatal("Controller name '%s' not found in YAML configuration",
-                              self.name)
-            raise RuntimeError
+            self.logger.warning("Controller name '%s' not found in YAML configuration",
+                                self.name)
+            return
 
         self.logger.debug("Applying changes from %s (all experiments)",
                           config.kYAML.controllers)

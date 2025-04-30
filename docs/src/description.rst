@@ -3,12 +3,20 @@ SIERRA is a command line tool and plugin framework for:
 - Automating scientific research, providing faculties for seamless experiment
   generation, execution, and results processing.
 
-- Accelerating research cycles by allowing researchers to focus on the “science”
-  aspects: developing new things and designing experiments to test them.
+- Accelerating R&D cycles by allowing researchers/developers to focus on the
+  “science” aspects: developing new things and designing experiments to test
+  them, rather than the engineering aspects (writing scripts, configuring
+  environments, etc).
 
 - Improving the reproducibility of scientific research, particular in AI.
 
 It supports a wide range of platforms, execution environments, and experiment
-input/output formats--see :ref:`support-matrix` for details.  A short overview
-of the research automation SIERRA provides is here: :ref:`usage/pipeline`. To
-get started, see :ref:`getting-started`.
+input/output formats via :ref:`plugins <plugins>`. SIERRA supports
+mix-and-match between all plugin types, subject to restrictions within the
+plugins themselves. This is THE most powerful feature of SIERRA, and makes it
+very easy to run experiments on different hardware, targeting different
+simulators, generating different outputs, etc., all with little to no
+configuration changes by the user.
+
+A short overview of the research automation SIERRA provides is here:
+:ref:`usage/pipeline`. To get started, see :ref:`getting-started`.

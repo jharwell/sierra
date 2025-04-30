@@ -48,7 +48,7 @@ class Writer():
         to_write = tree
 
         with utils.utf8open(opath, 'w') as f:
-            json.dump(to_write, f)
+            json.dump(to_write, f, indent=2)
 
     def _write_prepare_tree(self,
                             base_opath: pathlib.Path,
@@ -113,78 +113,119 @@ class ExpDef:
         writer = Writer(self.tree)
         writer(self.write_config, base_opath)
 
-    def flatten(self, paths: tp.List[str]) -> None:
-        # For each query path
-        for p in paths:
-            expr = jpparse(p)
+    def flatten(self, keys: tp.List[str]) -> None:
+        """
+        Flatten a nested JSON structure.
 
-            # Paths like '$.path' are valid, so we have to iterate over the
-            # matches
-            for m in expr.find(self.tree):
+        Recursively searches for each of the supplies keys, and replaces the
+        values of all matching keys with the corresponding config files. The
+        paths to the nested config files are assumed to be specified relative to
+        the root/main config file, and to reside in subdirs/adjacent dirs to it.
+        """
+        for k in keys:
+            self.logger.debug("Flattening with key='%s", k)
+            self._flatten_recurse(self.tree, self.input_fpath, k)
 
-                # If the path matched to something OTHER than a literal
-                # attribute, warn and continue.
-                if isinstance(m.value, (dict, list)):
-                    self.logger.warning(("Path '%s' mapped to a dict/list '%s' "
-                                         "in '%s', instead of a path-like "
-                                         "string--ignoring during flatten()"),
-                                        p,
-                                        m.value,
-                                        self.input_fpath)
-                    continue
+    def _flatten_recurse(self,
+                         blob: types.JSON,
+                         prefix: pathlib.Path,
+                         path_key: str) -> None:
+        """
+        Recursive flattening implementation.
 
-                # All paths are interpreted relative to the parent dir of the
-                # file for this experiment definition.
-                fpath = self.input_fpath.parent / m.value
-                with utils.utf8open(fpath, 'r') as f:
-                    blob = json.load(f)
+        The use of recursion enables searching for simple key matches instead of
+        having to deal with complicated jsonpath expressions, which is a huge
+        win. Plus, it's generally faster than an iterating implementation when
+        it comes to large files.
 
-                # We want to effectively replace:
-                #
-                # {
-                #  'path' : './some/relative-path'
-                # }
-                #
-                # with the file contents, so we need both the parent AND
-                # grandparent nodes to update the tree properly. The parent node
-                # will map to the subtree rooted at 'p' above, and the
-                # grandparent node will contain the parent.
-                parents = jpparse(p + '.`parent`').find(m)
+        Arguments:
+            blob: The tree of JSON containing filepath references to flatten.
 
-                # If the parent of the expression passed is not unique, then the
-                # expression needs to be refined.
-                assert len(parents) == 1, \
-                    ("Non-unique parents present in file for expression '{0}' "
-                     "of element {{'{1}': '{2}'}}: jpath input expression must "
-                     "be refined").format(p + '.`parent`',
-                                          m.path,
-                                          m.value)
+            prefix: The prefix which should be prepended to all values which
+                    match ``prefix``. This allows nested JSON structures where
+                    filepaths are specified relative to the root-level
+                    configuration (really it's parent directory), which is very
+                    convenient.
 
-                parent = parents[0]
-                grandparent = jpparse(p + '.`parent`.`parent`')
+            path_key: The key to recursively search for. Not a substring--will
+                      be checked for exact match.
+        """
+        def _flatten_update_path(parent, key: str, value) -> None:
+            # Base case
+            if path_key != key:
+                return
 
-                gnode = grandparent.find(self.tree)[0].value
+            # Make relative to input prefix. This SHOULD work recursively for
+            # nested dirs, though I'm not 100% sure.
+            path = pathlib.Path(value)
+            if not path.is_absolute():
+                path = prefix.parent / path
+                value = str(path.resolve())
 
-                # There are two types of grandparent nodes:
-                #
-                # - Those which are a dict for which the parent node is a
-                #   member.
-                #
-                # - Those which are a list for which the parent node is a
-                #   member.
-                #
-                # Each needs unique handling.
-                if not isinstance(gnode, list):
-                    gnode[str(parent.path)] = blob
+            # If the file doesn't exist, that's an error, so don't catch the
+            # exception if that happens.
+            with open(path, 'r') as f:
+                subblob = json.load(f)
+
+                self._flatten_recurse(subblob, path, path_key)
+
+                if isinstance(parent, dict):
+                    parent.update(subblob)
+
+                    # This ensures that the original <key,value> pair is removed
+                    # from the parent.
+                    parent.pop(path_key)
+
+        def _flatten_erase_key(_, __, value):
+            if isinstance(value, dict):
+                keys_to_erase = [key for key in value if path_key == key]
+                for key in reversed(keys_to_erase):
+                    value.pop(key, None)
+
+        self._flatten_apply1(blob, _flatten_update_path)
+        self._flatten_apply2(blob, _flatten_erase_key)
+
+    def _flatten_apply1(self, blob: types.JSON, f: tp.Callable) -> None:
+        """Apply the given callable to every unstructured key-value pair.
+
+        "Unstructured" here means pairs where the value is a literal instead of
+        a list or dict.
+        """
+        if isinstance(blob, dict):
+            c = blob.copy()
+            for key, val in c.items():
+                if isinstance(val, (dict, list)):
+                    # recurse on each value in dict. Key is ignored.
+                    self._flatten_apply1(val, f)
                 else:
-                    key = list(parent.value.keys())[0]
-                    # You CANNOT replace this with a list comprehension and
-                    # assign to gnode, because that just updates the local
-                    # variable--NOT the overall tree. We have to iterate like
-                    # this afaict.
-                    for idx, g in enumerate(gnode):
-                        if key in g.keys():
-                            gnode[idx] = blob
+                    # Base case: literal
+                    f(blob, key, val)
+
+        elif isinstance(blob, list):
+            for item in blob:
+                # Recurse on each item in list
+                self._flatten_apply1(item, f)
+
+    def _flatten_apply2(self, blob: types.JSON, f: tp.Callable) -> None:
+        """Apply the given callable to every structured key-value pair.
+
+        "Structured" here means pairs where the value is a list or dict instead
+        of a literal.
+
+        This function does not have a base case per-se, because we iterate
+        through each item in the dict/list passed in and call this function on
+        each one; recursion will terminate after we have exhaustively applied
+        the callback to all sub-blobs.
+        """
+        if isinstance(blob, dict):
+            for key, val in blob.items():
+                if isinstance(val, (dict, list)):
+                    self._flatten_apply2(val, f)
+
+                    f(blob, key, val)
+        elif isinstance(blob, list):
+            for item in blob:
+                self._flatten_apply2(item, f)
 
     def attr_get(self, path: str, attr: str) -> tp.Optional[str]:
         expr = jpparse(path)

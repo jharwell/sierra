@@ -1,4 +1,5 @@
 @startuml
+
 ' Basic configuration
 !theme cyborg
 skinparam defaultTextAlignment center
@@ -18,6 +19,7 @@ skinparam titleBorderThickness 8
 skinparam titleFontSize 48
 skinparam titleFontColor #black
 skinparam titleBorderColor #white
+   skinparam defaultTextAlignment center
 
 title SIERRA Overview and Architecture
 
@@ -27,91 +29,104 @@ state "Pipeline" as pipeline
 
 ' Labels for rows
 state "Stage\nInputs" as stage_inputs #lightcyan
-state "Stage\nOutputs" as stage_outputs #paleturquoise
-state "Active\nPlugins" as plugins #Lightblue
-state "Active\nComputing\nresources" as resources #Lightsteelblue
+state "Stage\nOutputs" as stage_outputs #skyblue
+state "Active\nPlugins" as plugins #Lightcoral
+state "Active\nComputing\nresources" as resources #Cornflowerblue
+
 
 ' Stage 1
 state "1. Generate\nExperimental\nInputs" as stage1  {
-   state "Experiment input\ntemplate" as input1 #lightcyan
-   state "Experiment\ninput files" as output1 #paleturquoise
-   output1: .xml,.json,\n.launch,...
+   state "Experiment\nInput\nTemplate" as input1 #lightcyan
+   state "Experiment\nInput\nFiles" as output1 #skyblue {
+      state " .xml,.json,\n.launch,...  " as plugins1 #lightcoral
+      }
    state " " as plugin1 #white ##white {
-      state "Platform" as platform1 #lightblue
-      state "Execution env" as exec_env1 #lightblue
-      state "Exp. input format" as expdef1 #lightblue
+      state "Platform" as platform1 #lightcoral
+      state "Execution\nenvironment" as exec_env1 #lightcoral
+      state "Experiment\ninput format" as expdef1 #lightcoral
 
      platform1 -[hidden]d-> exec_env1
      exec_env1 -[hidden]d-> expdef1
    }
-   state "Host\nmachine\n" as resources1 #Lightsteelblue
+   state "Host\nmachine\n" as resources1 #Cornflowerblue
    }
 
 ' Stage 2
 state "2. Execute\nExperiments\n" as stage2  {
-   state "Experimental\ninput files" as input2 #lightcyan
-   input2: .xml,.json,\n.launch,...
-   state "Experimental\nOutputs" as output2 #paleturquoise
-   output2: .csv,.arrow,...
+   state "Experiment\nInput Files" as input2 #lightcyan {
+   state "  .xml,.json,\n.launch,...  " as plugins_in2 #lightcoral
+   }
+   state "Experimental\nOutputs" as output2 #skyblue {
+      state ".csv,.arrow,..." as plugins_out2 #lightcoral
+   }
    state " " as plugin2 #white ##white {
-      state "Platform" as platform2 #lightblue
-      state "Execution env" as exec_env2 #lightblue
+      state "Platform" as platform2 #lightcoral
+      state "Execution\nenvironment" as exec_env2 #lightcoral
 
      platform2 -[hidden]d-> exec_env2
    }
-   state "Host machine,\nHPC cluster,\nReal robots,..." as resources2  #Lightsteelblue
+   state "Host machine,\nHPC cluster,\nReal robots,..." as resources2  #Cornflowerblue
 }
 
 ' Stage 3
-state "3. Process\nExperimental\nOutputs" as stage3  {
-   state "Exp. Outputs" as input3 #lightcyan
-   input3:  .csv,.arrow,...
-   state "Processed\nExp. outputs" as output3 #paleturquoise
-   output3: .csv,.arrow,\nImages from\n.csv,...
+state "3. Process\nExperiment\nOutputs" as stage3  {
+   state "Experiment\nOutputs" as input3 #lightcyan {
+      state ".csv,.arrow,..." as plugins_in3 #lightcoral
+   }
+   state "Processed\nExperiment\nOutputs" as output3 #skyblue {
+      state ".csv,.arrow,\nimages,..." as plugins_out3 #lightcoral
+   }
 
    state " " as plugin3 #white ##white {
-      state "Platform" as platform3 #lightblue
-      state "Processor set" as proc_set3 #lightblue
-      state "Storage" as storage3 #lightblue
+      state "Platform" as platform3 #lightcoral
+      state "Processor set" as proc_set3 #lightcoral
+      state "Storage" as storage3 #lightcoral
 
       platform3 -[hidden]d-> proc_set3
       proc_set3 -[hidden]d-> storage3
    }
-   state "Host\nmachine\n" as resources3 #Lightsteelblue
+   state "Host\nmachine\n" as resources3 #Cornflowerblue
 }
 
 ' Stage 4
 state "4. Generate\nDeliverables\n" as stage4  {
-   state "Processed\nexp. outputs" as input4 #lightcyan
-   input4: .csv,.arrow,...
-   state "Graphs, videos\n(.png,.mp4,...),\nBatch exp.\nsummary (.csv)" as output4 #paleturquoise
+   state "Processed\nExperiment\nOutputs" as input4 #lightcyan {
+      state ".csv,.arrow,\nimages,..." as plugins_in4 #lightcoral
+   }
+   state "Deliverables" as output4 #skyblue {
+      state "Graphs, videos\n(.png,.mp4,...)" as subblob4 #lightcoral
+   }
    state " "  as plugin4 #white ##white {
    top to bottom direction
-      state "Platform" as platform4 #lightblue
-      state "Deliverable\ngenerators" as deliverables4 #lightblue
-      state "Storage" as storage4 #lightblue
+      state "Platform" as platform4 #lightcoral
+      state "Deliverable\ngenerators" as deliverables4 #lightcoral
+      state "Storage" as storage4 #lightcoral
 
       platform4 -[hidden]d-> deliverables4
       deliverables4 -[hidden]d-> storage4
    }
-   state "Host\nmachine\n" as resources4 #Lightsteelblue
+   state "Host\nmachine\n" as resources4 #Cornflowerblue
 }
 
 ' Stage 5
 state "5. Compare\nDeliverables\n" as stage5  {
-   state "Batch exp.\nsummary (.csv)" as input5 #lightcyan
-   state "Graphs (.png,...)" as output5 #paleturquoise
+   state "Deliverables" as input5 #lightcyan {
+      state "Graphs (.png,...)" as plugins_in5 #lightcoral
+   }
+   state "Deliverable\nComparisons" as output5 #skyblue {
+      state "Graphs (.png,...)" as final_outputs #lightcoral
+   }
    state " " as plugin5 #white ##white {
-      state "Platform" as platform5 #lightblue
-      state "Comparator" as comparator5 #lightblue
-      state "Storage" as storage5 #lightblue
+      state "Platform" as platform5 #lightcoral
+      state "Comparator" as comparator5 #lightcoral
+      state "Storage" as storage5 #lightcoral
 
      platform5 -[hidden]d-> comparator5
      comparator5 -[hidden]d-> storage5
    }
 
 
-state "Host\nmachine\n" as resources5 #Lightsteelblue
+state "Host\nmachine\n" as resources5 #Cornflowerblue
 }
 
 ' Stages horizontal layout
@@ -155,13 +170,5 @@ stage2 -[hidden]d-> input2
 stage3 -[hidden]d-> input3
 stage4 -[hidden]d-> input4
 stage5 -[hidden]d-> input5
-
-caption
-SIERRA architecture, organized by pipeline stage. Stages are listed left to
-right, and an approximate joint architectural/functional stack is top to
-bottom for each stage. “...” indicates areas where SIERRA is designed via
-plugins to be easily extensible. “Host machine” indicates the machine SIERRA
-was invoked on.
-endcaption
 
 @enduml
