@@ -289,10 +289,10 @@ The meaning of each directory is discussed below.
 
   - ``...``
 
-  - ``collated/`` - Contains :term:`Collated .csv` files. During stage4, SIERRA
-    will draw specific columns from .csv files under ``statistics`` according to
-    configuration, and collate them under here for graph generation of
-    `inter`\-experiment graphs.
+  - ``collated/`` - Contains :term:`Collated Experimental Run Data`
+    files. During stage4, SIERRA will draw specific columns from .csv files
+    under ``statistics`` according to configuration, and collate them under here
+    for graph generation of *inter*\-experiment graphs.
 
   - ``exec/`` - Statistics about SIERRA runtime. Useful for capturing runtime of
     specific experiments to better plan/schedule time on HPC clusters.

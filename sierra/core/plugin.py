@@ -30,7 +30,7 @@ def storage_sanity_checks(module) -> None:
 
     for f in functions:
         assert (any(f in name for (name, _) in in_module)), \
-            f"Storage medium plugin does not define {f}"
+            f"Storage medium plugin does not define '{f}()'"
 
 
 def exec_env_sanity_checks(module) -> None:
@@ -70,21 +70,28 @@ def platform_sanity_checks(module) -> None:
     """
     logging.trace("Verifying --platform plugin interface")  # type: ignore
 
-    req_classes = ['ExpConfigurer',
-                   ]
+    req_classes = [
+        'ExpConfigurer',
+    ]
 
-    req_functions = ['cmdline_parser',
-                     'population_size_from_def',
-                     'population_size_from_pickle',
-                     ]
+    req_functions = [
+        'cmdline_parser',
+        'population_size_from_def',
+        'population_size_from_pickle',
+    ]
 
-    opt_classes = ['ExpRunShellCmdsGenerator',
-                   'ExpShellCmdsGenerator']
+    opt_classes = [
+        'ExpRunShellCmdsGenerator',
+        'ExpShellCmdsGenerator'
+    ]
 
-    opt_functions = ['cmdline_postparse_configure',
-                     'exec_env_checker',
-                     'agent_prefix_extract',
-                     'arena_dims_from_criteria']
+    opt_functions = [
+        'cmdline_postparse_configure',
+        'exec_env_checker',
+        'agent_prefix_extract',
+        'arena_dims_from_criteria',
+        'expdef_flatten'
+    ]
 
     in_module = inspect.getmembers(module, inspect.isclass)
 

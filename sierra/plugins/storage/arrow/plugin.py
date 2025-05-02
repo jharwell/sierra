@@ -1,8 +1,8 @@
-# Copyright 2021 John Harwell, All rights reserved.
+# Copyright 2025 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
 """
-Plugin for reading/writing CSV files.
+Plugin for reading/writing apache .arrow files.
 """
 
 # Core packages
@@ -17,22 +17,20 @@ import pandas as pd
 
 
 def suffixes() -> tp.Set[str]:
-    return {'.csv'}
+    return {'.arrow'}
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
 def df_read(path: pathlib.Path, **kwargs) -> pd.DataFrame:
     """
-    Read a dataframe from a CSV file using pandas.
+    Read a pandas dataframe from an apache .arrow file.
     """
-    # Always specify the datatype so pandas does not have to infer it--much
-    # faster.
-    return pd.read_csv(path, sep=';', float_precision='high', **kwargs)
+    return pd.read_feather(path)
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
 def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
     """
-    Write a dataframe to a CSV file using pandas.
+    Write a pandas dataframe to a apache .arrow file.
     """
-    df.to_csv(path, sep=';', float_format='%.8f', **kwargs)
+    df.to_feather(path)

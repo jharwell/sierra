@@ -16,7 +16,7 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.pipeline.stage3 import (imagize, collate, statistics)
+from sierra.core.pipeline.stage3 import (imagize, collate, statistics, gather)
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types, utils, batchroot
 
@@ -26,18 +26,17 @@ class PipelineStage3:
 
     Currently this includes:
 
-    - Generating statistics from results for generating per-experiment graphs
-      during stage 4. This can generate :term:`Averaged .csv` files, among
-      other statistics.
+        - Generating statistics from results for generating per-experiment
+          graphs during stage 4.  This can generate :term:`Averaged Experimental
+          Run Data` files, among other statistics.
 
-    - Collating results across experiments for generating inter-experiment
-      graphs during stage 4.
+        - Collating results across experiments for generating inter-experiment
+          graphs during stage 4.
 
-    - Generating image files from project metric collection for later use in
-      video rendering in stage 4.
+        - Generating image files from project metric collection for later use in
+          video rendering in stage 4.
 
     This stage is idempotent.
-
     """
 
     def __init__(self,
@@ -75,12 +74,24 @@ class PipelineStage3:
     # Private functions
 
     def _run_statistics(self, criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("Generating statistics from experiment outputs in %s...",
-                         self.pathset.output_root)
+        self.logger.info(("Generating statistics from experiment outputs in "
+                          "<batch_root>/%s -> <batch_root>/%s"),
+                         self.pathset.output_root.relative_to(self.pathset.root),
+                         self.pathset.stat_root.relative_to(self.pathset.root))
         start = time.time()
-        statistics.BatchExpCalculator(self.main_config,
+        statistics.proc_batch_exp(self.main_config,
+                                  self.cmdopts,
+                                  self.pathset,
+                                  criteria,
+                                  gather.DataGatherer)
+
+        if self.cmdopts['project_imagizing']:
+            statistics.proc_batch_exp(self.main_config,
                                       self.cmdopts,
-                                      self.pathset)(criteria)
+                                      self.pathset,
+                                      criteria,
+                                      gather.ImagizeInputGatherer)
+
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Statistics generation complete in %s", str(sec))

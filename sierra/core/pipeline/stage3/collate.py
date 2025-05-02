@@ -2,18 +2,17 @@
 #
 #  SPDX-License-Identifier: MIT
 
-"""Classes for collating data within a :term:`Batch Experiment`.
+"""
+Classes for collating data within a :term:`Batch Experiment`.
 
 Collation is the process of "lifting" data from :term:`Experimental Runs
 <Experimental Run>` across all :term:`Experiment` for all experiments in a
-:term:`Batch Experiment` into a single CSV (a reduce operation).  This is needed
-to correctly calculate summary statistics for performance measures in stage 4:
-you can't just run the calculated stddev through the calculations for
-flexibility (for example) because comparing curves of stddev is not
-meaningful. Stage 4 needs access to raw-(er) run data to construct a
-`distribution` of performance measure values to then calculate the summary
-statistics (such as stddev) over.
-
+:term:`Batch Experiment` into a single file (a reduce operation).  This is
+needed to correctly calculate summary statistics for performance measures in
+stage 4: you can't just run the calculated stddev through the calculations
+because comparing curves of stddev is not meaningful.  Stage 4 needs access to
+raw-(er) run data to construct a *distribution* of values to then calculate
+summary statistics (such as stddev) over.
 """
 
 # Core packages
@@ -35,12 +34,12 @@ from sierra.core import types, storage, utils, config, batchroot
 
 
 class ExpParallelCollator:
-    """Generates :term:`Collated .csv` files for each :term:`Experiment`.
+    """Generate :term:`Collated Experimental Run Data` files for each experiment.
 
-    :term:`Collated .csv` files generated from :term:`Output .csv` files across
-     :term:`Experimental Runs <Experimental Run>`.  Gathered in parallel for
-     each experiment for speed, unless disabled with ``--processing-serial``.
-
+    :term:`Collated Experimental Run Data` files generated from
+    :term:`Experimental Run Data` files across :term:`Experimental Runs
+    <Experimental Run>`.  Gathered in parallel for each experiment for speed,
+    unless disabled with ``--processing-serial``.
     """
 
     def __init__(self,
@@ -156,7 +155,7 @@ class ExpParallelCollator:
 
 
 class ExpRunCSVGatherer:
-    """Gather :term:`Output .csv` files across all runs within an experiment.
+    """Gather :term:`Experimental Run Data` files across all runs within an experiment.
 
     This class can be extended/overriden using a :term:`Project` hook.  See
     :ref:`tutorials/project/hooks` for details.
@@ -247,12 +246,11 @@ class ExpRunCSVGatherer:
 
 
 class ExpRunCollator:
-    """Collate gathered :term:`Output .csv` files together (reduce operation).
+    """Collate :term:`Experimental Run Data` files together (reduce operation).
 
-    :term:`Output .csv`s gathered from N :term:`Experimental Runs <Experimental
-    Run>` are combined together into a single :term:`Summary .csv` per
-    :term:`Experiment` with 1 column per run.
-
+    :term:`Experimental Run Data` files gathered from N :term:`Experimental Runs
+    <Experimental Run>` are combined together into a single :term:`Summary .csv`
+    per :term:`Experiment` with 1 column per run.
     """
 
     def __init__(self,

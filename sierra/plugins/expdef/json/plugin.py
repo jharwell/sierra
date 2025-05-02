@@ -250,7 +250,7 @@ class ExpDef:
     def attr_change(self,
                     path: str,
                     attr: str,
-                    value: str,
+                    value: tp.Union[str, int, float],
                     noprint: bool = False) -> bool:
 
         expr = jpparse(path)
@@ -281,7 +281,7 @@ class ExpDef:
     def attr_add(self,
                  path: str,
                  attr: str,
-                 value: str,
+                 value: tp.Union[str, int, float],
                  noprint: bool = False) -> bool:
         expr = jpparse(path)
         matches = expr.find(self.tree)

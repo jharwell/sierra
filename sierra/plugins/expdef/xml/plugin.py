@@ -200,7 +200,7 @@ class ExpDef:
     def attr_change(self,
                     path: str,
                     attr: str,
-                    value: str,
+                    value: tp.Union[str, int, float],
                     noprint: bool = False) -> bool:
         el = self.root.find(path)
         if el is None:
@@ -215,19 +215,19 @@ class ExpDef:
                                     path)
             return False
 
-        el.attrib[attr] = value
+        el.attrib[attr] = str(value)
         self.logger.trace("Modify attr: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
                           value)
 
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
 
     def attr_add(self,
                  path: str,
                  attr: str,
-                 value: str,
+                 value: tp.Union[str, int, float],
                  noprint: bool = False) -> bool:
         el = self.root.find(path)
         if el is None:
@@ -242,12 +242,12 @@ class ExpDef:
                                     path)
             return False
 
-        el.set(attr, value)
+        el.set(attr, str(value))
         self.logger.trace("Add new attribute: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
                           value)
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
 
     def has_element(self, path: str) -> bool:

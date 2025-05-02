@@ -38,7 +38,7 @@ class Pipeline:
         self.logger = logging.getLogger(__name__)
         self.pathset = pathset
 
-        self.logger.trace("Computed run-time tree:\n%s", self.pathset)
+        self.logger.info("Computed run-time tree:\n%s", self.pathset)
 
         assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
             f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"

@@ -149,40 +149,39 @@ works/is designed the way it is, and to help you find your way around.
 
       - Different random seeds
 
-   Output .csv
+   Experimental Run Data
 
-      A CSV file generated as an output from a single :term:`Experimental
-      Run`. It will (probably) contain a set of columns of representing outputs
-      of interest, with rows corresponding to values captured throughout the
-      run.
+      A csv/arrow/etc file generated as an output from a single
+      :term:`Experimental Run`. It will (probably) contain a set of columns of
+      representing outputs of interest, with rows corresponding to values
+      captured throughout the run.
 
-   Averaged .csv
+   Averaged Experimental Run Data
 
-      A CSV file generated as from averaging files from multiple
+      A csv/arrow/etc file generated as from averaging files from multiple
       :term:`Experimental Runs<Experimental Run>`. It will (probably) contain a
       set of columns of representing outputs of interest, with rows
-      corresponding to values captured throughout the run (i.e., a time
-      series).
+      corresponding to values captured throughout the run (i.e., a time series).
 
-   Collated .csv
+   Collated Experimental Run Data
 
-      A CSV file created by SIERRA during stage 4 (if inter-experiment
-      graph generation is to be run). Collated CSV files contain a set
-      columns, one per :term:`Experiment` in the :term:`Batch Experiment`. Each
-      column is the captured value of a `single` column within an :term:`Output
-      .csv`. This is to capture a specific aspect of the behavior of the swarm
-      within a batch experiment, for use in graph generation.
+      A csv/arrow/etc file created by SIERRA during stage 3. Collated files
+      contain a set columns, one per :term:`Experiment` in the :term:`Batch
+      Experiment`. Each column is the captured value of a *single* column within
+      an :term:`Experimental Run Output File`. This is to capture a specific
+      aspect of the behavior of the swarm within a batch experiment, for use in
+      graph generation.
 
    Summary .csv
 
-      A CSV file created by SIERRA during stage 4 (if inter-experiment
-      graph generation is to be run). A summary CSV file created from a
-      :term:`Collated .csv` file by taking the last row; this usually
-      corresponds to steady-state behavior, which is what you are
+      A CSV file created by SIERRA during stage 4 (if inter-experiment graph
+      generation is to be run). A summary CSV file created from a
+      :term:`Collated Experimental Run Data` file by taking the last row; this
+      usually corresponds to steady-state behavior, which is what you are
       after. However, you can also capture transient behaviors by creating
-      :term:`Collated .csv` and :term:`Summary .csv` files from captured
-      :term:`Experimental Run` outputs over short stretches of time--SIERRA does
-      not know the difference.
+      :term:`Collated Experimental Run Data` and :term:`Summary .csv` files from
+      captured :term:`Experimental Run` outputs over short stretches of
+      time--SIERRA does not know the difference.
 
    Inter-Batch .csv
 

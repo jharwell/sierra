@@ -127,7 +127,7 @@ class BaseExpDef(implements.Interface):
     def attr_change(self,
                     path: str,
                     attr: str,
-                    value: str,
+                    value: tp.Union[str, int, float],
                     noprint: bool = False) -> bool:
         """Change the specified attribute of the element at the specified path.
 
@@ -150,7 +150,7 @@ class BaseExpDef(implements.Interface):
     def attr_add(self,
                  path: str,
                  attr: str,
-                 value: str,
+                 value: tp.Union[str, int, float],
                  noprint: bool = False) -> bool:
         """Add the specified attribute to the element matching the specified path.
 
@@ -258,7 +258,7 @@ class AttrChange():
                  value: tp.Union[str, int, float]) -> None:
         self.path = path
         self.attr = attr
-        self.value = str(value)
+        self.value = value
 
     def __iter__(self):
         yield from [self.path, self.attr, self.value]
@@ -365,6 +365,7 @@ class AttrChangeSet():
 
     def __init__(self, *args: AttrChange) -> None:
         self.changes = set(args)
+
         self.logger = logging.getLogger(__name__)
 
     def __len__(self) -> int:

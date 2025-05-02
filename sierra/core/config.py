@@ -86,7 +86,8 @@ kGraphTextSizeLarge: types.IntDict = {
 # plugin should have. Once processed by SIERRA they are written out as CSV files
 # with new extensions contextualizing them.
 kStorageExt: types.StrDict = {
-    'csv': '.csv'
+    'csv': '.csv',
+    'arrow': '.arrow'
 }
 
 kStats: tp.Dict[str, types.StatisticsSpec] = {

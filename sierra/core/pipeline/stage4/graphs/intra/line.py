@@ -23,7 +23,7 @@ def generate(cmdopts: types.Cmdopts,
              pathset: exproot.PathSet,
              targets: tp.List[types.YAMLDict]) -> None:
     """
-    Generate linegraphs from: term: `Averaged .csv` files within an experiment.
+    Generate linegraphs from: term:`Averaged Experimental Run Data` files.
     """
 
     _logger.info("Linegraphs from <batch_root>/%s",

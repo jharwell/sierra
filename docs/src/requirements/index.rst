@@ -101,6 +101,12 @@ General
 
    See also :ref:`philosophy`.
 
+#. The post-processing pipeline for experimental data generally conforms to
+   SIERRA's :ref:`datamodel <datamodel>`. If your code isn't conformant, never
+   fear! You can still use SIERRA--you will just have to define your own plugins
+   for :ref:`data processing <tutorials/plugin/proc>` and :ref:`deliverable
+   generation <tutorials/plugin/deliverable>`.
+
 #. All experiments from which you want to generate statistics/graphs are:
 
    - Nominally The same length

@@ -78,7 +78,7 @@ def generate(main_config: types.YAMLDict,
 
 
 class IntraExpGraphGenerator:
-    """Generates graphs from :term:`Averaged .csv` files for a single experiment.
+    """Generates graphs from :term:`Averaged Experimental Run Data` files.
 
     Which graphs are generated is controlled by YAML configuration files parsed
     in :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
