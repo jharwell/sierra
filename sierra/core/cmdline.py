@@ -775,7 +775,8 @@ class CoreCmdline(BaseCmdline):
                                  action='store_true',
                                  default=False)
 
-        self.stage3.add_argument("--storage", choices=['storage.csv'],
+        self.stage3.add_argument("--storage", choices=['storage.csv',
+                                                       'storage.arrow'],
                                  help="""
 
                                  Specify the storage medium for

@@ -155,6 +155,10 @@ for how to add it.
 
      - Data in .csv format.
 
+   * - :ref:`Apache arrow <plugins/storage/arrow>`
+
+     - Data in `apache arrow format <https://arrow.apache.org/>`_.
+
    * - PNG file
 
      - Images emitted/captured by the :term:`Project` and/or :term:`Platform`

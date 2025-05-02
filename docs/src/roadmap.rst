@@ -116,3 +116,31 @@ since none of the currently supported platforms do that.
 Adding this would also make SIERRA more appealing/using to researchers outside
 of robotics.
 
+Expanded Workflows
+------------------
+
+It would be useful to be able to evaluate user code computationally, in addition
+to whatever scientific/research flavored evaluations. That is, having a workflow
+where SIERRA analyzes things like:
+
+- How long sims (really the algorithms/controllers used) took. This would be
+  done by treating the stuff in the statistics/exec folder as first-class data
+  and operating on it.
+
+- The performance profile of sims (really the algorithms/controllers used) using
+  something like vtune, grof, kcachegrind, etc. This would be done by wrapping
+  the call to execute given sim on a target platform with whatever is required
+  by the profiling tool, and then averaging (if supported by the tool) the data
+  in stage 3, and generating some graphs/reports from the data in stage 4
+  (hopefully using native faculties the tool provides).
+
+  This raises a nuanced point about plugins: should they be categorical, or
+  functional? E.g., for profiling with vtune, should we have ``proc.vtune``,
+  ``deliverable.vtune`` plugins in stages 3 and 4 respectively, OR have
+  ``vtune.proc`` and ``vtune.deliverable`` plugins. One is more tool/backend
+  based, and one is more functional. The same issue will arise with holoviews in
+  stages 4/5: ``hv.deliverable`` and ``hv.comparator`` or ``deliverable.hv`` and
+  ``comparator.hv``. In the latter case I think it makes more sense to have
+  ``hv.X``, because that will make it easier/cleaner to reuse code common to
+  usage of hv in stage 4/5. This decision is a long way off, and doesn't really
+  matter at this juncture.

@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.3.27"
+version = "1.3.28"
 
 description = "Automation framework for the scientific method in AI research"
 authors = [
@@ -22,6 +22,7 @@ dependencies = [
     "netifaces",
     "numpy",
     "pandas",
+    "pyarrow",
     "psutil",
     "pyyaml",
     "retry",
@@ -29,7 +30,7 @@ dependencies = [
 ]
 requires-python = ">=3.9"
 readme = "README.rst"
-license = {"text"= "MIT"}
+license = {file = "LICENSE"}
 keywords = ["research", "automation", "robotics",
             "agent-based modeling", "reproducibility", "reusability"]
 classifiers = [

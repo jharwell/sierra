@@ -429,6 +429,22 @@ In ``generators/platform.py``, you may define the following functions:
           """
           logger.info("Starting batch experiment using MATRIX!")
 
+#. In ``plugin.py``, you may define ``expdef_flatten()``, which can be used to
+   flatten nested ``--expdef-template`` files before creating experiments, if
+   supported by your chosen :ref:`expdef plugin <plugins/expdef>`. This
+   function is optional.
+
+   .. code-block:: python
+
+      def expdef_flatten(exp_def: definition.BaseExpDef) -> definition.BaseExpDef:
+          """
+          Given an experiment definition, perform platform-specific
+          flattening of nested configuration files prior to scaffolding
+          the batch experiment.
+          """
+          pass
+
+
 A Full Skeleton
 ===============
 

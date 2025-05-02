@@ -86,7 +86,7 @@ class StackedLineGraph:
                               input_fpath)
             return
 
-        data_df = storage.DataFrameReader('storage.csv')(input_fpath)
+        data_df = storage.df_read(input_fpath, 'storage.csv')
 
         model = self._read_models()
         stat_dfs = self._read_stats()
@@ -185,8 +185,6 @@ class StackedLineGraph:
 
         # If the legend is not specified, then we assume this is not a graph
         # that will contain any models and/or no legend is desired.
-        legend = self.legend
-
         if self.legend is not None:
             legend = copy.deepcopy(self.legend)
             if model_legend:
@@ -208,8 +206,6 @@ class StackedLineGraph:
 
     def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
         dfs = {}
-
-        reader = storage.DataFrameReader('storage.csv')
         if self.stats in ['conf95', 'all']:
             exts = config.kStats['conf95'].exts
 
@@ -217,7 +213,7 @@ class StackedLineGraph:
                 ipath = self.stats_root / (self.input_stem + exts[k])
 
                 if utils.path_exists(ipath):
-                    dfs[k] = reader(ipath)
+                    dfs[k] = storage.df_read(ipath, 'storage.csv')
                 else:
                     self.logger.warning("%sfile not found for '%s'",
                                         exts[k],
@@ -235,7 +231,7 @@ class StackedLineGraph:
                 (self.input_stem + config.kModelsExt['legend'])
 
             if utils.path_exists(model_fpath):
-                model = storage.DataFrameReader('storage.csv')(model_fpath)
+                model = storage.df_read(model_fpath, 'storage.csv')
                 if utils.path_exists(legend_fpath):
                     with utils.utf8open(legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()

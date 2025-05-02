@@ -63,7 +63,6 @@ print(path)
 "
 
     batch_root=$(python3 -c"${batch_root_cmd}")
-
     input_root=$batch_root/exp-inputs/
     rm -rf $SIERRA_ROOT
 
@@ -107,7 +106,6 @@ print(path)
 "
 
     batch_root=$(python3 -c"${batch_root_cmd}")
-
     output_root=$batch_root/exp-outputs/
     rm -rf $SIERRA_ROOT
 
@@ -123,7 +121,7 @@ print(path)
         for run in {0..3}; do
             [ -d "$output_root/exp${run}/template_run${run}_output/output" ] || false
             [ -f "$output_root/exp${run}/template_run${run}_output/output/output.csv" ] || false
-            n_cols=$(awk -F\; '{print NF; exit}' "$output_root/exp${run}/template_run${run}_output/output/output.csv")
+            n_cols=$(awk -F\, '{print NF; exit}' "$output_root/exp${run}/template_run${run}_output/output/output.csv")
             n_rows=$(wc -l < "$output_root/exp${run}/template_run${run}_output/output/output.csv")
             [[ $n_cols == 5 ]] && true || false
             [[ $n_rows == 51 ]] && true || false
@@ -163,12 +161,20 @@ print(path)
     for exp in {0..4}; do
         [ -d "$stat_root/exp${exp}" ] || false
         [ -f "$stat_root/exp${exp}/output.mean" ] || false
+        [ -f "$stat_root/exp${exp}/subdir1/subdir2/output.mean" ] || false
+        [ -f "$stat_root/exp${exp}/subdir3/output.mean" ] || false
         n_rows=$(wc -l < "$stat_root/exp${exp}/output.mean")
+        [[ $n_rows == 51 ]] && true || false
+
+        n_rows=$(wc -l < "$stat_root/exp${exp}/subdir1/subdir2/output.mean")
+        [[ $n_rows == 51 ]] && true || false
+
+        n_rows=$(wc -l < "$stat_root/exp${exp}/subdir3/output.mean")
         [[ $n_rows == 51 ]] && true || false
 
         [ -f "$stat_root/collated/exp${exp}-output-col1.csv" ] || false
         n_rows=$(wc -l < "$stat_root/collated/exp${exp}-output-col1.csv")
-        n_cols=$(awk -F\; '{print NF; exit}' "$stat_root/collated/exp${exp}-output-col1.csv")
+        n_cols=$(awk -F\, '{print NF; exit}' "$stat_root/collated/exp${exp}-output-col1.csv")
         [[ $n_rows == 51 ]] && true || false
         [[ $n_cols == 4 ]] && true || false
     done
@@ -204,7 +210,8 @@ print(path)
     [ -d "$graph_root/collated" ] || false
     for exp in {0..4}; do
         [ -f "$graph_root/collated/SLN-random-noise-col1.png" ] || false
-        [ -f "$graph_root/collated/SLN-random-noise-col2.png" ] || false
+        [ -f "$graph_root/collated/SLN-random-noise2-col2.png" ] || false
+        [ -f "$graph_root/collated/SLN-random-noise3-col2.png" ] || false
     done
 
     rm -rf $SIERRA_ROOT

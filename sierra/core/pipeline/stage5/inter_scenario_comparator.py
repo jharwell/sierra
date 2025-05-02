@@ -248,7 +248,6 @@ class UnivarInterScenarioComparator:
 
         opath_stem = pathlib.Path(self.stage5_roots.csv_root,
                                   dest_stem + "-" + self.controller)
-        writer = storage.DataFrameWriter('storage.csv')
 
         # Collect performance measure results. Append to existing dataframe if
         # it exists, otherwise start a new one.
@@ -263,7 +262,7 @@ class UnivarInterScenarioComparator:
             csv_ipath = csv_ipath_stem.with_suffix(exts[k])
             df = self._accum_df(csv_ipath, csv_opath, src_stem)
             if df is not None:
-                writer(df, csv_opath, index=False)
+                storage.df_write(df, csv_opath, 'storage.csv', index=False)
 
         # Collect performance results models and legends. Append to existing
         # dataframes if they exist, otherwise start new ones.
@@ -281,7 +280,7 @@ class UnivarInterScenarioComparator:
             model_ostem.name + config.kModelsExt['legend'])
 
         if model_df is not None:
-            writer(model_df, model_opath, index=False)
+            storage.df_write(model_df, model_opath, 'storage.csv', index=False)
 
             with utils.utf8open(legend_opath, 'a') as f:
                 sgp = pm.module_load_tiered(project=project,
@@ -293,15 +292,13 @@ class UnivarInterScenarioComparator:
                   ipath: pathlib.Path,
                   opath: pathlib.Path,
                   src_stem: str) -> pd.DataFrame:
-        reader = storage.DataFrameReader('storage.csv')
-
         if utils.path_exists(opath):
-            cum_df = reader(opath)
+            cum_df = storage.df_read(opath, 'storage.csv')
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = reader(ipath)
+            t = storage.df_read(ipath, 'storage.csv')
             if cum_df is None:
                 cum_df = pd.DataFrame(columns=t.columns)
 

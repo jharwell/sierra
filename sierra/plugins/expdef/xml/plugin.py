@@ -191,7 +191,7 @@ class ExpDef:
         raise NotImplementedError(
             "The XML expdef plugin does not support flattening")
 
-    def attr_get(self, path: str, attr: str) -> tp.Optional[str]:
+    def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
         el = self.root.find(path)
         if el is not None and attr in el.attrib:
             return el.attrib[attr]
@@ -200,7 +200,7 @@ class ExpDef:
     def attr_change(self,
                     path: str,
                     attr: str,
-                    value: str,
+                    value: tp.Union[str, int, float],
                     noprint: bool = False) -> bool:
         el = self.root.find(path)
         if el is None:
@@ -221,13 +221,13 @@ class ExpDef:
                           attr,
                           value)
 
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
 
     def attr_add(self,
                  path: str,
                  attr: str,
-                 value: str,
+                 value: tp.Union[str, int, float],
                  noprint: bool = False) -> bool:
         el = self.root.find(path)
         if el is None:
@@ -247,7 +247,7 @@ class ExpDef:
                           path,
                           attr,
                           value)
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
 
     def has_element(self, path: str) -> bool:

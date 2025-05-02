@@ -8,6 +8,12 @@ For the purposes of this tutorial, I will assume you are creating a new storage
 :term:`Plugin` ``infinite``, and the code for that plugin lives in
 ``$HOME/git/plugins/storage/infinite``.
 
+Before beginning, create the following filesystem structure in
+``$HOME/git/plugins/storage/infinite``.
+
+- ``plugin.py`` - This file is required, and is where most of the bits for the
+  plugin will go.
+
 Create the Code
 ===============
 

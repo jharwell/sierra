@@ -42,7 +42,7 @@ setup_env() {
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \
-       --exp-setup=exp_setup.T50.K4 \
+       --exp-setup=exp_setup.T100.K5 \
        --n-runs=4 \
        -xstrict \
        --expdef-template=$SAMPLE_ROOT/exp/argos/template.argos \
@@ -870,7 +870,8 @@ print(path)
     --batch-criteria population_size.Linear1.C1 \
     --pipeline 1 2 3 4 \
     --project-imagizing \
-    --project-rendering"
+    --project-rendering \
+    --exp-setup=exp_setup.T100.K10"
 
     cameras=(overhead
              sw

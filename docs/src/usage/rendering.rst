@@ -10,9 +10,9 @@ section. SIERRA can render frames (images) into videos from 3 sources:
 - Those captured using ``--platform-vc``, details :ref:`here
   <usage/rendering/platform>`.
 
-- Those imagized from project CSV output files via ``--project-imagizing`` using
+- Those imagized from project :term:`Raw Output` files via ``--project-imagizing`` using
   ``--project-rendering`` details :ref:`here
-  <usage/rendering/project>`.
+  <usage/rendering/project>`. See also :ref:`usage/imagizing/project`.
 
 - Inter-experiment heatmaps from bivariate batch criteria ``--bc-rendering``,
   details :ref:`here <usage/rendering/bc>`.
@@ -73,71 +73,24 @@ stage 2 to be stitched together into a unique video file using :program:`ffmpeg`
 Project Rendering
 =================
 
-Projects can generate CSV files residing in subdirectories within the
-``main.run_metrics_leaf`` (see :ref:`tutorials/project/main-config`)
-directory (directory path set on a per ``--project`` basis) for each
-experimental run, in addition to generating CSV files residing directly in
-the ``main.run_metrics_leaf.`` directory. SIERRA can then render these CSV
-files into :class:`~sierra.core.graphs.heatmap.Heatmap` graphs, and stitch these
-images together to make videos.
+If a project has generated conforming :term:`Raw Output Data` files and
+:ref:`imagized <usage/imagize/project>` them in stage 3 via
+``--project-imagizing``, then they can be rendered into videos in stage 4.
+
+To use, pass ``--project-rendering`` during stage 4 after running imagizing via
+``--project-imagizing`` during stage 3, either on the same invocation or a
+previous one. SIERRA will take the imagized files previously created and
+generate a set of a videos in ``<batch_root>/videos/<exp>/<subdir>`` for each
+experiment in the batch which was run, where ``<subdir>`` is the name of a
+subdirectory in ``main.run_metrics_leaf`` which contained the raw files to
+imagize.
 
 .. IMPORTANT::
 
-   Imagized/rendered images/videos are generated per :term:`Experiment` rather
-   than per :term:`Experimental Run`, and thus the raw inputs *ARE* averaged
-   before imagizing and subsequent rendering.
-
-To use, do the following:
-
-#. Pass ``--project-imagizing`` during stage 3. When passed, the CSV files
-   residing each configured subdirectory under the ``main.run_metrics_leaf``
-   directory (no recursive nesting is allowed) in each run are treated as
-   snapshots of 2D or 3D data over time, and will be turned into image files
-   suitable for video rendering in stage 4. Not all subdirectories under
-   ``main.run_metrics_leaf`` *have* to contain stuff for imagizing; what is
-   selected for imagizing is controlled by ``intra-graphs-hm.yaml``--see
-   :ref:`tutorials/project/graphs-config` for details.
-
-   The following restrictions apply:
-
-   - If a subdirectory in ``main.run_metrics_leaf`` contains CSVs for
-     imagizing, the contents are imagized iff there is a matching entry in
-     ``intra-graphs-hm.yaml``. This is to enable selective imagizing of graphs,
-     so that you don't get bogged down if you want to capture imagizing data  en
-     masse, but only render some of it to videos (it takes forever, after all).
-
-   - A common stem with a unique numeric ID is required for each CSV must
-     be present for each CSV.
-
-   - The directory name within ``main.run_metrics_leaf`` must be the same as the
-     stem for each CSV file in that directory. For example, if the
-     directory name was ``swarm-distribution`` under ``main.run_metrics_leaf``
-     then all CSV files within that directory must be named according to
-     ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any
-     length numeric prefix (possibly preceded by an underscore or dash).
-
-   .. IMPORTANT::
-
-      Generating the images for each experiment does not happen automatically as
-      part of stage 3 because it can take a LONG time and is idempotent. You
-      should only pass ``--project-imagizing`` the first time you run stage 3
-      after running stage 2 (unless you are getting paid by the hour).
-
-#. Pass ``--project-rendering`` during stage 4 after running imagizing via
-   ``--project-imagizing`` during stage 3, either on the same invocation or a
-   previous one. SIERRA will take the imagized CSV files previously created and
-   generate a set of a videos in ``<batch_root>/videos/<exp>/<subdir>`` for each
-   experiment in the batch which was run, where ``<subdir>`` is the name of a
-   subdirectory in ``main.run_metrics_leaf`` which contained the CSVs to
-   imagize.
-
-   .. IMPORTANT::
-
-      Rendering the imagized CSV does not happen automatically every time as
-      part of stage 4 because it can take a LONG time and is idempotent. You
-      should only pass ``--project-rendering`` the first time you run stage 4
-      after having run stage 3 with ``--project-rendering`` (unless you are
-      getting paid by the hour).
+   Rendering the imagized CSV does not happen automatically every time as part
+   of stage 4 because it can take a LONG time and is idempotent. You should only
+   pass ``--project-rendering`` the first time you run stage 4 after having run
+   stage 3 with ``--project-imagizing``.
 
 
 .. _usage/rendering/bc:

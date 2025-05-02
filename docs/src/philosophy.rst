@@ -58,3 +58,11 @@ have everything work as you would expect it to, to help with tweaking
 experimental design, generated graphs, etc., with minimal headaches of "Grrr I
 have to wait for THAT part to run again before it will get to re-run the part I
 just changed the configuration for".
+
+This manifests in some important ways:
+
+- Separating results processing in stage 3 from deliverable generation in stage
+  \4.
+
+- Deliverables in stage 4 are sourced from a single input file, rather than
+  pulling data from multiple files.

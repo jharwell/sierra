@@ -409,6 +409,15 @@ class BatchExpCreator:
         exp_def = module.ExpDef(input_fpath=self.batch_config_template,
                                 write_config=None)
 
+        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+
+        if hasattr(module, 'expdef_flatten'):
+            self.logger.debug(
+                "Flattening --expdef-template definition before scaffolding")
+            # Flatten the expdef here if the platform defines the hook, so that
+            # the full flattened file contents are available for scaffolding.
+            exp_def = module.expdef_flatten(exp_def)
+
         self.criteria.scaffold_exps(exp_def, self.cmdopts)
 
         # Pickle experiment definitions in the actual batch experiment

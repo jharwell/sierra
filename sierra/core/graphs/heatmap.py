@@ -92,7 +92,7 @@ class Heatmap:
             return
 
         # Read .csv and create raw heatmap pfrom default configuration
-        data_df = storage.DataFrameReader('storage.csv')(self.input_fpath)
+        data_df = storage.df_read(self.input_fpath, 'storage.csv')
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: pathlib.Path) -> None:
@@ -202,8 +202,7 @@ class DualHeatmap:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        reader = storage.DataFrameReader('storage.csv')
-        dfs = [reader(f) for f in self.ipaths]
+        dfs = [storage.df_read(f, 'storage.csv') for f in self.ipaths]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
             self.logger.debug(("Not generating dual heatmap: wrong # files "

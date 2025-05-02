@@ -47,32 +47,6 @@ To do this, do the following:
 .. WARNING:: Don't override or extend any of the interfaces! It will causes
              static analysis and/or runtime errors.
 
-Stage 3 Hooks
-=============
-
-Experimental Run Collation
---------------------------
-
-In order to generate additional inter-experiment graphs, you have to also
-collate additional CSV files by:
-
-#. Create ``pipeline/stage3/collate.py``.
-
-#. Extend the
-   :class:`sierra.core.pipeline.stage3.collate.ExpRunCSVGatherer`
-   class:
-
-   .. code-block:: python
-
-      from sierra.core.pipeline.stage3 import collate
-      import pathlib
-
-      class ExpRunCSVGatherer(collate.ExpRunCSVGatherer):
-          def gather_csvs_from_run(self,
-                                   run_output_root: pathlib.Path) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
-              ...
-
-
 Stage 4 Hooks
 =============
 

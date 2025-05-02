@@ -71,14 +71,14 @@ def generate(main_config: types.YAMLDict,
         if os.path.isdir(exproots.stat_root):
             generator(exproots, criteria)
         else:
-            _logger.warning("Skipping experiment '%s': % s does not exist, or "
+            _logger.warning("Skipping experiment '%s': %s does not exist, or "
                             "isn't a directory",
                             exp,
-                            cmdopts['exp_stat_root'])
+                            exproots.stat_root)
 
 
 class IntraExpGraphGenerator:
-    """Generates graphs from :term:`Averaged .csv` files for a single experiment.
+    """Generates graphs from :term:`Averaged Experimental Run Data` files.
 
     Which graphs are generated is controlled by YAML configuration files parsed
     in :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.

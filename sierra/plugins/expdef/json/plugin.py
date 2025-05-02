@@ -227,7 +227,7 @@ class ExpDef:
             for item in blob:
                 self._flatten_apply2(item, f)
 
-    def attr_get(self, path: str, attr: str) -> tp.Optional[str]:
+    def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
         expr = jpparse(path)
         matches = expr.find(self.tree)
 
@@ -250,7 +250,7 @@ class ExpDef:
     def attr_change(self,
                     path: str,
                     attr: str,
-                    value: str,
+                    value: tp.Union[str, int, float],
                     noprint: bool = False) -> bool:
 
         expr = jpparse(path)
@@ -281,7 +281,7 @@ class ExpDef:
     def attr_add(self,
                  path: str,
                  attr: str,
-                 value: str,
+                 value: tp.Union[str, int, float],
                  noprint: bool = False) -> bool:
         expr = jpparse(path)
         matches = expr.find(self.tree)

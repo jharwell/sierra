@@ -1,0 +1,14 @@
+# Copyright 2021 John Harwell, All rights reserved.
+#
+#  SPDX-License-Identifier: MIT
+"""
+Container module for the arrow storage plugin.
+
+See :ref:`plugins/storage/arrow`.
+"""
+
+# Core packages
+
+# 3rd party packages
+
+# Project packages

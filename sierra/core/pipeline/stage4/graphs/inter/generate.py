@@ -25,7 +25,7 @@ def generate(main_config: types.YAMLDict,
              LN_targets: tp.List[types.YAMLDict],
              HM_targets: tp.List[types.YAMLDict],
              criteria: bc.IConcreteBatchCriteria) -> None:
-    """Generate graphs from :term:`Collated .csv` files.
+    """Generate graphs from :term:`Collated Experimental Run Data` files.
 
     Performs the following steps:
 

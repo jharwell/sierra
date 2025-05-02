@@ -21,7 +21,7 @@ import sierra.core.variables.batch_criteria as bc
 
 
 class UnivarGraphCollationInfo():
-    """Data class of the :term:`Collated .csv` files for a particular graph.
+    """Data class of the :term:`Collated Experimental Run Data` files for a particular graph.
 
     """
 
@@ -35,7 +35,7 @@ class UnivarGraphCollationInfo():
 
 
 class BivarGraphCollationInfo():
-    """Data class of the :term:`Collated .csv` files for a particular graph.
+    """Data class of the :term:`Collated Experimental Run Data` files for a particular graph.
 
     """
 
@@ -55,7 +55,7 @@ class BivarGraphCollationInfo():
 class UnivarGraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
-    Results are put into a single :term:`Collated .csv` file.
+    Results are put into a single :term:`Collated Experimental Run Data` file.
     """
 
     def __init__(self,
@@ -95,13 +95,13 @@ class UnivarGraphCollator:
         for diri in exp_dirs:
             self._collate_exp(target, diri.name, stats)
 
-        writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
-                writer(stat.df,
-                       self.pathset.stat_collate_root /
-                       (target['dest_stem'] + stat.df_ext),
-                       index=False)
+                storage.df_write(stat.df,
+                                 self.pathset.stat_collate_root /
+                                 (target['dest_stem'] + stat.df_ext),
+                                 'storage.csv',
+                                 index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -124,7 +124,7 @@ class UnivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            data_df = storage.DataFrameReader('storage.csv')(csv_ipath)
+            data_df = storage.df_read(csv_ipath, 'storage.csv')
 
             assert target['col'] in data_df.columns.values, \
                 "{0} not in columns of {1}".format(target['col'],
@@ -140,7 +140,7 @@ class UnivarGraphCollator:
 class BivarGraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
-    Results are put into a single :term:`Collated .csv` file.
+    Results are put into a single :term:`Collated Experimental Run Data` file.
 
     """
 
@@ -184,16 +184,16 @@ class BivarGraphCollator:
         for diri in exp_dirs:
             self._collate_exp(target, diri.name, stats)
 
-        writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
                 for row, df in stat.df_seq.items():
                     name = '{0}_{1}{2}'.format(target['dest_stem'],
                                                row,
                                                stat.df_ext)
-                    writer(df,
-                           self.pathset.stat_collate_root / name,
-                           index=False)
+                    storage.df_write(df,
+                                     self.pathset.stat_collate_root / name,
+                                     'storage.csv',
+                                     index=False)
 
                 # TODO: Don't write this for now, until I find a better way of
                 # doing 3D data in CSV files.
@@ -222,7 +222,7 @@ class BivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            data_df = storage.DataFrameReader('storage.csv')(csv_ipath)
+            data_df = storage.df_read(csv_ipath, 'storage.csv')
 
             assert target['col'] in data_df.columns.values, \
                 "{0} not in columns of {1}, which has {2}".format(target['col'],
@@ -251,7 +251,7 @@ class BivarGraphCollator:
 
 class ParallelCollator():
     """
-    Generate :term:`Collated .csv` files from :term:`Summary .csv`.
+    Generate :term:`Collated Experimental Run Data` files from :term:`Summary .csv`.
 
     """
 

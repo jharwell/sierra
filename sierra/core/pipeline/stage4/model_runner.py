@@ -78,7 +78,6 @@ class IntraExpModelRunner:
                           str(model),
                           exp_index)
         dfs = model.run(criteria, exp_index, cmdopts, pathset)
-        writer = storage.DataFrameWriter('storage.csv')
 
         for df, csv_stem in zip(dfs, model.target_csv_stems()):
             path_stem = pathset.model_root / csv_stem
@@ -93,9 +92,10 @@ class IntraExpModelRunner:
                         break
 
             # Write model .csv file
-            writer(df,
-                   path_stem.with_suffix(config.kModelsExt['model']),
-                   index=False)
+            storage.df_write(df,
+                             path_stem.with_suffix(config.kModelsExt['model']),
+                             'storage.csv',
+                             index=False)
 
 
 class InterExpModelRunner:
@@ -135,10 +135,10 @@ class InterExpModelRunner:
                 path_stem = self.model_root / csv_stem
 
                 # Write model .csv file
-                writer = storage.DataFrameWriter('storage.csv')
-                writer(df,
-                       path_stem.with_suffix(config.kModelsExt['model']),
-                       index=False)
+                storage.df_write(df,
+                                 path_stem.with_suffix(config.kModelsExt['model']),
+                                 'storage.csv',
+                                 index=False)
 
                 # 1D dataframe -> line graph with legend
                 if len(df.index) == 1:
