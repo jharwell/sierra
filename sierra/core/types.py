@@ -17,9 +17,8 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias
 
-import pathlib
-
 # 3rd party packages
+import pathlib
 
 # Project packages
 

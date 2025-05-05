@@ -31,12 +31,12 @@ class GatherSpec:
 
     def __init__(self,
                  exp_name: str,
-                 path: pathlib.Path):
+                 item_stem_path: pathlib.Path):
         self.exp_name = exp_name
-        self.path = path
+        self.item_stem_path = item_stem_path
 
     def __repr__(self) -> str:
-        return f"{self.exp_name}: {self.path}"
+        return f"{self.exp_name}: {self.item_stem_path}"
 
 
 class BaseGatherer:
@@ -49,7 +49,7 @@ class BaseGatherer:
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 gather_opts: tp.Dict[str, str],
+                 gather_opts: types.SimpleDict,
                  processq: mp.Queue) -> None:
         self.processq = processq
         self.gather_opts = gather_opts
@@ -71,7 +71,7 @@ class BaseGatherer:
 
         self.logger.info('Gathering raw outputs from %s...', exp_output_root.name)
 
-        pattern = "{}_run{}_output".format(re.escape(self.gather_opts['template_input_leaf']),
+        pattern = "{}_run{}_output".format(re.escape(str(self.gather_opts['template_input_leaf'])),
                                            r'\d+')
 
         runs = list(exp_output_root.iterdir())
@@ -81,9 +81,9 @@ class BaseGatherer:
         # Maps (unique stem, optional parent dir) to the averaged dataframe
         to_gather = self.calc_gather_items(runs[0], exp_output_root.name)
 
-        for item in to_gather:
+        for spec in to_gather:
             self._wait_for_memory()
-            gathered = self._gather_item_from_sims(exp_output_root, item, runs)
+            gathered = self._gather_item_from_sims(exp_output_root, spec, runs)
 
             # Put gathered .csv list  in the process queue
             self.processq.put(gathered)
@@ -94,15 +94,16 @@ class BaseGatherer:
 
     def _gather_item_from_sims(self,
                                exp_output_root: pathlib.Path,
-                               item: GatherSpec,
+                               spec: GatherSpec,
                                runs: tp.List[pathlib.Path]) -> tp.Dict[GatherSpec,
                                                                        tp.List[pd.DataFrame]]:
         gathered = {}  # type: tp.Dict[GatherSpec, pd.DataFrame]
 
         for run in runs:
-            reader = storage.DataFrameReader(self.gather_opts['storage'])
-            df = reader(item.path, index_col=False)
 
+            reader = storage.DataFrameReader(self.gather_opts['storage'])
+            df = reader(run / self.run_metrics_leaf / spec.item_stem_path,
+                        index_col=False)
             # 2025-05-02 [JRH]: This column dropping is in here temporarily to
             # enable me to process data from starling. It will be removed before
             # merging to devel.
@@ -115,10 +116,10 @@ class BaseGatherer:
             cols = df.select_dtypes(include='object').columns.tolist()
             df = df.drop(cols, axis=1)
 
-            if item not in gathered:
-                gathered[item] = []
+            if spec.item_stem_path not in gathered:
+                gathered[spec] = []
 
-            gathered[item].append(df)
+            gathered[spec].append(df)
 
         return gathered
 
@@ -231,14 +232,14 @@ class DataGatherer(BaseGatherer):
                           run_output_root: pathlib.Path,
                           exp_name: str) -> tp.List[GatherSpec]:
         to_gather = []
-        sim_output_root = run_output_root / self.run_metrics_leaf
-        storage = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
+        run_output_root = run_output_root / self.run_metrics_leaf
+        plugin = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
 
-        for item in sim_output_root.rglob("*"):
-            if item.is_file() and any([s in storage.suffixes() for s in
-                                       item.suffixes]) and item.stat().st_size > 0:
+        for item in run_output_root.rglob("*"):
+            if item.is_file() and any(s in plugin.suffixes() for s in
+                                      item.suffixes) and item.stat().st_size > 0:
                 to_gather.append(GatherSpec(exp_name=exp_name,
-                                            path=item))
+                                            item_stem_path=item.relative_to(run_output_root)))
         return to_gather
 
 
@@ -261,7 +262,7 @@ class ImagizeInputGatherer(BaseGatherer):
 
     def __init__(self,
                  main_config: types.YAMLDict,
-                 gather_opts: tp.Dict[str, str],
+                 gather_opts: types.SimpleDict,
                  processq: mp.Queue) -> None:
         super().__init__(main_config, gather_opts, processq)
         self.logger = logging.getLogger(__name__)
@@ -271,14 +272,13 @@ class ImagizeInputGatherer(BaseGatherer):
                           exp_name: str) -> tp.List[GatherSpec]:
         to_gather = []
         run_output_root = run_output_root / self.run_metrics_leaf
-        storage = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
+        plugin = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
 
         for item in run_output_root.iterdir():
             if not item.is_dir():
                 self.logger.debug(("Skip <run_output_root>/'%s' for imagizing "
                                    "gather: files must be in subdir"),
-                                  item.name,
-                                  item.relative_to(run_output_root))
+                                  item.name)
                 continue
 
             for imagizable in item.iterdir():
@@ -287,15 +287,16 @@ class ImagizeInputGatherer(BaseGatherer):
                                        "<run_output_root>/'%s' for imagizing "
                                        "gather: recursion not supported"),
                                       imagizable.name,
-                                      imagizeable.relative_to(run_output_root))
+                                      imagizable.relative_to(run_output_root))
                     continue
 
-                if not any([s in storage.suffixes() for s in
-                            imagizable.suffixes]) and imagizable.stat().st_size > 0:
+                if not any(s in plugin.suffixes() for s in
+                           imagizable.suffixes) and imagizable.stat().st_size > 0:
                     continue
 
                 if imagizable.name == item.name:
-                    to_gather.append(GatherSpec(exp_name=exp_name, path=item))
+                    to_gather.append(GatherSpec(exp_name=exp_name,
+                                                item_stem_path=item.relative_to(run_output_root)))
 
         return to_gather
 

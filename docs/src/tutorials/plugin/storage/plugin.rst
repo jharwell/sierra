@@ -5,6 +5,13 @@ Within this file, you must define the following functions, which must be named
 
         import pandas as pd
         import pathlib
+        import typing as tp
+
+        def suffixes() -> tp.List[str]:
+            """
+            Returns a list of suffixes that the plugin will consider valid
+            during stage 3 when reading experimental run outputs.
+            """
 
         def df_read(path: pathlib.Path, **kwargs) -> pd.DataFrame:
             """

@@ -116,7 +116,7 @@ class BaseExpDef(implements.Interface):
         """
         raise NotImplementedError
 
-    def attr_get(self, path: str, attr: str) -> tp.Union[str, None]:
+    def attr_get(self, path: str, attr: str) -> tp.Union[str, int, float, None]:
         """Retrieve the specified attribute of the element at the specified path.
 
         If it does not exist, None is returned.

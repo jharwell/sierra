@@ -28,7 +28,7 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    src/getting_started.rst
 
    src/requirements/index.rst
-   src/datamodel.rst
+   src/dataflow.rst
    src/plugins/index.rst
 
    src/usage/examples.rst

@@ -149,28 +149,40 @@ works/is designed the way it is, and to help you find your way around.
 
       - Different random seeds
 
-   Experimental Run Data
+   Raw Output Data
 
       A csv/arrow/etc file generated as an output from a single
       :term:`Experimental Run`. It will (probably) contain a set of columns of
       representing outputs of interest, with rows corresponding to values
       captured throughout the run.
 
-   Averaged Experimental Run Data
+   Processed Output Data
 
       A csv/arrow/etc file generated as from averaging files from multiple
       :term:`Experimental Runs<Experimental Run>`. It will (probably) contain a
       set of columns of representing outputs of interest, with rows
       corresponding to values captured throughout the run (i.e., a time series).
 
-   Collated Experimental Run Data
+   Data Collation
 
-      A csv/arrow/etc file created by SIERRA during stage 3. Collated files
-      contain a set columns, one per :term:`Experiment` in the :term:`Batch
-      Experiment`. Each column is the captured value of a *single* column within
-      an :term:`Experimental Run Output File`. This is to capture a specific
-      aspect of the behavior of the swarm within a batch experiment, for use in
-      graph generation.
+      The process of taking a set of user-specified columns from a set of files
+      and putting them into a single file. Comes in two flavors:
+
+      - Taking one column per :term:`Experiment` in the :term:`Batch
+        Experiment`.
+
+      - Taking one column per :term:`Experimental Run` in an :term:`Experiment`.
+
+
+      For use in deliverable generation. See
+      :ref:`dataflow/stage3/intra-collate` and
+      :ref:`dataflow/stage4/inter-collate` for more information.
+
+   Collated Output Data
+
+      A csv/arrow/etc file created by SIERRA during stage 3/4 via :term:`Data
+      Collation`. See :ref:`dataflow/stage3/intra-collate` and
+      :ref:`dataflow/stage4/inter-collate` for more information.
 
    Summary .csv
 

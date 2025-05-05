@@ -239,7 +239,6 @@ class ExpRunCSVGatherer:
         perf_path = run_output_root / (intra_perf_leaf +
                                        config.kStorageExt['csv'])
         perf_df = reader(perf_path, index_col=False)
-
         return {
             (intra_perf_leaf, intra_perf_col): perf_df[intra_perf_col],
         }

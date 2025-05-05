@@ -191,7 +191,7 @@ class ExpDef:
         raise NotImplementedError(
             "The XML expdef plugin does not support flattening")
 
-    def attr_get(self, path: str, attr: str) -> tp.Optional[str]:
+    def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
         el = self.root.find(path)
         if el is not None and attr in el.attrib:
             return el.attrib[attr]
@@ -215,7 +215,7 @@ class ExpDef:
                                     path)
             return False
 
-        el.attrib[attr] = str(value)
+        el.attrib[attr] = value
         self.logger.trace("Modify attr: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
@@ -242,7 +242,7 @@ class ExpDef:
                                     path)
             return False
 
-        el.set(attr, str(value))
+        el.set(attr, value)
         self.logger.trace("Add new attribute: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
