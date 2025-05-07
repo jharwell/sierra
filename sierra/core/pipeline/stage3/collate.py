@@ -31,286 +31,238 @@ import psutil
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
 from sierra.core import types, storage, utils, config, batchroot
+from sierra.core.pipeline.stage3 import gather
+
+_logger = logging.getLogger(__name__)
 
 
-class ExpParallelCollator:
-    """Generate :term:`Collated Experimental Run Data` files for each experiment.
+def proc_batch_exp(main_config: dict,
+                   cmdopts: types.Cmdopts,
+                   pathset: batchroot.PathSet,
+                   criteria: bc.IConcreteBatchCriteria) -> None:
+    """Generate :term:`Collated Output Data` files for each experiment.
 
-    :term:`Collated Experimental Run Data` files generated from
-    :term:`Experimental Run Data` files across :term:`Experimental Runs
-    <Experimental Run>`.  Gathered in parallel for each experiment for speed,
-    unless disabled with ``--processing-serial``.
+    :term:`Collated Output Data` files generated from :term:`Raw Output Data`
+    files across :term:`Experimental Runs <Experimental Run>`.  Gathered in
+    parallel for each experiment for speed, unless disabled with
+    ``--processing-serial``.
     """
 
-    def __init__(self,
-                 main_config: dict,
-                 cmdopts: types.Cmdopts,
-                 pathset: batchroot.PathSet):
-        self.main_config = main_config
-        self.cmdopts = cmdopts
-        self.pathset = pathset
-        self.logger = logging.getLogger(__name__)
+    pool_opts = {}
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        if self.cmdopts['processing_serial']:
-            n_gatherers = 1
-            n_processors = 1
-        else:
-            # Aways need to have at least one of each! If SIERRA is invoked on a
-            # machine with 2 or less logical cores, the calculation with
-            # psutil.cpu_count() will return 0 for # gatherers.
-            n_gatherers = max(1, int(psutil.cpu_count() * 0.25))
-            n_processors = max(1, int(psutil.cpu_count() * 0.75))
+    if cmdopts['processing_serial']:
+        pool_opts['n_gatherers'] = 1
+        pool_opts['n_processors'] = 1
+    else:
+        # Aways need to have at least one of each! If SIERRA is invoked on a
+        # machine with 2 or less logical cores, the calculation with
+        # psutil.cpu_count() will return 0 for # gatherers.
+        pool_opts['n_gatherers'] = max(1, int(psutil.cpu_count() * 0.25))
+        pool_opts['n_processors'] = max(1, int(psutil.cpu_count() * 0.75))
 
-        pool = mp.Pool(processes=n_gatherers + n_processors)
+    worker_opts = {
+        'project': cmdopts['project'],
+        'template_input_leaf': pathlib.Path(cmdopts['expdef_template']).stem,
+        'df_skip_verify': cmdopts['df_skip_verify'],
+        'dist_stats': cmdopts['dist_stats'],
+        'processing_mem_limit': cmdopts['processing_mem_limit'],
+        'storage': cmdopts['storage'],
+        'df_homogenize': cmdopts['df_homogenize']
+    }
 
-        m = mp.Manager()
-        gatherq = m.Queue()
-        processq = m.Queue()
+    exp_to_proc = utils.exp_range_calc(cmdopts["exp_range"],
+                                       pathset.output_root,
+                                       criteria)
 
-        exp_to_proc = utils.exp_range_calc(self.cmdopts["exp_range"],
-                                           self.pathset.output_root,
-                                           criteria)
+    with mp.Pool(processes=pool_opts['n_gatherers'] +
+                 pool_opts['n_processors']) as pool:
 
-        for exp in exp_to_proc:
-            gatherq.put((self.pathset.output_root, exp.name))
-
-        self.logger.debug("Starting %d gatherers, method=%s",
-                          n_gatherers,
-                          mp.get_start_method())
-
-        gathered = [pool.apply_async(ExpParallelCollator._gather_worker,
-                                     (gatherq,
-                                      processq,
-                                      self.main_config,
-                                      self.cmdopts['project'],
-                                      self.cmdopts['storage'])) for _ in range(0, n_gatherers)]
-
-        self.logger.debug("Starting %d processors, method=%s",
-                          n_processors,
-                          mp.get_start_method())
-        processed = [pool.apply_async(ExpParallelCollator._process_worker,
-                                      (processq,
-                                       self.main_config,
-                                       self.pathset.stat_collate_root,
-                                       self.cmdopts['storage'],
-                                       self.cmdopts['df_homogenize'])) for _ in range(0, n_processors)]
-
-        # To capture the otherwise silent crashes when something goes wrong in
-        # worker threads. Any assertions will show and any exceptions will be
-        # re-raised.
-        self.logger.debug("Waiting for workers to finish")
-        for g in gathered:
-            g.get()
-
-        for p in processed:
-            p.get()
-
-        pool.close()
-        pool.join()
-        self.logger.debug("All threads finished")
-
-    @staticmethod
-    def _gather_worker(gatherq: mp.Queue,
-                       processq: mp.Queue,
-                       main_config: types.YAMLDict,
-                       project: str,
-                       storage_plugin_name: str) -> None:
-        module = pm.module_load_tiered(project=project,
-                                       path='pipeline.stage3.collate')
-        gatherer = module.ExpRunCSVGatherer(main_config,
-                                            storage_plugin_name,
-                                            processq)
-        while True:
-            # Wait for 3 seconds after the queue is empty before bailing
-            try:
-                batch_output_root, exp = gatherq.get(True, 3)
-                gatherer(batch_output_root, exp)
-                gatherq.task_done()
-
-            except queue.Empty:
-                break
-
-    @staticmethod
-    def _process_worker(processq: mp.Queue,
-                        main_config: types.YAMLDict,
-                        batch_stat_collate_root: pathlib.Path,
-                        storage_plugin_name: str,
-                        df_homogenize: str) -> None:
-        collator = ExpRunCollator(main_config,
-                                  batch_stat_collate_root,
-                                  storage_plugin_name,
-                                  df_homogenize)
-        while True:
-            # Wait for 3 seconds after the queue is empty before bailing
-            try:
-                item = processq.get(True, 3)
-
-                exp_leaf = list(item.keys())[0]
-                gathered_runs, gathered_dfs = item[exp_leaf]
-                collator(gathered_runs, gathered_dfs, exp_leaf)
-                processq.task_done()
-            except queue.Empty:
-                break
+        _execute_for_batch(main_config,
+                           pathset,
+                           exp_to_proc,
+                           worker_opts,
+                           pool_opts,
+                           pool)
 
 
-class ExpRunCSVGatherer:
-    """Gather :term:`Experimental Run Data` files across all runs within an experiment.
+def _execute_for_batch(main_config: types.YAMLDict,
+                       pathset: batchroot.PathSet,
+                       exp_to_proc: tp.List[pathlib.Path],
+                       worker_opts: types.SimpleDict,
+                       pool_opts: types.SimpleDict,
+                       pool) -> None:
+    m = mp.Manager()
+    gatherq = m.Queue()
+    processq = m.Queue()
 
-    This class can be extended/overriden using a :term:`Project` hook.  See
-    :ref:`tutorials/project/hooks` for details.
+    for exp in exp_to_proc:
+        gatherq.put(exp)
 
-    Attributes:
-        processq: The multiprocessing-safe producer-consumer queue that the data
-                  gathered from experimental runs will be placed in for
-                  processing.
+    _logger.debug("Starting %d gatherers, method=%s",
+                  pool_opts['n_gatherers'],
+                  mp.get_start_method())
 
-        storage: The name of the storage medium plugin to use to extract
-                  dataframes from when reading run data.
+    gathered = [pool.apply_async(_gather_worker,
+                                 (gatherq,
+                                  processq,
+                                  main_config,
+                                  worker_opts)) for _ in range(0, pool_opts['n_gatherers'])]
 
-        main_config: Parsed dictionary of main YAML configuration.
+    _logger.debug("Starting %d processors, method=%s",
+                  pool_opts['n_processors'],
+                  mp.get_start_method())
+    processed = [pool.apply_async(_process_worker,
+                                  (processq,
+                                   main_config,
+                                   pathset.stat_collate_root,
+                                   worker_opts)) for _ in range(0, pool_opts['n_processors'])]
 
-        logger: The handle to the logger for this class.  If you extend this
-                class, you should save/restore this variable in tandem with
-                overriding it in order to get logging messages with unique
-                logger names between this class and your derived class, in order
-                to reduce confusion.
+    # To capture the otherwise silent crashes when something goes wrong in
+    # worker threads. Any assertions will show and any exceptions will be
+    # re-raised.
+    _logger.debug("Waiting for workers to finish")
+    for g in gathered:
+        g.get()
+
+    for p in processed:
+        p.get()
+
+    pool.close()
+    pool.join()
+    _logger.debug("All threads finished")
+
+
+def _gather_worker(gatherq: mp.Queue,
+                   processq: mp.Queue,
+                   main_config: types.YAMLDict,
+                   gather_opts: types.SimpleDict) -> None:
+    gatherer = ExpDataGatherer(main_config,
+                               gather_opts,
+                               processq)
+    while True:
+        # Wait for 3 seconds after the queue is empty before bailing
+        try:
+            exp_output_root = gatherq.get(True, 3)
+            gatherer(exp_output_root)
+            gatherq.task_done()
+
+        except queue.Empty:
+            break
+
+
+def _process_worker(processq: mp.Queue,
+                    main_config: types.YAMLDict,
+                    batch_stat_collate_root: pathlib.Path,
+                    process_opts: types.SimpleDict) -> None:
+    while True:
+        # Wait for 3 seconds after the queue is empty before bailing
+        try:
+            spec = processq.get(True, 3)
+            _proc_single_exp(main_config,
+                             batch_stat_collate_root,
+                             process_opts,
+                             spec)
+            processq.task_done()
+        except queue.Empty:
+            break
+
+
+class ExpDataGatherer(gather.BaseGatherer):
+    """Gather :term:`Raw Output Data` files across all runs for :term:`Data Collation`.
+
+    The configured output directory for each run is searched recursively for
+    files to gather.  To be eligible for gathering and later processing, files
+    must:
+
+        - Be non-empty
+
+        - Have a suffix which supported by the selected ``--storage`` plugin.
+
+        - Have a name (last part of absolute path, including extension) which
+          matches a configured :term:`Performance File`.
     """
 
-    def __init__(self,
-                 main_config: types.YAMLDict,
-                 storage_plugin_name: str,
-                 processq: mp.Queue) -> None:
-        self.processq = processq
-
-        self.storage = storage_plugin_name
-        self.main_config = main_config
-
-        self.run_metrics_leaf = main_config['sierra']['run']['run_metrics_leaf']
-
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self,
-                 batch_output_root: pathlib.Path,
-                 exp_leaf: str):
-        """
-        Gather CSV data from all experimental runs in an experiment.
+    def calc_gather_items(self,
+                          run_output_root: pathlib.Path,
+                          exp_name: str) -> tp.List[gather.GatherSpec]:
+        to_gather = []
+        proj_output_root = run_output_root / self.run_metrics_leaf
+        plugin = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
 
-        Gathered data is put in a queue for processing.
+        for item in proj_output_root.rglob("*"):
+            # Must be a file (duh)
+            if not item.is_file():
+                continue
 
-        Arguments:
+            # Has to be a supported suffix for storage plugin
+            if not any(s in plugin.suffixes() for s in
+                       item.suffixes) or item.stat().st_size == 0:
+                continue
 
-            exp_leaf: The name of the experiment directory within the
-                      ``batch_output_root``.
+            # Must be a configured perf file
+            intra_perf_csv = self.main_config['sierra']['perf']['intra_perf_csv']
+            if intra_perf_csv not in item.name:
+                continue
 
-        """
-        self.logger.info('Gathering .csvs: %s...', exp_leaf)
-
-        exp_output_root = batch_output_root / exp_leaf
-
-        runs = sorted(exp_output_root.iterdir())
-
-        gathered = []
-        for run in runs:
-            run_output_root = run / self.run_metrics_leaf
-            gathered.append(self.gather_csvs_from_run(run_output_root))
-
-        names = [run.name for run in runs]
-        self.processq.put({exp_leaf: (names, gathered)})
-
-    def gather_csvs_from_run(self,
-                             run_output_root: pathlib.Path) -> tp.Dict[tp.Tuple[str, str],
-                                                                       pd.DataFrame]:
-        """Gather all data from a single run within an experiment.
-
-        Returns:
-
-           dict: A dictionary of <(CSV file name, CSV performance column),
-                 dataframe> key-value pairs. The CSV file name is the leaf part
-                 of the path with the extension included.
-
-        """
-
-        intra_perf_csv = self.main_config['sierra']['perf']['intra_perf_csv']
-        intra_perf_leaf = intra_perf_csv.split('.')[0]
-        intra_perf_col = self.main_config['sierra']['perf']['intra_perf_col']
-
-        reader = storage.DataFrameReader(self.storage)
-        perf_path = run_output_root / (intra_perf_leaf +
-                                       config.kStorageExt['csv'])
-        perf_df = reader(perf_path, index_col=False)
-        return {
-            (intra_perf_leaf, intra_perf_col): perf_df[intra_perf_col],
-        }
+            to_gather.append(gather.GatherSpec(exp_name=exp_name,
+                                               item_stem_path=item.relative_to(
+                                                   proj_output_root),
+                             perfcol=self.main_config['sierra']['perf']['intra_perf_col']))
+        return to_gather
 
 
-class ExpRunCollator:
+def _proc_single_exp(main_config: types.YAMLDict,
+                     batch_stat_collate_root: pathlib.Path,
+                     process_opts: types.SimpleDict,
+                     spec: gather.ProcessSpec) -> None:
     """Collate :term:`Experimental Run Data` files together (reduce operation).
 
     :term:`Experimental Run Data` files gathered from N :term:`Experimental Runs
     <Experimental Run>` are combined together into a single :term:`Summary .csv`
     per :term:`Experiment` with 1 column per run.
     """
+    # To support inverted performance measures where smaller is better
+    invert_perf = main_config['sierra']['perf'].get('inverted', False)
+    intra_perf_csv = pathlib.Path(main_config['sierra']['perf']['intra_perf_csv'])
+    intra_perf_col = main_config['sierra']['perf']['intra_perf_col']
 
-    def __init__(self,
-                 main_config: types.YAMLDict,
-                 batch_stat_collate_root: pathlib.Path,
-                 storage_plugin_name: str,
-                 df_homogenize: str) -> None:
-        self.main_config = main_config
-        self.batch_stat_collate_root = batch_stat_collate_root
-        self.df_homogenize = df_homogenize
+    utils.dir_create_checked(batch_stat_collate_root, exist_ok=True)
 
-        self.storage = storage_plugin_name
+    collated = {}
 
-        # To support inverted performance measures where smaller is better
-        self.invert_perf = main_config['sierra']['perf'].get('inverted', False)
-        self.intra_perf_csv = main_config['sierra']['perf']['intra_perf_csv']
+    # TODO: Make this actually support multiple perf columns.
+    key = (intra_perf_csv, intra_perf_col)
+    collated[key] = pd.DataFrame(index=spec.dfs[0].index,
+                                 columns=spec.exp_run_names)
+    for i, df in enumerate(spec.dfs):
+        assert intra_perf_col in df.columns, \
+            f"{intra_perf_col} not in {df.columns}"
 
-        utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
+        perf_df = df[intra_perf_col]
+        # Invert performance if configured.
+        if invert_perf:
+            perf_df = 1.0 / perf_df
+            # This is a bit of a hack. But also not a hack at all,
+            # because infinite performance is not possible. This
+            # is... Schrodinger's Hack.
+            perf_df = perf_df.replace([-np.inf, np.inf], 0)
 
-    def __call__(self,
-                 gathered_runs: tp.List[str],
-                 gathered_dfs: tp.List[tp.Dict[tp.Tuple[str, str], pd.DataFrame]],
-                 exp_leaf: str) -> None:
-        collated = {}
+        collated[key][spec.exp_run_names[i]] = perf_df
 
-        for run in gathered_runs:
-            run_dfs = gathered_dfs[gathered_runs.index(run)]
-
-            for csv_leaf, col in run_dfs.keys():
-                csv_df = run_dfs[(csv_leaf, col)]
-
-                # Invert performance if configured.
-                if self.invert_perf and csv_leaf in self.intra_perf_csv:
-                    csv_df = 1.0 / csv_df
-
-                    # Because of the requirement that P(N) >= 0 for flexibility
-                    # (1/0 = inf gives a crash with DTW), if the current level
-                    # of performance is 0, it stays 0.
-                    #
-                    # This is a bit of a hack. But also not a hack at all,
-                    # because infinite performance is not possible. This
-                    # is... Schrodinger's Hack.
-                    csv_df = csv_df.replace([-np.inf, np.inf], 0)
-
-                if (csv_leaf, col) not in collated:
-                    collated[(csv_leaf, col)] = pd.DataFrame(index=csv_df.index,
-                                                             columns=gathered_runs)
-                collated[(csv_leaf, col)][run] = csv_df
-
-        for (csv_leaf, col) in collated:
-            writer = storage.DataFrameWriter(self.storage)
-            df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
-            fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStorageExt['csv']
-            opath = self.batch_stat_collate_root / fname
-            writer(df, opath, index=False)
+    for (perf_file_path, col) in collated:
+        df = utils.df_fill(collated[(perf_file_path, col)],
+                           process_opts['df_homogenize'])
+        fname = f'{spec.gather.exp_name}-{perf_file_path.stem}-{col}' + \
+            config.kStorageExt['csv']
+        opath = batch_stat_collate_root / fname
+        storage.df_write(df, opath, 'storage.csv', index=False)
 
 
 __all__ = [
-    'ExpParallelCollator',
-    'ExpRunCSVGatherer',
-    'ExpRunCollator'
-
-
+    'proc_batch_exp',
+    'ExpDataGatherer',
 ]

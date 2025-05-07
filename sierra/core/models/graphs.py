@@ -69,11 +69,12 @@ class IntraExpModel2DGraphSet():
             self.target_stem + '-HM-model-error' + config.kImageExt)
 
         # Write the error .csv to the filesystem
-        reader = storage.DataFrameReader('storage.csv')
-        writer = storage.DataFrameWriter('storage.csv')
-        data_df = reader(data_ipath)
-        model_df = reader(model_ipath)
-        writer(model_df - data_df, model_error_ipath, index=False)
+        data_df = storage.df_read(data_ipath, 'storage.csv')
+        model_df = storage.df_read(model_ipath, 'storage.csv')
+        storage.df_write(model_df - data_df,
+                         model_error_ipath,
+                         'storage.csv',
+                         index=False)
 
         HeatmapSet(ipaths=[data_ipath, stddev_ipath, model_ipath, model_error_ipath],
                    opaths=[data_opath, stddev_opath,

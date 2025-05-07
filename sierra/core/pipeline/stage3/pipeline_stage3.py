@@ -84,7 +84,6 @@ class PipelineStage3:
                                   self.pathset,
                                   criteria,
                                   gather.DataGatherer)
-
         if self.cmdopts['project_imagizing']:
             statistics.proc_batch_exp(self.main_config,
                                       self.cmdopts,
@@ -102,9 +101,10 @@ class PipelineStage3:
             self.logger.info("Collating experiment run outputs into %s...",
                              self.pathset.stat_collate_root)
             start = time.time()
-            collate.ExpParallelCollator(self.main_config,
-                                        self.cmdopts,
-                                        self.pathset)(criteria)
+            collate.proc_batch_exp(self.main_config,
+                                   self.cmdopts,
+                                   self.pathset,
+                                   criteria)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             self.logger.info(

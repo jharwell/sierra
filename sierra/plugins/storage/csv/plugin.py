@@ -27,7 +27,9 @@ def df_read(path: pathlib.Path, **kwargs) -> pd.DataFrame:
     """
     # Always specify the datatype so pandas does not have to infer it--much
     # faster.
-    return pd.read_csv(path, sep=',', float_precision='high', **kwargs)
+    return pd.read_csv(path,
+                       sep=',',
+                       **kwargs)
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore

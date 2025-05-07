@@ -70,8 +70,7 @@ class StackedSurfaceGraph:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        reader = storage.DataFrameReader('storage.csv')
-        dfs = [reader(f) for f in self.ipaths]
+        dfs = [storage.df_read(f, 'storage.csv') for f in self.ipaths]
 
         if not dfs or len(dfs) > StackedSurfaceGraph.kMaxSurfaces:
             self.logger.debug(("Not generating stacked surface graph: wrong # "

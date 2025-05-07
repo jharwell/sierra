@@ -161,7 +161,15 @@ print(path)
     for exp in {0..4}; do
         [ -d "$stat_root/exp${exp}" ] || false
         [ -f "$stat_root/exp${exp}/output.mean" ] || false
+        [ -f "$stat_root/exp${exp}/subdir1/subdir2/output.mean" ] || false
+        [ -f "$stat_root/exp${exp}/subdir3/output.mean" ] || false
         n_rows=$(wc -l < "$stat_root/exp${exp}/output.mean")
+        [[ $n_rows == 51 ]] && true || false
+
+        n_rows=$(wc -l < "$stat_root/exp${exp}/subdir1/subdir2/output.mean")
+        [[ $n_rows == 51 ]] && true || false
+
+        n_rows=$(wc -l < "$stat_root/exp${exp}/subdir3/output.mean")
         [[ $n_rows == 51 ]] && true || false
 
         [ -f "$stat_root/collated/exp${exp}-output-col1.csv" ] || false

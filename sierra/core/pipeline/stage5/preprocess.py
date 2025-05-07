@@ -74,9 +74,8 @@ class IntraExpPreparer():
                                        inc_exps)
 
             if df is not None:
-                writer = storage.DataFrameWriter('storage.csv')
                 opath = self.opath_stem / (opath_leaf + exts[k])
-                writer(df, opath, index=False)
+                storage.df_write(df, opath, 'storage.csv', index=False)
 
     def across_rows(self,
                     opath_leaf: str,
@@ -101,10 +100,10 @@ class IntraExpPreparer():
             df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
             if df is not None:
-                writer = storage.DataFrameWriter('storage.csv')
-                writer(df,
-                       self.opath_stem / (opath_leaf + exts[k]),
-                       index=False)
+                storage.df_write(df,
+                                 self.opath_stem / (opath_leaf + exts[k]),
+                                 'storage.csv',
+                                 index=False)
 
     def _accum_df_by_col(self,
                          ipath: pathlib.Path,
@@ -112,17 +111,17 @@ class IntraExpPreparer():
                          all_cols: tp.List[str],
                          col_index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
-        reader = storage.DataFrameReader('storage.csv')
 
         if utils.path_exists(opath):
-            cum_df = reader(opath)
+            cum_df = storage.df_read(opath, 'storage.csv')
+
         else:
             cum_df = None
 
         if not utils.path_exists(ipath):
             return None
 
-        t = reader(ipath)
+        t = storage.df_read(ipath, 'storage.csv')
 
         if inc_exps is not None:
             cols_from_index = utils.exp_include_filter(inc_exps,
@@ -155,14 +154,13 @@ class IntraExpPreparer():
                          opath: pathlib.Path,
                          index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
-        reader = storage.DataFrameReader('storage.csv')
         if utils.path_exists(opath):
-            cum_df = reader(opath)
+            cum_df = storage.df_read(opath, 'storage.csv')
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = reader(ipath)
+            t = storage.df_read(ipath, 'storage.csv')
 
             if inc_exps is not None:
                 cols = utils.exp_include_filter(inc_exps,

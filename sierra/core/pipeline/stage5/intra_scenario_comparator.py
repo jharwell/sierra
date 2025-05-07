@@ -452,7 +452,7 @@ class BivarIntraScenarioComparator:
                                 controller)
             return
 
-        df = storage.DataFrameReader('storage.csv')(csv_ipath)
+        df = storage.df_read(csv_ipath, 'storage.csv')
 
         opath_leaf = namecalc.for_output(batch_leaf,
                                          dest_stem,
@@ -461,8 +461,7 @@ class BivarIntraScenarioComparator:
         opath_stem = self.stage5_roots.csv_root / opath_leaf
         opath = opath_stem.with_name(
             opath_stem.name + config.kStats['mean'].exts['mean'])
-        writer = storage.DataFrameWriter('storage.csv')
-        writer(df, opath, index=False)
+        storage.df_write(df, opath, 'storage.csv', index=False)
 
     def _gen_csvs_for_1D(self,
                          cmdopts: types.Cmdopts,
@@ -507,10 +506,9 @@ class BivarIntraScenarioComparator:
                                                    opath_stem=self.stage5_roots.csv_root,
                                                    n_exp=criteria.criteria2.n_exp())
 
-            reader = storage.DataFrameReader('storage.csv')
             ipath = pathset.stat_collate_root / \
                 (src_stem + config.kStats['mean'].exts['mean'])
-            n_rows = len(reader(ipath).index)
+            n_rows = len(storage.df_read(ipath, 'storage.csv').index)
 
             for i in range(0, n_rows):
                 opath_leaf = namecalc.for_output(batch_leaf,
@@ -672,11 +670,10 @@ class BivarIntraScenarioComparator:
                                 pattern)
             return
 
-        reader = storage.DataFrameReader('storage.csv')
-        ref_df = reader(paths[0])
+        ref_df = storage.df_read(paths[0], 'storage.csv')
 
         for i in range(1, len(paths)):
-            df = reader(paths[i])
+            df = storage.df_read(paths[i], 'storage.csv')
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
             elif comp_type == 'HMdiff':
@@ -692,8 +689,7 @@ class BivarIntraScenarioComparator:
                 (leaf + config.kStats['mean'].exts['mean'])
             opath = self.stage5_roots.graph_root / (leaf + config.kImageExt)
 
-            writer = storage.DataFrameWriter('storage.csv')
-            writer(plot_df, ipath, index=False)
+            storage.df_write(plot_df, ipath, 'storage.csv', index=False)
 
             Heatmap(input_fpath=ipath,
                     output_fpath=opath,

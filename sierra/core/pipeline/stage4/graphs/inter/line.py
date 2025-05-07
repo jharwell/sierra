@@ -92,7 +92,9 @@ def _gen_stacked_linegraph(graph: types.YAMLDict,
                           xlabel=graph.get('xlabel', None),
                           ylabel=graph.get('ylabel', None),
                           logyscale=cmdopts['plot_log_yscale'],
-                          large_text=cmdopts['plot_large_text'])
+                          large_text=cmdopts['plot_large_text'],
+                          legend=graph.get('legend', [f'exp{i}' for i in
+                                                      range(0, criteria.n_exp())]))
 
     ln.generate()
 

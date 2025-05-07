@@ -58,7 +58,7 @@ def exec_env_sanity_checks(module) -> None:
 
     for f in opt_functions:
         if not any(f in name for (name, _) in in_module):
-            logging.debug(("Execution environment plugin '%s' not define define "
+            logging.debug(("Execution environment plugin '%s' does not define "
                            "'%s()'."),
                           module.__name__,
                           f)
@@ -101,7 +101,7 @@ def platform_sanity_checks(module) -> None:
 
     for f in opt_classes:
         if not any(f in name for (name, _) in in_module):
-            logging.debug(("Platform plugin '%s' not define define '%s'"
+            logging.debug(("Platform plugin '%s' doe not define '%s'"
                            "--some SIERRA functionality may not be available. "
                            "See docs for details."),
                           module.__name__,
@@ -115,7 +115,7 @@ def platform_sanity_checks(module) -> None:
 
     for f in opt_functions:
         if not any(f in name for (name, _) in in_module):
-            logging.debug(("Platform plugin '%s' not define define '%s()'"
+            logging.debug(("Platform plugin '%s' does not define '%s()'"
                            "--some SIERRA functionality may not be available. "
                            "See docs for details."),
                           module.__name__,

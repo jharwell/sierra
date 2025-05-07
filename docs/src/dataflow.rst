@@ -108,7 +108,10 @@ statistical distributions <plugins/proc/stat>`). Crucially, the processing is
 done at the level of *entire files* (i.e., it is a file-level reduce
 operation). For example, if runs produce a ``foo.csv`` file, then every column
 in ``foo.csv`` will be present in the corresponding :term:`Processed Output
-Data` files as well. This can be visualized as follows:
+Data` files as well.  Of course, like all things in SIERRA, if you don't need
+thus functionality, you can turn it off by deselecting the plugin.
+
+This can be visualized as follows:
 
 .. plantuml::
 
@@ -196,8 +199,11 @@ calculated statistical distributions from them will be invalid; this can be
 thought of as an average of sums is not the same as a sum of averages.  To
 support such use cases, SIERRA can make the necessary parts of the per-run
 :term:`Raw Output Data` files available in stage 4 for doing such calculations
-via :term:`Data Collation`. This process in stage 3 can be visualized as follows
-for a single :term:`Experiment`:
+via :term:`Data Collation`. Of course, like all things in SIERRA, if you don't
+need thus functionality, you can turn it off by deselecting the plugin.
+
+This process in stage 3 can be visualized as follows for a single
+:term:`Experiment`:
 
 .. plantuml::
 
@@ -298,7 +304,6 @@ experimental runs should be combined into a single file. Thus the
 collation *within* in an experiment (intra-experiment). Collation *across*
 experiments (if enabled/configured) is done during stage 4.
 
-
 .. _dataflow/stage4/intra:
 
 Stage 4: Intra-Experiment Deliverable Generation
@@ -310,13 +315,20 @@ Data` files and/or :term:`Collated Output Data` files. In stage 4, the
 intra-experiment deliverables such as graphs and videos with appropriate
 plugins.  Reminder: these files *cannot* be used as inputs into mathematical
 calculations for statistical reasons; the :term:`Collated Output Data` files
-should be be used as into mathematical calculations if needed.
+should be be used as into mathematical calculations if needed. Of course, like
+all things in SIERRA, if you don't need thus functionality, you can turn it off
+by deselecting the plugin.
 
 As mentioned earlier, intra-experiment deliverables are time-series based and
-generated from processed data *within* each experiment. For example:
+generated from processed data *within* each experiment. For example, here is a
+very simple time-based graph generated from one of the sample projects
+containing estimates of swarm energy over time for one experiment. Note the
+confidence intervals automatically added by SIERRA.
 
-.. todo:: Add figure here
+.. figure:: /figures/dataflow-intra-graph-ex0.png
 
+.. IMPORTANT:: All configuration for the graph above was specified via YAML--no
+               python coding needed!
 
 .. _dataflow/stage4/inter:
 
@@ -328,11 +340,31 @@ Data` files and/or :term:`Collated Output Data` files. In stage 4, we can run
 :term:`Data Collation` on either of these types of files in order to further
 refine their contents, following an analogous process as outlined above, but at
 the level of a experiments within a batch rather than experimental runs within
-an experiment.
+an experiment. Of course, like all things in SIERRA, if you don't need thus
+functionality, you can turn it off by deselecting the plugin.
 
 After collation, inter-experiment deliverables can be generated directly. These
-deliverables are necessarily *NOT* time-series based, but rather based on some
-sort of summary measure. For example, an inter-experiment graph complement to
-the one above would look like this:
+deliverables can be time-based, showing results from each experiment, like this:
 
-.. todo:: Add figure here
+.. figure:: /figures/dataflow-inter-graph-ex0.png
+
+This is a very messy graph because of the width of confidence intervals, but it
+does illustrate SIERRA's ability to combine data across experiments in a batch.
+
+Or they can be summary graphs instead, based on some sort of summary
+measure. For example, an inter-experiment summary linegraph complement to the
+one above would look like this:
+
+.. figure:: /figures/dataflow-inter-graph-ex1.png
+
+The X-axis labels are populated based on the :term:`Batch Criteria`
+used. Obviously, this is for a *single* batch experiment; summary graphs for
+multiple batch experiments can be combined in stage 5 (see below).
+
+.. IMPORTANT:: All configuration for the graphs above were specified via
+               YAML--no python coding needed!
+
+Stage 5: TODO
+=============
+
+.. todo:: Flesh this out.

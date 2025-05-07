@@ -120,6 +120,14 @@ Why SIERRA?
   generate data, and plot it on the same figure as empirical
   results--automatically.
 
+- Why use SIERRA over something like `prefect <https://www.prefect.io>`_,
+  `dagster <https://www.dagster.io>`_, or `airflow
+  <https://airflow.apache.org>`_ ? Briefly, because SIERRA provides a common
+  pipeline which is tested and can accommodate most use cases; SIERRA is not as
+  feature complete as these other frameworks, though. For most use cases (but
+  not all), that delta doesn't matter. In addition, with the other frameworks,
+  you have to create your own pipelines from scratch.
+
 Not sure if SIERRA makes sense for you? Check out some of the `use cases
 <https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which SIERRA
 was designed.  If aspects of any sound familiar, then there is a strong chance

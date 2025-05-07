@@ -24,7 +24,7 @@ def lint(session):
                 '--select=E9,F63,F7,F82',
                 '--show-source',
                 '--statistics')
-
+    
     session.run('flake8',
                 'sierra',
                 '--count',

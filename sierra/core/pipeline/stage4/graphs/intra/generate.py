@@ -71,10 +71,10 @@ def generate(main_config: types.YAMLDict,
         if os.path.isdir(exproots.stat_root):
             generator(exproots, criteria)
         else:
-            _logger.warning("Skipping experiment '%s': % s does not exist, or "
+            _logger.warning("Skipping experiment '%s': %s does not exist, or "
                             "isn't a directory",
                             exp,
-                            cmdopts['exp_stat_root'])
+                            exproots.stat_root)
 
 
 class IntraExpGraphGenerator:

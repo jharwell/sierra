@@ -31,20 +31,20 @@ def proc_batch_exp(main_config: types.YAMLDict,
                    criteria: bc.IConcreteBatchCriteria,
                    gatherer_type: tp.Union[tp.Type[gather.DataGatherer],
                                            tp.Type[gather.ImagizeInputGatherer]]) -> None:
-    """Process :term:`Raw Data Output` files for each :term:`Experiment`.
+    """Process :term:`Raw Output Data` files for each :term:`Experiment`.
 
     Ideally this is done in parallel across experiments, but this can be changed
     to serial if memory on the SIERRA host machine is limited via
     ``--processing-serial``.
     """
 
-    exp_to_avg = utils.exp_range_calc(cmdopts["exp_range"],
-                                      pathset.output_root,
-                                      criteria)
+    exp_to_proc = utils.exp_range_calc(cmdopts["exp_range"],
+                                       pathset.output_root,
+                                       criteria)
 
     template_input_leaf = pathlib.Path(cmdopts['expdef_template']).stem
 
-    avg_opts = {
+    stat_opts = {
         'template_input_leaf': template_input_leaf,
         'df_skip_verify': cmdopts['df_skip_verify'],
         'dist_stats': cmdopts['dist_stats'],
@@ -53,8 +53,8 @@ def proc_batch_exp(main_config: types.YAMLDict,
         'storage': cmdopts['storage'],
         'df_homogenize': cmdopts['df_homogenize']
     }
-    pool_opts = {}
 
+    pool_opts = {}
     if cmdopts['processing_serial']:
         pool_opts['n_gatherers'] = 1
         pool_opts['n_processors'] = 1
@@ -64,11 +64,12 @@ def proc_batch_exp(main_config: types.YAMLDict,
         # psutil.cpu_count() will return 0 for # gatherers.
         pool_opts['n_gatherers'] = max(1, int(psutil.cpu_count() * 0.25))
         pool_opts['n_processors'] = max(1, int(psutil.cpu_count() * 0.75))
+
     with mp.Pool(processes=pool_opts['n_gatherers'] + pool_opts['n_processors']) as pool:
         _execute_for_batch(main_config,
                            pathset,
-                           exp_to_avg,
-                           avg_opts,
+                           exp_to_proc,
+                           stat_opts,
                            pool_opts,
                            gatherer_type,
                            pool)
@@ -76,8 +77,8 @@ def proc_batch_exp(main_config: types.YAMLDict,
 
 def _execute_for_batch(main_config: types.YAMLDict,
                        pathset: batchroot.PathSet,
-                       exp_to_avg: tp.List[pathlib.Path],
-                       avg_opts: types.SimpleDict,
+                       exp_to_proc: tp.List[pathlib.Path],
+                       stat_opts: types.SimpleDict,
                        pool_opts: types.SimpleDict,
                        gatherer_type: tp.Union[tp.Type[gather.DataGatherer],
                                                tp.Type[gather.ImagizeInputGatherer]],
@@ -86,7 +87,7 @@ def _execute_for_batch(main_config: types.YAMLDict,
     gatherq = m.Queue()
     processq = m.Queue()
 
-    for exp in exp_to_avg:
+    for exp in exp_to_proc:
         gatherq.put(exp)
 
     # Start some threads gathering .csvs first to get things rolling.
@@ -99,7 +100,7 @@ def _execute_for_batch(main_config: types.YAMLDict,
                                   gatherq,
                                   processq,
                                   main_config,
-                                  avg_opts)) for i in range(0, pool_opts['n_gatherers'])]
+                                  stat_opts)) for i in range(0, pool_opts['n_gatherers'])]
 
     _logger.debug("Starting %d processors, method=%s",
                   pool_opts['n_processors'],
@@ -108,7 +109,7 @@ def _execute_for_batch(main_config: types.YAMLDict,
                                   (processq,
                                    main_config,
                                    pathset,
-                                   avg_opts)) for i in range(0, pool_opts['n_processors'])]
+                                   stat_opts)) for i in range(0, pool_opts['n_processors'])]
 
     # To capture the otherwise silent crashes when something goes wrong in
     # worker threads. Any assertions will show and any exceptions will be
@@ -131,9 +132,9 @@ def _gather_worker(gatherer_type: tp.Union[tp.Type[gather.DataGatherer],
                    gatherq: mp.Queue,
                    processq: mp.Queue,
                    main_config: types.YAMLDict,
-                   avg_opts: tp.Dict[str, str]) -> None:
+                   stat_opts: tp.Dict[str, str]) -> None:
 
-    gatherer = gatherer_type(main_config, avg_opts, processq)
+    gatherer = gatherer_type(main_config, stat_opts, processq)
 
     # Wait for 3 seconds after the queue is empty before bailing, at the
     # start. If that is not long enough then exponentially increase from
@@ -162,7 +163,7 @@ def _gather_worker(gatherer_type: tp.Union[tp.Type[gather.DataGatherer],
 def _process_worker(processq: mp.Queue,
                     main_config: types.YAMLDict,
                     pathset: batchroot.PathSet,
-                    avg_opts: tp.Dict[str, str]) -> None:
+                    stat_opts: tp.Dict[str, str]) -> None:
     # Wait for 3 seconds after the queue is empty before bailing, at the
     # start. If that is not long enough then exponentially increase from
     # there until you find how long it takes to get the first item in the
@@ -173,11 +174,9 @@ def _process_worker(processq: mp.Queue,
     n_tries = 0
     while n_tries < 2:
         try:
-            item = processq.get(True, timeout)
-            key = list(item.keys())[0]
+            spec = processq.get(True, timeout)
 
-            _proc_single_exp(main_config, avg_opts, pathset,
-                             key, item[key])
+            _proc_single_exp(main_config, stat_opts, pathset, spec)
             processq.task_done()
             got_item = True
 
@@ -190,10 +189,9 @@ def _process_worker(processq: mp.Queue,
 
 
 def _proc_single_exp(main_config: types.YAMLDict,
-                     avg_opts: types.StrDict,
+                     stat_opts: types.StrDict,
                      pathset: batchroot.PathSet,
-                     gather_spec: gather.GatherSpec,
-                     gathered_dfs: tp.List[pd.DataFrame]):
+                     spec: gather.ProcessSpec) -> None:
     """Generate statistics from output files for all runs within an experiment.
 
     .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv
@@ -208,32 +206,30 @@ def _proc_single_exp(main_config: types.YAMLDict,
        something like the GIL, but for the logging module. Sometimes python
        sucks.
     """
-    csv_concat = pd.concat(gathered_dfs)
-    exp_stat_root = pathset.stat_root / gather_spec.exp_name
+    csv_concat = pd.concat(spec.dfs)
+    exp_stat_root = pathset.stat_root / spec.gather.exp_name
 
     utils.dir_create_checked(exp_stat_root, exist_ok=True)
 
     by_row_index = csv_concat.groupby(csv_concat.index)
 
     dfs = {}
-    if avg_opts['dist_stats'] in ['none', 'all']:
+    if stat_opts['dist_stats'] in ['none', 'all']:
         dfs.update(stat_kernels.mean.from_groupby(by_row_index))
 
-    if avg_opts['dist_stats'] in ['conf95', 'all']:
+    if stat_opts['dist_stats'] in ['conf95', 'all']:
         dfs.update(stat_kernels.conf95.from_groupby(by_row_index))
 
-    if avg_opts['dist_stats'] in ['bw', 'all']:
+    if stat_opts['dist_stats'] in ['bw', 'all']:
         dfs.update(stat_kernels.bw.from_groupby(by_row_index))
 
     for ext, df in dfs.items():
-        opath = exp_stat_root / gather_spec.item_stem_path
+        opath = exp_stat_root / spec.gather.item_stem_path
         utils.dir_create_checked(opath.parent, exist_ok=True)
-
         opath = opath.with_suffix(ext)
 
-        df = utils.df_fill(df, avg_opts['df_homogenize'])
-        writer = storage.DataFrameWriter(avg_opts['storage'])
-        writer(df, opath, index=False)
+        df = utils.df_fill(df, stat_opts['df_homogenize'])
+        storage.df_write(df, opath, 'storage.csv', index=False)
 
 
 __all__ = [

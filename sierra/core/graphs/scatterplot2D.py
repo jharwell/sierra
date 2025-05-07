@@ -60,7 +60,7 @@ class Scatterplot2D:
             return
 
         # Read .csv and scaffold graph
-        df = storage.DataFrameReader('storage.csv')(self.input_fpath)
+        df = storage.df_read(self.input_fpath, 'storage.csv')
         ax = df.plot.scatter(x=self.xcol, y=self.ycol)
 
         # Plot regression line

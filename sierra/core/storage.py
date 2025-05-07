@@ -9,7 +9,6 @@ See :ref:`tutorials/plugin/storage` for more details.
 
 # Core packages
 import pathlib
-import typing as tp
 
 # 3rd party packages
 import pandas as pd
@@ -18,39 +17,17 @@ import pandas as pd
 import sierra.core.plugin_manager as pm
 
 
-class DataFrameWriter():
-    """
-    Dispatcher to write a dataframe to the filesystem.
-    """
-
-    def __init__(self, medium: str):
-        self.medium = medium
-
-    def __call__(self,
-                 df: pd.DataFrame,
-                 path: tp.Union[pathlib.Path, str],
-                 **kwargs) -> None:
-        storage = pm.pipeline.get_plugin_module(self.medium)
-        return storage.df_write(df, path, **kwargs)  # type: ignore
+def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
+    storage = pm.pipeline.get_plugin_module(medium)
+    return storage.df_read(path, **kwargs)  # type: ignore
 
 
-class DataFrameReader():
-    """
-    Dispatcher to read a dataframe from the filesystem.
-
-    """
-
-    def __init__(self, medium: str):
-        self.medium = medium
-
-    def __call__(self,
-                 path: tp.Union[pathlib.Path, str],
-                 **kwargs) -> pd.DataFrame:
-        storage = pm.pipeline.get_plugin_module(self.medium)
-        return storage.df_read(path, **kwargs)  # type: ignore
+def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> None:
+    storage = pm.pipeline.get_plugin_module(medium)
+    return storage.df_write(df, path, **kwargs)  # type: ignore
 
 
 __all__ = [
-    'DataFrameWriter',
-    'DataFrameReader'
+    'df_read',
+    'df_write'
 ]

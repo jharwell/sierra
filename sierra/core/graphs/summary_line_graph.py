@@ -117,7 +117,7 @@ class SummaryLineGraph:
                               self.output_fpath,
                               input_fpath)
 
-        data_dfy = storage.DataFrameReader('storage.csv')(input_fpath)
+        data_dfy = storage.df_read(input_fpath, 'storage.csv')
         model = self._read_models()
 
         fig, ax = plt.subplots()
@@ -297,15 +297,14 @@ class SummaryLineGraph:
 
     def _read_conf95_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
         dfs = {}
-        reader = storage.DataFrameReader('storage.csv')
-        exts = config.kStats['conf95'].exts
 
+        exts = config.kStats['conf95'].exts
         if self.stats in ['conf95', 'all']:
             for k in exts:
                 ipath = self.stats_root / (self.input_stem + exts[k])
 
                 if utils.path_exists(ipath):
-                    dfs[k] = reader(ipath)
+                    dfs[k] = storage.df_read(ipath, 'storage.csv')
                 else:
                     self.logger.warning("%s file not found for '%s'",
                                         exts[k],
@@ -315,7 +314,7 @@ class SummaryLineGraph:
 
     def _read_bw_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
         dfs = {}
-        reader = storage.DataFrameReader('storage.csv')
+
         exts = config.kStats['bw'].exts
 
         if self.stats in ['bw', 'all']:
@@ -323,7 +322,7 @@ class SummaryLineGraph:
                 ipath = self.stats_root / (self.input_stem + exts[k])
 
                 if utils.path_exists(ipath):
-                    dfs[k] = reader(ipath)
+                    dfs[k] = storage.df_read(ipath, 'storage.csv')
                 else:
                     self.logger.warning("%s file not found for '%s'",
                                         exts[k],
@@ -349,7 +348,7 @@ class SummaryLineGraph:
                               modelf)
             return (None, [])
 
-        model = storage.DataFrameReader('storage.csv')(modelf)
+        model = storage.df_read(modelf, 'storage.csv')
         if utils.path_exists(legendf):
             with utils.utf8open(legendf, 'r') as f:
                 legend = f.read().splitlines()

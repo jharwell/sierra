@@ -16,8 +16,8 @@ import logging
 import pathlib
 
 # 3rd party packages
-import pandas as pd
 import psutil
+import pandas as pd  # noqa
 
 # Project packages
 from sierra.core import types, utils, storage
@@ -27,16 +27,48 @@ import sierra.core.plugin_manager as pm
 class GatherSpec:
     """
     Data class for specifying files to gather from an :term:`Experiment`.
+
+    Attributes:
+        item_stem_path: The name of the file to gather from all runs in an
+                        experiment, relative to the output root for the run (to
+                        support nested outputs).
+
+         exp_name: The name of the parent experiment.
+
+
+         perfcol: The name of the performance column associated with the file,
+                  as configured. Will be None for statistics generation, and
+                  non-None for collation.
     """
 
     def __init__(self,
                  exp_name: str,
-                 item_stem_path: pathlib.Path):
+                 item_stem_path: pathlib.Path,
+                 perfcol: tp.Union[str, None]):
         self.exp_name = exp_name
         self.item_stem_path = item_stem_path
 
     def __repr__(self) -> str:
         return f"{self.exp_name}: {self.item_stem_path}"
+
+
+class ProcessSpec:
+    """
+    Data class for specifying how to Process :term:`Raw Output Files`.
+
+    Attributes:
+        gather_spec: The specification for how the files were gathered.
+
+        exp_run_names: The names of the parent experimental runs.
+
+        dfs: The gathered dataframes. Indices match those in ``exp_run_names``.
+
+    """
+
+    def __init__(self, gather: GatherSpec) -> None:
+        self.gather = gather
+        self.exp_run_names = []  # type: tp.List[str]
+        self.dfs = []  # type: tp.List[pd.DataFrame]
 
 
 class BaseGatherer:
@@ -57,11 +89,8 @@ class BaseGatherer:
         # Will get the main name and extension of the config file (without the
         # full absolute path).
         self.template_input_fname = self.gather_opts['template_input_leaf']
-
         self.main_config = main_config
-
         self.run_metrics_leaf = main_config['sierra']['run']['run_metrics_leaf']
-
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, exp_output_root: pathlib.Path) -> None:
@@ -69,59 +98,59 @@ class BaseGatherer:
         if not self.gather_opts['df_skip_verify']:
             self._verify_exp_outputs(exp_output_root)
 
-        self.logger.info('Gathering raw outputs from %s...', exp_output_root.name)
+        self.logger.info('Gathering raw outputs from %s...',
+                         exp_output_root.name)
 
         pattern = "{}_run{}_output".format(re.escape(str(self.gather_opts['template_input_leaf'])),
                                            r'\d+')
 
         runs = list(exp_output_root.iterdir())
         assert (all(re.match(pattern, r.name) for r in runs)), \
-            f"Extra files/not all dirs in '{exp_output_root}' are exp runs"
+            (f"Extra files/not all dirs in '{exp_output_root}' are exp "
+             "run output dirs")
 
-        # Maps (unique stem, optional parent dir) to the averaged dataframe
-        to_gather = self.calc_gather_items(runs[0], exp_output_root.name)
+        to_gather = []
+        for run in runs:
+            from_run = self.calc_gather_items(run, exp_output_root.name)
+            self.logger.trace("Calculated %s items from %s for gathering",
+                              len(from_run),
+                              run.name)
+            to_gather.extend(from_run)
+        self.logger.trace("Gathering all items...")
 
         for spec in to_gather:
             self._wait_for_memory()
-            gathered = self._gather_item_from_sims(exp_output_root, spec, runs)
+            to_process = self._gather_item_from_runs(exp_output_root,
+                                                     spec,
+                                                     runs)
+            n_gathered_from = len(to_process.dfs)
+            assert n_gathered_from == len(runs), \
+                ("Data not gathered from all experimental runs: "
+                 f"{n_gathered_from} != {len(runs)}")
 
-            # Put gathered .csv list  in the process queue
-            self.processq.put(gathered)
+            # Put gathered files in the process queue
+            self.processq.put(to_process)
 
         self.logger.debug("Enqueued %s items from %s for processing",
                           len(to_gather),
                           exp_output_root.name)
 
-    def _gather_item_from_sims(self,
+    def _gather_item_from_runs(self,
                                exp_output_root: pathlib.Path,
                                spec: GatherSpec,
-                               runs: tp.List[pathlib.Path]) -> tp.Dict[GatherSpec,
-                                                                       tp.List[pd.DataFrame]]:
-        gathered = {}  # type: tp.Dict[GatherSpec, pd.DataFrame]
+                               runs: tp.List[pathlib.Path]) -> ProcessSpec:
+        to_process = ProcessSpec(gather=spec)
 
-        for run in runs:
+        for i, run in enumerate(runs):
+            df = storage.df_read(run / self.run_metrics_leaf / spec.item_stem_path,
+                                 self.gather_opts['storage'],
+                                 index_col=False)
+            # Indices here must match so that the appropriate data from each run
+            # are matched with the name of the run in collated performance data.
+            to_process.exp_run_names.append(run.name)
+            to_process.dfs.append(df)
 
-            reader = storage.DataFrameReader(self.gather_opts['storage'])
-            df = reader(run / self.run_metrics_leaf / spec.item_stem_path,
-                        index_col=False)
-            # 2025-05-02 [JRH]: This column dropping is in here temporarily to
-            # enable me to process data from starling. It will be removed before
-            # merging to devel.
-
-            # if df.dtypes.iloc[0] == 'object':
-            # df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
-            for c in df.columns:
-                df[c] = df[c].replace(r'(m|rad|°)', '', regex=True)
-
-            cols = df.select_dtypes(include='object').columns.tolist()
-            df = df.drop(cols, axis=1)
-
-            if spec.item_stem_path not in gathered:
-                gathered[spec] = []
-
-            gathered[spec].append(df)
-
-        return gathered
+        return to_process
 
     def _wait_for_memory(self) -> None:
         while True:
@@ -153,7 +182,7 @@ class BaseGatherer:
         """
         experiments = exp_output_root.iterdir()
 
-        self.logger.info('Verifying results in %s...', str(exp_output_root))
+        self.logger.info('Verifying results in %s...', exp_output_root.name)
 
         start = time.time()
 
@@ -166,15 +195,17 @@ class BaseGatherer:
                 if not csv_root2.is_dir():
                     continue
 
-                self._verify_exp_outputs_pairwise(csv_root1, csv_root2)
+                self._verify_exp_outputs_pairwise(
+                    exp_output_root, csv_root1, csv_root2)
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Done verifying results in %s: %s",
-                         exp_output_root,
+        self.logger.info("Done verifying results in <batch_output_root>/%s: %s",
+                         exp_output_root.name,
                          sec)
 
     def _verify_exp_outputs_pairwise(self,
+                                     exp_output_root: pathlib.Path,
                                      csv_root1: pathlib.Path,
                                      csv_root2: pathlib.Path) -> None:
         for csv in csv_root2.iterdir():
@@ -183,8 +214,9 @@ class BaseGatherer:
 
             # .csvs for rendering that we don't verify
             if path1.is_dir() or path2.is_dir():
-                self.logger.debug("Not verifying '%s': contains data for imagizing",
-                                  str(path1))
+                self.logger.debug(("Not verifying <exp_output_root>/'%s': "
+                                  "contains data for imagizing"),
+                                  path1.relative_to(exp_output_root))
                 continue
 
             assert (utils.path_exists(path1) and utils.path_exists(path2)), \
@@ -192,9 +224,8 @@ class BaseGatherer:
 
             # Verify both dataframes have same # columns, and that
             # column sets are identical
-            reader = storage.DataFrameReader(self.gather_opts['storage'])
-            df1 = reader(path1)
-            df2 = reader(path2)
+            df1 = storage.df_read(path1, self.gather_opts['storage'])
+            df2 = storage.df_read(path2, self.gather_opts['storage'])
 
             assert (len(df1.columns) == len(df2.columns)), \
                 (f"Dataframes from {path1} and {path2} do not have "
@@ -232,14 +263,16 @@ class DataGatherer(BaseGatherer):
                           run_output_root: pathlib.Path,
                           exp_name: str) -> tp.List[GatherSpec]:
         to_gather = []
-        run_output_root = run_output_root / self.run_metrics_leaf
+        proj_output_root = run_output_root / self.run_metrics_leaf
         plugin = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
 
-        for item in run_output_root.rglob("*"):
+        for item in proj_output_root.rglob("*"):
             if item.is_file() and any(s in plugin.suffixes() for s in
                                       item.suffixes) and item.stat().st_size > 0:
                 to_gather.append(GatherSpec(exp_name=exp_name,
-                                            item_stem_path=item.relative_to(run_output_root)))
+                                            item_stem_path=item.relative_to(
+                                                proj_output_root),
+                                            perfcol=None))
         return to_gather
 
 
@@ -271,10 +304,10 @@ class ImagizeInputGatherer(BaseGatherer):
                           run_output_root: pathlib.Path,
                           exp_name: str) -> tp.List[GatherSpec]:
         to_gather = []
-        run_output_root = run_output_root / self.run_metrics_leaf
+        proj_output_root = run_output_root / self.run_metrics_leaf
         plugin = pm.pipeline.get_plugin_module(self.gather_opts['storage'])
 
-        for item in run_output_root.iterdir():
+        for item in proj_output_root.iterdir():
             if not item.is_dir():
                 self.logger.debug(("Skip <run_output_root>/'%s' for imagizing "
                                    "gather: files must be in subdir"),
@@ -284,20 +317,29 @@ class ImagizeInputGatherer(BaseGatherer):
             for imagizable in item.iterdir():
                 if not imagizable.is_file():
                     self.logger.debug(("Skip subdir '%s/' of "
-                                       "<run_output_root>/'%s' for imagizing "
+                                       "<run_output_root>/%s for imagizing "
                                        "gather: recursion not supported"),
                                       imagizable.name,
-                                      imagizable.relative_to(run_output_root))
+                                      imagizable.relative_to(proj_output_root))
                     continue
 
                 if not any(s in plugin.suffixes() for s in
                            imagizable.suffixes) and imagizable.stat().st_size > 0:
+                    self.logger.debug(("Skip '%s': suffix not supported by "
+                                       "storage plugin %s"),
+                                      imagizable.name,
+                                      self.gather_opts["storage"])
                     continue
 
-                if imagizable.name == item.name:
+                if item.name in imagizable.name:
                     to_gather.append(GatherSpec(exp_name=exp_name,
-                                                item_stem_path=item.relative_to(run_output_root)))
-
+                                                item_stem_path=imagizable.relative_to(
+                                                    proj_output_root),
+                                                perfcol=None))
+                else:
+                    self.logger.warning("Skip '%s': name does not match %s",
+                                        imagizable.name,
+                                        item.name)
         return to_gather
 
 

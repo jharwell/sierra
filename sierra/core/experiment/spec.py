@@ -186,11 +186,11 @@ def scaffold_spec_factory(criteria: bc.BatchCriteria,
     adds = criteria.gen_element_addlist()
 
     if chgs and adds:
-        logging.debug("Create compound batch experiment scaffolding for '%s'",
+        logging.debug("Create compound batch experiment scaffolding spec for '%s'",
                       criteria.cli_arg)
         return CompoundBatchScaffoldSpec(criteria, **kwargs)
     else:
-        logging.debug("Create simple batch experiment scaffolding for '%s'",
+        logging.debug("Create simple batch experiment scaffolding spec for '%s'",
                       criteria.cli_arg)
         return SimpleBatchScaffoldSpec(criteria, **kwargs)
 
