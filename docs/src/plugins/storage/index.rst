@@ -38,3 +38,7 @@ Apache Arrow
 Select the `arrow format <https://arrow.apache.org/>`_ for all data I/O in
 stages 3-5.  This storage plugin can be selected via
 ``--storage=storage.arrow``.
+
+
+Additional formats can be supported via :ref:`tutorials/plugin/storage` for how
+to add it.

@@ -8,20 +8,37 @@ Intra-experiment line graph generation classes for stage{4,5}.
 
 # Core packages
 import typing as tp
-import copy
 import logging
 import pathlib
 
 # 3rd party packages
 import pandas as pd
+import holoviews as hv
 import matplotlib.pyplot as plt
 
 # Project packages
-from sierra.core import config, utils, storage
+from sierra.core import config, utils, storage, models
+from . import pathset
+
+_logger = logging.getLogger(__name__)
 
 
-class StackedLineGraph:
-    """Generates a line graph from a set of columns in a CSV file.
+def generate(
+    paths: pathset.PathSet,
+    input_stem: str,
+    output_stem: str,
+    title: str,
+    medium: str,
+    stats: str = "none",
+    xlabel: tp.Optional[str] = None,
+    ylabel: tp.Optional[str] = None,
+    large_text: bool = False,
+    legend: tp.Optional[tp.List[str]] = None,
+    cols: tp.Optional[tp.List[str]] = None,
+    logyscale: bool = False,
+    ext=config.kStats["mean"].exts["mean"],
+) -> bool:
+    """Generate a line graph from a set of columns in a file.
 
     If the necessary data file does not exist, the graph is not generated.
 
@@ -33,218 +50,239 @@ class StackedLineGraph:
 
     Ideally, model predictions/stddev calculations would be in derived classes,
     but I can't figure out a good way to easily pull that stuff out of here.
-
     """
+    hv.extension("matplotlib")
 
-    def __init__(self,
-                 stats_root: pathlib.Path,
-                 input_stem: str,
-                 output_fpath: pathlib.Path,
-                 title: str,
-                 xlabel: tp.Optional[str] = None,
-                 ylabel: tp.Optional[str] = None,
-                 large_text: bool = False,
-                 legend: tp.Optional[tp.List[str]] = None,
-                 cols: tp.Optional[tp.List[str]] = None,
-                 linestyles: tp.Optional[tp.List[str]] = None,
-                 dashstyles: tp.Optional[tp.List[str]] = None,
-                 logyscale: bool = False,
-                 stddev_fpath:  tp.Optional[pathlib.Path] = None,
-                 stats: str = 'none',
-                 model_root: tp.Optional[pathlib.Path] = None) -> None:
+    # Optional arguments
+    if large_text:
+        text_size = config.kGraphTextSizeLarge
+    else:
+        text_size = config.kGraphTextSizeSmall
 
-        # Required arguments
-        self.stats_root = stats_root
-        self.input_stem = input_stem
-        self.output_fpath = output_fpath
-        self.title = title
+    input_fpath = paths.input_root / (input_stem + ext)
+    output_fpath = paths.output_root / "SLN-{0}.{1}".format(
+        output_stem, config.kImageType
+    )
 
-        # Optional arguments
-        if large_text:
-            self.text_size = config.kGraphTextSizeLarge
-        else:
-            self.text_size = config.kGraphTextSizeSmall
+    if not utils.path_exists(input_fpath):
+        _logger.debug(
+            "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
+            output_fpath.relative_to(paths.parent),
+            input_fpath.relative_to(paths.parent),
+        )
+        return False
 
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.legend = legend
-        self.cols = cols
-        self.logyscale = logyscale
-        self.linestyles = linestyles
-        self.dashstyles = dashstyles
-        self.stats = stats
-        self.model_root = model_root
-        self.stddev_fpath = stddev_fpath
-        self.logger = logging.getLogger(__name__)
+    df = storage.df_read(input_fpath, medium)
+    dataset = hv.Dataset(
+        # Make index a column so we can use it as kdim
+        data=df.reset_index(),
+        kdims=["index"],
+        vdims=cols if cols else df.columns.tolist(),
+    )
+    model = _read_models(paths.model_root, input_stem, medium)
+    stat_dfs = _read_stats(stats, paths.input_root, input_stem, medium)
 
-    def generate(self) -> None:
-        ext = config.kStats['mean'].exts['mean']
-        input_fpath = self.stats_root / (self.input_stem + ext)
-        if not utils.path_exists(input_fpath):
-            self.logger.debug("Not generating %s: %s does not exist",
-                              self.output_fpath,
-                              input_fpath)
-            return
+    # Plot specified columns from dataframe.
+    plot = _plot_selected_cols(dataset, model, legend)
 
-        data_df = storage.df_read(input_fpath, 'storage.csv')
+    # Plot stats if they have been computed
+    if "conf95" in stats and "stddev" in stat_dfs:
+        plot *= _plot_stats_stddev(dataset, stat_dfs["stddev"])
 
-        model = self._read_models()
-        stat_dfs = self._read_stats()
+    # Plot ticks
+    if logyscale:
+        plot.opts(logy=True)
 
-        # Plot specified columns from dataframe.
-        if self.cols is None:
-            ncols = max(1, int(len(data_df.columns) / 2.0))
-            ax = self._plot_selected_cols(
-                data_df, stat_dfs, data_df.columns, model)
-        else:
-            ncols = max(1, int(len(self.cols) / 2.0))
-            ax = self._plot_selected_cols(data_df, stat_dfs, self.cols, model)
+    # Let the backend decide # of columns; can override with
+    # legend_cols=N in the future if desired.
+    plot.opts(legend_position="bottom")
 
-        self._plot_ticks(ax)
+    # Add title
+    plot.opts(title=title)
 
-        self._plot_legend(ax, model[1], ncols)
+    # Add X,Y labels
+    if xlabel is not None:
+        plot.opts(xlabel=xlabel)
 
-        # Add title
-        ax.set_title(self.title, fontsize=self.text_size['title'])
+    if ylabel is not None:
+        plot.opts(ylabel=ylabel)
 
-        # Add X,Y labels
-        if self.xlabel is not None:
-            ax.set_xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
+    # Set fontsizes
+    plot.opts(
+        fontsize={
+            "title": text_size["title"],
+            "labels": text_size["xyz_label"],
+            "ticks": text_size["tick_label"],
+            "legend": text_size["legend_label"],
+        },
+    )
 
-        if self.ylabel is not None:
-            ax.set_ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
+    hv.save(
+        plot.opts(fig_inches=config.kGraphBaseSize),
+        output_fpath,
+        fig=config.kImageType,
+        dpi=config.kGraphDPI,
+    )
+    plt.close("all")
 
-        # Output figure
-        fig = ax.get_figure()
-        fig.set_size_inches(config.kGraphBaseSize,
-                            config.kGraphBaseSize)
-        fig.savefig(self.output_fpath,
-                    bbox_inches='tight',
-                    dpi=config.kGraphDPI)
-        # Prevent memory accumulation (fig.clf() does not close everything)
-        plt.close(fig)
-
-    def _plot_ticks(self, ax) -> None:
-        if self.logyscale:
-            plt.yscale('symlog')
-
-        ax.tick_params(labelsize=self.text_size['tick_label'])
-
-    def _plot_selected_cols(self,
-                            data_df: pd.DataFrame,
-                            stat_dfs: tp.Dict[str, pd.DataFrame],
-                            cols: tp.List[str],
-                            model: tp.Tuple[pd.DataFrame, tp.List[str]]):
-        """
-        Plot the  selected columns in a dataframe.
-
-        This may include:
-
-        - Errorbars
-        - Models
-        - Custom line styles
-        - Custom dash styles
-        """
-        # Always plot the data
-        if self.linestyles is None and self.dashstyles is None:
-            ax = data_df[cols].plot()
-        elif self.dashstyles is None and self.linestyles is not None:
-            for c, s in zip(cols, self.linestyles):
-                ax = data_df[c].plot(linestyle=s)
-        elif self.dashstyles is not None and self.linestyles is not None:
-            for c, s, d in zip(cols, self.linestyles, self.dashstyles):
-                ax = data_df[c].plot(linestyle=s, dashes=d)
-
-        # Plot models if they have been computed
-        if model[0] is not None:
-            model[0][model[0].columns].plot(ax=ax)
-
-        # Plot stddev if it has been computed
-        if 'stddev' in stat_dfs.keys():
-            for c in cols:
-                self._plot_col_errorbars(data_df, stat_dfs['stddev'], c)
-        return ax
-
-    def _plot_col_errorbars(self,
-                            data_df: pd.DataFrame,
-                            stddev_df: pd.DataFrame,
-                            col: str) -> None:
-        """
-        Plot the errorbars for a specific column in a dataframe.
-        """
-        plt.fill_between(data_df.index,
-                         data_df[col] - 2 * stddev_df[col].abs(),
-                         data_df[col] + 2 * stddev_df[col].abs(),
-                         alpha=0.50)
-
-    def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int) -> None:
-        # Should always use one column: If a small number of lines are plotted,
-        # then 1 vs. > 1 column makes no difference. If a large number of lines
-        # are plotted, this will make the figures more portrait than landscape,
-        # which is more amenable to inclusion in academic papers.
-
-        # If the legend is not specified, then we assume this is not a graph
-        # that will contain any models and/or no legend is desired.
-        if self.legend is not None:
-            legend = copy.deepcopy(self.legend)
-            if model_legend:
-                legend.extend(model_legend)
-
-            lines, _ = ax.get_legend_handles_labels()
-            ax.legend(lines,
-                      legend,
-                      loc='lower center',
-                      bbox_to_anchor=(0.5, -0.5),
-                      ncol=1,
-                      fontsize=self.text_size['legend_label'])
-        else:
-            ax.legend().remove()
-        #     ax.legend(loc='lower center',
-        #               bbox_to_anchor=(0.5, -0.5),
-        #               ncol=1,
-        #               fontsize=self.text_size['legend_label'])
-
-    def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
-        dfs = {}
-        if self.stats in ['conf95', 'all']:
-            exts = config.kStats['conf95'].exts
-
-            for k in exts:
-                ipath = self.stats_root / (self.input_stem + exts[k])
-
-                if utils.path_exists(ipath):
-                    dfs[k] = storage.df_read(ipath, 'storage.csv')
-                else:
-                    self.logger.warning("%sfile not found for '%s'",
-                                        exts[k],
-                                        self.input_stem)
-
-        return dfs
-
-    # 2024/09/13 [JRH]: The union is for compatability with type checkers in
-    # python {3.8,3.11}.
-    def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.Union[tp.List[str], tp.List[bytes]]]:
-        if self.model_root is not None:
-            model_fpath = self.model_root / \
-                (self.input_stem + config.kModelsExt['model'])
-            legend_fpath = self.model_root / \
-                (self.input_stem + config.kModelsExt['legend'])
-
-            if utils.path_exists(model_fpath):
-                model = storage.df_read(model_fpath, 'storage.csv')
-                if utils.path_exists(legend_fpath):
-                    with utils.utf8open(legend_fpath, 'r') as f:
-                        model_legend = f.read().splitlines()
-                else:
-                    self.logger.warning("No legend file for model '%s' found",
-                                        model_fpath)
-                    model_legend = ['Model Prediction']
-
-                return (model, model_legend)
-
-        return (None, [])
+    _logger.debug(
+        "Graph written to <batchroot>/%s",
+        output_fpath.relative_to(paths.parent),
+    )
+    return True
 
 
-__all__ = [
-    'StackedLineGraph'
-]
+def _plot_selected_cols(
+    dataset: hv.Dataset,
+    model_info: models.ModelInfo,
+    legend: tp.List[str],
+) -> hv.NdOverlay:
+    """
+    Plot the  selected columns in a dataframe.
+    """
+    # Always plot the data
+    plot = hv.Overlay(
+        [
+            hv.Curve(
+                dataset,
+                dataset.kdims[0],
+                vdim.name,
+                label=legend[dataset.vdims.index(vdim)] if legend else "",
+            )
+            for vdim in dataset.vdims
+        ]
+    )
+    # Plot the points for each curve
+    plot *= hv.Overlay(
+        [hv.Points((dataset[dataset.kdims[0]], dataset[v])) for v in dataset.vdims]
+    )
+
+    # Plot models if they have been computed
+    if model_info.dataset:
+        plot *= hv.Overlay(
+            [
+                hv.Curve(
+                    model_info.dataset,
+                    model_info.dataset.kdims[0],
+                    vdim,
+                    label=legend[model_info.dataset.vdims.index(vdim)],
+                )
+                for vdim in model_info.dataset.vdims
+            ]
+        )
+        # Plot the points for each curve
+        plot *= hv.Overlay(
+            [
+                hv.Points(
+                    (
+                        model_info.dataset[model_info.dataset.kdims[0]],
+                        model_info.dataset[v],
+                    )
+                )
+                for v in model_info.dataset.vdims
+            ]
+        )
+
+    return plot
+
+
+def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOverlay:
+    """Plot the stddev for a all columns in the dataset."""
+    stddevs = pd.DataFrame()
+    for c in dataset.vdims:
+        stddevs[f"{c}_stddev_l"] = dataset[c] - 2 * stddev_df[c.name].abs()
+        stddevs[f"{c}_stddev_u"] = dataset[c] + 2 * stddev_df[c.name].abs()
+
+    # To plot area between lines, you need to add the stddev columns to the
+    # dataset
+    dataset.data = pd.concat([dataset.dframe(), stddevs], axis=1)
+    return hv.Overlay(
+        [
+            hv.Area(
+                dataset, vdims=[f"{vdim.name}_stddev_l", f"{vdim.name}_stddev_u"]
+            ).opts(
+                alpha=0.5,
+            )
+            for vdim in dataset.vdims
+        ]
+    )
+
+
+def _plot_stats_bw(
+    dataset: hv.Dataset, stat_dfs: tp.Dict[str, pd.DataFrame]
+) -> hv.NdOverlay:
+    """Plot the bw plots for a all columns in the dataset."""
+    return hv.Overlay(
+        [
+            hv.BoxWhisker(dataset.data, dataset.kdims[0], v).opts(
+                fig_size=200,
+                box_fill_color="skyblue",
+                box_line_color="navy",
+                title="Box and Whisker Plot by Category",
+                xlabel="Category",
+                ylabel="Value",
+            )
+            for v in dataset.vdims
+        ]
+    )
+
+
+def _read_stats(
+    setting: str, stats_root: pathlib.Path, input_stem: str, medium: str
+) -> tp.Dict[str, pd.DataFrame]:
+    dfs = {}
+    if setting in ["conf95", "bw", "all"]:
+        exts = config.kStats["conf95"].exts
+
+        for k in exts:
+            ipath = stats_root / (input_stem + exts[k])
+
+            if utils.path_exists(ipath):
+                dfs[k] = storage.df_read(ipath, medium)
+            else:
+                _logger.warning("%sfile not found for '%s'", exts[k], input_stem)
+
+    return dfs
+
+
+# 2024/09/13 [JRH]: The union is for compatability with type checkers in
+# python {3.8,3.11}.
+def _read_models(
+    model_root: tp.Optional[pathlib.Path], input_stem: str, medium: str
+) -> models.ModelInfo:
+
+    if model_root is None:
+        return models.ModelInfo()
+
+    modelf = model_root / (input_stem + config.kModelsExt["model"])
+    legendf = model_root / (input_stem + config.kModelsExt["legend"])
+
+    if not utils.path_exists(modelf):
+        return models.ModelInfo()
+
+    info = models.ModelInfo()
+    df = storage.df_read(modelf, medium)
+    cols = df.columns.tolist()
+
+    info.dataset = hv.Dataset(data=df.reset_index(), kdims=["index"], vdims=cols)
+
+    if utils.path_exists(legendf):
+        with utils.utf8open(legendf, "r") as f:
+            info.legend = f.read().splitlines()
+    else:
+        _logger.warning(
+            "No legend file=<batch_model_root>/%s found",
+            legendf.relative_to(model_root),
+        )
+        info.legend = ["Model Prediction"]
+
+    _logger.trace(
+        "Loaded model='%s',legend='%s'",  # type: ignore
+        modelf.relative_to(model_root),
+        legendf.relative_to(model_root),
+    )
+
+    return info
+
+
+__all__ = ["generate"]

@@ -66,3 +66,21 @@ This manifests in some important ways:
 
 - Deliverables in stage 4 are sourced from a single input file, rather than
   pulling data from multiple files.
+
+Separation Of Data Types
+========================
+
+Any statistics generated during say stage 3 are stored in *separate* files from
+the actual data, even if the chosen ``--storage`` plugin and/or
+``--deliverable`` plugin supports them in a single file. This is for reasons of:
+
+- Readability in the files themselves. For time series/1D data, separating
+  doesn't really provide benefits, but for 2D data it does. For 3D data, and
+  beyond (e.g., 4D), visualization of the raw numerical data is difficult
+  whether stats are in a separate file or in the same file as the actual data,
+  so is a net neutral.
+
+- Reducing memory footprint. For example, if a user is generating a 2D heatmap,
+  any stddev info present in the source file is ignored if it is present. Thus,
+  if it were present, and the source file be large, that could result in large,
+  unnecessary memory footprints.

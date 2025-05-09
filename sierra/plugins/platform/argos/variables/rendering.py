@@ -22,7 +22,7 @@ import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 
 @implements.implements(IBaseVariable)
-class ARGoSQTHeadlessRendering():
+class ARGoSQTHeadlessRendering:
     """
     Sets up ARGoS headless rendering with QT.
 
@@ -55,35 +55,40 @@ class ARGoSQTHeadlessRendering():
         Obviously you *must* call this function BEFORE adding new definitions.
 
         """
-        return [definition.ElementRmList(definition.ElementRm("./visualization", "qt-opengl"))]
+        return [
+            definition.ElementRmList(
+                definition.ElementRm("./visualization", "qt-opengl")
+            )
+        ]
 
     def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
         if not self.element_adds:
             self.element_adds = [
-                definition.ElementAddList(definition.ElementAdd('.',
-                                                                'visualization',
-                                                                {},
-                                                                False),
-                                          definition.ElementAdd('./visualization',
-                                                                'qt-opengl',
-                                                                {'autoplay': "true"},
-                                                                False
-                                                                ),
-                                          definition.ElementAdd('./visualization/qt-opengl',
-                                                                'frame_grabbing',
-                                                                {
-                                                                    'directory': 'frames',
-                                                                    'base_name': 'frame_',
-                                                                    'format': sierra.core.config.kImageExt[1:],
-                                                                    'headless_grabbing': "true",
-                                                                    'headless_frame_size': "{0}".format(self.kFrameSize),
-                                                                    'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
-                                                                },
-                                                                False),
-                                          definition.ElementAdd('visualization/qt-opengl',
-                                                                'user_functions',
-                                                                {'label': '__EMPTY__'},
-                                                                False))
+                definition.ElementAddList(
+                    definition.ElementAdd(".", "visualization", {}, False),
+                    definition.ElementAdd(
+                        "./visualization", "qt-opengl", {"autoplay": "true"}, False
+                    ),
+                    definition.ElementAdd(
+                        "./visualization/qt-opengl",
+                        "frame_grabbing",
+                        {
+                            "directory": "frames",
+                            "base_name": "frame_",
+                            "format": sierra.core.config.kImageType,
+                            "headless_grabbing": "true",
+                            "headless_frame_size": "{0}".format(self.kFrameSize),
+                            "headless_frame_rate": "{0}".format(self.kFRAME_RATE),
+                        },
+                        False,
+                    ),
+                    definition.ElementAdd(
+                        "visualization/qt-opengl",
+                        "user_functions",
+                        {"label": "__EMPTY__"},
+                        False,
+                    ),
+                )
             ]
 
         return self.element_adds
@@ -93,13 +98,11 @@ class ARGoSQTHeadlessRendering():
 
 
 def factory(cmdopts: types.Cmdopts) -> ARGoSQTHeadlessRendering:
-    """Set up QT headless rendering for the specified experimental setup.
-
-    """
+    """Set up QT headless rendering for the specified experimental setup."""
 
     return ARGoSQTHeadlessRendering(exp.factory(cmdopts["exp_setup"]))
 
 
 __all__ = [
-    'ARGoSQTHeadlessRendering',
+    "ARGoSQTHeadlessRendering",
 ]

@@ -27,7 +27,7 @@ import sierra.core.logging  # type: ignore
 kIssuesURL = "https://github.com/jharwell/sierra/issues"
 
 
-class SIERRA():
+class SIERRA:
     """Initialize SIERRA and then launch the pipeline."""
 
     def __init__(self, bootstrap: cmd.BootstrapCmdline) -> None:
@@ -44,9 +44,9 @@ class SIERRA():
             self.args.pipeline = [self.args.pipeline]
 
         if 5 not in self.args.pipeline:
-            self.logger.info("Controller=%s, Scenario=%s",
-                             self.args.controller,
-                             self.args.scenario)
+            self.logger.info(
+                "Controller=%s, Scenario=%s", self.args.controller, self.args.scenario
+            )
             pathset = batchroot.from_cmdline(self.args)
 
             pipeline = Pipeline(self.args, self.args.controller, pathset)
@@ -59,8 +59,9 @@ class SIERRA():
             self.logger.info("Exiting on user cancel")
             sys.exit()
 
-    def _bootstrap(self, bootstrap: cmd.BootstrapCmdline) -> tp.Tuple[argparse.Namespace,
-                                                                      tp.List[str]]:
+    def _bootstrap(
+        self, bootstrap: cmd.BootstrapCmdline
+    ) -> tp.Tuple[argparse.Namespace, tp.List[str]]:
         # Bootstrap the cmdline
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
@@ -76,16 +77,17 @@ class SIERRA():
 
         # Check SIERRA runtime environment
         startup.startup_checks(not bootstrap_args.skip_pkg_checks)
-        self.logger.info("Using python=%s.", sys.version.replace('\n', ''))
+        self.logger.info("Using python=%s.", sys.version.replace("\n", ""))
 
         return bootstrap_args, other_args
 
-    def _load_cmdline(self,
-                      bootstrap_args: argparse.Namespace,
-                      other_args: tp.List[str]) -> None:
+    def _load_cmdline(
+        self, bootstrap_args: argparse.Namespace, other_args: tp.List[str]
+    ) -> None:
         # Load additional project cmdline extensions
-        self.logger.info("Loading cmdline extensions from project '%s'",
-                         bootstrap_args.project)
+        self.logger.info(
+            "Loading cmdline extensions from project '%s'", bootstrap_args.project
+        )
         path = f"{bootstrap_args.project}.cmdline"
         module = pm.module_load(path)
 
@@ -96,8 +98,7 @@ class SIERRA():
         # configuration, because you shouldn't have to configure things post-hoc
         # in order for them to be valid.
         parents = [platform_parser] if platform_parser else []
-        nonbootstrap_cmdline = module.Cmdline(parents,
-                                              [-1, 1, 2, 3, 4, 5])
+        nonbootstrap_cmdline = module.Cmdline(parents, [-1, 1, 2, 3, 4, 5])
 
         self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
         self.args.sierra_root = os.path.expanduser(self.args.sierra_root)
@@ -109,13 +110,14 @@ class SIERRA():
         # Configure cmdopts for platform + execution environment by modifying
         # arguments/adding new arguments as needed, and perform additional
         # validation.
-        self.args = exec_env.cmdline_postparse_configure(bootstrap_args.exec_env,
-                                                         self.args)
-        self.args = platform.cmdline_postparse_configure(bootstrap_args.platform,
-                                                         bootstrap_args.exec_env,
-                                                         self.args)
+        self.args = exec_env.cmdline_postparse_configure(
+            bootstrap_args.exec_env, self.args
+        )
+        self.args = platform.cmdline_postparse_configure(
+            bootstrap_args.platform, bootstrap_args.exec_env, self.args
+        )
 
-        self.args.__dict__['project'] = bootstrap_args.project
+        self.args.__dict__["project"] = bootstrap_args.project
 
     def _load_plugins(self, bootstrap_args: argparse.Namespace):
         this_file = pathlib.Path(__file__)
@@ -124,13 +126,13 @@ class SIERRA():
         # Load plugins
         self.logger.info("Loading plugins")
         plugin_search_path = [
-            install_root / 'plugins' / 'hpc',
-            install_root / 'plugins' / 'storage',
-            install_root / 'plugins' / 'robot',
-            install_root / 'plugins' / 'expdef',
-            install_root / 'plugins' / 'platform'
+            install_root / "plugins" / "hpc",
+            install_root / "plugins" / "storage",
+            install_root / "plugins" / "robot",
+            install_root / "plugins" / "expdef",
+            install_root / "plugins" / "platform",
         ]
-        if env := os.environ.get('SIERRA_PLUGIN_PATH'):
+        if env := os.environ.get("SIERRA_PLUGIN_PATH"):
             for p in env.split(os.pathsep):
                 plugin_search_path.append(pathlib.Path(p))
 
@@ -142,26 +144,24 @@ class SIERRA():
 
         return manager
 
-    def _verify_plugins(self,
-                        manager,
-                        bootstrap_args: argparse.Namespace) -> None:
+    def _verify_plugins(self, manager, bootstrap_args: argparse.Namespace) -> None:
         # Verify platform plugin
         module = manager.get_plugin_module(bootstrap_args.platform)
-        plugin.platform_sanity_checks(module)
+        plugin.platform_sanity_checks(bootstrap_args.platform, module)
 
         # Verify execution environment plugin
         module = manager.get_plugin_module(bootstrap_args.exec_env)
-        plugin.exec_env_sanity_checks(module)
+        plugin.exec_env_sanity_checks(bootstrap_args.exec_env, module)
 
         # Verify storage plugin (declared as part of core cmdline arguments
         # rather than bootstrap, so we have to wait until after all arguments
         # are parsed to verify it)
         module = manager.get_plugin_module(self.args.storage)
-        plugin.storage_sanity_checks(module)
+        plugin.storage_sanity_checks(self.args.storage, module)
 
-    def _handle_rc(self,
-                   rcfile_path: tp.Optional[str],
-                   args: argparse.Namespace) -> argparse.Namespace:
+    def _handle_rc(
+        self, rcfile_path: tp.Optional[str], args: argparse.Namespace
+    ) -> argparse.Namespace:
         """
         Populate cmdline arguments from a .sierrarc file.
 
@@ -179,7 +179,7 @@ class SIERRA():
         """
         # Check rcfile envvar first, so that you can override it on cmdline if
         # desired.
-        realpath = os.getenv('SIERRA_RCFILE', None)
+        realpath = os.getenv("SIERRA_RCFILE", None)
 
         if realpath:
             self.logger.debug("Reading rcfile from envvar")
@@ -197,7 +197,7 @@ class SIERRA():
 
         path = pathlib.Path(realpath).expanduser()
 
-        with utils.utf8open(path, 'r') as rcfile:
+        with utils.utf8open(path, "r") as rcfile:
             for line in rcfile.readlines():
                 # There are 3 ways to pass arguments in the rcfile:
                 #
@@ -207,16 +207,16 @@ class SIERRA():
                 #
                 # If you encounter a ~, we assume its a path, so we expand it to
                 # match cmdline behavior.
-                line = line.strip('\n')
+                line = line.strip("\n")
                 components = line.split()
 
-                if len(components) == 1 and '=' not in components[0]:  # boolean
+                if len(components) == 1 and "=" not in components[0]:  # boolean
                     key = line[2:].replace("-", "_")
                     args.__dict__[key] = True
 
-                elif len(components) == 1 and '=' in components[0]:
-                    key = line.split('=')[0][2:].replace("-", "_")
-                    value = os.path.expanduser(line.split('=')[1])
+                elif len(components) == 1 and "=" in components[0]:
+                    key = line.split("=")[0][2:].replace("-", "_")
+                    value = os.path.expanduser(line.split("=")[1])
 
                     args.__dict__[key] = value
                 else:
@@ -224,29 +224,33 @@ class SIERRA():
                     value = os.path.expanduser(line.split()[1])
                     args.__dict__[key] = value
 
-                self.logger.trace("Applied cmdline arg from rcfile='%s': %s",
-                                  path,
-                                  line)
+                self.logger.trace(
+                    "Applied cmdline arg from rcfile='%s': %s", path, line
+                )
 
         return args
 
 
 def excepthook(exc_type, exc_value, exc_traceback):
-    logging.fatal(("SIERRA has encountered an unexpected error and will now "
-                   "terminate.\n\n"
-                   "If you think this is a bug, please report it at:\n\n%s\n\n"
-                   "When reporting, please include as much information as you "
-                   "can. Ideally:\n\n"
-                   "1. What you were trying to do in SIERRA.\n"
-                   "2. The terminal output of sierra-cli, including the "
-                   "below traceback.\n"
-                   "3. The exact command you used to run SIERRA.\n"
-                   "\n"
-                   "In some cases, creating a Minimum Working Example (MWE) "
-                   "reproducing the error with specific input files and/or "
-                   "data is also helpful for quick triage and fix.\n"),
-                  kIssuesURL,
-                  exc_info=(exc_type, exc_value, exc_traceback))
+    logging.fatal(
+        (
+            "SIERRA has encountered an unexpected error and will now "
+            "terminate.\n\n"
+            "If you think this is a bug, please report it at:\n\n%s\n\n"
+            "When reporting, please include as much information as you "
+            "can. Ideally:\n\n"
+            "1. What you were trying to do in SIERRA.\n"
+            "2. The terminal output of sierra-cli, including the "
+            "below traceback.\n"
+            "3. The exact command you used to run SIERRA.\n"
+            "\n"
+            "In some cases, creating a Minimum Working Example (MWE) "
+            "reproducing the error with specific input files and/or "
+            "data is also helpful for quick triage and fix.\n"
+        ),
+        kIssuesURL,
+        exc_info=(exc_type, exc_value, exc_traceback),
+    )
 
 
 def main():

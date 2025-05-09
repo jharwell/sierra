@@ -16,15 +16,16 @@ import typing as tp
 from sierra.core.variables import batch_criteria as bc
 from sierra.core import types, utils, batchroot
 
-from sierra.core.pipeline.stage4.graphs.inter import line, heatmap
+from sierra.core.pipeline.stage4.graphs.inter import line
 
 
-def generate(main_config: types.YAMLDict,
-             cmdopts: types.Cmdopts,
-             pathset: batchroot.PathSet,
-             LN_targets: tp.List[types.YAMLDict],
-             HM_targets: tp.List[types.YAMLDict],
-             criteria: bc.IConcreteBatchCriteria) -> None:
+def generate(
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    pathset: batchroot.PathSet,
+    targets: tp.List[types.YAMLDict],
+    criteria: bc.IConcreteBatchCriteria,
+) -> None:
     """Generate graphs from :term:`Collated Experimental Run Data` files.
 
     Performs the following steps:
@@ -42,38 +43,21 @@ def generate(main_config: types.YAMLDict,
     This class can be extended/overriden using a: term: `Project` hook.  See
     :ref:`tutorials/project/hooks` for details.
 
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline attributes.
-
+    Arguments:
         main_config: Parsed dictionary of main YAML configuration
 
-        LN_targets: A list of dictionaries, where each dictionary defines an
-        inter-experiment linegraph to generate.
+        cmdopts: Dictionary of parsed cmdline attributes.
 
-        HM_targets: A list of dictionaries, where each dictionary defines an
-        inter-experiment heatmap to generate.
-
-        logger: The handle to the logger for this class .  If you extend this
-        class you should save/restore this variable in tandem with overriding it
-        in order to get logging messages have unique logger names between this
-        class and your derived class , in order to reduce confusion.
+        targets: A list of dictionaries, where each dictionary defines an
+                 inter-experiment graph to generate.
     """
     utils.dir_create_checked(pathset.graph_collate_root, exist_ok=True)
 
     if criteria.is_univar():
-        if not cmdopts['project_no_LN']:
-            line.generate(cmdopts,
-                          pathset,
-                          LN_targets,
-                          criteria)
-    else:
-        if not cmdopts['project_no_HM']:
-            heatmap.generate(cmdopts,
-                             pathset,
-                             HM_targets,
-                             criteria)
+        if not cmdopts["project_no_LN"]:
+            line.generate(cmdopts, pathset, targets, criteria)
 
 
 __all__ = [
-    'generate',
+    "generate",
 ]

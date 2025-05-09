@@ -15,3 +15,5 @@ between platforms.
    argos/index.rst
    ros1gazebo/index.rst
    ros1robot/index.rst
+
+Additional platforms can be supported via :ref:`tutorials/plugin/platform`.

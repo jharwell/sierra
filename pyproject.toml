@@ -12,6 +12,9 @@ authors = [
 ]
 dependencies = [
     "uv",
+    "holoviews",
+    "matplotlib",
+    "hvplot",
     "hatchling",
     "coloredlogs",
     "distro",

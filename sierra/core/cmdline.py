@@ -550,7 +550,7 @@ class CoreCmdline(BaseCmdline):
 
                            """ +
 
-                                     self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
+                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`']) +
                                      self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
@@ -566,7 +566,7 @@ class CoreCmdline(BaseCmdline):
 
                                      """ +
 
-                                     self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
+                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`']) +
                                      self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
@@ -581,8 +581,8 @@ class CoreCmdline(BaseCmdline):
 
                                      """ +
 
-                                     self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`',
-                                                                 ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`']) +
+                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`',
+                                                                 ':func:`~sierra.core.graphs.StackedLineGraph`']) +
                                      self.stage_usage_doc([4, 5]),
                                      action='store_true')
 
@@ -593,7 +593,7 @@ class CoreCmdline(BaseCmdline):
                                      linear regression line and the equation of
                                      the line to the legend. """ +
 
-                                     self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
+                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`']) +
                                      self.stage_usage_doc([4, 5]))
 
         self.multistage.add_argument("--plot-primary-axis",
@@ -636,7 +636,7 @@ class CoreCmdline(BaseCmdline):
                                     """
                                      +
                                      self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`',
-                                                                 ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`']) +
+                                                                 ':class:`~sierra.core.graphs.StackedLineGraph`']) +
                                      self.stage_usage_doc([4, 5]),
                                      default=None)
 
@@ -790,6 +790,9 @@ class CoreCmdline(BaseCmdline):
                                    are stored in a per-run directory as one or
                                    more CSV files.
 
+                                 - ``storage.arrow`` - Experimental run outputs
+                                   are stored in a per-run directory as one or
+                                   more apache arrow files.
 
                                  Regardless of the value of this option, SIERRA
                                  always generates CSV files as it runs and
@@ -817,17 +820,16 @@ class CoreCmdline(BaseCmdline):
                                    show box and whisker plots around each point
                                    in the graph. """ +
 
-                                 utils.sphinx_ref(':class: `~sierra.core.graphs.summary_line_graph.SummaryLineGraph`') +
-
+                                 utils.sphinx_ref(':func:`~sierra.core.graphs.summary_line`') +
                                  """ only).
 
                                  - ``all`` - Generate all possible statistics,
                                    and plot all possible statistics on graphs.
-                                   """
-                                 +
-                                 self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`',
-                                                             ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`'])
-                                 + self.stage_usage_doc([3, 4]),
+                                   """ +
+                                 self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`',
+                                                             ':func:`~sierra.core.graphs.StackedLineGraph`'])
+                                   +
+                                 self.stage_usage_doc([3, 4]),
                                  default='none')
 
         self.stage3.add_argument("--processing-mem-limit",
@@ -1106,8 +1108,7 @@ class CoreCmdline(BaseCmdline):
 
         self.stage5.add_argument("--comparison-type",
                                  choices=['LNraw',
-                                          'HMraw', 'HMdiff', 'HMscale',
-                                          'SUraw', 'SUscale', 'SUdiff'],
+                                          'HMraw', 'HMdiff', 'HMscale'],
                                  help=r"""
 
                                  Specify how controller comparisons should be
@@ -1153,32 +1154,11 @@ class CoreCmdline(BaseCmdline):
                                    primary interest by dividing, outputing one
                                    2D heatmap per comparison.
 
-                                 - ``SUraw`` - Output raw 3D performance
-                                   measures as a single, stacked 3D surface
-                                   plots comparing all controllers(identical
-                                   plots, but viewed from different angles).
-
-                                 - ``SUscale`` - Scale controller performance
-                                   measures against those of the controller of
-                                   primary interest by dividing. This results in
-                                   a single stacked 3D surface plots comparing
-                                   all controllers(identical plots, but viewed
-                                   from different angles).
-
-                                 - ``SUdiff`` - Subtract the performance measure
-                                   of the controller of primary interest from
-                                   each controller(including the primary). This
-                                   results in a set single stacked 3D surface
-                                   plots comparing all controllers(identical
-                                   plots, but viewed from different angles), in
-                                   which the controller of primary interest
-                                   forms an(X, Y) plane at Z=0.
-
                                  For all comparison types,
                                  ``--controllers-legend`` is used if passed for
                                  legend.
 
-                                 """.format(utils.sphinx_ref(':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`')) + self.stage_usage_doc([5]))
+                                 """.format(utils.sphinx_ref(':func:`~sierra.core.graphs.summary_line`')) + self.stage_usage_doc([5]))
 
         self.stage5.add_argument("--bc-univar",
                                  help="""

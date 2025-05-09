@@ -20,14 +20,15 @@ import argparse
 # Project packages
 
 
-class ExpRootLeaf():
+class ExpRootLeaf:
     """
     Representation of the "name" in pathlib parlance in :class:`ExpRoot`.
     """
+
     @staticmethod
-    def from_name(leaf: str) -> 'ExpRootLeaf':
-        template_stem = ''.join(leaf.split('-')[0])
-        scenario_and_bc = leaf.split('-')[1].split('+')
+    def from_name(leaf: str) -> "ExpRootLeaf":
+        template_stem = "".join(leaf.split("-")[0])
+        scenario_and_bc = leaf.split("-")[1].split("+")
         scenario = scenario_and_bc[0]
         bc = scenario_and_bc[1:]  # type: tp.Union[tp.List[str],str]
 
@@ -37,40 +38,34 @@ class ExpRootLeaf():
         return ExpRootLeaf(bc, template_stem, scenario)
 
     @staticmethod
-    def from_components(bc: tp.List[str],
-                        template_stem: str,
-                        scenario: str) -> 'ExpRootLeaf':
+    def from_components(
+        bc: tp.List[str], template_stem: str, scenario: str
+    ) -> "ExpRootLeaf":
         return ExpRootLeaf(bc, template_stem, scenario)
 
-    def __init__(self,
-                 bc: tp.List[str],
-                 template_stem: str,
-                 scenario: str) -> None:
+    def __init__(self, bc: tp.List[str], template_stem: str, scenario: str) -> None:
         self.bc = bc
         self.template_stem = template_stem
         self.scenario = scenario
 
     def to_path(self) -> pathlib.Path:
-        root = pathlib.Path("{0}-{1}+{2}".format(
-                            self.template_stem,
-                            self.scenario,
-                            '+'.join(self.bc)))
+        root = pathlib.Path(
+            "{0}-{1}+{2}".format(self.template_stem, self.scenario, "+".join(self.bc))
+        )
         return root
 
     def to_str(self) -> str:
         return str(self.to_path())
 
 
-class ExpRoot():
+class ExpRoot:
     """
     Representation of the filesystem path containing all per-experiment data.
     """
 
-    def __init__(self,
-                 sierra_root: str,
-                 project: str,
-                 controller: str,
-                 leaf: ExpRootLeaf) -> None:
+    def __init__(
+        self, sierra_root: str, project: str, controller: str, leaf: ExpRootLeaf
+    ) -> None:
         """Generate the directory path for the rootbatch root directory.
 
         The directory path depends on all of the input arguments to this
@@ -104,7 +99,7 @@ class ExpRoot():
         return str(self.to_path())
 
 
-class PathSet():
+class PathSet:
     """
     The set of filesystem paths under ``--sierra-root`` that SIERRA uses.
 
@@ -127,13 +122,15 @@ class PathSet():
 
     def __str__(self) -> str:
         """
-        Print the computed SIERRA root in a GNU ``tree``-like format.
+        Convert the batch eperiment pathset to a GNU ``tree``-like format string.
 
-        No recursion.
+        No recursion. Everything is shown in a one-level breakdown relative to
+        the batch root. Could be improved by using recursion, but this is
+        sufficient for now, pending the plugin/pipeline overhaul.
         """
         # pointers:
-        tee = '├── '
-        last = '└── '
+        tee = "├── "
+        last = "└── "
 
         contents = [
             self.input_root,
@@ -148,38 +145,31 @@ class PathSet():
             self.graph_collate_root,
             self.scratch_root,
         ]
+        contents.sort()
         pointers = [tee] * (len(contents) - 1) + [last]
-        dirs = ''
+        dirs = ""
         for pointer, path in zip(pointers, contents):
-            dirs += f'\n{pointer}{path.name}'
+            dirs += f"\n{pointer}{path.relative_to(self.root)}"
 
         return str(self.root.resolve()) + dirs
 
 
 def from_cmdline(args: argparse.Namespace) -> PathSet:
-    """Generate directory paths directly from cmdline arguments.
-
-    """
+    """Generate directory paths directly from cmdline arguments."""
     template = pathlib.Path(args.expdef_template)
 
     # Remove all '-' from the template input file stem so we know the only '-'
     # that are in it are ones that we put there.
-    template_stem = template.stem.replace('-', '')
+    template_stem = template.stem.replace("-", "")
 
-    batch_leaf = ExpRootLeaf(args.batch_criteria,
-                             str(template_stem),
-                             args.scenario)
+    batch_leaf = ExpRootLeaf(args.batch_criteria, str(template_stem), args.scenario)
 
-    return from_exp(args.sierra_root,
-                    args.project,
-                    batch_leaf,
-                    args.controller)
+    return from_exp(args.sierra_root, args.project, batch_leaf, args.controller)
 
 
-def from_exp(sierra_root: str,
-             project: str,
-             batch_leaf: ExpRootLeaf,
-             controller: str) -> PathSet:
+def from_exp(
+    sierra_root: str, project: str, batch_leaf: ExpRootLeaf, controller: str
+) -> PathSet:
     """Regenerate directory pathroots from a previously created batch experiment.
 
     Arguments:
@@ -195,11 +185,8 @@ def from_exp(sierra_root: str,
         controller: The name of the controller used.
 
     """
-    root = ExpRoot(sierra_root,
-                   project,
-                   controller,
-                   batch_leaf)
-    logging.info('Generated batch root %s', root.to_path())
+    root = ExpRoot(sierra_root, project, controller, batch_leaf)
+    logging.info("Generated batchroot %s", root.to_path())
     return PathSet(root)
 
 

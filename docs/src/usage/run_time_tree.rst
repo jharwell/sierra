@@ -36,7 +36,7 @@ Basic Structure
 
      - `--sierra-root`. See :ref:`usage/cli` for more details.
 
-   * - Batch root
+   * - Batchroot
 
      - ALL files (generated experiment inputs, experiment outputs, deliverables,
        etc.) are written to this directory, which will be under

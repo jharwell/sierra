@@ -2,9 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 #
-"""Common classes and callbacks :term:`Platforms <Platform>` using :term:`ROS1`.
-
-"""
+"""Common classes and callbacks :term:`Platforms <Platform>` using :term:`ROS1`."""
 
 # Core packages
 import typing as tp
@@ -16,30 +14,30 @@ from sierra.core import types
 from sierra.core.experiment import definition
 
 
-def population_size_from_pickle(adds_def: tp.Union[definition.AttrChangeSet,
-                                                   definition.ElementAddList],
-                                main_config: types.YAMLDict,
-                                cmdopts: types.Cmdopts) -> int:
+def population_size_from_pickle(
+    adds_def: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+) -> int:
     for add in adds_def:
-        if 'name' in add.attr and 'n_agents' in add.attr['name']:
-            return int(add.attr['value'])
+        if "name" in add.attr and "n_agents" in add.attr["name"]:
+            return int(add.attr["value"])
 
     return 0
 
 
-def population_size_from_def(exp_def: definition.BaseExpDef,
-                             main_config: types.YAMLDict,
-                             cmdopts: types.Cmdopts) -> int:
+def population_size_from_def(
+    exp_def: definition.BaseExpDef, main_config: types.YAMLDict, cmdopts: types.Cmdopts
+) -> int:
     return population_size_from_pickle(exp_def.element_adds, main_config, cmdopts)
 
 
-def robot_prefix_extract(main_config: types.YAMLDict,
-                         cmdopts: types.Cmdopts) -> str:
-    return main_config['ros']['robots'][cmdopts['robot']]['prefix']
+def robot_prefix_extract(main_config: types.YAMLDict, cmdopts: types.Cmdopts) -> str:
+    return str(main_config["ros"]["robots"][cmdopts["robot"]]["prefix"])
 
 
 __all__ = [
-    'population_size_from_pickle',
-    'population_size_from_def',
-    'robot_prefix_extract'
+    "population_size_from_pickle",
+    "population_size_from_def",
+    "robot_prefix_extract",
 ]

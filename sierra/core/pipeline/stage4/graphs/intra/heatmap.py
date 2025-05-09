@@ -13,52 +13,51 @@ import logging
 import json
 
 # Project packages
-from sierra.core import types, config, exproot
-from sierra.core.models.graphs import IntraExpModel2DGraphSet
-from sierra.core.graphs.heatmap import Heatmap
+from sierra.core import types, exproot, graphs
 
 _logger = logging.getLogger(__name__)
 
 
-def generate(cmdopts: types.Cmdopts,
-             pathset: exproot.PathSet,
-             targets: tp.List[types.YAMLDict]) -> None:
+def generate(
+    cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: tp.List[types.YAMLDict]
+) -> None:
     """
     Generate heatmaps from: term:`Averaged Experimental Run Data` files.
     """
-    large_text = cmdopts['plot_large_text']
+    large_text = cmdopts["plot_large_text"]
 
-    _logger.info("Heatmaps from <batch_root>/%s",
-                 pathset.stat_root.relative_to(pathset.parent))
+    _logger.info(
+        "Heatmaps from <batch_root>/%s", pathset.stat_root.relative_to(pathset.parent)
+    )
 
     # For each category of heatmaps we are generating
     for category in targets:
 
         # For each graph in each category
-        for graph in category['graphs']:
-            _logger.trace('\n' +  # type: ignore
-                          json.dumps(graph, indent=4))
-            if IntraExpModel2DGraphSet.model_exists(pathset.model_root,
-                                                    graph['src_stem']):
-                IntraExpModel2DGraphSet(pathset.stat_root,
-                                        pathset.model_root,
-                                        pathset.graph_root,
-                                        graph['src_stem'],
-                                        graph.get('title', None)).generate()
-            else:
-                input_fpath = pathset.stat_root / (graph['src_stem'] +
-                                                   config.kStats['mean'].exts['mean'])
-                output_fpath = pathset.graph_root / ('HM-' + graph['src_stem'] +
-                                                     config.kImageExt)
+        for graph in category:
+            _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
 
-                Heatmap(input_fpath=input_fpath,
-                        output_fpath=output_fpath,
-                        title=graph.get('title', None),
-                        xlabel='X',
-                        ylabel='Y',
-                        large_text=large_text).generate()
+            # Only try to create heatmaps (duh)
+            if graph["type"] != "heatmap":
+                continue
+
+            graph_pathset = graphs.PathSet(
+                input_root=pathset.stat_root,
+                output_root=pathset.graph_root,
+                parent=pathset.parent,
+                model_root=None,
+            )
+            graphs.heatmap(
+                paths=graph_pathset,
+                input_stem=graph["src_stem"],
+                output_stem=graph["dest_stem"],
+                medium=cmdopts["storage"],
+                title=graph.get("title", None),
+                xlabel=graph.get("xlabel", "X"),
+                ylabel=graph.get("ylabel", "Y"),
+                zlabel=graph.get("zlabel", "Z"),
+                large_text=large_text,
+            )
 
 
-__all__ = [
-    'generate'
-]
+__all__ = ["generate"]

@@ -4,6 +4,8 @@
 ROS1+Gazebo Platform
 ====================
 
+`ROS1 <https://ros.org>`_ + `Gazebo <https://github.com/gazebosim/gz-sim>`_.
+
 This platform can be selected via ``--platform=platform.ros1gazebo``.
 
 This is the platform on which SIERRA will run experiments using the
@@ -36,13 +38,6 @@ Random Seeding For Reproducibility
 ROS1+Gazebo do not provide a random number generator manager, but SIERRA
 provides random seeds to each :term:`Experimental Run` which :term:`Project`
 code should use to manage random number generation, if needed, to maximize
-reproducability. See:
-
-- :ref:`tutorials/project/expdef-template`
-
-- :ref:`plugins/platform/ros1gazebo`
-
-for details on the format of the provided seed.
-
-By default SIERRA does not overwrite its generated random seeds for each
-experiment once generated; you can override with ``--no-preserve-seeds``.
+reproducability.  By default SIERRA does not overwrite its generated random seeds
+for each experiment once generated; you can override with
+``--no-preserve-seeds``.

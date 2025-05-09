@@ -184,16 +184,24 @@ works/is designed the way it is, and to help you find your way around.
       Collation`. See :ref:`dataflow/stage3/intra-collate` and
       :ref:`dataflow/stage4/inter-collate` for more information.
 
-   Summary .csv
+   Batch Summary Data
 
-      A CSV file created by SIERRA during stage 4 (if inter-experiment graph
-      generation is to be run). A summary CSV file created from a
-      :term:`Collated Experimental Run Data` file by taking the last row; this
-      usually corresponds to steady-state behavior, which is what you are
-      after. However, you can also capture transient behaviors by creating
-      :term:`Collated Experimental Run Data` and :term:`Summary .csv` files from
-      captured :term:`Experimental Run` outputs over short stretches of
-      time--SIERRA does not know the difference.
+      A csv/arrow/etc file created by SIERRA during stage 4 (if inter-experiment
+      graph generation is to be run). Created from a :term:`Collated Output
+      Data` file by taking the last row; this usually corresponds to things
+      like:
+
+      - Steady-state behavior
+
+      - Cumulative counts of something
+
+      These flavor of measures are usually what you are after. However, if you
+      want something different you can specify it in a per-graph manner; see
+      :ref:`tutorials/project/graphs-config` for more info. You can also capture
+      transient behaviors by creating :term:`Collated Output Data` files and
+      thus :term:`Batch Summary Data` files from captured :term:`Experimental
+      Run` outputs over short stretches of time--SIERRA does not know the
+      difference.
 
    Inter-Batch .csv
 

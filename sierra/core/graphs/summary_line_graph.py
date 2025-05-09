@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 """
-Linegraph for summarizing the results of a batch experiment in different ways.
+Linegraph for summarizing the results of a :term:`Batch Experiment`.
+
+Graphs one datapoint per :term:`Experiment`.
 """
 
 # Core packages
@@ -12,26 +14,44 @@ import logging
 import pathlib
 
 # 3rd party packages
-import matplotlib.ticker as mticker
-import matplotlib.pyplot as plt
 import pandas as pd
+import holoviews as hv
+import matplotlib.pyplot as plt
 
 # Project packages
-from sierra.core import config, utils, storage
+from sierra.core import config, utils, storage, models
+from . import pathset
+
+kMarkStyles = ["o", "^", "s", "x", "o", "^", "s", "x"]
+
+_logger = logging.getLogger(__name__)
 
 
-class SummaryLineGraph:
-    """Generates a linegraph from a :term:`Summary .csv`.
+def generate(
+    paths: pathset.PathSet,
+    input_stem: str,
+    output_stem: str,
+    medium: str,
+    title: str,
+    xlabel: str,
+    ylabel: str,
+    legend: tp.List[str],
+    xticks: tp.List[float],
+    xticklabels: tp.Optional[tp.List[str]] = None,
+    large_text: bool = False,
+    logyscale: bool = False,
+    stats: str = "none",
+) -> bool:
+    """Generate a linegraph from a :term:`Batch Summary Data` file.
 
     Possibly shows the 95% confidence interval or box and whisker plots,
     according to configuration.
 
     Attributes:
-        stats_root: The absolute path to the ``statistics/`` directory for the
-                    batch experiment.
+        paths: Set of run-time tree paths for the batch experiment.
 
-        input_stem: Stem of the :term:`Summary .csv` file to generate a graph
-                    from.
+        input_stem: Stem of the :term:`Batch Summary Data` file to generate a
+                    graph from.
 
         output_fpath: The absolute path to the output image file to save
                       generated graph to.
@@ -44,7 +64,7 @@ class SummaryLineGraph:
 
         xticks: The xticks for the graph.
 
-        xtick_labels: The xtick labels for the graph (can be different than the
+        xticklabels: The xtick labels for the graph (can be different than the
                       xticks; e.g., if the xticxs are 1-10 for categorical data,
                       then then labels would be the categories).
 
@@ -62,308 +82,387 @@ class SummaryLineGraph:
                      experiment.
 
     """
-    kLineStyles = ['-', '--', '.-', ':', '-', '--', '.-', ':']
-    kMarkStyles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
+    hv.extension("matplotlib")
+    # Optional arguments
+    if large_text:
+        text_size = config.kGraphTextSizeLarge
+    else:
+        text_size = config.kGraphTextSizeSmall
 
-    def __init__(self,
-                 stats_root: pathlib.Path,
-                 input_stem: str,
-                 output_fpath: pathlib.Path,
-                 title: str,
-                 xlabel: str,
-                 ylabel: str,
-                 xticks: tp.List[float],
-                 xtick_labels: tp.Optional[tp.List[str]] = None,
-                 large_text: bool = False,
-                 legend: tp.List[str] = ['Empirical Data'],
-                 logyscale: bool = False,
-                 stats: str = 'none',
-                 model_root: tp.Optional[pathlib.Path] = None) -> None:
+    input_fpath = paths.input_root / (input_stem + config.kStats["mean"].exts["mean"])
+    output_fpath = paths.output_root / (
+        "SM-{0}.{1}".format(output_stem, config.kImageType)
+    )
 
-        # Required arguments
-        self.stats_root = stats_root
-        self.input_stem = input_stem
-        self.output_fpath = output_fpath
-        self.title = title
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.xticks = xticks
+    if not utils.path_exists(input_fpath):
+        _logger.debug("Not generating %s: %s does not exist", output_fpath, input_fpath)
+        return False
 
-        # Optional arguments
-        if large_text:
-            self.text_size = config.kGraphTextSizeLarge
-        else:
-            self.text_size = config.kGraphTextSizeSmall
+    df = storage.df_read(input_fpath, medium, index_col="Experiment ID")
+    # Column 0 is the 'Experiment ID' index, which we don't want included as
+    # a vdim
+    cols = df.columns.tolist()
+    df["xticks"] = xticks
 
-        self.xtick_labels = xtick_labels
-        self.model_root = model_root
-        self.legend = legend
-        self.logyscale = logyscale
-        self.stats = stats
+    dataset = hv.Dataset(data=df.reset_index(), kdims=["xticks"], vdims=cols)
+    assert len(df.index) == len(
+        xticks
+    ), "Length mismatch between xticks,# data points: {0} vs {1}".format(
+        len(xticks), len(df.index)
+    )
 
-        self.logger = logging.getLogger(__name__)
+    model_info = _read_model_info(paths.model_root, input_stem, medium, xticks)
 
-    def generate(self) -> None:
-        input_fpath = self.stats_root / (self.input_stem +
-                                         config.kStats['mean'].exts['mean'])
+    # Add statistics according to configuration
+    stat_dfs = _read_stats(stats, medium, paths.input_root, input_stem)
+    plot = _plot_stats(dataset, stats, stat_dfs)
 
-        if not utils.path_exists(input_fpath):
-            self.logger.debug("Not generating %s: %s does not exist",
-                              self.output_fpath,
-                              input_fpath)
-            return
-        else:
-            self.logger.debug("Generating %s from %s",
-                              self.output_fpath,
-                              input_fpath)
+    # Configure ticks
+    plot = _plot_ticks(plot, logyscale, xticks, xticklabels)
 
-        data_dfy = storage.df_read(input_fpath, 'storage.csv')
-        model = self._read_models()
+    # Add legend
+    plot.opts(legend_position="bottom")
 
-        fig, ax = plt.subplots()
+    # Plot lines after stats so they show on top
+    plot *= _plot_lines(dataset, model_info, legend)
 
-        # Plot lines
-        self._plot_lines(data_dfy, model)
+    # Add X,Y labels
+    plot.opts(ylabel=ylabel, xlabel=xlabel)
 
-        # Add legend
-        self._plot_legend(model)
+    # Set fontsizes
+    plot.opts(
+        fontsize={
+            "title": text_size["title"],
+            "labels": text_size["xyz_label"],
+            "ticks": text_size["tick_label"],
+            "legend": text_size["legend_label"],
+        },
+    )
 
-        # Add statistics according to configuration
-        stat_dfs = self._read_stats()
-        self._plot_stats(ax, self.xticks, data_dfy, stat_dfs)
+    # Add title
+    plot.opts(title=title)
 
-        # Add X,Y labels
-        plt.ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
-        plt.xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
+    hv.save(
+        plot.opts(fig_inches=config.kGraphBaseSize),
+        output_fpath,
+        fig=config.kImageType,
+        dpi=config.kGraphDPI,
+    )
+    plt.close("all")
 
-        # Add ticks
-        self._plot_ticks(ax)
+    _logger.debug(
+        "Graph written to <batchroot>/%s", output_fpath.relative_to(paths.parent)
+    )
 
-        # Add title
-        plt.title(self.title, fontsize=self.text_size['title'])
-
-        # Output figure
-        fig = ax.get_figure()
-        fig.set_size_inches(config.kGraphBaseSize,
-                            config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight',
-                    dpi=config.kGraphDPI)
-        # Prevent memory accumulation (fig.clf() does not close everything)
-        plt.close(fig)
-
-    def _plot_lines(self,
-                    data_dfy: pd.DataFrame,
-                    model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
-        for i, value in enumerate(data_dfy.values):
-            assert len(value) == len(self.xticks), \
-                "Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
-                    len(self.xticks),
-                    len(value),
-                    self.xticks,
-                    value)
-
-            # Plot data
-            plt.plot(self.xticks,
-                     value,
-                     marker=self.kMarkStyles[i],
-                     color=f"C{i}")
-
-            # Plot model prediction(s)
-            if model[0] is not None:
-                # The model might be of different dimensions than the data. If
-                # so, truncate it to fit.
-                if len(self.xticks) < len(model[0].values[i]):
-                    self.logger.warning("Truncating model: model/data lengths disagree: %s vs. %s",
-                                        len(model[0].values[i]),
-                                        len(self.xticks))
-                    xvals = model[0].values[i][:len(self.xticks)]
-                else:
-                    xvals = model[0].values[i]
-
-                plt.plot(self.xticks,
-                         xvals,
-                         '--',
-                         marker=self.kMarkStyles[i],
-                         color="C{}".format(i + len(data_dfy.index)))
-
-    def _plot_stats(self,
-                    ax,
-                    xticks,
-                    data_dfy: pd.DataFrame,
-                    stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
-        """
-        Plot statistics for all lines on the graph.
-        """
-        self._plot_conf95_stats(xticks, data_dfy, stat_dfs)
-        self._plot_bw_stats(ax, xticks, data_dfy, stat_dfs)
-
-    def _plot_conf95_stats(self,
-                           xticks,
-                           data_dfy: pd.DataFrame,
-                           stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
-        if self.stats not in ['conf95', 'all']:
-            return
-
-        if not all(k in stat_dfs.keys() for k in config.kStats['conf95'].exts):
-            self.logger.warning(("Cannot plot 95%% confidence intervals: "
-                                 "missing some statistics: %s vs %s"),
-                                stat_dfs.keys(),
-                                config.kStats['conf95'].exts)
-            return
-
-        for i in range(0, len(data_dfy.values)):
-            stddev_i = stat_dfs['stddev'].abs().values[i]
-            # 95% interval = 2 std stdeviations
-            plt.fill_between(xticks,
-                             data_dfy.values[i] - 2 * stddev_i,
-                             data_dfy.values[i] + 2 * stddev_i,
-                             alpha=0.25,
-                             color="C{}".format(i),
-                             interpolate=True)
-
-    def _plot_bw_stats(self,
-                       ax,
-                       xticks,
-                       data_dfy: pd.DataFrame,
-                       stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
-        if self.stats not in ['bw', 'all']:
-            return
-
-        if not all(k in stat_dfs.keys() for k in config.kStats['bw'].exts):
-            self.logger.warning(("Cannot plot box-and-whisker plots: "
-                                 "missing some statistics: %s vs %s"),
-                                stat_dfs.keys(),
-                                config.kStats['bw'].exts)
-            return
-
-        for i in range(0, len(data_dfy.values)):
-            boxes = []
-            for j in range(0, len(data_dfy.columns)):
-                boxes.append({
-                    # Bottom whisker position
-                    'whislo': stat_dfs['whislo'].iloc[i, j],
-                    # Top whisker position
-                    'whishi': stat_dfs['whishi'].iloc[i, j],
-                    # First quartile (25th percentile)
-                    'q1': stat_dfs['q1'].iloc[i, j],
-                    # Median         (50th percentile)
-                    'med': stat_dfs['median'].iloc[i, j],
-                    # Third quartile (75th percentile)
-                    'q3': stat_dfs['q3'].iloc[i, j],
-                    # Confidence interval lower bound
-                    'cilo': stat_dfs['cilo'].iloc[i, j],
-                    # Confidence interval upper bound
-                    'cihi': stat_dfs['cihi'].iloc[i, j],
-                    'fliers': []  # Ignoring outliers
-                })
-            ax.bxp(boxes,
-                   manage_ticks=False,
-                   positions=self.xticks,
-                   shownotches=True)
-
-    def _plot_ticks(self, ax) -> None:
-        if self.logyscale:
-            ax.set_yscale('symlog', base=2)
-            ax.yaxis.set_minor_formatter(mticker.ScalarFormatter())
-
-            # Use scientific or decimal notation--whichever has fewer chars
-            # ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.02g"))
-
-        ax.tick_params(labelsize=self.text_size['tick_label'])
-
-        # For ordered, qualitative data
-        if self.xtick_labels is not None:
-            ax.set_xticks(self.xticks)
-            ax.set_xticklabels(self.xtick_labels, rotation='vertical')
-
-    def _plot_legend(self, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
-        legend = self.legend
-
-        if model[1]:
-            legend = [val for pair in zip(self.legend, model[1])
-                      for val in pair]
-
-        plt.legend(legend,
-                   fontsize=self.text_size['legend_label'],
-                   ncol=max(1, int(len(legend) / 3.0)))
-
-    def _read_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
-        dfs = {}
-
-        dfs.update(self._read_conf95_stats())
-        dfs.update(self._read_bw_stats())
-
-        return dfs
-
-    def _read_conf95_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
-        dfs = {}
-
-        exts = config.kStats['conf95'].exts
-        if self.stats in ['conf95', 'all']:
-            for k in exts:
-                ipath = self.stats_root / (self.input_stem + exts[k])
-
-                if utils.path_exists(ipath):
-                    dfs[k] = storage.df_read(ipath, 'storage.csv')
-                else:
-                    self.logger.warning("%s file not found for '%s'",
-                                        exts[k],
-                                        self.input_stem)
-
-        return dfs
-
-    def _read_bw_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
-        dfs = {}
-
-        exts = config.kStats['bw'].exts
-
-        if self.stats in ['bw', 'all']:
-            for k in exts:
-                ipath = self.stats_root / (self.input_stem + exts[k])
-
-                if utils.path_exists(ipath):
-                    dfs[k] = storage.df_read(ipath, 'storage.csv')
-                else:
-                    self.logger.warning("%s file not found for '%s'",
-                                        exts[k],
-                                        self.input_stem)
-
-        return dfs
-
-    # 2024/09/13 [JRH]: The union is for compatability with type checkers in
-    # python {3.8,3.11}.
-    def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.Union[tp.List[str], tp.List[bytes]]]:
-        if self.model_root is None:
-            return (None, [])
-
-        self.logger.trace("Model root='%s'",   # type: ignore
-                          self.model_root)
-
-        exts = config.kModelsExt
-        modelf = self.model_root / (self.input_stem + exts['model'])
-        legendf = self.model_root / (self.input_stem + exts['legend'])
-
-        if not utils.path_exists(modelf):
-            self.logger.trace("No model='%s' found in model root",  # type: ignore
-                              modelf)
-            return (None, [])
-
-        model = storage.df_read(modelf, 'storage.csv')
-        if utils.path_exists(legendf):
-            with utils.utf8open(legendf, 'r') as f:
-                legend = f.read().splitlines()
-        else:
-            self.logger.warning("No legend file for model '%s' found",
-                                modelf)
-            legend = ['Model Prediction']
-
-        self.logger.trace("Loaded model='%s',legend='%s'",  # type: ignore
-                          modelf.relative_to(self.model_root),
-                          legendf.relative_to(self.model_root))
-
-        return (model, legend)
+    return True
 
 
-__api__ = [
-    'SummaryLineGraph'
-]
+def _plot_lines(
+    dataset: hv.Dataset, model_info: models.ModelInfo, legend: tp.List[str]
+) -> hv.NdOverlay:
+    # Plot the curve(s)
+    plot = hv.Overlay(
+        [
+            hv.Curve(
+                dataset,
+                kdims=dataset.kdims[0],
+                vdims=vdim,
+                label=legend[dataset.vdims.index(vdim)],
+            )
+            for vdim in dataset.vdims
+        ]
+    )
+
+    # Plot the points for each curve
+    plot *= hv.Overlay(
+        [hv.Points((dataset[dataset.kdims[0]], dataset[v])) for v in dataset.vdims]
+    )
+
+    if model_info.dataset:
+        # TODO: This currently only works for a single model being put onto a
+        # summary line graph.
+        plot *= hv.Overlay(
+            [
+                hv.Curve(
+                    model_info.dataset,
+                    kdims=dataset.kdims[0],
+                    vdims=dataset.vdims,
+                    label=model_info.legend[0],
+                )
+            ]
+        )
+        plot *= hv.Overlay(
+            [
+                hv.Points(
+                    (
+                        model_info.dataset[model_info.dataset.kdims[0]],
+                        model_info.dataset[v],
+                    )
+                )
+                for v in model_info.dataset.vdims
+            ]
+        )
+    return plot
+
+
+def _plot_stats(
+    dataset: hv.Dataset, setting: str, stat_dfs: tp.Dict[str, pd.DataFrame]
+) -> hv.NdOverlay:
+    """
+    Plot statistics for all lines on the graph.
+    """
+    plot = _plot_conf95_stats(dataset, setting, stat_dfs)
+    plot *= _plot_bw_stats(dataset, setting, stat_dfs)
+
+    return plot
+
+
+def _plot_conf95_stats(
+    dataset: hv.Dataset, setting: str, stat_dfs: tp.Dict[str, pd.DataFrame]
+) -> hv.NdOverlay:
+    if setting not in ["conf95", "all"]:
+        return hv.Overlay()
+
+    if not all(k in stat_dfs.keys() for k in config.kStats["conf95"].exts):
+        _logger.warning(
+            (
+                "Cannot plot 95%% confidence intervals: "
+                "missing some statistics: %s vs %s"
+            ),
+            stat_dfs.keys(),
+            config.kStats["conf95"].exts,
+        )
+        return hv.Overlay()
+
+    # Stddevs have to be added to dataset to be able to plot via overlays,
+    # afaict.
+    stddevs = pd.DataFrame()
+
+    for c in dataset.vdims:
+        stddevs[f"{c}_stddev_l"] = dataset[c] - 2 * stat_dfs["stddev"][c.name].abs()
+        stddevs[f"{c}_stddev_u"] = dataset[c] + 2 * stat_dfs["stddev"][c.name].abs()
+    stddevs.index = dataset.data.index
+    dataset.data = pd.concat([dataset.dframe(), stddevs], axis=1)
+
+    return hv.Overlay(
+        [
+            hv.Area(
+                dataset, vdims=[f"{vdim.name}_stddev_l", f"{vdim.name}_stddev_u"]
+            ).opts(
+                alpha=0.5,
+            )
+            for vdim in dataset.vdims
+        ]
+    )
+
+
+def _plot_bw_stats(
+    dataset: hv.Dataset, setting: str, stat_dfs: tp.Dict[str, pd.DataFrame]
+) -> hv.NdOverlay:
+    if setting not in ["bw", "all"]:
+        return hv.Overlay()
+
+    if not all(k in stat_dfs.keys() for k in config.kStats["bw"].exts):
+        _logger.warning(
+            ("Cannot plot box-and-whisker plots: " "missing some statistics: %s vs %s"),
+            stat_dfs.keys(),
+            config.kStats["bw"].exts,
+        )
+        return hv.Overlay()
+
+    elements = []
+
+    # For each value dimension (set of datapoints from a batch experiment)
+    for i in range(0, len(dataset.vdims)):
+
+        # For each datapoint captured from an experiment in the batch
+        for j in range(0, len(dataset.data.values)):
+            col = dataset.vdims[i].name
+
+            # Read stats from file
+            q1 = stat_dfs["q1"][col].iloc[j]
+            median = stat_dfs["median"][col].iloc[j]
+            q3 = stat_dfs["q3"][col].iloc[j]
+            whishi = stat_dfs["whislo"][col].iloc[j]
+            whislo = stat_dfs["whishi"][col].iloc[j]
+
+            # Box (Rectangle from q1 to q3).
+            # Args: x center, y center, x width, y height
+            box = hv.Box(dataset.data["xticks"][j], median, (0.2, (q3 - q1))).opts(
+                linewidth=2
+            )
+
+            # Median line
+            median_line = hv.Segments(
+                (
+                    dataset.data["xticks"][j] - 0.2,
+                    median,
+                    dataset.data["xticks"][j] + 0.2,
+                    median,
+                )
+            ).opts(color="darkred", linewidth=2)
+
+            # Whisker lines (vertical lines from box to min/max)
+            lower_whisker = hv.Segments(
+                (dataset.data["xticks"][j], q1, dataset.data["xticks"][j], whislo)
+            ).opts(color="black", linewidth=2)
+            upper_whisker = hv.Segments(
+                (dataset.data["xticks"][j], q3, dataset.data["xticks"][j], whishi)
+            ).opts(color="black", linewidth=2)
+
+            # Whisker caps (horizontal lines at min/max)
+            lower_cap = hv.Segments(
+                (
+                    dataset.data["xticks"][j] - 0.1,
+                    whislo,
+                    dataset.data["xticks"][j] + 0.1,
+                    whislo,
+                )
+            ).opts(color="black", linewidth=2)
+            upper_cap = hv.Segments(
+                (
+                    dataset.data["xticks"][j] - 0.1,
+                    whishi,
+                    dataset.data["xticks"][j] + 0.1,
+                    whishi,
+                )
+            ).opts(color="black", linewidth=2)
+            # Combine all elements
+            elements.append(
+                box
+                * median_line
+                * lower_whisker
+                * upper_whisker
+                * lower_cap
+                * upper_cap
+            )
+
+    return hv.Overlay(elements)
+
+
+def _plot_ticks(
+    plot: hv.NdOverlay,
+    logyscale: bool,
+    xticks: tp.List[float],
+    xticklabels: tp.List[str],
+) -> hv.NdOverlay:
+    if logyscale:
+        plot.opts(logy=True)
+
+    # For ordered, qualitative data
+    if xticklabels is not None:
+        plot.opts(xticks=[(i, j) for i, j in zip(xticks, xticklabels)], xrotation=90)
+
+        return plot
+
+
+def _read_stats(
+    setting: str, medium: str, stats_root: pathlib.Path, input_stem: str
+) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+    dfs = {}
+
+    dfs.update(_read_conf95_stats(setting, medium, stats_root, input_stem))
+    dfs.update(_read_bw_stats(setting, medium, stats_root, input_stem))
+
+    return dfs
+
+
+def _read_conf95_stats(
+    setting: str,
+    medium: str,
+    stats_root: pathlib.Path,
+    input_stem: str,
+) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+    dfs = {}
+
+    exts = config.kStats["conf95"].exts
+    if setting in ["conf95", "all"]:
+        for k in exts:
+            ipath = stats_root / (input_stem + exts[k])
+
+            if utils.path_exists(ipath):
+                dfs[k] = storage.df_read(ipath, medium, index_col="Experiment ID")
+            else:
+                _logger.warning("%s file not found for '%s'", exts[k], input_stem)
+
+    return dfs
+
+
+def _read_bw_stats(
+    setting: str,
+    medium: str,
+    stats_root: pathlib.Path,
+    input_stem: str,
+) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+    dfs = {}
+
+    exts = config.kStats["bw"].exts
+
+    if setting in ["bw", "all"]:
+        for k in exts:
+            ipath = stats_root / (input_stem + exts[k])
+
+            if utils.path_exists(ipath):
+                dfs[k] = storage.df_read(ipath, medium, index_col="Experiment ID")
+            else:
+                _logger.warning("%s file not found for '%s'", exts[k], input_stem)
+
+    return dfs
+
+
+# 2024/09/13 [JRH]: The union is for compatability with type checkers in
+# python {3.8,3.11}.
+def _read_model_info(
+    model_root: tp.Optional[pathlib.Path],
+    input_stem: str,
+    medium: str,
+    xticks: tp.List[float],
+) -> models.ModelInfo:
+
+    if model_root is None:
+        return models.ModelInfo()
+
+    _logger.trace("Model root='%s'", model_root)  # type: ignore
+
+    exts = config.kModelsExt
+    modelf = model_root / (input_stem + exts["model"])
+    legendf = model_root / (input_stem + exts["legend"])
+
+    if not utils.path_exists(modelf):
+        _logger.trace(
+            "No model file=<batch_model_root>/%s found",
+            modelf.relative_to(model_root),
+        )  # type: ignore
+        return models.ModelInfo()
+
+    info = models.ModelInfo()
+
+    df = storage.df_read(modelf, medium, index_col="Experiment ID")
+
+    # Column 0 is the 'Experiment ID' index, which we don't want included as
+    # a vdim
+    cols = df.columns.tolist()
+    df["xticks"] = xticks
+
+    info.dataset = hv.Dataset(data=df.reset_index(), kdims=["xticks"], vdims=cols)
+
+    if utils.path_exists(legendf):
+        with utils.utf8open(legendf, "r") as f:
+            info.legend = f.read().splitlines()
+    else:
+        _logger.warning(
+            "No legend file=<batch_model_root>/%s found",
+            legendf.relative_to(model_root),
+        )
+        info.legend = ["Model Prediction"]
+
+    _logger.trace(
+        "Loaded model='%s',legend='%s'",  # type: ignore
+        modelf.relative_to(model_root),
+        legendf.relative_to(model_root),
+    )
+
+    return info
+
+
+__all__ = ["generate"]

@@ -16,22 +16,32 @@ import packaging
 from sierra.core import types
 
 ################################################################################
-# Matplotlib Configuration
+# Holoviews Configuration
 ################################################################################
+def bokeh_init():
+    # Only needed when hv backend is bokeh
+    logging.getLogger('selenium').setLevel(logging.WARNING)
+    logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 
 def mpl_init():
     # Turn off MPL messages when the log level is set to DEBUG or
     # higher. Otherwise you get HUNDREDS. Must be before import to suppress
     # messages which occur during import.
+    #
+    # Only needed when the hv backend is mpl
     logging.getLogger('matplotlib').setLevel(logging.WARNING)
     logging.getLogger('PIL').setLevel(logging.WARNING)
 
     import matplotlib as mpl
 
+    # 2025-05-09 [JRH]: Doing this here has no effect, as it has to be done in
+    # each file you want to use mpl as the backend -_-.
+    # hv.extension('matplotlib')
+
     mpl.rcParams['lines.linewidth'] = 3
     mpl.rcParams['lines.markersize'] = 10
-    mpl.rcParams['figure.max_open_warning'] = 10000
+    mpl.rcParams['figure.max_open_warning'] = 1000
     mpl.rcParams['axes.formatter.limits'] = (-4, 4)
 
     # Use latex to render all math, so that it matches how the math renders in
@@ -48,7 +58,8 @@ def mpl_init():
     plt.style.use('seaborn-v0_8-colorblind')
 
 
-# Actually initialize matplotlib
+# Actually initialize holoviews
+bokeh_init()
 mpl_init()
 
 ################################################################################
@@ -56,7 +67,7 @@ mpl_init()
 ################################################################################
 
 
-kImageExt = '.png'
+kImageType = 'png'
 
 kRenderFormat = '.mp4'
 
@@ -158,7 +169,7 @@ kGazebo = {
 
 }
 
-kGNUParallel:  types.StrDict = {
+kGNUParallel: types.StrDict = {
     'cmdfile_stem': 'commands',
     'cmdfile_ext': '.txt'
 }

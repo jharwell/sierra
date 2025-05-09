@@ -20,49 +20,28 @@ This page has the following sections:
 Create A New Graph Category
 ===========================
 
-Add a root level dictionary to one of the following YAML configuration files:
-
-- ``<project>/config/intra-graphs-line.yaml`` for intra-experiment line
-  graphs. Graph category names must start with ``LN_`` and be at the root level
-  of the file.
-
-- ``<project>/config/intra-graphs-hm.yaml`` for intra-experiment heatmaps. Graph
-  category names must start with ``HM_`` and be at the root level of the
-  file. These dictionaries can describe heatmaps to be created from *averaged*
-  data across all runs within a single experiment (1 graph per experiment), *OR*
-  created from each experimental run (multiple graphs per experiment). The
-  former is generally used to generate graph deliverables, and the latter used
-  as part of imagizing/generating videos; see :ref:`usage/rendering`
-  for more details.
-
-- ``<project>/config/inter-graphs-line.yaml`` for inter-experiment line
-  graphs. Graph category names must start with ``LN_`` and be at the root level
-  of the file.
-
-- ``<project>/config/inter-graphs-hm.yaml`` for inter-experiment heatmaps. Graph
-  category names must start with ``HM_`` and be at the root level of the file.
-
-An example ``intra-graphs-line.yaml``, defining two categories of linegraphs:
+First, add a dictionary to ``<project>/config/graphs.yaml``.  Graph category
+names can start anything, but something sensible like ``LN_`` should be used for
+e.g., linegraphs.  An example ``graphs.yaml``, defining two categories of
+linegraphs, one for intra-experiment linegraphs, and one for inter-experiment
+linegraphs.:
 
 .. code-block:: YAML
 
-     LN_mycategory1:
-       graphs:
-         - ...
-         - ...
-         - ...
+    intra-exp:
+       LN_mycategory1:
+         graphs:
+           - ...
+           - ...
+           - ...
+     inter-exp:
+       LN_mycategory2:
+         graphs:
+           - ...
+           - ...
+           - ...
 
-     LN_mycategory2:
-       graphs:
-         - ...
-         - ...
-         - ...
-
-``intra-graphs-hm.yaml`` and ``inter-graphs-line.yaml`` have identical
-structures.
-
-
-.. IMPORTANT:: Because SIERRA tells matplotlib to use LaTeX internally to
+.. IMPORTANT:: Because SIERRA tells uv -> matplotlib to use LaTeX internally to
                generate graph labels, titles, etc., the standard LaTeX character
                restrictions within strings apply to all fields (e.g., '#' is
                illegal but '\#' is OK).
@@ -85,10 +64,8 @@ Linegraphs are appropriate if:
 - The data you want to graph can be obtained from a single .csv file (multiple
   columns in the same CSV file can be graphed simultaneously).
 
-``LN_XXX`` YAML Config
-^^^^^^^^^^^^^^^^^^^^^^
-
-Unless stated otherwise, all keys are mandatory.
+The config block for each linegraph is below. Unless stated otherwise, all keys
+are mandatory.
 
 .. code-block:: YAML
 
@@ -116,6 +93,10 @@ Unless stated otherwise, all keys are mandatory.
      # matplotlib after all). Optional.
      - title: 'My Title'
 
+     # The type of graph. Possible values are 'stacked_line', and
+     # 'summary_line' (inter-experiment only).
+     - graph_type: 'stacked_line'
+
      # List of names of the plotted lines within the graph. Can be
      # omitted to set the legend for each column to the name of the column
      # in the CSV.
@@ -131,6 +112,7 @@ Unless stated otherwise, all keys are mandatory.
      # The label of the Y-axis of the graph. Optional.
      - ylabel: 'Y'
 
+
 Heatmaps
 --------
 
@@ -139,10 +121,8 @@ Heatmaps are appropriate if:
 - The data you want to graph is two dimensional (e.g. a spatial representation
   of the arena is some way).
 
-``HM_XXX`` YAML Config
-^^^^^^^^^^^^^^^^^^^^^^
-
-Unless stated otherwise, all keys are mandatory.
+The config block for heatmaps is below. Unless stated otherwise, all keys are
+mandatory.
 
 .. code-block:: YAML
 
@@ -157,8 +137,8 @@ Unless stated otherwise, all keys are mandatory.
      # during imagizing.
      - title: 'My Title'
 
-     # The type of interpolation to use. Defaults to 'nearest' if omitted.
-     - interpolation: 'nearest'
+     # The type of graph. Must be 'heatmap'.
+     - graph_type: 'heatmap'
 
      # The Z colorbar label to use. Optional.
      - zlabel: 'My colorbar label'
@@ -180,15 +160,9 @@ Inter-experiment linegraphs are appropriate if:
 - The data you want to graph requires comparison between multiple experiments in
   a batch.
 
-``LN_XXX`` YAML Config
-^^^^^^^^^^^^^^^^^^^^^^
-See same as intra-experiment linegraphs, EXCEPT:
-
-Each inter-experiment linegraph has an additional optional boolean field
-``summary`` which determines if the generated graph is a
-:class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` or a
-:class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` (default if
-omitted).
+The config is the same as intra-experiment linegraphs, EXCEPT the ``graph_type``
+field can now be "summary_line" to generate a
+:func:`~sierra.core.graphs.summary_line`.
 
 Heatmaps
 --------
@@ -209,10 +183,7 @@ Inter-experiment heatmaps are appropriate if:
 .. versionadded:: 1.2.20
 
 
-``HM_XXX`` YAML Config
-^^^^^^^^^^^^^^^^^^^^^^
-
-Same as intra-experiment heatmaps.
+The config block is the same as intra-experiment heatmaps.
 
 
 How to Activate New Graph Category

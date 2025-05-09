@@ -4,86 +4,179 @@
 Experiment Outputs Processing Plugins
 =====================================
 
-Experimental output processing plugins tell SIERRA what to do with the
-:term:`Raw Data Output` files it reads from each :term:`Experimental Run` in
-stage 3. The job of these plugins is to transform or otherwise prepare
-experimental outputs so that :term:`Deliverables <Deliverable>` can be generated
-from them in stage 4. See :ref:`dataflow` for more details.
+Stage 3 Dataflow
+================
 
-Plugins that come with SIERRA are:
+At the highest level we have the following in the context of pipeline stages
+2-4:
 
-- :ref:`plugins/proc/stat`
+.. plantuml::
 
-- :ref:`plugins/proc/collate`
+   skinparam defaultTextAlignment center
 
-- :ref:`plugins/proc/imagize`
+   !theme cyborg
 
-.. _plugins/proc/stat:
+   ' Configuration
+   left to right direction
+   skinparam DefaultFontSize 48
+   skinparam DefaultFontColor #black
 
-Statistics Generation
-=====================
 
-- Computing statistics over/about experimental data for stage 4 for use in graph
-  generation in stage 4. See :ref:`usage/cli` documentation for
-  ``--dist-stats`` for details.
+   state "2. Execute\nExperiments\n" as stage2 {
+      state "Raw Output Data" as raw  #skyblue
+   }
 
-.. _plugins/proc/collate:
+   state "3. Process\nExperiment\nOutputs" as stage3  {
+      state "Processed Output Data" as proc #skyblue
+   }
 
-Collate
-=======
+   state "4. Generate\nDeliverables\n" as stage4  {
+      state "Deliverables " as deliverables #skyblue
+   }
 
-.. _plugins/proc/imagize:
+   raw --> proc
+   proc --> deliverables
 
-Imagizing
-=========
-
-SIERRA's capabilities for imagizing (translating from :term:`Raw Output Data`
-files into images) are detailed in this section. Imagize inputs are treated as
-snapshots of 2D or 3D data over time, and after being be turned into image files
-in stage 3 they can be rendered into videos in stage 4 (see
-:ref:`plugins/deliverable/render`).
-
-SIERRA can imagize files from the following sources:
-
-- On a per :term:`Project` basis via ``--project-imagizing``.
-
-See also :ref:`usage/rendering`.
-
-.. _plugins/proc/imagize/project:
-
-Project Imagizing
------------------
-
-If projects generate files within the ``main.run_metrics_leaf`` (see
-:ref:`tutorials/project/main-config`) directory for each experimental run which
-meet the following criteria, then SIERRA can turn them into images and
-render them:
-
-- The files reside in a 1st-level subdirectory of ``main.run_metrics_leaf``
-  (recursion not supported).
-
-- The files have a common stem with a unique numeric ID.
-
-- The stem of all files in a 1st-level subdir of ``main.run_metrics_leaf`` is
-  the same as the 1st-level subdir name. For example, if the directory name was
-  ``swarm-distribution`` under ``main.run_metrics_leaf`` then all files within
-  that directory must be named according to
-  ``swarm-distribution/swarm-distributionXXXXX.<ext>``, where ``XXXXX`` is any
-  length numeric prefix (possibly preceded by an underscore or dash), and
-  ``<ext>`` is any extension supported by the currently selected :ref:`storage
-  plugin <plugins/storage>`.
-
-- The name of the 1st-level subdir of ``main.run_metrics_leaf`` has a
-  corresponding entry in ``intra-graphs-hm.yaml``. This is to enable selective
-  imagizing of graphs, so that you don't get bogged down if you want to capture
-  imagizing data en masse, but only render some of it to videos later. See
-  :ref:`tutorials/project/graphs-config` for details.
+The :term:`Raw Output Data` files from experimental runs is processed during
+stage 3 into :term:`Processed Output Data` files. In stage 4 those processed
+files are turned into deliverables of various sorts. All stage 4 deliverables
+are sourced from a *single* data file, to encourage and enable reusability of
+code across projects. As such, it is the job of active stage 3 plugins to make
+sure all the data needed to generate a given deliverable appear in the same
+file. The process of doing this is called :term:`Data Collation`.
 
 .. IMPORTANT::
 
-   Generating the images for each experiment does not happen automatically as
-   part of stage 3 because it can take a LONG time and is idempotent. You should
-   only pass ``--project-imagizing`` the first time you run stage 3 after
-   running stage 2.
+   Stage 3 operates at the level of :term:`Raw Output Data` files and
+   :term:`Experimental Runs <Experimental Run>`, while stage 4 operates at the
+   level of :term:`Collated Output Data` files, :term:`Processed Output Data`
+   files and :term:`Experiments <Experiment>`. Access at the level of stage 3 in
+   stage 4 is not possible by design.
 
-To use, pass ``--project-imagizing`` during stage 3.
+With that framing in mind, we can dive into the dataflow in detail.  Within
+stage 3 the first type of data processing that occurs is *intra*-experiment data
+processing. If we look at the data from stage 2 for a single :term:`Experimental
+Run` :math:`j` from :term:`Experiment` :math:`i` in :term:`Batch Experiment`
+which produces :math:`k` raw output files, we could represent the output data
+abstractly as:
+
+.. plantuml::
+
+   skinparam defaultTextAlignment center
+
+   !theme cyborg
+
+   ' Configuration
+   left to right direction
+   skinparam DefaultFontSize 24
+   skinparam DefaultFontColor #black
+
+
+   state "run j" as runj #skyblue {
+      state "file 0" as filej0 #darkturquoise
+      state "file 1" as filej1 #limegreen
+      state "..." as filejx #green
+      state "file k" as filejk #lightseagreen
+
+      filej0 -[hidden]r-> filej1
+      filej0 -[hidden]d-> filejx
+      filej1 -[hidden]d-> filejk
+      filejx -[hidden]r-> filejk
+   }
+
+For *intra*-experiment data processing, all of the per-run outputs are matched
+across :term:`Experimental Runs <Experimental Run>` within an
+:term:`Experiment`, and processed in some way (e.g., :ref:`generating
+statistical distributions <plugins/proc/stat>`). Crucially, the processing is
+done at the level of *entire files* (i.e., it is a file-level reduce
+operation). For example, if runs produce a ``foo.csv`` file, then every column
+in ``foo.csv`` will be present in the corresponding :term:`Processed Output
+Data` files as well.
+
+This can be visualized as follows:
+
+.. plantuml::
+
+   skinparam defaultTextAlignment center
+
+   !theme cyborg
+
+   ' Configuration
+   skinparam DefaultFontSize 48
+   skinparam DefaultFontColor #black
+   skinparam stateBorderThickness 8
+
+   state "run 0" as run0 #skyblue {
+      state "file 0" as file00 #darkturquoise
+      state "file 1" as file01 #limegreen
+      state "..." as file0x #green
+      state "file k" as file0k #lightseagreen
+
+      file00 -[hidden]r-> file01
+      file00 -[hidden]d-> file0x
+      file01 -[hidden]d-> file0k
+      file0x -[hidden]r-> file0k
+
+   }
+   state "run 1" as run1  #skyblue {
+      state "file 0" as file10 #darkturquoise
+      state "file 1" as file11 #limegreen
+      state "..." as file1x #green
+      state "file k" as file1k #lightseagreen
+
+      file10 -[hidden]r-> file11
+      file10 -[hidden]d-> file1x
+      file11 -[hidden]d-> file1k
+      file1x -[hidden]r-> file1k
+   }
+
+   state "..." as runx #skyblue
+
+   state "run j" as runj #skyblue {
+      state "file 0" as filej0 #darkturquoise
+      state "file 1" as filej1 #limegreen
+      state "..." as filejx #green
+      state "file k" as filejk #lightseagreen
+
+      filej0 -[hidden]r-> filej1
+      filej0 -[hidden]d-> filejx
+      filej1 -[hidden]d-> filejk
+      filejx -[hidden]r-> filejk
+   }
+
+   state "Processed outputs" as intra #skyblue {
+      state "file 0" as filep0 #darkturquoise
+      state "file 1" as filep1 #limegreen
+      state "..." as filepx #green
+      state "file k" as filepk #lightseagreen
+
+      filep0 -[hidden]r-> filep1
+      filep1 -[hidden]r-> filepx
+      filepx -[hidden]r-> filepk
+   }
+
+   run0 -[hidden]r-> run1
+   run1 -[hidden]r-> runx
+   runx -[hidden]r-> runj
+
+
+   run1 -d-> intra
+   run0 -d-> intra
+   runx -d-> intra
+   runj -d-> intra
+
+
+.. TIP:: :term:`Processed Output Data` files can be thought of as time-series
+         data at the level of :term:`Experimental Runs <Experimental Run>`.
+
+Plugins
+=======
+
+With that context and framing, the documentation for each of the processing
+plugins which come with SIERRA are below.
+
+.. toctree::
+
+   stat.rst
+   collate.rst
+   imagize.rst

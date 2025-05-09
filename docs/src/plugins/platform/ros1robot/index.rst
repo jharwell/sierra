@@ -4,8 +4,11 @@
 ROS1+Robot Platform
 ===================
 
-This platform can be selected via ``--platform=platform.ros1robot``.
 
+Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
+later is required.
+
+This platform can be selected via ``--platform=platform.ros1robot``.
 
 This is the platform on which SIERRA will run experiments using :term:`ROS1` on
 a real robot of your choice. To use this platform, you must setup the

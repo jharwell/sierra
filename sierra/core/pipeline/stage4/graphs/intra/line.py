@@ -13,63 +13,75 @@ import logging
 import json
 
 # Project packages
-from sierra.core import types, config, exproot
-from sierra.core.graphs.stacked_line_graph import StackedLineGraph
+from sierra.core import types, exproot, graphs
 
 _logger = logging.getLogger(__name__)
 
 
-def generate(cmdopts: types.Cmdopts,
-             pathset: exproot.PathSet,
-             targets: tp.List[types.YAMLDict]) -> None:
+def generate(
+    cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: tp.List[types.YAMLDict]
+) -> None:
     """
     Generate linegraphs from: term:`Averaged Experimental Run Data` files.
     """
 
-    _logger.info("Linegraphs from <batch_root>/%s",
-                 pathset.stat_root.relative_to(pathset.parent))
+    _logger.info(
+        "Linegraphs from <batch_root>/%s", pathset.stat_root.relative_to(pathset.parent)
+    )
 
     # For each category of linegraphs we are generating
     for category in targets:
-
         # For each graph in each category
-        for graph in category['graphs']:
-            output_fpath = pathset.graph_root / ('SLN-' + graph['dest_stem'] +
-                                                 config.kImageExt)
+        for graph in category:
+
+            # Only try to create linegraphs (duh)
+            if graph["type"] != "stacked_line":
+                continue
+
             try:
-                _logger.trace('\n' +  # type: ignore
-                              json.dumps(graph, indent=4))
+                _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
 
-                StackedLineGraph(stats_root=pathset.stat_root,
-                                 input_stem=graph['src_stem'],
-                                 output_fpath=output_fpath,
-                                 stats=cmdopts['dist_stats'],
-                                 dashstyles=graph.get('dashes', None),
-                                 linestyles=graph.get('styles', None),
-                                 cols=graph.get('cols', None),
-                                 title=graph.get('title', None),
-                                 legend=graph.get('legend', None),
-                                 xlabel=graph.get('xlabel', None),
-                                 ylabel=graph.get('ylabel', None),
-                                 logyscale=cmdopts['plot_log_yscale'],
-                                 large_text=cmdopts['plot_large_text']).generate()
+                paths = graphs.PathSet(
+                    input_root=pathset.stat_root,
+                    output_root=pathset.graph_root,
+                    parent=pathset.parent,
+                    model_root=None,
+                )
+                graphs.stacked_line(
+                    paths=paths,
+                    input_stem=graph["src_stem"],
+                    output_stem=graph["dest_stem"],
+                    medium=cmdopts["storage"],
+                    stats=cmdopts["dist_stats"],
+                    cols=graph.get("cols", None),
+                    title=graph.get("title", None),
+                    legend=graph.get("legend", None),
+                    xlabel=graph.get("xlabel", None),
+                    ylabel=graph.get("ylabel", None),
+                    logyscale=cmdopts["plot_log_yscale"],
+                    large_text=cmdopts["plot_large_text"],
+                )
             except KeyError:
-                _logger.fatal(("Could not generate linegraph. "
-                               "Possible reasons include: "))
+                _logger.fatal(
+                    ("Could not generate linegraph. " "Possible reasons include: ")
+                )
 
-                _logger.fatal(("1. The YAML configuration entry is "
-                               "missing required fields"))
-                missing_cols = graph.get('cols', "MISSING_KEY")
-                missing_stem = graph.get('src_stem', "MISSING_KEY")
-                _logger.fatal(("2. 'cols' is present in YAML "
-                               "configuration but some of %s are "
-                               "missing from %s"),
-                              missing_cols,
-                              missing_stem)
+                _logger.fatal(
+                    ("1. The YAML configuration entry is " "missing required fields")
+                )
+                missing_cols = graph.get("cols", "MISSING_KEY")
+                missing_stem = graph.get("src_stem", "MISSING_KEY")
+                _logger.fatal(
+                    (
+                        "2. 'cols' is present in YAML "
+                        "configuration but some of %s are "
+                        "missing from %s"
+                    ),
+                    missing_cols,
+                    missing_stem,
+                )
 
                 raise
 
 
-__all__ = [
-    'generate'
-]
+__all__ = ["generate"]

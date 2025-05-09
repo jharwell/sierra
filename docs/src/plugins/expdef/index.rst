@@ -1,32 +1,38 @@
 .. _plugins/expdef:
 
-==============
-Expdef Plugins
-==============
+=============================
+Experiment Definition Plugins
+=============================
 
-SIERRA is capable of reading ``--expdef-template`` from a number of
-formats. Supported formats that come with SIERRA are:
+SIERRA is capable of reading ``--expdef-template`` from a number of formats.
+Before diving into the details of the plugins, it is important to clarify
+terminology around the different components in files passed to
+``--expdef-template``:
 
-- :ref:`plugins/expdef/xml`
+- Attribute - The value part of a <key, value> pair within an
+  ``--expdef-template`` which maps to a native primitive such as a bool, int, or
+  string. Attributes *cannot* contain other attributes.
 
-- :ref:`plugins/expdef/json`
+- Element - The value part of a <key, value> pair within an
+  ``--expdef-template`` which maps to a sub-tree of configuration. Thus,
+  elements can contain other elements, as well as *attributes* (depending on
+  markup format).
 
-.. _plugins/expdef/xml:
+- Tag - The key part of a <key, value> pair within an ``--expdef-template``
+  which maps either to an *element* or an *attribute*.
 
-XML
-===
+The differences between these components is best illustrated with some simple
+examples:
 
-This expdef plugin can be selected via ``--expdef=expdef.xml``.
+.. include:: examples.rst
 
-This is the default expdef type which SIERRA will use to read input files. This
-plugin does not currently support flattening/nested configuration files.
 
-.. _plugins/expdef/json:
+With that understanding in place, the supported formats that come with SIERRA
+are:
 
-JSON
-====
+.. toctree::
 
-This expdef plugin can be selected via ``--expdef=expdef.json``. This plugin
-supports flattening/nested configuration files.
+   xml.rst
+   json.rst
 
-.. versionadded:: 1.3.19
+Additional formats can be supported via :ref:`tutorials/plugin/expdef`.

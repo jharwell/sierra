@@ -6,18 +6,9 @@ HPC Execution Environment Plugins
 
 SIERRA is capable of adapting its runtime infrastructure to a number of
 different HPC environments so that experiments can be run efficiently on
-whatever computational resources a researcher has access to. Supported
-environments that come with SIERRA are listed on this page.
-
-These plugins tested with the following platforms (they may work on other
-platforms out of the box too):
-
-- :ref:`plugins/platform/argos`
-
-- :ref:`plugins/platform/ros1gazebo`
-
-SIERRA makes the following assumptions about the HPC environments corresponding
-to the plugins listed on this page:
+whatever computational resources a researcher has access to.  SIERRA makes the
+following assumptions about the HPC environments corresponding to the plugins
+listed on this page:
 
 .. list-table:: HPC Environment Assumptions
    :widths: 25,75
@@ -62,13 +53,6 @@ additional simulations as currently running simulations finish.
 
 No additional configuration/environment variables are needed with this HPC
 environment for use with SIERRA.
-
-ARGoS Considerations
---------------------
-
-The # threads per :term:`experimental run <Experimental Run>` is defined with
-``--physics-n-engines``, and that option is required for this HPC environment
-during stage 1.
 
 .. _plugins/exec-env/hpc/pbs:
 

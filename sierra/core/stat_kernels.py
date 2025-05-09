@@ -21,8 +21,8 @@ class conf95:
 
     Applicable to:
 
-    - :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`
-    - :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
+    - :func:`~sierra.core.graphs.stacked_line`
+    - :func:`~sierra.core.graphs.summary_line`
 
     """
     @staticmethod
@@ -65,8 +65,7 @@ class bw:
 
     Applicable to:
 
-    - :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`
-    - :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
+    - :func:`~sierra.core.graphs.summary_line`
     """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:

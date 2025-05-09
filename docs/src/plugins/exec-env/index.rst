@@ -10,3 +10,6 @@ Execution Environment Plugins
 
    hpc.rst
    realrobot.rst
+
+Additional execution environments can be supported via
+:ref:`tutorials/plugin/exec-env`.

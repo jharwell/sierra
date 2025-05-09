@@ -21,11 +21,12 @@ from haggis import logs
 # Project packages
 
 
-def initialize(log_level: str):
+def initialize(log_level: str) -> None:
+    """Initialize logging in SIERRA."""
     logs.add_logging_level(level_name='TRACE',
                            level_num=logging.DEBUG - 5,
                            method_name=None,
-                           if_exists=logs.RAISE)
+                           if_exists=None)
     # Needed for static analysis (mypy and/or pylint)
     setattr(logging, '_HAS_DYNAMIC_ATTRIBUTES', True)
 

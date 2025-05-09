@@ -114,3 +114,4 @@ R-*
 
 # emacs
 *.rel
+.projectile-cache.eld
