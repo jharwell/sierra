@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator():
+class ExpShellCmdsGenerator:
     """Dispatcher for shell cmd generation for an :term:`Experiment`.
 
     Dispatches generation to the selected execution environment.  Called during
@@ -36,20 +36,21 @@ class ExpShellCmdsGenerator():
     and to run shell commands immediately after the experiment finishes.
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 exp_num: int) -> None:
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
-        if hasattr(module, 'ExpShellCmdsGenerator'):
-            _logger.debug(("Skipping generating experiment shell commands "
-                           "for --exec-env=%s"),
-                          self.cmdopts['exec_env'])
-
-            self.env = module.ExpShellCmdsGenerator(self.cmdopts,
-                                                    exp_num)
+        module = pm.pipeline.get_plugin_module(self.cmdopts["exec_env"])
+        if hasattr(module, "ExpShellCmdsGenerator"):
+            self.env = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
         else:
+            _logger.debug(
+                (
+                    "Skipping generating experiment shell commands "
+                    "for --exec-env=%s: does not define ExpShellCmdsGenerator"
+                ),
+                self.cmdopts["exec_env"],
+            )
+
             self.env = None
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -77,8 +78,9 @@ class ExpShellCmdsGenerator():
         return cmds
 
 
-def cmdline_postparse_configure(exec_env: str,
-                                args: argparse.Namespace) -> argparse.Namespace:
+def cmdline_postparse_configure(
+    exec_env: str, args: argparse.Namespace
+) -> argparse.Namespace:
     """Dispatcher for configuring the cmdopts dictionary.
 
     Dispatches configuring to the selected ``--exec-env``.  Called before the
@@ -93,15 +95,19 @@ def cmdline_postparse_configure(exec_env: str,
 
     # Configure for selected execution enivornment first, to check for
     # low-level details.
-    args.__dict__['exec_env'] = exec_env
+    args.__dict__["exec_env"] = exec_env
     module = pm.pipeline.get_plugin_module(exec_env)
 
-    if hasattr(module, 'cmdline_postparse_configure'):
+    if hasattr(module, "cmdline_postparse_configure"):
         args = module.cmdline_postparse_configure(args)
     else:
-        logger.debug(("Skipping configuring cmdline from --exec-env='%s': "
-                      "does not define cmdline_postparse_configure()"),
-                     exec_env)
+        logger.debug(
+            (
+                "Skipping configuring cmdline from --exec-env='%s': "
+                "does not define cmdline_postparse_configure()"
+            ),
+            exec_env,
+        )
 
     return args
 
@@ -113,19 +119,23 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
     an execution environment is not necessarily the same as what is needed (in
     terms of envvars, daemons, etc.) when running them.
     """
-    module = pm.pipeline.get_plugin_module(cmdopts['exec_env'])
-    if hasattr(module, 'exec_env_check'):
+    module = pm.pipeline.get_plugin_module(cmdopts["exec_env"])
+    if hasattr(module, "exec_env_check"):
         module.exec_env_check(cmdopts)
     else:
-        _logger.debug(("Skipping execution environment check for "
-                       "--exec-env='%s': does not define exec_env_check()"),
-                      cmdopts['exec_env'])
+        _logger.debug(
+            (
+                "Skipping execution environment check for "
+                "--exec-env='%s': does not define exec_env_check()"
+            ),
+            cmdopts["exec_env"],
+        )
 
 
 def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
     ret = []
 
-    with utils.utf8open(nodefile, 'r') as f:
+    with utils.utf8open(nodefile, "r") as f:
         lines = f.readlines()
 
         for line in lines:
@@ -143,8 +153,8 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
 
     cores_re = r"^[0-9]+/"
     if res := re.search(cores_re, line):
-        cores = int(line.split('/')[0])
-        ssh = line.split('/')[1]
+        cores = int(line.split("/")[0])
+        ssh = line.split("/")[1]
     else:
         cores = 1
         ssh = line
@@ -178,48 +188,45 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
     else:
         raise ValueError(f"Bad ssh/hostname spec {ssh}")
 
-    return types.ParsedNodefileSpec(hostname=hostname,
-                                    n_cores=cores,
-                                    login=login,
-                                    port=port)
+    return types.ParsedNodefileSpec(
+        hostname=hostname, n_cores=cores, login=login, port=port
+    )
 
 
-def check_connectivity(cmdopts: types.Cmdopts,
-                       login: str,
-                       hostname: str,
-                       port: int,
-                       host_type: str) -> None:
+def check_connectivity(
+    cmdopts: types.Cmdopts, login: str, hostname: str, port: int, host_type: str
+) -> None:
 
     _logger.info("Checking connectivity to %s", hostname)
     ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
     nc_diag = f"{host_type},port={port} via {hostname}"
 
-    if cmdopts['online_check_method'] == 'ping+ssh':
+    if cmdopts["online_check_method"] == "ping+ssh":
         try:
-            _logger.debug("Attempt to ping %s, type=%s",
-                          hostname,
-                          host_type)
-            timeout = config.kPlatform['ping_timeout']
-            subprocess.run(f"ping -c 3 -W {timeout} {hostname}",
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+            _logger.debug("Attempt to ping %s, type=%s", hostname, host_type)
+            timeout = config.kPlatform["ping_timeout"]
+            subprocess.run(
+                f"ping -c 3 -W {timeout} {hostname}",
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
         except subprocess.CalledProcessError:
-            _logger.fatal("Unable to ping %s, type=%s",
-                          hostname,
-                          host_type)
+            _logger.fatal("Unable to ping %s, type=%s", hostname, host_type)
             raise
         _logger.debug("%s is alive, type=%s", hostname, host_type)
-    elif cmdopts['online_check_method'] == 'nc+ssh':
+    elif cmdopts["online_check_method"] == "nc+ssh":
         try:
             _logger.debug("Check for ssh tunnel to %s", nc_diag)
-            timeout = config.kPlatform['ping_timeout']
-            subprocess.run(f"nc -z {hostname} {port}",
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+            timeout = config.kPlatform["ping_timeout"]
+            subprocess.run(
+                f"nc -z {hostname} {port}",
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
         except subprocess.CalledProcessError:
             _logger.fatal("No ssh tunnel to %s", nc_diag)
             raise
@@ -228,46 +235,46 @@ def check_connectivity(cmdopts: types.Cmdopts,
     try:
 
         _logger.debug("Verify ssh to %s", ssh_diag)
-        subprocess.run((f"ssh -p{port} "
-                        "-o PasswordAuthentication=no "
-                        "-o StrictHostKeyChecking=no "
-                        "-o BatchMode=yes "
-                        f"{login}@{hostname} exit"),
-                       shell=True,
-                       check=True,
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
+        subprocess.run(
+            (
+                f"ssh -p{port} "
+                "-o PasswordAuthentication=no "
+                "-o StrictHostKeyChecking=no "
+                "-o BatchMode=yes "
+                f"{login}@{hostname} exit"
+            ),
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
     except subprocess.CalledProcessError:
         _logger.fatal("Unable to connect to %s", ssh_diag)
         raise
     _logger.info("%s@%s online", host_type, hostname)
 
 
-def check_for_simulator(platform: str,
-                        exec_env: str,
-                        name: str):
+def check_for_simulator(platform: str, exec_env: str, name: str):
     shellname = get_executable_shellname(name)
 
-    version_cmd = f'{shellname} -v'
-    _logger.debug("Check version for '%s' via '%s'",
-                  shellname,
-                  version_cmd)
+    version_cmd = f"{shellname} -v"
+    _logger.debug("Check version for '%s' via '%s'", shellname, version_cmd)
 
     if shutil.which(shellname):
-        res = subprocess.run(version_cmd,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=True)
+        res = subprocess.run(
+            version_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        )
         return res
     else:
         raise RuntimeError(
-            f"Bad --exec-env '{exec_env}' for platform '{platform}': cannot find '{name}'")
+            f"Bad --exec-env '{exec_env}' for platform '{platform}': cannot find '{name}'"
+        )
 
 
 def get_executable_shellname(base: str) -> str:
-    if 'SIERRA_ARCH' in os.environ:
-        arch = os.environ['SIERRA_ARCH']
-        return f'{base}-{arch}'
+    if "SIERRA_ARCH" in os.environ:
+        arch = os.environ["SIERRA_ARCH"]
+        return f"{base}-{arch}"
     else:
         return base
 
@@ -278,5 +285,5 @@ __all__ = [
     "parse_nodefile",
     "check_connectivity",
     "check_for_simulator",
-    "get_executable_shellname"
+    "get_executable_shellname",
 ]

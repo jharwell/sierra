@@ -34,6 +34,13 @@ needs.
 
 .. _tutorials/extension:
 
+.. IMPORTANT:: When creating *any* type of plugin, including a :term:`Project`
+               plugin, the name of the plugin must specified as ``X.Y`` on the
+               cmdline. This is required for pipeline plugins, because the
+               plugin name is used as part of the ``import`` name. Not strictly
+               required for project plugins, but requiring it makes
+               internal handling of all types of plugins much simpler.
+
 .. toctree::
    :maxdepth: 1
    :caption: Extending SIERRA with new plugins:

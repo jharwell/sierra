@@ -36,15 +36,15 @@ def cmdline_parser(platform: str) -> tp.Optional[argparse.ArgumentParser]:
     If the selected platform does not define a cmdline, None is returned.
     """
     module = pm.pipeline.get_plugin_module(platform)
-    if hasattr(module, 'cmdline_parser'):
+    if hasattr(module, "cmdline_parser"):
         return module.cmdline_parser()
 
     return None
 
 
-def cmdline_postparse_configure(platform: str,
-                                exec_env: str,
-                                args: argparse.Namespace) -> argparse.Namespace:
+def cmdline_postparse_configure(
+    platform: str, exec_env: str, args: argparse.Namespace
+) -> argparse.Namespace:
     """Dispatcher for configuring the cmdopts dictionary.
 
     Dispatches configuring to the selected ``--platform`` and ``--exec-env``.
@@ -55,15 +55,19 @@ def cmdline_postparse_configure(platform: str,
     arguments accepted.
     """
     # Configure for selected platform
-    args.__dict__['platform'] = platform
+    args.__dict__["platform"] = platform
     module = pm.pipeline.get_plugin_module(platform)
 
-    if hasattr(module, 'cmdline_postparse_configure'):
+    if hasattr(module, "cmdline_postparse_configure"):
         args = module.cmdline_postparse_configure(exec_env, args)
     else:
-        _logger.debug(("Skipping configuring cmdline from --platform='%s': "
-                      "does not define cmdline_postparse_configure()"),
-                      platform)
+        _logger.debug(
+            (
+                "Skipping configuring cmdline from --platform='%s': "
+                "does not define cmdline_postparse_configure()"
+            ),
+            platform,
+        )
 
     return args
 
@@ -76,17 +80,21 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
     envvars, daemons, etc.) when running them.
 
     """
-    module = pm.pipeline.get_plugin_module(cmdopts['platform'])
-    if hasattr(module, 'exec_env_check'):
+    module = pm.pipeline.get_plugin_module(cmdopts["platform"])
+    if hasattr(module, "exec_env_check"):
         module.exec_env_check(cmdopts)
     else:
-        _logger.debug(("Skipping execution environment check for "
-                       "--platform='%s': does not define exec_env_hook()"),
-                      cmdopts['platform'])
+        _logger.debug(
+            (
+                "Skipping execution environment check for "
+                "--platform='%s': does not define exec_env_check()"
+            ),
+            cmdopts["platform"],
+        )
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator():
+class ExpRunShellCmdsGenerator:
     """Dispatcher for shell cmd generation for an :term:`Experimental Run`.
 
     Dispatches generation to the selected platform.
@@ -98,37 +106,36 @@ class ExpRunShellCmdsGenerator():
 
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.BatchCriteria,
-                 n_agents: int,
-                 exp_num: int) -> None:
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        criteria: bc.BatchCriteria,
+        n_agents: int,
+        exp_num: int,
+    ) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
-        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["platform"])
 
-        if hasattr(module, 'ExpRunShellCmdsGenerator'):
-            self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
-                                                            self.criteria,
-                                                            n_agents,
-                                                            exp_num)
+        if hasattr(module, "ExpRunShellCmdsGenerator"):
+            self.platform = module.ExpRunShellCmdsGenerator(
+                self.cmdopts, self.criteria, n_agents, exp_num
+            )
         else:
             self.platform = None
 
-    def pre_run_cmds(self,
-                     host: str,
-                     input_fpath: pathlib.Path,
-                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def pre_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
         cmds = []
         if self.platform:
             cmds.extend(self.platform.pre_run_cmds(host, input_fpath, run_num))
 
         return cmds
 
-    def exec_run_cmds(self,
-                      host: str,
-                      input_fpath: pathlib.Path,
-                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def exec_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
         cmds = []
 
         if self.platform:
@@ -146,7 +153,7 @@ class ExpRunShellCmdsGenerator():
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator():
+class ExpShellCmdsGenerator:
     """Dispatcher for shell cmd generation for an :term:`Experiment`.
 
     Dispatches generation to the selected platform.  Called during stage 2 to
@@ -155,19 +162,20 @@ class ExpShellCmdsGenerator():
     immediately after the experiment finishes.
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 exp_num: int) -> None:
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
-        if hasattr(module, 'ExpShellCmdsGenerator'):
-            self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
-                                                         exp_num)
+        module = pm.pipeline.get_plugin_module(self.cmdopts["platform"])
+        if hasattr(module, "ExpShellCmdsGenerator"):
+            self.platform = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
         else:
-            _logger.debug(("Skipping generating experiment shell commands "
-                           "for --platform=%s: does not defined ExpShellCmdsGenerator"),
-                          self.cmdopts['platform'])
+            _logger.debug(
+                (
+                    "Skipping generating experiment shell commands "
+                    "for --platform=%s: does not define ExpShellCmdsGenerator"
+                ),
+                self.cmdopts["platform"],
+            )
 
             self.platform = None
 
@@ -196,7 +204,7 @@ class ExpShellCmdsGenerator():
         return cmds
 
 
-class ExpConfigurer():
+class ExpConfigurer:
     """Perform platform-specific configuration for an :term:`Experimental Run`.
 
     For things can do programmatically (i.e., without needing a shell). This
@@ -207,19 +215,19 @@ class ExpConfigurer():
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
-        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(cmdopts["platform"])
         self.platform = module.ExpConfigurer(self.cmdopts)
 
-    def for_exp_run(self,
-                    exp_input_root: pathlib.Path,
-                    run_output_dir: pathlib.Path) -> None:
+    def for_exp_run(
+        self, exp_input_root: pathlib.Path, run_output_dir: pathlib.Path
+    ) -> None:
         self.platform.for_exp_run(exp_input_root, run_output_dir)
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
         self.platform.for_exp(exp_input_root)
 
-    def cmdfile_paradigm(self) -> str:
-        return self.platform.cmdfile_paradigm()
+    def parallelism_paradigm(self) -> str:
+        return self.platform.parallelism_paradigm()
 
 
 def get_local_ip():
@@ -232,22 +240,27 @@ def get_local_ip():
         if socket.AF_INET in netifaces.ifaddresses(iface):
             active.append(iface)
 
-    active = list(filter('lo'.__ne__, active))
+    active = list(filter("lo".__ne__, active))
 
     if len(active) > 1:
-        logging.critical(("SIERRA host machine has > 1 non-loopback IP addresses"
-                          "/network interfaces--SIERRA may select the wrong "
-                          "one: %s"), active)
+        logging.critical(
+            (
+                "SIERRA host machine has > 1 non-loopback IP addresses"
+                "/network interfaces--SIERRA may select the wrong "
+                "one: %s"
+            ),
+            active,
+        )
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
 
 
 __all__ = [
-    'cmdline_parser',
-    'cmdline_postparse_configure',
-    'ExpRunShellCmdsGenerator',
-    'ExpShellCmdsGenerator',
-    'ExpRunShellCmdsGenerator',
-    'ExpShellCmdsGenerator',
+    "cmdline_parser",
+    "cmdline_postparse_configure",
+    "ExpRunShellCmdsGenerator",
+    "ExpShellCmdsGenerator",
+    "ExpRunShellCmdsGenerator",
+    "ExpShellCmdsGenerator",
 ]

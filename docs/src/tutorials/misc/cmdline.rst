@@ -83,7 +83,8 @@ With that out of the way, the steps to extend the SIERRA cmdline are as follows:
    - ``exec_jobs_per_node`` - This is usually provided by the ``--exec-env``
      plugin via a nested update call like::
 
-       from sierra.core import hpc, types
+       from sierra.core import types
+       from sierra.plugins.execenv import hpc
        ...
 
        def to_cmdopts(args) -> types.Cmdopts:

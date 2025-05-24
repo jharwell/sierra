@@ -16,33 +16,34 @@ import argparse
 from sierra.core import types
 from sierra.core import config
 import sierra.core.cmdline as corecmd
-from sierra.core import hpc, ros1
+from sierra.core import ros1
+from sierra.plugins.execenv import hpc
 
 
 class PlatformCmdline(corecmd.BaseCmdline):
-    """Defines :term:`ROS1+Gazebo` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ROS1+Gazebo` extensions to :class:`~sierra.core.cmdline.CoreCmdline`."""
 
-    """
-
-    def __init__(self,
-                 parents: tp.Optional[tp.List[argparse.ArgumentParser]],
-                 stages: tp.List[int]) -> None:
+    def __init__(
+        self,
+        parents: tp.Optional[tp.List[argparse.ArgumentParser]],
+        stages: tp.List[int],
+    ) -> None:
 
         if parents is not None:
-            self.parser = argparse.ArgumentParser(parents=parents,
-                                                  add_help=False,
-                                                  allow_abbrev=False)
+            self.parser = argparse.ArgumentParser(
+                parents=parents, add_help=False, allow_abbrev=False
+            )
         else:
-            self.parser = argparse.ArgumentParser(add_help=False,
-                                                  allow_abbrev=False)
+            self.parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
 
         self.scaffold_cli()
         self.init_cli(stages)
 
     def scaffold_cli(self) -> None:
-        self.stage1_exp = self.parser.add_argument_group('Stage1: Experiment setup')
+        self.stage1_exp = self.parser.add_argument_group("Stage1: Experiment setup")
         self.stage1_physics = self.parser.add_argument_group(
-            'Stage1: Configuring Gazebo physics engines')
+            "Stage1: Configuring Gazebo physics engines"
+        )
 
     def init_cli(self, stages: tp.List[int]) -> None:
         if 1 in stages:
@@ -50,28 +51,31 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
     def init_stage1(self) -> None:
         # Experiment options
-        positions_omitted_doc = ("If omitted: effective arena dimensions must "
-                                 "be given as part of ``--scenario``.")
+        positions_omitted_doc = (
+            "If omitted: effective arena dimensions must "
+            "be given as part of ``--scenario``."
+        )
 
-        self.stage1_exp.add_argument("--robot-positions",
-
-                                     help="""
+        self.stage1_exp.add_argument(
+            "--robot-positions",
+            help="""
 
                                      A list of space-separated "X,Y,Z" tuples
                                      (no quotes) passed on the command line as
                                      valid starting positions for the robots
                                      within the world.
 
-                                     """ + self.stage_usage_doc([1],
-                                                                positions_omitted_doc),
-                                     nargs='+',
-                                     default=[])
+                                     """
+            + self.stage_usage_doc([1], positions_omitted_doc),
+            nargs="+",
+            default=[],
+        )
 
         # Physics engines options
-        self.stage1_physics.add_argument("--physics-engine-type",
-                                         choices=['ode', 'bullet',
-                                                  'dart', 'simbody'],
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-engine-type",
+            choices=["ode", "bullet", "dart", "simbody"],
+            help="""
 
                                          The type of 3D physics engine to use
                                          for managing spatial extents within the
@@ -80,12 +84,15 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          engine instance is used to manage all
                                          physics in the arena.
 
-                                         """ + self.stage_usage_doc([1]),
-                                         default='ode')
+                                         """
+            + self.stage_usage_doc([1]),
+            default="ode",
+        )
 
-        self.stage1_physics.add_argument("--physics-iter-per-tick",
-                                         type=int,
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-iter-per-tick",
+            type=int,
+            help="""
 
                                          The # of iterations all physics engines
                                          should perform per tick each time the
@@ -93,12 +100,15 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          ticks per second for controller control
                                          loops is set via ``--exp-setup``).
 
-                             """ + self.stage_usage_doc([1]),
-                                         default=config.kGazebo['physics_iter_per_tick'])
+                             """
+            + self.stage_usage_doc([1]),
+            default=config.kGazebo["physics_iter_per_tick"],
+        )
 
-        self.stage1_physics.add_argument("--physics-n-threads",
-                                         type=int,
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-n-threads",
+            type=int,
+            help="""
 
                                          Gazebo can group non-interacting
                                          entities into computational "islands"
@@ -136,12 +146,15 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
                                          A value of 0=no threads.
 
-                                         """ + self.stage_usage_doc([1]),
-                                         default=0)
+                                         """
+            + self.stage_usage_doc([1]),
+            default=0,
+        )
 
-        self.stage1_physics.add_argument("--physics-ec-threadpool",
-                                         type=int,
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-ec-threadpool",
+            type=int,
+            help="""
 
                                          Gazebo can parallelize the computation
                                          of velocity/position updates with the
@@ -170,24 +183,23 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
                                          A value of 0=no threads.
 
-                                         """ + self.stage_usage_doc([1]),
-                                         default=0)
+                                         """
+            + self.stage_usage_doc([1]),
+            default=0,
+        )
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    """Update cmdopts with ROS1+Gazebo-specific cmdline options.
-
-    """
+    """Update cmdopts with ROS1+Gazebo-specific cmdline options."""
     opts = hpc.cmdline.to_cmdopts(args) | ros1.cmdline.to_cmdopts(args)
 
     for_self = {
         # stage 1
-        'robot_positions': args.robot_positions,
-
-        'physics_n_engines': 1,  # Always 1 for gazebo...
-        'physics_n_threads': args.physics_n_threads,
-        'physics_engine_type': args.physics_engine_type,
-        'physics_iter_per_tick': args.physics_iter_per_tick,
+        "robot_positions": args.robot_positions,
+        "physics_n_engines": 1,  # Always 1 for gazebo...
+        "physics_n_threads": args.physics_n_threads,
+        "physics_engine_type": args.physics_engine_type,
+        "physics_iter_per_tick": args.physics_iter_per_tick,
     }
 
     opts |= for_self
@@ -206,6 +218,4 @@ def sphinx_cmdline_stage2():
     return PlatformCmdline([parent1, parent2], [2]).parser
 
 
-__all__ = [
-    'PlatformCmdline'
-]
+__all__ = ["PlatformCmdline"]

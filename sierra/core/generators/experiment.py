@@ -43,18 +43,21 @@ class BatchExpDefGenerator:
     Does not create the batch experiment after generation.
     """
 
-    def __init__(self,
-                 criteria: bc.IConcreteBatchCriteria,
-                 pathset: batchroot.PathSet,
-                 controller_name: str,
-                 scenario_basename: str,
-                 cmdopts: types.Cmdopts) -> None:
+    def __init__(
+        self,
+        criteria: bc.IConcreteBatchCriteria,
+        pathset: batchroot.PathSet,
+        controller_name: str,
+        scenario_basename: str,
+        cmdopts: types.Cmdopts,
+    ) -> None:
         #: batch_config_template: Absolute path to the root template expdef
         # configuration file.
-        self.batch_config_template = pathlib.Path(cmdopts['expdef_template'])
+        self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
 
-        assert self.batch_config_template.is_file(), \
-            "'{0}' is not a valid file".format(self.batch_config_template)
+        assert self.batch_config_template.is_file(), "'{0}' is not a valid file".format(
+            self.batch_config_template
+        )
 
         self.exp_template_stem = self.batch_config_template.stem
         self.batch_config_extension = None
@@ -88,10 +91,14 @@ class BatchExpDefGenerator:
         defs = []
         for i in range(0, scaffold_spec.n_exps):
             generator = self._create_exp_generator(i)
-            self.logger.debug(("Generating scenario+controller changes from "
-                               "generator '%s' for exp%s"),
-                              self.cmdopts['joint_generator'],
-                              i)
+            self.logger.debug(
+                (
+                    "Generating scenario+controller changes from "
+                    "generator '%s' for exp%s"
+                ),
+                self.cmdopts["joint_generator"],
+                i,
+            )
             defs.append(generator.generate())
 
         return defs
@@ -105,25 +112,27 @@ class BatchExpDefGenerator:
             exp_num: Experiment number in the batch
         """
 
-        exp_spec = spec.ExperimentSpec(self.criteria,
-                                       self.pathset.input_root,
-                                       exp_num,
-                                       self.cmdopts)
+        exp_spec = spec.ExperimentSpec(
+            self.criteria, self.pathset.input_root, exp_num, self.cmdopts
+        )
         template_fpath = exp_spec.exp_input_root / self.exp_template_stem
-        config_root = pathlib.Path(self.cmdopts['project_config_root'])
-        scenario = gf.scenario_generator_create(controller=self.controller_name,
-                                                spec=exp_spec,
-                                                expdef_template_fpath=template_fpath,
-                                                cmdopts=self.cmdopts)
+        config_root = pathlib.Path(self.cmdopts["project_config_root"])
+        scenario = gf.scenario_generator_create(
+            controller=self.controller_name,
+            spec=exp_spec,
+            expdef_template_fpath=template_fpath,
+            cmdopts=self.cmdopts,
+        )
 
-        controller = gf.controller_generator_create(controller=self.controller_name,
-                                                    config_root=config_root,
-                                                    cmdopts=self.cmdopts,
-                                                    spec=exp_spec)
+        controller = gf.controller_generator_create(
+            controller=self.controller_name,
+            config_root=config_root,
+            cmdopts=self.cmdopts,
+            spec=exp_spec,
+        )
 
-        generator = gf.joint_generator_create(scenario=scenario,
-                                              controller=controller)
-        self.cmdopts['joint_generator'] = generator.joint_name
+        generator = gf.joint_generator_create(scenario=scenario, controller=controller)
+        self.cmdopts["joint_generator"] = generator.joint_name
         return generator
 
 
@@ -137,13 +146,15 @@ class ExpCreator:
         template_ipath: Absolute path to the template expdef configuration file.
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.BatchCriteria,
-                 template_ipath: pathlib.Path,
-                 exp_input_root: pathlib.Path,
-                 exp_output_root: pathlib.Path,
-                 exp_num: int) -> None:
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        criteria: bc.BatchCriteria,
+        template_ipath: pathlib.Path,
+        exp_input_root: pathlib.Path,
+        exp_output_root: pathlib.Path,
+        exp_num: int,
+    ) -> None:
 
         # filename of template file, sans extension and parent directory path
         self.template_stem = template_ipath.resolve().stem
@@ -163,35 +174,39 @@ class ExpCreator:
 
         # If random seeds where previously generated, use them if configured
         self.seeds_fpath = self.exp_input_root / config.kRandomSeedsLeaf
-        self.preserve_seeds = self.cmdopts['preserve_seeds']
+        self.preserve_seeds = self.cmdopts["preserve_seeds"]
         self.random_seeds = None
 
         if self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
-                with open(self.seeds_fpath, 'rb') as f:
+                with open(self.seeds_fpath, "rb") as f:
                     self.random_seeds = pickle.load(f)
 
             if self.random_seeds is not None:
-                if len(self.random_seeds) == self.cmdopts['n_runs']:
+                if len(self.random_seeds) == self.cmdopts["n_runs"]:
                     self.logger.debug("Using existing random seeds for experiment")
-                elif len(self.random_seeds) != self.cmdopts['n_runs']:
+                elif len(self.random_seeds) != self.cmdopts["n_runs"]:
                     # OK to overwrite the saved random seeds--they changed the
                     # experiment definition.
-                    self.logger.warning(("Experiment definition changed: # random "
-                                         "seeds (% s) != --n-runs (%s): create new "
-                                         "seeds"),
-                                        len(self.random_seeds),
-                                        self.cmdopts['n_runs'])
+                    self.logger.warning(
+                        (
+                            "Experiment definition changed: # random "
+                            "seeds (% s) != --n-runs (%s): create new "
+                            "seeds"
+                        ),
+                        len(self.random_seeds),
+                        self.cmdopts["n_runs"],
+                    )
                     self.preserve_seeds = False
 
         if not self.preserve_seeds or self.random_seeds is None:
             self.logger.debug("Generating new random seeds for experiment")
-            self.random_seeds = random.sample(range(0, int(time.time())),
-                                              self.cmdopts["n_runs"])
+            self.random_seeds = random.sample(
+                range(0, int(time.time())), self.cmdopts["n_runs"]
+            )
 
         # where the commands file will be stored
-        self.commands_fpath = self.exp_input_root / \
-            config.kGNUParallel['cmdfile_stem']
+        self.commands_fpath = self.exp_input_root / config.kGNUParallel["cmdfile_stem"]
 
     def from_def(self, exp_def: definition.BaseExpDef):
         """Create all experimental runs by writing input files to filesystem.
@@ -206,22 +221,23 @@ class ExpCreator:
         # Clear out commands file if it exists
         configurer = platform.ExpConfigurer(self.cmdopts)
         commands_fpath = self.commands_fpath.with_suffix(
-            config.kGNUParallel['cmdfile_ext'])
+            config.kGNUParallel["cmdfile_ext"]
+        )
 
-        if configurer.cmdfile_paradigm() == 'per-exp' and utils.path_exists(commands_fpath):
+        if configurer.parallelism_paradigm() == "per-exp" and utils.path_exists(
+            commands_fpath
+        ):
             commands_fpath.unlink()
 
-        n_agents = utils.get_n_agents(self.criteria.main_config,
-                                      self.cmdopts,
-                                      self.exp_input_root,
-                                      exp_def)
-        generator = platform.ExpRunShellCmdsGenerator(self.cmdopts,
-                                                      self.criteria,
-                                                      n_agents,
-                                                      self.exp_num)
+        n_agents = utils.get_n_agents(
+            self.criteria.main_config, self.cmdopts, self.exp_input_root, exp_def
+        )
+        generator = platform.ExpRunShellCmdsGenerator(
+            self.cmdopts, self.criteria, n_agents, self.exp_num
+        )
 
         # Create all experimental runs
-        for run_num in range(self.cmdopts['n_runs']):
+        for run_num in range(self.cmdopts["n_runs"]):
             per_run = copy.deepcopy(exp_def)
             self._create_exp_run(per_run, generator, run_num)
 
@@ -234,30 +250,32 @@ class ExpCreator:
         if not utils.path_exists(self.seeds_fpath) or not self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
                 os.remove(self.seeds_fpath)
-            with open(self.seeds_fpath, 'ab') as f:
+            with open(self.seeds_fpath, "ab") as f:
                 utils.pickle_dump(self.random_seeds, f)
 
-    def _create_exp_run(self,
-                        run_exp_def: definition.BaseExpDef,
-                        cmds_generator,
-                        run_num: int) -> None:
+    def _create_exp_run(
+        self, run_exp_def: definition.BaseExpDef, cmds_generator, run_num: int
+    ) -> None:
         run_output_dir = f"{self.template_stem}_run{run_num}_output"
 
         # If the project defined per-run configuration, apply
         # it. Otherwise, the already-applied configuration for the platform is
         # all that will be used per-run.
-        per_run = pm.module_load_tiered(project=self.cmdopts['project'],
-                                        path='generators.experiment')
+        per_run = pm.module_load_tiered(
+            project=self.cmdopts["project"], path="generators.experiment"
+        )
 
         run_output_root = self.exp_output_root / run_output_dir
         stem_path = self._get_launch_file_stempath(run_num)
 
-        per_run.for_single_exp_run(run_exp_def,
-                                   run_num,
-                                   run_output_root,
-                                   stem_path,
-                                   self.random_seeds[run_num],
-                                   self.cmdopts)
+        per_run.for_single_exp_run(
+            run_exp_def,
+            run_num,
+            run_output_root,
+            stem_path,
+            self.random_seeds[run_num],
+            self.cmdopts,
+        )
 
         # Write out the experimental run launch file
         run_exp_def.write(stem_path)
@@ -267,85 +285,88 @@ class ExpCreator:
         configurer = platform.ExpConfigurer(self.cmdopts)
         configurer.for_exp_run(self.exp_input_root, run_output_root)
 
-        ext = config.kGNUParallel['cmdfile_ext']
-        if configurer.cmdfile_paradigm() == 'per-exp':
+        ext = config.kGNUParallel["cmdfile_ext"]
+        if configurer.parallelism_paradigm() == "per-exp":
             # Update GNU Parallel commands file with the command for the
             # configured experimental run.
             fpath = f"{self.commands_fpath}{ext}"
-            with utils.utf8open(fpath, 'a') as cmds_file:
-                self._update_cmds_file(cmds_file,
-                                       cmds_generator,
-                                       'per-exp',
-                                       run_num,
-                                       self._get_launch_file_stempath(run_num),
-                                       'slave')
-        elif configurer.cmdfile_paradigm() == 'per-run':
+            with utils.utf8open(fpath, "a") as cmds_file:
+                self._update_cmds_file(
+                    cmds_file,
+                    cmds_generator,
+                    "per-exp",
+                    run_num,
+                    self._get_launch_file_stempath(run_num),
+                    "slave",
+                )
+        elif configurer.parallelism_paradigm() == "per-run":
             # Write new GNU Parallel commands file with the commends for the
             # experimental run.
             master_fpath = f"{self.commands_fpath}_run{run_num}_master{ext}"
             slave_fpath = f"{self.commands_fpath}_run{run_num}_slave{ext}"
 
-            self.logger.trace("Updating slave cmdfile %s",   # type: ignore
-                              slave_fpath)
-            with utils.utf8open(slave_fpath, 'w') as cmds_file:
-                self._update_cmds_file(cmds_file,
-                                       cmds_generator,
-                                       'per-run',
-                                       run_num,
-                                       self._get_launch_file_stempath(run_num),
-                                       'slave')
+            self.logger.trace("Updating slave cmdfile %s", slave_fpath)  # type: ignore
+            with utils.utf8open(slave_fpath, "w") as cmds_file:
+                self._update_cmds_file(
+                    cmds_file,
+                    cmds_generator,
+                    "per-run",
+                    run_num,
+                    self._get_launch_file_stempath(run_num),
+                    "slave",
+                )
 
-            self.logger.trace("Updating master cmdfile %s",   # type: ignore
-                              master_fpath)
-            with utils.utf8open(master_fpath, 'w') as cmds_file:
-                self._update_cmds_file(cmds_file,
-                                       cmds_generator,
-                                       'per-run',
-                                       run_num,
-                                       self._get_launch_file_stempath(run_num),
-                                       'master')
+            self.logger.trace(
+                "Updating master cmdfile %s", master_fpath  # type: ignore
+            )
+            with utils.utf8open(master_fpath, "w") as cmds_file:
+                self._update_cmds_file(
+                    cmds_file,
+                    cmds_generator,
+                    "per-run",
+                    run_num,
+                    self._get_launch_file_stempath(run_num),
+                    "master",
+                )
 
     def _get_launch_file_stempath(self, run_num: int) -> pathlib.Path:
-        """File is named as ``<template input file stem>_run<run_num>``.
-        """
+        """File is named as ``<template input file stem>_run<run_num>``."""
         leaf = f"{self.template_stem}_run{run_num}"
         return self.exp_input_root / leaf
 
-    def _update_cmds_file(self,
-                          cmds_file,
-                          cmds_generator: bindings.IExpRunShellCmdsGenerator,
-                          paradigm: str,
-                          run_num: int,
-                          launch_stem_path: pathlib.Path,
-                          for_host: str) -> None:
-        """Add command to launch a given experimental run to the command file.
-
-        """
-        pre_specs = cmds_generator.pre_run_cmds(for_host,
-                                                launch_stem_path,
-                                                run_num)
-        assert all(spec.shell for spec in pre_specs), \
-            "All pre-exp commands are run in a shell"
+    def _update_cmds_file(
+        self,
+        cmds_file,
+        cmds_generator: bindings.IExpRunShellCmdsGenerator,
+        paradigm: str,
+        run_num: int,
+        launch_stem_path: pathlib.Path,
+        for_host: str,
+    ) -> None:
+        """Add command to launch a given experimental run to the command file."""
+        pre_specs = cmds_generator.pre_run_cmds(for_host, launch_stem_path, run_num)
+        assert all(
+            spec.shell for spec in pre_specs
+        ), "All pre-exp commands are run in a shell"
         pre_cmds = [spec.cmd for spec in pre_specs]
-        self.logger.trace("Pre-experiment cmds: %s", pre_cmds)   # type: ignore
+        self.logger.trace("Pre-experiment cmds: %s", pre_cmds)  # type: ignore
 
-        exec_specs = cmds_generator.exec_run_cmds(for_host,
-                                                  launch_stem_path,
-                                                  run_num)
-        assert all(spec.shell for spec in exec_specs), \
-            "All exec-exp commands are run in a shell"
+        exec_specs = cmds_generator.exec_run_cmds(for_host, launch_stem_path, run_num)
+        assert all(
+            spec.shell for spec in exec_specs
+        ), "All exec-exp commands are run in a shell"
         exec_cmds = [spec.cmd for spec in exec_specs]
-        self.logger.trace("Exec-experiment cmds: %s", exec_cmds)   # type: ignore
+        self.logger.trace("Exec-experiment cmds: %s", exec_cmds)  # type: ignore
 
         post_specs = cmds_generator.post_run_cmds(for_host)
-        assert all(spec.shell for spec in post_specs), \
-            "All post-exp commands are run in a shell"
+        assert all(
+            spec.shell for spec in post_specs
+        ), "All post-exp commands are run in a shell"
         post_cmds = [spec.cmd for spec in post_specs]
-        self.logger.trace("Post-experiment cmds: %s", post_cmds)   # type: ignore
+        self.logger.trace("Post-experiment cmds: %s", post_cmds)  # type: ignore
 
         if len(pre_cmds + exec_cmds + post_cmds) == 0:
-            self.logger.debug("Skipping writing %s cmds file: no cmds",
-                              for_host)
+            self.logger.debug("Skipping writing %s cmds file: no cmds", for_host)
             return
 
         # If there is 1 cmdfile per experiment, then the pre- and post-exec cmds
@@ -353,12 +374,12 @@ class ExpCreator:
         # basis. If there is 1 cmdfile per experimental run, then its the same
         # thing, BUT we need to break the exec cmds over multiple lines in the
         # cmdfile.
-        if paradigm == 'per-exp':
-            line = ' '.join(pre_cmds + exec_cmds + post_cmds) + '\n'
+        if paradigm == "per-exp":
+            line = " ".join(pre_cmds + exec_cmds + post_cmds) + "\n"
             cmds_file.write(line)
-        elif paradigm == 'per-run':
+        elif paradigm == "per-run":
             for e in exec_cmds:
-                line = ' '.join(pre_cmds + [e] + post_cmds) + '\n'
+                line = " ".join(pre_cmds + [e] + post_cmds) + "\n"
                 cmds_file.write(line)
         else:
             raise ValueError(f"Bad paradigm {paradigm}")
@@ -371,13 +392,15 @@ class BatchExpCreator:
     experimental definition in the batch
     """
 
-    def __init__(self,
-                 criteria: bc.BatchCriteria,
-                 cmdopts: types.Cmdopts,
-                 pathset: batchroot.PathSet) -> None:
+    def __init__(
+        self,
+        criteria: bc.BatchCriteria,
+        cmdopts: types.Cmdopts,
+        pathset: batchroot.PathSet,
+    ) -> None:
 
         #: Absolute path to the root template expdef configuration file.
-        self.batch_config_template = pathlib.Path(cmdopts['expdef_template'])
+        self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
 
         #: Root directory for all generated expdef input files
         # all experiments should be stored (relative to current dir or
@@ -398,22 +421,23 @@ class BatchExpCreator:
         self.logger = logging.getLogger(__name__)
 
     def create(self, generator: BatchExpDefGenerator) -> None:
-        utils.dir_create_checked(self.batch_input_root,
-                                 self.cmdopts['exp_overwrite'])
+        utils.dir_create_checked(self.batch_input_root, self.cmdopts["exp_overwrite"])
 
         # Scaffold the batch experiment, creating experiment directories and
         # writing template expdef input files for each experiment in the batch
         # with changes from the batch criteria added.
-        module = pm.pipeline.get_plugin_module(self.cmdopts['expdef'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["expdef"])
 
-        exp_def = module.ExpDef(input_fpath=self.batch_config_template,
-                                write_config=None)
+        exp_def = module.ExpDef(
+            input_fpath=self.batch_config_template, write_config=None
+        )
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["platform"])
 
-        if hasattr(module, 'expdef_flatten'):
+        if hasattr(module, "expdef_flatten"):
             self.logger.debug(
-                "Flattening --expdef-template definition before scaffolding")
+                "Flattening --expdef-template definition before scaffolding"
+            )
             # Flatten the expdef here if the platform defines the hook, so that
             # the full flattened file contents are available for scaffolding.
             exp_def = module.expdef_flatten(exp_def)
@@ -432,22 +456,20 @@ class BatchExpCreator:
 
         for i, defi in enumerate(defs):
             self.logger.debug(
-                "Applying generated scenario+controller changes to exp%s",
-                i)
+                "Applying generated scenario+controller changes to exp%s", i
+            )
             expi = self.criteria.gen_exp_names()[i]
             exp_output_root = self.batch_output_root / expi
             exp_input_root = self.batch_input_root / expi
 
-            ExpCreator(self.cmdopts,
-                       self.criteria,
-                       self.batch_config_template,
-                       exp_input_root,
-                       exp_output_root,
-                       i).from_def(defi)
+            ExpCreator(
+                self.cmdopts,
+                self.criteria,
+                self.batch_config_template,
+                exp_input_root,
+                exp_output_root,
+                i,
+            ).from_def(defi)
 
 
-__all__ = [
-    'ExpCreator',
-    'BatchExpCreator',
-    'BatchExpDefGenerator'
-]
+__all__ = ["ExpCreator", "BatchExpCreator", "BatchExpDefGenerator"]

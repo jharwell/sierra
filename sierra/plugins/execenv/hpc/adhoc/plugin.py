@@ -34,28 +34,26 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     """
 
     if args.nodefile is None:
-        assert 'SIERRA_NODEFILE' in os.environ, \
-            ("Non-hpc.adhoc environment detected: --nodefile not "
-             "passed and 'SIERRA_NODEFILE' not found")
-        args.nodefile = os.environ['SIERRA_NODEFILE']
+        assert "SIERRA_NODEFILE" in os.environ, (
+            "Non-hpc.adhoc environment detected: --nodefile not "
+            "passed and 'SIERRA_NODEFILE' not found"
+        )
+        args.nodefile = os.environ["SIERRA_NODEFILE"]
 
-    assert utils.path_exists(args.nodefile), \
-        f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+    assert utils.path_exists(
+        args.nodefile
+    ), f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
 
-    assert not args.platform_vc, \
-        "Platform visual capture not supported on Adhoc"
+    assert not args.platform_vc, "Platform visual capture not supported on Adhoc"
 
     return args
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator():
-    """Generate the cmd to invoke GNU Parallel in the ad-hoc HPC environment.
-    """
+class ExpShellCmdsGenerator:
+    """Generate the cmd to invoke GNU Parallel in the ad-hoc HPC environment."""
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 exp_num: int) -> None:
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -70,54 +68,57 @@ class ExpShellCmdsGenerator():
         # Even if we are passed --nodelist, we still make our own copy of it, so
         # that the user can safely modify it (if they want to) after running
         # stage 1.
-        nodelist = pathlib.Path(exec_opts['exp_input_root'],
-                                f"{jobid}-nodelist.txt")
+        nodelist = pathlib.Path(exec_opts["exp_input_root"], f"{jobid}-nodelist.txt")
 
-        resume = ''
+        resume = ""
         # This can't be --resume, because then GNU parallel looks at the results
         # directory, and if there is stuff in it, (apparently) assumes that the
         # job finished...
-        if exec_opts['exec_resume']:
-            resume = '--resume-failed'
+        if exec_opts["exec_resume"]:
+            resume = "--resume-failed"
 
         # Make sure there are no duplicate nodes
         unique_nodes = types.ShellCmdSpec(
-            cmd='sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist),
+            cmd="sort -u {0} > {1}".format(exec_opts["nodefile"], nodelist),
             shell=True,
-            wait=True)
+            wait=True,
+        )
         # Make sure GNU parallel uses the right shell, because it seems to
         # defaults to /bin/sh since all cmds are run in a python shell which
         # does not have $SHELL set.
         use_bash = types.ShellCmdSpec(
-            cmd='export PARALLEL_SHELL={0}'.format(shutil.which('bash')),
+            cmd="export PARALLEL_SHELL={0}".format(shutil.which("bash")),
             shell=True,
             wait=True,
-            env=True)
+            env=True,
+        )
 
         # GNU parallel cmd
-        parallel = 'parallel {2} ' \
-            '--jobs {1} ' \
-            '--results {4} ' \
-            '--joblog {3} ' \
-            '--sshloginfile {0} ' \
+        parallel = (
+            "parallel {2} "
+            "--jobs {1} "
+            "--results {4} "
+            "--joblog {3} "
+            "--sshloginfile {0} "
             '--workdir {4} < "{5}"'
+        )
 
-        log = pathlib.Path(exec_opts['scratch_dir'], "parallel.log")
-        parallel = parallel.format(nodelist,
-                                   exec_opts['n_jobs'],
-                                   resume,
-                                   log,
-                                   exec_opts['scratch_dir'],
-                                   exec_opts['cmdfile_stem_path'] + exec_opts['cmdfile_ext'])
+        log = pathlib.Path(exec_opts["exp_scratch_root"], "parallel.log")
+        parallel = parallel.format(
+            nodelist,
+            exec_opts["n_jobs"],
+            resume,
+            log,
+            exec_opts["exp_scratch_root"],
+            exec_opts["cmdfile_stem_path"] + exec_opts["cmdfile_ext"],
+        )
 
-        parallel_spec = types.ShellCmdSpec(cmd=parallel,
-                                           shell=True,
-                                           wait=True)
+        parallel_spec = types.ShellCmdSpec(cmd=parallel, shell=True, wait=True)
 
         return [unique_nodes, use_bash, parallel_spec]
 
 
 __all__ = [
-    'cmdline_postparse_configure',
-    'ExpShellCmdsGenerator',
+    "cmdline_postparse_configure",
+    "ExpShellCmdsGenerator",
 ]

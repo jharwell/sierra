@@ -135,7 +135,9 @@ class ExpDef:
                     match ``prefix``. This allows nested JSON structures where
                     filepaths are specified relative to the root-level
                     configuration (really it's parent directory), which is very
-                    convenient.
+                    convenient. Note that all paths must be relative to
+                    root-level configuration--relativity to a sub-path will NOT
+                    work.
 
             path_key: The key to recursively search for. Not a substring--will
                       be checked for exact match.
@@ -149,6 +151,7 @@ class ExpDef:
             # Make relative to input prefix. This SHOULD work recursively for
             # nested dirs, though I'm not 100% sure.
             path = pathlib.Path(value)
+
             if not path.is_absolute():
                 path = prefix.parent / path
                 value = str(path.resolve())

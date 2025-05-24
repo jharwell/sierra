@@ -1,11 +1,14 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Container module for things related to HPC."""
+"""
+Container module for the local execution environment.
+
+See :ref:`plugins/exec-env/prefect/local`.
+"""
 
 # Core packages
 
 # 3rd party packages
 
 # Project packages
-from . import cmdline as cmdline

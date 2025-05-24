@@ -22,91 +22,90 @@ from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
 
-_logger = logging.getLogger('platform.ros1robot')
+_logger = logging.getLogger("platform.ros1robot")
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator():
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.BatchCriteria,
-                 n_agents: int,
-                 exp_num: int) -> None:
+class ExpRunShellCmdsGenerator:
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        criteria: bc.BatchCriteria,
+        n_agents: int,
+        exp_num: int,
+    ) -> None:
         self.cmdopts = cmdopts
         self.n_agents = n_agents
         self.exp_num = exp_num
         self.criteria = criteria
 
-    def pre_run_cmds(self,
-                     host: str,
-                     input_fpath: pathlib.Path,
-                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def pre_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
 
         master_ip = platform.get_local_ip()
-        port = config.kROS['port_base'] + self.exp_num
-        master_uri = f'http://{master_ip}:{port}'
+        port = config.kROS["port_base"] + self.exp_num
+        master_uri = f"http://{master_ip}:{port}"
 
-        ros_master = types.ShellCmdSpec(cmd=f'export ROS_MASTER_URI={master_uri};',
-                                        shell=True,
-                                        env=True,
-                                        wait=True)
+        ros_master = types.ShellCmdSpec(
+            cmd=f"export ROS_MASTER_URI={master_uri};", shell=True, env=True, wait=True
+        )
 
-        if host == 'master':
-            if self.cmdopts['no_master_node']:
+        if host == "master":
+            if self.cmdopts["no_master_node"]:
                 return []
             else:
                 return [ros_master]
 
-        main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 config.kYAML.main)
+        main_path = os.path.join(self.cmdopts["project_config_root"], config.kYAML.main)
 
         main_config = yaml.load(utils.utf8open(main_path), yaml.FullLoader)
 
-        _logger.debug("Generating pre-exec cmds for run%s slaves: %d robots",
-                      run_num,
-                      self.n_agents)
+        _logger.debug(
+            "Generating pre-exec cmds for run%s slaves: %d robots",
+            run_num,
+            self.n_agents,
+        )
 
-        script_yaml = main_config['ros']['robots'][self.cmdopts['robot']]
-        script_file = script_yaml.get('setup_script', "$HOME/.bashrc")
+        script_yaml = main_config["ros"]["robots"][self.cmdopts["robot"]]
+        script_file = script_yaml.get("setup_script", "$HOME/.bashrc")
 
-        ros_setup = types.ShellCmdSpec(cmd=f'. {script_file};',
-                                       shell=True,
-                                       wait=True,
-                                       env=True)
+        ros_setup = types.ShellCmdSpec(
+            cmd=f". {script_file};", shell=True, wait=True, env=True
+        )
 
         return [ros_setup, ros_master]
 
-    def exec_run_cmds(self,
-                      host: str,
-                      input_fpath: pathlib.Path,
-                      run_num: int) -> tp.List[types.ShellCmdSpec]:
-        if host == 'master':
+    def exec_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
+        if host == "master":
             return self._exec_run_cmds_master(host, input_fpath, run_num)
         else:
             return self._exec_run_cmds_slave(host, input_fpath, run_num)
 
-    def _exec_run_cmds_master(self,
-                              host: str,
-                              input_fpath: pathlib.Path,
-                              run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def _exec_run_cmds_master(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
 
-        if self.cmdopts['no_master_node']:
+        if self.cmdopts["no_master_node"]:
             return []
 
-        _logger.debug("Generating exec cmds for run%s master",
-                      run_num)
+        _logger.debug("Generating exec cmds for run%s master", run_num)
 
         # ROS master node
         exp_dirname = self.criteria.gen_exp_names()[self.exp_num]
-        exp_template_path = utils.exp_template_path(self.cmdopts,
-                                                    self.criteria.batch_input_root,
-                                                    exp_dirname)
-        cmd = '{0} --wait {1}_run{2}_master{3};'
+        exp_template_path = utils.exp_template_path(
+            self.cmdopts, self.criteria.batch_input_root, exp_dirname
+        )
+        cmd = "{0} --wait {1}_run{2}_master{3};"
 
-        cmd = cmd.format(config.kROS['launch_cmd'],
-                         str(exp_template_path),
-                         run_num,
-                         config.kROS['launch_file_ext'])
+        cmd = cmd.format(
+            config.kROS["launch_cmd"],
+            str(exp_template_path),
+            run_num,
+            config.kROS["launch_file_ext"],
+        )
 
         # --wait tells roslaunch to wait for the configured master to come up
         # before launch the "master" code.
@@ -119,82 +118,87 @@ class ExpRunShellCmdsGenerator():
 
         return [master_node]
 
-    def _exec_run_cmds_slave(self,
-                             host: str,
-                             input_fpath: pathlib.Path,
-                             run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def _exec_run_cmds_slave(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
 
-        _logger.debug("Generating exec cmds for run%s slaves: %d robots",
-                      run_num,
-                      self.n_agents)
+        _logger.debug(
+            "Generating exec cmds for run%s slaves: %d robots", run_num, self.n_agents
+        )
 
-        nodes = exec_env.parse_nodefile(self.cmdopts['nodefile'])
+        nodes = exec_env.parse_nodefile(self.cmdopts["nodefile"])
 
         if len(nodes) < self.n_agents:
-            _logger.critical(("Need %d hosts to correctly generate launch "
-                              "cmds for run%s with %d robots; %d available"),
-                             self.n_agents,
-                             run_num,
-                             self.n_agents,
-                             len(nodes))
+            _logger.critical(
+                (
+                    "Need %d hosts to correctly generate launch "
+                    "cmds for run%s with %d robots; %d available"
+                ),
+                self.n_agents,
+                run_num,
+                self.n_agents,
+                len(nodes),
+            )
 
         ret = []  # type: tp.List[types.ShellCmdSpec]
         for i in range(0, self.n_agents):
             # --wait tells roslaunch to wait for the configured master to
             # come up before launch the robot code.
-            cmd = '{0} --wait {1}_robot{2}{3} '
-            cmd = cmd.format(config.kROS['launch_cmd'],
-                             input_fpath,
-                             i,
-                             config.kROS['launch_file_ext'])
+            cmd = "{0} --wait {1}_robot{2}{3} "
+            cmd = cmd.format(
+                config.kROS["launch_cmd"],
+                input_fpath,
+                i,
+                config.kROS["launch_file_ext"],
+            )
             ret.extend([types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)])
         return ret
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
-        if host == 'master':
+        if host == "master":
             return []
         else:
             return [
                 types.ShellCmdSpec(
                     # Can't use killall, because that returns non-zero if things
                     # are cleaned up nicely.
-                    cmd='if pgrep roslaunch; then pkill roslaunch; fi;',
+                    cmd="if pgrep roslaunch; then pkill roslaunch; fi;",
                     shell=True,
-                    wait=True
+                    wait=True,
                 )
             ]
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator():
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 exp_num: int) -> None:
+class ExpShellCmdsGenerator:
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         local_ip = platform.get_local_ip()
-        port = config.kROS['port_base'] + self.exp_num
-        master_uri = f'http://{local_ip}:{port}'
+        port = config.kROS["port_base"] + self.exp_num
+        master_uri = f"http://{local_ip}:{port}"
 
         _logger.info("Using ROS_MASTER_URI=%s", master_uri)
 
         return [
             types.ShellCmdSpec(
                 # roscore will run on the SIERRA host machine.
-                cmd=f'export ROS_MASTER_URI={master_uri}',
+                cmd=f"export ROS_MASTER_URI={master_uri}",
                 shell=True,
                 env=True,
-                wait=True),
+                wait=True,
+            ),
             types.ShellCmdSpec(
                 # Each exppperiment gets their own roscore. Because each roscore
                 # has a  different port, this prevents any robots from
                 # pre-emptively starting the next experiment before the rest of
                 # the robots have finished the current one.
-                cmd=f'roscore -p {port} & ',
+                cmd=f"roscore -p {port} & ",
                 shell=True,
-                wait=False)
+                wait=False,
+            ),
         ]
 
     def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
@@ -203,43 +207,39 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         # Cleanup roscore processes on the SIERRA host machine which are still
         # active because they don't know how to clean up after themselves.
-        return [types.ShellCmdSpec(cmd='killall rosmaster;',
-                                   shell=True,
-                                   wait=True),
-                types.ShellCmdSpec(cmd='killall roscore;',
-                                   shell=True,
-                                   wait=True),
-                types.ShellCmdSpec(cmd='killall rosout;',
-                                   shell=True,
-                                   wait=True)]
+        return [
+            types.ShellCmdSpec(cmd="killall rosmaster;", shell=True, wait=True),
+            types.ShellCmdSpec(cmd="killall roscore;", shell=True, wait=True),
+            types.ShellCmdSpec(cmd="killall rosout;", shell=True, wait=True),
+        ]
 
 
 @implements.implements(bindings.IExpConfigurer)
-class ExpConfigurer():
+class ExpConfigurer:
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def cmdfile_paradigm(self) -> str:
-        return 'per-run'
+    def parallelism_paradigm(self) -> str:
+        return "per-run"
 
-    def for_exp_run(self,
-                    exp_input_root: pathlib.Path,
-                    run_output_root: pathlib.Path) -> None:
+    def for_exp_run(
+        self, exp_input_root: pathlib.Path, run_output_root: pathlib.Path
+    ) -> None:
         pass
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
-        if self.cmdopts['skip_sync']:
+        if self.cmdopts["skip_sync"]:
             _logger.info("Skipping syncing experiment inputs -> robots")
             return
         else:
             _logger.info("Syncing experiment inputs  -> robots")
 
-        nodes = exec_env.parse_nodefile(self.cmdopts['nodefile'])
+        nodes = exec_env.parse_nodefile(self.cmdopts["nodefile"])
 
         # Use {parallel ssh, rsync} to push each experiment to all robots in
         # parallel--takes O(M*N) operation and makes it O(N) more or less.
-        pssh_base = 'parallel-ssh'
-        prsync_base = 'parallel-rsync'
+        pssh_base = "parallel-ssh"
+        prsync_base = "parallel-rsync"
 
         for node in nodes:
             remote_login = node.login
@@ -247,49 +247,60 @@ class ExpConfigurer():
             remote_hostname = node.hostname
             current_username = pwd.getpwuid(os.getuid())[0]
 
-            if not self.cmdopts['skip_online_check']:
-                exec_env.check_connectivity(self.cmdopts,
-                                            remote_login,
-                                            remote_hostname,
-                                            remote_port,
-                                            self.cmdopts['robot'])
+            if not self.cmdopts["skip_online_check"]:
+                exec_env.check_connectivity(
+                    self.cmdopts,
+                    remote_login,
+                    remote_hostname,
+                    remote_port,
+                    self.cmdopts["robot"],
+                )
 
-            pssh_base += f' -H {remote_login}@{remote_hostname}:{remote_port}'
-            prsync_base += f' -H {remote_login}@{remote_hostname}:{remote_port}'
+            pssh_base += f" -H {remote_login}@{remote_hostname}:{remote_port}"
+            prsync_base += f" -H {remote_login}@{remote_hostname}:{remote_port}"
 
         # In case the user is different on the remote machine than this one,
         # and the location of the generated experiment is under /home.
-        robot_input_root = str(exp_input_root).replace(current_username,
-                                                       remote_login)
+        robot_input_root = str(exp_input_root).replace(current_username, remote_login)
 
-        mkdir_cmd = (f"{pssh_base} "
-                     f"-O StrictHostKeyChecking=no "
-                     f"mkdir -p {robot_input_root}")
+        mkdir_cmd = (
+            f"{pssh_base} "
+            f"-O StrictHostKeyChecking=no "
+            f"mkdir -p {robot_input_root}"
+        )
 
-        rsync_cmd = (f"{prsync_base} "
-                     f"-avz "
-                     f"-O StrictHostKeyChecking=no "
-                     f"{exp_input_root}/ "
-                     f"{robot_input_root}/")
+        rsync_cmd = (
+            f"{prsync_base} "
+            f"-avz "
+            f"-O StrictHostKeyChecking=no "
+            f"{exp_input_root}/ "
+            f"{robot_input_root}/"
+        )
         try:
             _logger.trace("Running mkdir: %s", mkdir_cmd)  # type: ignore
-            res = subprocess.run(mkdir_cmd,
-                                 shell=True,
-                                 check=True,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+            res = subprocess.run(
+                mkdir_cmd,
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
             _logger.trace("Running rsync: %s", rsync_cmd)  # type: ignore
-            res = subprocess.run(rsync_cmd,
-                                 shell=True,
-                                 check=True,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+            res = subprocess.run(
+                rsync_cmd,
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
         except subprocess.CalledProcessError:
-            _logger.fatal("Unable to sync %s with %s: stdout=%s,stderr=%s",
-                          exp_input_root,
-                          robot_input_root,
-                          res.stdout.decode('utf-8') if res else None,
-                          res.stderr.decode('utf-8') if res else None)
+            _logger.fatal(
+                "Unable to sync %s with %s: stdout=%s,stderr=%s",
+                exp_input_root,
+                robot_input_root,
+                res.stdout.decode("utf-8") if res else None,
+                res.stderr.decode("utf-8") if res else None,
+            )
             raise
 
 
@@ -305,12 +316,12 @@ def cmdline_parser() -> argparse.ArgumentParser:
           (ROS1+robot specifics)
     """
     parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.PlatformCmdline(parents=[parent1],
-                                   stages=[-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.PlatformCmdline(parents=[parent1], stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
-def cmdline_postparse_configure(execenv: str,
-                                args: argparse.Namespace) -> argparse.Namespace:
+def cmdline_postparse_configure(
+    execenv: str, args: argparse.Namespace
+) -> argparse.Namespace:
     """
     Configure cmdline args after parsing for the :term:`ROS1+Robot` platform.
 
@@ -320,18 +331,19 @@ def cmdline_postparse_configure(execenv: str,
 
     """
     if args.nodefile is None:
-        assert 'SIERRA_NODEFILE' in os.environ, \
-            ("Non-ros1robot environment detected: --nodefile not "
-             "passed and 'SIERRA_NODEFILE' not found")
-        args.nodefile = os.environ['SIERRA_NODEFILE']
+        assert "SIERRA_NODEFILE" in os.environ, (
+            "Non-ros1robot environment detected: --nodefile not "
+            "passed and 'SIERRA_NODEFILE' not found"
+        )
+        args.nodefile = os.environ["SIERRA_NODEFILE"]
 
-    assert utils.path_exists(args.nodefile), \
-        f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+    assert utils.path_exists(
+        args.nodefile
+    ), f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
 
     _logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
-    assert not args.platform_vc, \
-        "Platform visual capture not supported on ros1robot"
+    assert not args.platform_vc, "Platform visual capture not supported on ros1robot"
 
     return args
 
@@ -349,57 +361,53 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
         - :program:`gazebo` can be found and the version is supported.
     """
 
-    keys = ['ROS_DISTRO', 'ROS_VERSION']
+    keys = ["ROS_DISTRO", "ROS_VERSION"]
 
     for k in keys:
-        assert k in os.environ, \
-            f"Non-ROS1+robot environment detected: '{k}' not found"
+        assert k in os.environ, f"Non-ROS1+robot environment detected: '{k}' not found"
 
     # Check ROS distro
-    assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'], \
-        "SIERRA only supports ROS1 kinetic,noetic"
+    assert os.environ["ROS_DISTRO"] in [
+        "kinetic",
+        "noetic",
+    ], "SIERRA only supports ROS1 kinetic,noetic"
 
     # Check ROS version
-    assert os.environ['ROS_VERSION'] == "1", \
-        "Wrong ROS version: This plugin is for ROS1"
+    assert (
+        os.environ["ROS_VERSION"] == "1"
+    ), "Wrong ROS version: This plugin is for ROS1"
 
 
-def population_size_from_pickle(adds_def: tp.Union[definition.AttrChangeSet,
-                                                   definition.ElementAddList],
-                                main_config: types.YAMLDict,
-                                cmdopts: types.Cmdopts) -> int:
-    return ros1.callbacks.population_size_from_pickle(adds_def,
-                                                      main_config,
-                                                      cmdopts)
+def population_size_from_pickle(
+    adds_def: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+) -> int:
+    return ros1.callbacks.population_size_from_pickle(adds_def, main_config, cmdopts)
 
 
-def population_size_from_def(exp_def: definition.BaseExpDef,
-                             main_config: types.YAMLDict,
-                             cmdopts: types.Cmdopts) -> int:
-    return ros1.callbacks.population_size_from_def(exp_def,
-                                                   main_config,
-                                                   cmdopts)
+def population_size_from_def(
+    exp_def: definition.BaseExpDef, main_config: types.YAMLDict, cmdopts: types.Cmdopts
+) -> int:
+    return ros1.callbacks.population_size_from_def(exp_def, main_config, cmdopts)
 
 
-def agent_prefix_extract(main_config: types.YAMLDict,
-                         cmdopts: types.Cmdopts) -> str:
+def agent_prefix_extract(main_config: types.YAMLDict, cmdopts: types.Cmdopts) -> str:
     return ros1.callbacks.robot_prefix_extract(main_config, cmdopts)
 
 
-def pre_exp_diagnostics(cmdopts: types.Cmdopts,
-                        pathset: batchroot.PathSet,
-                        logger: logging.Logger) -> None:
+def pre_exp_diagnostics(
+    cmdopts: types.Cmdopts, pathset: batchroot.PathSet, logger: logging.Logger
+) -> None:
     s = "batch_exp_root='%s',runs/exp=%s"
-    logger.info(s,
-                pathset.root,
-                cmdopts['n_runs'])
+    logger.info(s, pathset.root, cmdopts["n_runs"])
 
 
 __all__ = [
-    'ExpRunShellCmdsGenerator',
-    'ExpShellCmdsGenerator',
-    'ExpConfigurer',
-    'cmdline_parser',
-    'cmdline_postparse_configure',
-    'exec_env_check'
+    "ExpRunShellCmdsGenerator",
+    "ExpShellCmdsGenerator",
+    "ExpConfigurer",
+    "cmdline_parser",
+    "cmdline_postparse_configure",
+    "exec_env_check",
 ]

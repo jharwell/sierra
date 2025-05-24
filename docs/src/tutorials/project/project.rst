@@ -41,10 +41,11 @@ are the thing you want your software to run *on*.
 Steps
 =====
 
-#. Create the directory which will hold your :term:`Project`. The directory your
-   project must be on :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to
-   find your project. For example, if your project is ``proj-awesome``, and
-   that directory is in ``projects`` as ``/path/to/projects/proj-awesome``, then
+#. Create the directory which will hold your :term:`Project`. The directory
+   *containing* your project (i.e., it's parent directoly) must be on
+   :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to find your
+   project. For example, if your project is ``fizzbuzz.awesome``, and that
+   directory is in ``projects`` as ``/path/to/projects/fizzbuzz.awesome``, then
    ``/path/to/projects`` needs to be on :envvar:`SIERRA_PLUGIN_PATH`.
 
 #. Create the following directory structure within your project directory (or
@@ -69,29 +70,10 @@ Steps
            file is required for all pipeline stages. See
            :ref:`tutorials/project/main-config` for documentation.
 
-        .. tab:: ``intra-graphs-line.yaml``
+        .. tab:: ``graphs.yaml``
 
-           Configuration for intra-experiment linegraphs. This file is
-           optional. If it is present, graphs defined in it will be added to
-           those specified in ``<sierra>/core/config/intra-graphs-line.yaml``,
-           and will be generated if stage 4 is run. See :doc:`graphs-config` for
-           documentation.
-
-        .. tab:: ``intra-graphs-hm.yaml``
-
-           Configuration for intra-experiment heatmaps. This file is
-           optional. If it is present, graphs defined in it will be added to
-           those specified in ``<sierra>/core/config/intra-graphs-hm.yaml``, and
-           will be generated if stage 4 is run. See :doc:`graphs-config` for
-           documentation.
-
-        .. tab:: ``inter-graphs.yaml``
-
-           Configuration for inter-experiment graphs. This file is optional. If
-           it is present, graphs defined in it will be added to those specified
-           in ``<sierra>/core/config/inter-graphs-line.yaml``, and will be
-           generated if stage 4 is run. See :doc:`graphs-config` for
-           documentation.
+           Configuration for graph generation during stage 4. This file is
+           optional. See :doc:`graphs-config` for documentation.
 
         .. tab:: ``stage5.yaml``
 
@@ -141,6 +123,9 @@ Steps
      plugin/project. This file is required, because all projects have to define
      the ``--controller`` and ``--scenario`` arguments used by SIERRA. See
      :ref:`tutorials/misc/cmdline` for steps.
+
+   - ``project.py`` - Magic cookie python file that tells SIERRA that the
+     enclosing directory is a project plugin.
 
 #. Configure your project so SIERRA understands how to generate
    :term:`Experimental Run` inputs and process outputs correctly by following

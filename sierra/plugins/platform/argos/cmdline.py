@@ -13,39 +13,43 @@ import argparse
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, config, hpc
+from sierra.core import types, config
+from sierra.plugins.execenv import hpc
 import sierra.core.cmdline as cmd
 
 
 class PlatformCmdline(cmd.BaseCmdline):
-    """Defines :term:`ARGoS` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ARGoS` extensions to :class:`~sierra.core.cmdline.CoreCmdline`."""
 
-    """
-
-    def __init__(self,
-                 parents: tp.Optional[tp.List[argparse.ArgumentParser]],
-                 stages: tp.List[int]) -> None:
+    def __init__(
+        self,
+        parents: tp.Optional[tp.List[argparse.ArgumentParser]],
+        stages: tp.List[int],
+    ) -> None:
 
         if parents is not None:
-            self.parser = argparse.ArgumentParser(add_help=False,
-                                                  parents=parents,
-                                                  allow_abbrev=False)
+            self.parser = argparse.ArgumentParser(
+                add_help=False, parents=parents, allow_abbrev=False
+            )
         else:
-            self.parser = argparse.ArgumentParser(add_help=False,
-                                                  allow_abbrev=False)
+            self.parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
 
         self.scaffold_cli()
         self.init_cli(stages)
 
     def scaffold_cli(self) -> None:
         self.stage1_exp = self.parser.add_argument_group(
-            'Stage1: Experiment generation')
+            "Stage1: Experiment generation"
+        )
         self.stage1_physics = self.parser.add_argument_group(
-            'Stage1: Configuring ARGoS physics engines')
+            "Stage1: Configuring ARGoS physics engines"
+        )
         self.stage1_rendering = self.parser.add_argument_group(
-            'Stage1: Rendering (see also stage4 rendering options)')
+            "Stage1: Rendering (see also stage4 rendering options)"
+        )
         self.stage1_robots = self.parser.add_argument_group(
-            'Stage1: Configuring robots')
+            "Stage1: Configuring robots"
+        )
 
     def init_cli(self, stages: tp.List[int]) -> None:
         if 1 in stages:
@@ -54,8 +58,9 @@ class PlatformCmdline(cmd.BaseCmdline):
     def init_stage1(self) -> None:
         # Experiment options
 
-        self.stage1_exp.add_argument("--exp-setup",
-                                     help="""
+        self.stage1_exp.add_argument(
+            "--exp-setup",
+            help="""
 
                                      Defines experiment run length, :term:`Ticks
                                      <Tick>` per second for the experiment
@@ -64,17 +69,21 @@ class PlatformCmdline(cmd.BaseCmdline):
                                      simulation. See :ref:`usage/vars/expsetup`
                                      for a full description.
 
-                                     """ + self.stage_usage_doc([1]),
-                                     default="exp_setup.T{0}.K{1}.N{2}".format(
-                                         config.kARGoS['n_secs_per_run'],
-                                         config.kARGoS['n_ticks_per_sec'],
-                                         config.kExperimentalRunData['n_datapoints_1D']))
+                                     """
+            + self.stage_usage_doc([1]),
+            default="exp_setup.T{0}.K{1}.N{2}".format(
+                config.kARGoS["n_secs_per_run"],
+                config.kARGoS["n_ticks_per_sec"],
+                config.kExperimentalRunData["n_datapoints_1D"],
+            ),
+        )
 
         # Physics engines options
 
-        self.stage1_physics.add_argument("--physics-engine-type2D",
-                                         choices=['dynamics2d'],
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-engine-type2D",
+            choices=["dynamics2d"],
+            help="""
 
                                          The type of 2D physics engine to use
                                          for managing spatial extents within the
@@ -84,12 +93,15 @@ class PlatformCmdline(cmd.BaseCmdline):
                                          controlled by 2D physics engines is
                                          defined on a per ``--project`` basis.
 
-                             """ + self.stage_usage_doc([1]),
-                                         default='dynamics2d')
+                             """
+            + self.stage_usage_doc([1]),
+            default="dynamics2d",
+        )
 
-        self.stage1_physics.add_argument("--physics-engine-type3D",
-                                         choices=['dynamics3d'],
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-engine-type3D",
+            choices=["dynamics3d"],
+            help="""
 
                                          The type of 3D physics engine to use
                                          for managing 3D volumetric extents
@@ -100,13 +112,16 @@ class PlatformCmdline(cmd.BaseCmdline):
                                          engines is defined on a per
                                          ``--project`` basis.
 
-                                         """ + self.stage_usage_doc([1]),
-                                         default='dynamics3d')
+                                         """
+            + self.stage_usage_doc([1]),
+            default="dynamics3d",
+        )
 
-        self.stage1_physics.add_argument("--physics-n-engines",
-                                         choices=[1, 2, 4, 6, 8, 12, 16, 24],
-                                         type=int,
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-n-engines",
+            choices=[1, 2, 4, 6, 8, 12, 16, 24],
+            type=int,
+            help="""
 
                                          # of physics engines to use during
                                          simulation (yay ARGoS!). If N > 1, the
@@ -158,10 +173,13 @@ class PlatformCmdline(cmd.BaseCmdline):
 
                                             This is enforced by SIERRA.
 
-                             """ + self.stage_usage_doc([1]))
-        self.stage1_physics.add_argument("--physics-iter-per-tick",
-                                         type=int,
-                                         help="""
+                             """
+            + self.stage_usage_doc([1]),
+        )
+        self.stage1_physics.add_argument(
+            "--physics-iter-per-tick",
+            type=int,
+            help="""
 
                                          The # of iterations all physics engines
                                          should perform per :term:`Tick` each
@@ -170,25 +188,28 @@ class PlatformCmdline(cmd.BaseCmdline):
                                          control loops is set via
                                          ``--exp-setup``).
 
-                             """ + self.stage_usage_doc([1]),
-                                         default=config.kARGoS['physics_iter_per_tick'])
+                             """
+            + self.stage_usage_doc([1]),
+            default=config.kARGoS["physics_iter_per_tick"],
+        )
 
-        self.stage1_physics.add_argument("--physics-spatial-hash2D",
-                                         help="""
+        self.stage1_physics.add_argument(
+            "--physics-spatial-hash2D",
+            help="""
 
                                          Specify that each 2D physics engine
                                          should use a spatial hash (only applies
                                          to ``dynamics2d`` engine type).
 
                                          """,
-                                         action='store_true')
+            action="store_true",
+        )
 
         # Rendering options
-        self.stage1_rendering.add_argument("--camera-config",
-                                           choices=['overhead',
-                                                    'sw',
-                                                    'sw+interp'],
-                                           help="""
+        self.stage1_rendering.add_argument(
+            "--camera-config",
+            choices=["overhead", "sw", "sw+interp"],
+            help="""
 
                                            Select the camera configuration for
                                            simulation. Ignored unless
@@ -210,11 +231,14 @@ class PlatformCmdline(cmd.BaseCmdline):
                                            - ``sw+interp`` - Same as ``sw``, but
                                              with interpolation between cameras.
 
-                                           """ + self.stage_usage_doc([1]),
-                                           default='overhead')
+                                           """
+            + self.stage_usage_doc([1]),
+            default="overhead",
+        )
 
-        self.stage1_robots.add_argument("--with-robot-rab",
-                                        help="""
+        self.stage1_robots.add_argument(
+            "--with-robot-rab",
+            help="""
 
                                         If passed, do not remove the Range and
                                         Bearing (RAB) sensor, actuator, and
@@ -228,12 +252,15 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         - ``.//actuators/range_and_bearing``
                                         - ``.//sensors/range_and_bearing``
 
-                                        """ + self.stage_usage_doc([1]),
-                                        action="store_true",
-                                        default=False)
+                                        """
+            + self.stage_usage_doc([1]),
+            action="store_true",
+            default=False,
+        )
 
-        self.stage1_robots.add_argument("--with-robot-leds",
-                                        help="""
+        self.stage1_robots.add_argument(
+            "--with-robot-leds",
+            help="""
 
                                         If passed, do not remove the robot LED
                                         actuator XML definitions from the
@@ -246,12 +273,15 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         - ``.//medium/leds``
                                         - ``.//sensors/colored_blob_omnidirectional_camera``
 
-                                        """ + self.stage_usage_doc([1]),
-                                        action="store_true",
-                                        default=False)
+                                        """
+            + self.stage_usage_doc([1]),
+            action="store_true",
+            default=False,
+        )
 
-        self.stage1_robots.add_argument("--with-robot-battery",
-                                        help="""
+        self.stage1_robots.add_argument(
+            "--with-robot-battery",
+            help="""
 
                                         If passed, do not remove the robot
                                         battery sensor XML definitions from
@@ -263,12 +293,15 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         - ``.//entity/*/battery``
                                         - ``.//sensors/battery``
 
-                                        """ + self.stage_usage_doc([1]),
-                                        action="store_true",
-                                        default=False)
+                                        """
+            + self.stage_usage_doc([1]),
+            action="store_true",
+            default=False,
+        )
 
-        self.stage1_robots.add_argument("--n-agents",
-                                        help="""
+        self.stage1_robots.add_argument(
+            "--n-agents",
+            help="""
                                              The # agents (robots) that should
                                              be used in the simulation.  Can be
                                              used to override batch criteria, or
@@ -276,36 +309,31 @@ class PlatformCmdline(cmd.BaseCmdline):
                                              not set it so that manual
                                              modification of input file is
                                              unneccesary.
-                                             """ + self.stage_usage_doc([1]),
-                                        type=int,
-                                        default=None)
+                                             """
+            + self.stage_usage_doc([1]),
+            type=int,
+            default=None,
+        )
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    """Update cmdopts with ARGoS-specific cmdline options.
-
-    """
+    """Update cmdopts with ARGoS-specific cmdline options."""
     opts = hpc.cmdline.to_cmdopts(args)
 
     self_updates = {
         # Stage 1
-        'n_agents': args.n_agents,
-
-        'exp_setup': args.exp_setup,
-
-        'physics_n_engines': args.physics_n_engines,
-        'physics_n_threads': args.physics_n_engines,  # alias
+        "n_agents": args.n_agents,
+        "exp_setup": args.exp_setup,
+        "physics_n_engines": args.physics_n_engines,
+        "physics_n_threads": args.physics_n_engines,  # alias
         "physics_engine_type2D": args.physics_engine_type2D,
         "physics_engine_type3D": args.physics_engine_type3D,
         "physics_iter_per_tick": args.physics_iter_per_tick,
         "physics_spatial_hash2D": args.physics_spatial_hash2D,
-
         "with_robot_rab": args.with_robot_rab,
         "with_robot_leds": args.with_robot_leds,
         "with_robot_battery": args.with_robot_battery,
-
-        'camera_config': args.camera_config,
-
+        "camera_config": args.camera_config,
     }
 
     opts |= self_updates

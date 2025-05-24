@@ -9,6 +9,7 @@ Execution Environment Plugins
    :caption: Contents:
 
    hpc.rst
+   prefect.rst
    realrobot.rst
 
 Additional execution environments can be supported via

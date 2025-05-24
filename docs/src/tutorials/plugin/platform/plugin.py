@@ -7,20 +7,19 @@ import implements
 
 from sierra.core.experiment import bindings, definition
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import hpc, platform, types, utils
+from sierra.core import types, utils
+from sierra.plugins.execenv import hpc
 
 from platform.matrix import cmdline as cmd
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator():
+class ExpShellCmdsGenerator:
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 exp_num: int) -> None:
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         pass
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -31,28 +30,28 @@ class ExpShellCmdsGenerator():
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator():
+class ExpRunShellCmdsGenerator:
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.BatchCriteria,
-                 n_agents: int,
-                 exp_num: int) -> None:
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        criteria: bc.BatchCriteria,
+        n_agents: int,
+        exp_num: int,
+    ) -> None:
         pass
 
-    def pre_run_cmds(self,
-                     host: str,
-                     input_fpath: pathlib.Path,
-                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def pre_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_run_cmds(self,
-                      host: str,
-                      input_fpath: pathlib.Path,
-                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def exec_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
@@ -60,7 +59,7 @@ class ExpRunShellCmdsGenerator():
 
 
 @implements.implements(bindings.IExpConfigurer)
-class ExpConfigurer():
+class ExpConfigurer:
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpConfigurer`.
     """
@@ -68,16 +67,16 @@ class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def for_exp_run(self,
-                    exp_input_root: pathlib.Path,
-                    run_output_root: pathlib.Path) -> None:
+    def for_exp_run(
+        self, exp_input_root: pathlib.Path, run_output_root: pathlib.Path
+    ) -> None:
         pass
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
         pass
 
-    def cmdfile_paradigm(self) -> str:
-        return 'per-exp'
+    def parallelism_paradigm(self) -> str:
+        return "per-exp"
 
 
 def cmdline_parser() -> argparse.ArgumentParser:
@@ -95,8 +94,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
     # Initialize all stages and return the initialized
     # parser to SIERRA for use.
     parser = hpc.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmd.PlatformCmdline(parents=[parser],
-                               stages=[-1, 1, 2, 3, 4, 5]).parser
+    return cmd.PlatformCmdline(parents=[parser], stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
@@ -115,10 +113,11 @@ def exec_env_check(cmdopts: types.Cmdopts):
     """
 
 
-def population_size_from_pickle(exp_def: tp.Union[definition.AttrChangeSet,
-                                                  definition.ElementAddList],
-                                main_config: types.YAMLDict,
-                                cmdopts: types.Cmdopts) -> int:
+def population_size_from_pickle(
+    exp_def: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+) -> int:
     """
     Given an experiment definition, main configuration, and cmdopts,
     get the # agents in the experiment.Size can be obtained from added
@@ -132,12 +131,12 @@ def population_size_from_pickle(exp_def: tp.Union[definition.AttrChangeSet,
 
         cmdopts: Dictionary of parsed cmdline options.
 
-  """
+    """
 
 
-def population_size_from_def(exp_def: definition.BaseExpDef,
-                             main_config: types.YAMLDict,
-                             cmdopts: types.Cmdopts) -> int:
+def population_size_from_def(
+    exp_def: definition.BaseExpDef, main_config: types.YAMLDict, cmdopts: types.Cmdopts
+) -> int:
     """
     Arguments:
 
@@ -150,8 +149,7 @@ def population_size_from_def(exp_def: definition.BaseExpDef,
     """
 
 
-def agent_prefix_extract(main_config: types.YAMLDict,
-                         cmdopts: types.Cmdopts) -> str:
+def agent_prefix_extract(main_config: types.YAMLDict, cmdopts: types.Cmdopts) -> str:
     """
     Arguments:
 
@@ -161,8 +159,7 @@ def agent_prefix_extract(main_config: types.YAMLDict,
     """
 
 
-def pre_exp_diagnostics(cmdopts: types.Cmdopts,
-                        logger: logging.Logger) -> None:
+def pre_exp_diagnostics(cmdopts: types.Cmdopts, logger: logging.Logger) -> None:
     """
     Arguments:
 
@@ -170,7 +167,7 @@ def pre_exp_diagnostics(cmdopts: types.Cmdopts,
 
         logger: The logger to log to.
 
-  """
+    """
 
 
 def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:

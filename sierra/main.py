@@ -125,13 +125,7 @@ class SIERRA:
 
         # Load plugins
         self.logger.info("Loading plugins")
-        plugin_search_path = [
-            install_root / "plugins" / "hpc",
-            install_root / "plugins" / "storage",
-            install_root / "plugins" / "robot",
-            install_root / "plugins" / "expdef",
-            install_root / "plugins" / "platform",
-        ]
+        plugin_search_path = [install_root / "plugins"]
         if env := os.environ.get("SIERRA_PLUGIN_PATH"):
             for p in env.split(os.pathsep):
                 plugin_search_path.append(pathlib.Path(p))

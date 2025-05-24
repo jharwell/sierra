@@ -2,9 +2,9 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-Container module for plugins related to execution environments (HPC flavor).
+Container module for the SLURM execution environment.
 
-Driven by ``--exec-env``.
+See :ref:`plugins/exec-env/hpc/slurm`.
 """
 
 # Core packages

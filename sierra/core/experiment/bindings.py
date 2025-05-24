@@ -40,9 +40,7 @@ class IExpShellCmdsGenerator(implements.Interface):
     exp_num: The 0-based index of the experiment in the batch.
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 exp_num: int) -> None:
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         raise NotImplementedError
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -61,8 +59,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def exec_exp_cmds(self,
-                      exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to execute an :term:`Experiment`.
 
         This is (usually) a single GNU parallel command, but it does not have to
@@ -145,17 +142,18 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.BatchCriteria,
-                 n_agents: int,
-                 exp_num: int) -> None:
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        criteria: bc.BatchCriteria,
+        n_agents: int,
+        exp_num: int,
+    ) -> None:
         raise NotImplementedError
 
-    def pre_run_cmds(self,
-                     host: str,
-                     input_fpath: pathlib.Path,
-                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def pre_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to setup the experimental run environment.
 
         These commands are run in stage 2 prior to each experimental run in the
@@ -177,10 +175,9 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def exec_run_cmds(self,
-                      host: str,
-                      input_fpath: pathlib.Path,
-                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+    def exec_run_cmds(
+        self, host: str, input_fpath: pathlib.Path, run_num: int
+    ) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to execute a single :term:`Experimental Run`.
 
         This is (usually) a command to launch the simulation environment or
@@ -237,9 +234,9 @@ class IExpConfigurer(implements.Interface):
         """
         raise NotImplementedError
 
-    def for_exp_run(self,
-                    exp_input_root: pathlib.Path,
-                    run_output_root: pathlib.Path) -> None:
+    def for_exp_run(
+        self, exp_input_root: pathlib.Path, run_output_root: pathlib.Path
+    ) -> None:
         """
         Configure an :term:`Experimental Run`.
 
@@ -252,35 +249,39 @@ class IExpConfigurer(implements.Interface):
         """
         raise NotImplementedError
 
-    def cmdfile_paradigm(self) -> str:
-        """Return the parallelism paradigm for the platform.
+    def parallelism_paradigm(self) -> str:
+        """Get the parallelism paradigm to use when generating experiments.
 
         For most simulator-based platforms, you generally want parallelism
-        *across* multiple experimental runs; that is all experimental runs in an
-        experiment run in parallel, subject to the limits of your selected
-        execution environment, configuration, etc.  For most real hardware-based
-        platforms, such as robots, you generally have to select parallelism
-        *within* an experimental run; that is, each experimental run requires
-        multiple remote sub-processes to execute, one per agent, since you can't
-        have single physical agent/robot be part of multiple experimental runs
-        simultaneously.
+        *across* multiple :term:`experimental runs <Experimental Run>; that is
+        all experimental runs in an :term:`Experiment` run in parallel, subject
+        to the limits of your selected execution environment, configuration,
+        etc.  This *also* means that experiments within a :term:`Batch
+        Experiment` are processed serially.  Experiments using this paradigm
+        should return ``per-exp``.
 
-            - ``per-exp`` - A single GNU parallel cmds file per
-              :term:`Experiment`.  When executed, each line of the file contains
-              all the {pre, exec, post} cmds for each :term:`Experimental Run`.
-              Runs are generally executed in parallel, up to the limit of the
-              platform, subject to configuration/overrides.
+        For most real hardware-based platforms, such as robots, you generally
+        have to select parallelism *within* an experimental run; that is, each
+        experimental run requires multiple remote sub-processes to execute, one
+        per agent, since you can't have single physical agent/robot be part of
+        multiple experimental runs simultaneously. Experiments using this
+        paradigm should return ``per-run``.
 
-            - ``per-run`` - Each GNU parallel cmds file contains only the cmds
-              for a single :term:`Experimental Run`.  Multiple cmds files may be
-              needed for a single run (e.g., for ROS1 master + slaves).  This is
-              typically the paradigm for platforms targeting real hardware.
+        The returned value must be one of:
+
+            - ``per-exp`` - A single cmdfile per :term:`Experiment`.  When
+              executed, each line of the file contains all the {pre, exec, post}
+              cmds for each :term:`Experimental Run`.
+
+            - ``per-run`` - Each cmdfile contains only the cmds for a single
+              :term:`Experimental Run`.  Multiple cmds files may be needed for a
+              single run (e.g., for ROS1 master + slaves).
         """
         raise NotImplementedError
 
 
 __all__ = [
-    'IExpRunShellCmdsGenerator',
-    'IExpShellCmdsGenerator',
-    'IExpConfigurer',
+    "IExpRunShellCmdsGenerator",
+    "IExpShellCmdsGenerator",
+    "IExpConfigurer",
 ]

@@ -117,8 +117,8 @@ Running Experiments
          - Post-experiment cleanup cmds before the next experiment is executed.
 
 #. In ``plugin.py``, you may define ``exec_env_check()`` to check the software
-   environment (envvars, PATH, etc.) for this platform plugin prior to
-   running anything in stage 2. Since stage 2 can be run in a different
+   environment (envvars, PATH, etc.) for this execution environment plugin prior
+   to running anything in stage 2. Since stage 2 can be run in a different
    invocation than stage 1, this hook is provided so that the correct
    environment exists prior to executing anything. This function is optional.
 

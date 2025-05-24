@@ -31,17 +31,20 @@ from sierra.core.pipeline.stage5.pipeline_stage5 import PipelineStage5
 class Pipeline:
     "Implements SIERRA's 5 stage pipeline."
 
-    def __init__(self,
-                 args: argparse.Namespace,
-                 controller: tp.Optional[str],
-                 pathset: tp.Optional[batchroot.PathSet] = None) -> None:
+    def __init__(
+        self,
+        args: argparse.Namespace,
+        controller: tp.Optional[str],
+        pathset: tp.Optional[batchroot.PathSet] = None,
+    ) -> None:
         self.logger = logging.getLogger(__name__)
         self.pathset = pathset
 
         self.logger.info("Computed run-time tree:\n%s", self.pathset)
 
-        assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
-            f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
+        assert all(
+            stage in [1, 2, 3, 4, 5] for stage in args.pipeline
+        ), f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
 
         # After running this, all shortform aliases have been converted to their
         # longform counterparts in the argparse.Namespace. The namespace passed
@@ -53,98 +56,94 @@ class Pipeline:
 
         self.cmdopts = {
             # multistage
-            'pipeline': self.args.pipeline,
-            'sierra_root': os.path.expanduser(self.args.sierra_root),
-            'scenario': self.args.scenario,
-            'expdef_template': self.args.expdef_template,
-            'project': self.args.project,
-            'exec_env': args.exec_env,
-            'platform_vc': self.args.platform_vc,
+            "pipeline": self.args.pipeline,
+            "sierra_root": os.path.expanduser(self.args.sierra_root),
+            "scenario": self.args.scenario,
+            "expdef_template": self.args.expdef_template,
+            "project": self.args.project,
+            "exec_env": args.exec_env,
+            "platform_vc": self.args.platform_vc,
             "n_runs": args.n_runs,
-            'project_imagizing': self.args.project_imagizing,
-            'exp_overwrite': self.args.exp_overwrite,
-            'exp_range': self.args.exp_range,
-            'dist_stats': self.args.dist_stats,
-            'skip_collate': self.args.skip_collate,
-            'platform': self.args.platform,
-            'processing_serial': self.args.processing_serial,
-
-            'plot_log_xscale': self.args.plot_log_xscale,
-            'plot_enumerated_xscale': self.args.plot_enumerated_xscale,
-            'plot_log_yscale': self.args.plot_log_yscale,
-            'plot_regression_lines': self.args.plot_regression_lines,
-            'plot_primary_axis': self.args.plot_primary_axis,
-            'plot_large_text': self.args.plot_large_text,
-            'plot_transpose_graphs': self.args.plot_transpose_graphs,
-            'expdef': self.args.expdef,
-
+            "project_imagizing": self.args.project_imagizing,
+            "exp_overwrite": self.args.exp_overwrite,
+            "exp_range": self.args.exp_range,
+            "dist_stats": self.args.dist_stats,
+            "skip_collate": self.args.skip_collate,
+            "platform": self.args.platform,
+            "processing_serial": self.args.processing_serial,
+            "plot_log_xscale": self.args.plot_log_xscale,
+            "plot_enumerated_xscale": self.args.plot_enumerated_xscale,
+            "plot_log_yscale": self.args.plot_log_yscale,
+            "plot_regression_lines": self.args.plot_regression_lines,
+            "plot_primary_axis": self.args.plot_primary_axis,
+            "plot_large_text": self.args.plot_large_text,
+            "plot_transpose_graphs": self.args.plot_transpose_graphs,
+            "expdef": self.args.expdef,
             # stage 1
-            'preserve_seeds': self.args.preserve_seeds,
-
+            "preserve_seeds": self.args.preserve_seeds,
             # stage 2
-            'nodefile': self.args.nodefile,
-
+            "nodefile": self.args.nodefile,
             # stage 3
-            'df_skip_verify': self.args.df_skip_verify,
-            'df_homogenize': self.args.df_homogenize,
-            'render_cmd_opts': self.args.render_cmd_opts,
-            'processing_mem_limit': self.args.processing_mem_limit,
-            'storage': self.args.storage,
-
+            "df_skip_verify": self.args.df_skip_verify,
+            "df_homogenize": self.args.df_homogenize,
+            "render_cmd_opts": self.args.render_cmd_opts,
+            "processing_mem_limit": self.args.processing_mem_limit,
+            "storage": self.args.storage,
             # stage 4
-            'exp_graphs': self.args.exp_graphs,
-
-            'project_no_LN': self.args.project_no_LN,
-            'project_no_HM': self.args.project_no_HM,
-            'project_rendering': self.args.project_rendering,
-            'bc_rendering': self.args.bc_rendering,
-
-            'models_enable': self.args.models_enable,
-
+            "exp_graphs": self.args.exp_graphs,
+            "project_no_LN": self.args.project_no_LN,
+            "project_no_HM": self.args.project_no_HM,
+            "project_rendering": self.args.project_rendering,
+            "bc_rendering": self.args.bc_rendering,
+            "models_enable": self.args.models_enable,
             # stage 5
-            'controllers_list': self.args.controllers_list,
-            'controllers_legend': self.args.controllers_legend,
-            'scenarios_list': self.args.scenarios_list,
-            'scenarios_legend': self.args.scenarios_legend,
-            'scenario_comparison': self.args.scenario_comparison,
-            'controller_comparison': self.args.controller_comparison,
-            'comparison_type': self.args.comparison_type,
+            "controllers_list": self.args.controllers_list,
+            "controllers_legend": self.args.controllers_legend,
+            "scenarios_list": self.args.scenarios_list,
+            "scenarios_legend": self.args.scenarios_legend,
+            "scenario_comparison": self.args.scenario_comparison,
+            "controller_comparison": self.args.controller_comparison,
+            "comparison_type": self.args.comparison_type,
         }
 
         # Load additional cmdline options from platform
-        self.logger.debug("Updating cmdopts with extensions from '%s'",
-                          self.cmdopts['platform'])
-        module = pm.module_load_tiered("cmdline",
-                                       platform=self.cmdopts['platform'])
+        self.logger.debug(
+            "Updating cmdopts with extensions from '%s'", self.cmdopts["platform"]
+        )
+        module = pm.module_load_tiered("cmdline", platform=self.cmdopts["platform"])
         self.cmdopts |= module.to_cmdopts(self.args)
 
         if self.pathset is not None:
             # Load additional cmdline options from project. This is mandatory,
             # because all projects have to define --controller and --scenario
             # at a minimum.
-            self.logger.debug("Updating cmdopts with extensions from '%s'",
-                              self.cmdopts['project'])
-            path = "{0}.cmdline".format(self.cmdopts['project'])
+            self.logger.debug(
+                "Updating cmdopts with extensions from '%s'", self.cmdopts["project"]
+            )
+            path = "{0}.cmdline".format(self.cmdopts["project"])
             module = pm.module_load(path)
 
             self.cmdopts |= module.to_cmdopts(self.args)
 
-        project = pm.pipeline.get_plugin(self.cmdopts['project'])
-        path = project['parent_dir'] / self.cmdopts['project']
+        # Projects are specified as X.Y on cmdline so to get the path to the
+        # project dir we combine the parent_dir (which is already a path) and
+        # the name of the project (Y component).
+        project = pm.pipeline.get_plugin(self.cmdopts["project"])
+        path = project["parent_dir"] / self.cmdopts["project"].split(".")[1]
 
-        self.cmdopts['project_root'] = str(path)
-        self.cmdopts['project_config_root'] = str(path / 'config')
-        self.cmdopts['project_model_root'] = str(path / 'models')
+        self.cmdopts["project_root"] = str(path)
+        self.cmdopts["project_config_root"] = str(path / "config")
+        self.cmdopts["project_model_root"] = str(path / "models")
 
         self._load_config()
 
         if 5 not in self.args.pipeline:
-            bc = pm.module_load_tiered(project=self.cmdopts['project'],
-                                       path='variables.batch_criteria')
-            self.batch_criteria = bc.factory(self.main_config,
-                                             self.cmdopts,
-                                             self.pathset.input_root,
-                                             self.args)
+            bc = pm.module_load_tiered(
+                project=self.cmdopts["project"], path="variables.batch_criteria"
+            )
+            self.batch_criteria = bc.factory(
+                self.main_config, self.cmdopts, self.pathset.input_root, self.args
+            )
 
         self.controller = controller
 
@@ -153,30 +152,29 @@ class Pipeline:
         Run pipeline stages 1-5 as configured.
         """
         if 1 in self.args.pipeline:
-            PipelineStage1(self.cmdopts,
-                           self.pathset,
-                           self.controller,  # type: ignore
-                           self.batch_criteria).run()
+            PipelineStage1(
+                self.cmdopts,
+                self.pathset,
+                self.controller,  # type: ignore
+                self.batch_criteria,
+            ).run()
 
         if 2 in self.args.pipeline:
-            PipelineStage2(self.cmdopts,
-                           self.pathset).run(self.batch_criteria)
+            PipelineStage2(self.cmdopts, self.pathset).run(self.batch_criteria)
 
         if 3 in self.args.pipeline:
-            PipelineStage3(self.main_config,
-                           self.cmdopts,
-                           self.pathset).run(self.batch_criteria)
+            PipelineStage3(self.main_config, self.cmdopts, self.pathset).run(
+                self.batch_criteria
+            )
 
         if 4 in self.args.pipeline:
-            PipelineStage4(self.main_config,
-                           self.cmdopts,
-                           self.pathset).run(self.batch_criteria)
+            PipelineStage4(self.main_config, self.cmdopts, self.pathset).run(
+                self.batch_criteria
+            )
 
         # not part of default pipeline
         if 5 in self.args.pipeline:
-            PipelineStage5(self.main_config,
-                           self.cmdopts,
-                           self.pathset).run(self.args)
+            PipelineStage5(self.main_config, self.cmdopts, self.pathset).run(self.args)
 
     def _handle_shortforms(self, args: argparse.Namespace) -> argparse.Namespace:
         """
@@ -188,25 +186,28 @@ class Pipeline:
         """
 
         shortform_map = {
-            'p': 'plot',
-            'e': 'exp',
-            'x': 'exec',
-            's': 'skip',
+            "p": "plot",
+            "e": "exp",
+            "x": "exec",
+            "s": "skip",
         }
 
         for k in shortform_map:
             passed = getattr(args, k, None)
             if not passed:
-                self.logger.trace(("No shortform args for -%s -> --%s "
-                                   "passed to SIERRA"),
-                                  k,
-                                  shortform_map[k])
+                self.logger.trace(
+                    ("No shortform args for -%s -> --%s " "passed to SIERRA"),
+                    k,
+                    shortform_map[k],
+                )
                 continue
 
-            self.logger.trace("Collected shortform args for -%s -> --%s: %s",
-                              k,
-                              shortform_map[k],
-                              passed)
+            self.logger.trace(
+                "Collected shortform args for -%s -> --%s: %s",
+                k,
+                shortform_map[k],
+                passed,
+            )
 
             # There are 3 ways to pass shortform arguments, assuming a shortform
             # of 'X:
@@ -215,25 +216,25 @@ class Pipeline:
             # 2. -Xarg=foo
             # 3. -Xarg foo
             for p in passed:
-                if len(p) == 1 and '=' not in p[0]:  # boolean
-                    key = '{0}_{1}'.format(shortform_map[k], p[0].replace('-', '_'))
+                if len(p) == 1 and "=" not in p[0]:  # boolean
+                    key = "{0}_{1}".format(shortform_map[k], p[0].replace("-", "_"))
                     setattr(args, key, True)
-                elif len(p) == 1 and '=' in p[0]:
-                    arg, value = p[0].split('=')
-                    key = '{0}_{1}'.format(shortform_map[k], arg.replace('-', '_'))
+                elif len(p) == 1 and "=" in p[0]:
+                    arg, value = p[0].split("=")
+                    key = "{0}_{1}".format(shortform_map[k], arg.replace("-", "_"))
                     setattr(args, key, value)
                 else:
-                    key = '{0}_{1}'.format(shortform_map[k], p[1:].replace('-', '_'))
+                    key = "{0}_{1}".format(shortform_map[k], p[1:].replace("-", "_"))
                     setattr(args, key, p[1:])
 
         return args
 
     def _load_config(self) -> None:
-        self.logger.debug("Loading project config from '%s'",
-                          self.cmdopts['project_config_root'])
+        self.logger.debug(
+            "Loading project config from '%s'", self.cmdopts["project_config_root"]
+        )
 
-        main_path = pathlib.Path(self.cmdopts['project_config_root'],
-                                 config.kYAML.main)
+        main_path = pathlib.Path(self.cmdopts["project_config_root"], config.kYAML.main)
         try:
             with utils.utf8open(main_path) as f:
                 self.main_config = yaml.load(f, yaml.FullLoader)
@@ -242,20 +243,19 @@ class Pipeline:
             self.logger.fatal("%s must exist!", main_path)
             raise
 
-        if 'perf' not in self.main_config['sierra']:
+        if "perf" not in self.main_config["sierra"]:
             return
 
-        perf_path = pathlib.Path(self.cmdopts['project_config_root'],
-                                 self.main_config['sierra']['perf'])
+        perf_path = pathlib.Path(
+            self.cmdopts["project_config_root"], self.main_config["sierra"]["perf"]
+        )
         try:
             perf_config = yaml.load(utils.utf8open(perf_path), yaml.FullLoader)
 
         except FileNotFoundError:
             self.logger.warning("%s does not exist!", perf_path)
             perf_config = {}
-        self.main_config['sierra'].update(perf_config)
+        self.main_config["sierra"].update(perf_config)
 
 
-__all__ = [
-    'Pipeline'
-]
+__all__ = ["Pipeline"]

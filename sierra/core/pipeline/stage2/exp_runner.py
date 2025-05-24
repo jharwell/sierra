@@ -1,9 +1,7 @@
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Classes for executing experiments via the specified ``--exec-env``.
-
-"""
+"""Classes for executing experiments via the specified ``--exec-env``."""
 
 # Core packages
 import os
@@ -23,7 +21,7 @@ from sierra.core import types, config, platform, utils, batchroot, exec_env
 import sierra.core.plugin_manager as pm
 
 
-class ExpShell():
+class ExpShell:
     """Launch a shell which persists across experimental runs.
 
     Having a persistent shell is necessary so that running pre- and post-run
@@ -42,18 +40,20 @@ class ExpShell():
         self.exec_strict = exec_strict
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
-        self.logger.trace("Cmd: %s", spec.cmd)   # type: ignore
+        self.logger.trace("Cmd: %s", spec.cmd)  # type: ignore
 
         # We use a special marker at the end of the cmd's output to know when
         # the environment dump starts.
         if spec.env:
-            spec.cmd += ' && echo ~~~~ENV_START~~~~ && env'
+            spec.cmd += " && echo ~~~~ENV_START~~~~ && env"
 
-        proc = subprocess.Popen(spec.cmd,
-                                shell=spec.shell,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                env=self.env)
+        proc = subprocess.Popen(
+            spec.cmd,
+            shell=spec.shell,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=self.env,
+        )
 
         if not spec.wait:
             self.procs.append(proc)
@@ -77,14 +77,19 @@ class ExpShell():
                 stdout_str = stdout_str.split("~~~~ENV_START~~~~", maxsplit=1)[0]
                 stderr_str = stderr_str.split("~~~~ENV_START~~~~", maxsplit=1)[0]
 
-            self.logger.error("Cmd stdout (last 10 lines): %s",
-                              '\n + ''\n'.join(stdout_str.split('\n')[-10:]))
-            self.logger.error("Cmd stderr (last 10 lines): %s",
-                              '\n' + '\n'.join(stderr_str.split('\n')[-10:]))
+            self.logger.error(
+                "Cmd stdout (last 10 lines): %s",
+                "\n + " "\n".join(stdout_str.split("\n")[-10:]),
+            )
+            self.logger.error(
+                "Cmd stderr (last 10 lines): %s",
+                "\n" + "\n".join(stderr_str.split("\n")[-10:]),
+            )
 
             if self.exec_strict:
-                raise RuntimeError(("Command failed and strict checking was "
-                                    "requested"))
+                raise RuntimeError(
+                    ("Command failed and strict checking was " "requested")
+                )
 
             return False
         else:
@@ -92,9 +97,9 @@ class ExpShell():
 
     def _update_env(self, stdout) -> None:
         record = False
-        for e in stdout.decode('ascii').split("\n"):
+        for e in stdout.decode("ascii").split("\n"):
             if record:
-                candidate = e.strip().split('=')
+                candidate = e.strip().split("=")
                 if len(candidate) != 2:
                     continue
 
@@ -102,11 +107,11 @@ class ExpShell():
                 value = candidate[1]
 
                 if key not in self.env or self.env[key] != value:
-                    self.logger.debug("Update experiment environment: %s=%s",
-                                      key,
-                                      value)
+                    self.logger.debug(
+                        "Update experiment environment: %s=%s", key, value
+                    )
                     self.env[key] = value
-            elif e.strip() == '~~~~ENV_START~~~~':
+            elif e.strip() == "~~~~ENV_START~~~~":
                 record = True
 
 
@@ -135,14 +140,16 @@ class BatchExpRunner:
 
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 pathset: batchroot.PathSet,
-                 criteria: bc.BatchCriteria) -> None:
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        pathset: batchroot.PathSet,
+        criteria: bc.BatchCriteria,
+    ) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
         self.pathset = pathset
-        self.exec_exp_range = self.cmdopts['exp_range']
+        self.exec_exp_range = self.cmdopts["exp_range"]
 
         self.logger = logging.getLogger(__name__)
 
@@ -154,24 +161,23 @@ class BatchExpRunner:
         Execute experiments in the batch according to configuration.
 
         """
-        self.logger.info("Platform='%s' exec_env='%s'",
-                         self.cmdopts['platform'],
-                         self.cmdopts['exec_env'])
+        self.logger.info(
+            "Platform=%s, exec_env=%s",
+            self.cmdopts["platform"],
+            self.cmdopts["exec_env"],
+        )
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["platform"])
 
         # Output some useful information before running
-        if hasattr(module, 'pre_exp_diagnostics'):
-            module.pre_exp_diagnostics(self.cmdopts,
-                                       self.pathset,
-                                       self.logger)
+        if hasattr(module, "pre_exp_diagnostics"):
+            module.pre_exp_diagnostics(self.cmdopts, self.pathset, self.logger)
 
-        exp_all = [self.pathset.input_root / d
-                   for d in self.criteria.gen_exp_names()]
+        exp_all = [self.pathset.input_root / d for d in self.criteria.gen_exp_names()]
 
-        exp_to_run = utils.exp_range_calc(self.cmdopts["exp_range"],
-                                          self.pathset.input_root,
-                                          self.criteria)
+        exp_to_run = utils.exp_range_calc(
+            self.cmdopts["exp_range"], self.pathset.input_root, self.criteria
+        )
 
         # Verify environment is OK before running anything
         self.logger.debug("Checking --platform execution environment")
@@ -182,12 +188,11 @@ class BatchExpRunner:
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()
-        exec_times_fpath = self.pathset.stat_exec_root / \
-            now.strftime("%Y-%m-%e-%H:%M")
+        exec_times_fpath = self.pathset.stat_exec_root / now.strftime("%Y-%m-%e-%H:%M")
 
         # Start a new process for the experiment shell so pre-run commands have
         # an effect (if they set environment variables, etc.).
-        shell = ExpShell(self.cmdopts['exec_strict'])
+        shell = ExpShell(self.cmdopts["exec_strict"])
 
         # Run the experiment!
         for exp in exp_to_run:
@@ -195,10 +200,8 @@ class BatchExpRunner:
 
             # Run cmds for platform-specific things to setup the experiment
             # (e.g., start daemons) if needed.
-            platform_generator = platform.ExpShellCmdsGenerator(self.cmdopts,
-                                                                exp_num)
-            execenv_generator = exec_env.ExpShellCmdsGenerator(self.cmdopts,
-                                                               exp_num)
+            platform_generator = platform.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+            execenv_generator = exec_env.ExpShellCmdsGenerator(self.cmdopts, exp_num)
 
             for spec in execenv_generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
@@ -206,11 +209,9 @@ class BatchExpRunner:
             for spec in platform_generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
-            runner = ExpRunner(self.pathset,
-                               self.cmdopts,
-                               exec_times_fpath,
-                               execenv_generator,
-                               shell)
+            runner = ExpRunner(
+                self.pathset, self.cmdopts, exec_times_fpath, execenv_generator, shell
+            )
             runner(exp.name, exp_num)
 
             # Run cmds to cleanup {execenv, platform}-specific things now that
@@ -231,12 +232,14 @@ class ExpRunner:
 
     """
 
-    def __init__(self,
-                 pathset: batchroot.PathSet,
-                 cmdopts: types.Cmdopts,
-                 exec_times_fpath: pathlib.Path,
-                 generator: exec_env.ExpShellCmdsGenerator,
-                 shell: ExpShell) -> None:
+    def __init__(
+        self,
+        pathset: batchroot.PathSet,
+        cmdopts: types.Cmdopts,
+        exec_times_fpath: pathlib.Path,
+        generator: exec_env.ExpShellCmdsGenerator,
+        shell: ExpShell,
+    ) -> None:
 
         self.exec_times_fpath = exec_times_fpath
         self.shell = shell
@@ -245,54 +248,49 @@ class ExpRunner:
         self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self,
-                 exp_name: str,
-                 exp_num: int) -> None:
-        """Execute experimental runs for a single experiment.
-        """
+    def __call__(self, exp_name: str, exp_num: int) -> None:
+        """Execute experimental runs for a single experiment."""
         exp_input_root = self.pathset.input_root / exp_name
         exp_scratch_root = self.pathset.scratch_root / exp_name
-        self.logger.info("Running exp%s in '%s'",
-                         exp_num,
-                         exp_input_root)
+        self.logger.info("Running exp%s in '%s'", exp_num, exp_input_root)
         sys.stdout.flush()
 
         wd = exp_input_root.relative_to(pathlib.Path().home())
         start = time.time()
 
         utils.dir_create_checked(exp_scratch_root, exist_ok=True)
+        print(exp_scratch_root)
 
-        assert self.cmdopts['exec_jobs_per_node'] is not None, \
-            "# parallel jobs can't be None"
+        assert (
+            self.cmdopts["exec_jobs_per_node"] is not None
+        ), "# parallel jobs can't be None"
 
         exec_opts = {
-            'exp_input_root': str(exp_input_root),
-            'work_dir': str(wd),
-            'scratch_dir': str(exp_scratch_root),
-            'cmdfile_stem_path': str(exp_input_root / config.kGNUParallel['cmdfile_stem']),
-            'cmdfile_ext': config.kGNUParallel['cmdfile_ext'],
-            'exec_resume': self.cmdopts['exec_resume'],
-            'n_jobs': self.cmdopts['exec_jobs_per_node'],
-            'nodefile': self.cmdopts['nodefile']
+            "exp_input_root": str(exp_input_root),
+            "work_dir": str(wd),
+            "exp_scratch_root": str(exp_scratch_root),
+            "cmdfile_stem_path": str(
+                exp_input_root / config.kGNUParallel["cmdfile_stem"]
+            ),
+            "cmdfile_ext": config.kGNUParallel["cmdfile_ext"],
+            "exec_resume": self.cmdopts["exec_resume"],
+            "n_jobs": self.cmdopts["exec_jobs_per_node"],
+            "nodefile": self.cmdopts["nodefile"],
         }
 
         for spec in self.generator.exec_exp_cmds(exec_opts):
             if not self.shell.run_from_spec(spec):
-                self.logger.error("Check outputs in %s for full details",
-                                  exec_opts['scratch_dir'])
+                self.logger.error(
+                    "Check outputs in %s for full details",
+                    exec_opts["exp_scratch_root"],
+                )
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info('Exp%s elapsed time: %s', exp_num, sec)
+        self.logger.info("Exp%s elapsed time: %s", exp_num, sec)
 
-        with utils.utf8open(self.exec_times_fpath, 'a') as f:
-            f.write('exp' + str(exp_num) + ': ' + str(sec) + '\n')
-
-
-__all__ = [
-    'BatchExpRunner',
-    'ExpRunner',
-    'ExpShell'
+        with utils.utf8open(self.exec_times_fpath, "a") as f:
+            f.write("exp" + str(exp_num) + ": " + str(sec) + "\n")
 
 
-]
+__all__ = ["BatchExpRunner", "ExpRunner", "ExpShell"]
