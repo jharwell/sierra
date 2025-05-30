@@ -33,11 +33,11 @@ Within this file, you must define the following functions:
 
 
       .. IMPORTANT:: This is the equivalent of the ``experiment.for_all_exp()``
-                     for :term:`Platforms<Platform>`; :term:`Projects<Project>`
+                     for :term:`Engines<Engine>`; :term:`Projects<Project>`
                      don't define that hook directly (at least not that SIERRA
                      uses). This alternative mechanism was used instead of
                      ``*args/**kwargs`` to share ``for_all_exp()`` signatures
-                     between projects and platforms, because it results in
+                     between projects and engines, because it results in
                      better static analysis support, and is semantically just as
                      clear.
 
@@ -79,8 +79,8 @@ In ``generators/experiment.py``, you may define the following functions:
 
       This function is optional. It is used to generate expdef changes for a
       single :term:`Experimental Run` for your project. If you define it, you
-      *must* call the platform ``for_single_exp_run()`` otherwise none of the
-      platform-specific changes will be made, and your experiment might not run.
+      *must* call the engine ``for_single_exp_run()`` otherwise none of the
+      engine-specific changes will be made, and your experiment might not run.
 
       .. code-block:: python
 
@@ -103,7 +103,7 @@ In ``generators/experiment.py``, you may define the following functions:
            Return the updated experiment definition.
 
            Arguments:
-               exp_def: The experiment definition after ``--platform`` changes
+               exp_def: The experiment definition after ``--engine`` changes
                         common to all experiments have been made.
 
                run_num: The run # in the experiment.
@@ -113,7 +113,7 @@ In ``generators/experiment.py``, you may define the following functions:
 
                launch_stem_path: Path to launch file in the input directory for
                                  the experimental run, sans extension or other
-                                 modifications that the platform can impose.
+                                 modifications that the engine can impose.
 
                random_seed: The random seed for the run.
 

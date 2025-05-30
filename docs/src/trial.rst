@@ -61,7 +61,7 @@ you clone things somewhere else.
 
      pip3 install sierra-research
 
-#. Setup your chosen :term:`Platform`:
+#. Setup your chosen :term:`Engine`:
 
    .. tabs::
 
@@ -110,7 +110,7 @@ you clone things somewhere else.
 
 
 #. Download and build the super-simple SIERRA sample project for your chosen
-   :term:`Platform`:
+   :term:`Engine`:
 
    .. tabs::
 
@@ -154,7 +154,7 @@ you clone things somewhere else.
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
-              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects
+              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project
 
          #. Set :envvar:`ARGOS_PLUGIN_PATH`::
 
@@ -167,7 +167,7 @@ you clone things somewhere else.
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
-              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects/ros1gazebo_project
+              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-projec/
 
          #. Source ROS environment to set :envvar:`ROS_PACKAGE_PATH` (if you
             haven't already)::
@@ -187,8 +187,8 @@ you clone things somewhere else.
             --sierra-root=$HOME/research/exp \
             --expdef-template=$HOME/research/exp/argos/template.argos \
             --n-runs=4 \
-            --platform=platform.argos \
-            --project=argos_project \
+            --engine=engine.argos \
+            --project=projects.sample_argos \
             --physics-n-engines=1 \
             --controller=foraging.footbot_foraging \
             --scenario=LowBlockCount.10x10x1 \
@@ -197,17 +197,17 @@ you clone things somewhere else.
             --with-robot-rab \
             --exp-overwrite
 
-         This will run a batch of 4 experiments using the ``argos_project.so``
-         C++ library. The swarm size will be varied from 1..8, by powers
-         of 2. Within each experiment, 4 copies of each simulation will be run
-         (each with different random seeds), for a total of 16 ARGoS
-         simulations.  On a reasonable machine it should take about 1 minute or
-         so to run. After it finishes, you can go to ``$HOME/research/exp`` and
-         find all the simulation outputs, including camera ready graphs! For an
-         explanation of SIERRA's runtime directory tree, see
-         :ref:`usage/runtime-tree`. You can also run the same experiment again,
-         and it will overwrite the previous one because you passed
-         ``--exp-overwrite``.
+         This will run a batch of 4 experiments using the
+         ``projects.sample_argos.so`` C++ library. The swarm size will be varied
+         from 1..8, by powers of 2. Within each experiment, 4 copies of each
+         simulation will be run (each with different random seeds), for a total
+         of 16 ARGoS simulations.  On a reasonable machine it should take about
+         1 minute or so to run. After it finishes, you can go to
+         ``$HOME/research/exp`` and find all the simulation outputs, including
+         camera ready graphs! For an explanation of SIERRA's runtime directory
+         tree, see :ref:`usage/runtime-tree`. You can also run the same
+         experiment again, and it will overwrite the previous one because you
+         passed ``--exp-overwrite``.
 
          .. NOTE:: The ``--with-robot-rab`` and ``--with-robot-leds`` arguments
                    are required because robot controllers in the sample project
@@ -224,7 +224,7 @@ you clone things somewhere else.
             --sierra-root=$HOME/research/exp \
             --expdef-template=$HOME/research/exp/ros1gazebo/turtlebot3_house.launch \
             --n-runs=4 \
-            --platform=platform.ros1gazebo \
+            --engine=engine.ros1gazebo \
             --project=ros1gazebo_project \
             --controller=turtlebot3.wander \
             --scenario=HouseWorld.10x10x1 \

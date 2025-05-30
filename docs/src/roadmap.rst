@@ -14,7 +14,7 @@ SIERRA is beginning to really mature, and so I think it isappropriate to lay out
 the improvements needed to go into a 2.0 version. Most of this is
 maturing/improving the plugin framework.
 
-Right now there are plugins for platforms, execution environments, and storage
+Right now there are plugins for engines, execution environments, and storage
 media for experimental outputs, which cover stages {1,2} well in terms of ease
 of use/adoption. Stages {3,4,5} are plugin-ish, but really not, because they
 only provide options for tweaking what is there, not loading entirely new
@@ -94,7 +94,7 @@ Once the 2.0 release is done, that will set the stage for adding more plugins.
 Supporting ROS2
 ---------------
 
-This would require adding several new platform plugin (one for each simulator
+This would require adding several new engine plugin (one for each simulator
 that SIERRA supports that supports ROS1, and a new ROS2 real robot
 plugin). Since ROS2 still supports XML, this should actually be a fairly
 self-contained improvement.
@@ -102,16 +102,16 @@ self-contained improvement.
 Supporting WeBots
 -----------------
 
-This would require adding a new platform plugin. Should be a fairly
+This would require adding a new engine plugin. Should be a fairly
 self-contained improvement.
 
 Supporting NetLogo
 ------------------
 
-This would require adding a new platform plugin. I *think* netlogo can take in
+This would require adding a new engine plugin. I *think* netlogo can take in
 XML, so this should be a fairly self-contained improvement. netlogo handles
 parallel experimental runs, so that might require some additional configuration,
-since none of the currently supported platforms do that.
+since none of the currently supported engines do that.
 
 Adding this would also make SIERRA more appealing/using to researchers outside
 of robotics.
@@ -129,7 +129,7 @@ where SIERRA analyzes things like:
 
 - The performance profile of sims (really the algorithms/controllers used) using
   something like vtune, grof, kcachegrind, etc. This would be done by wrapping
-  the call to execute given sim on a target platform with whatever is required
+  the call to execute given sim on a target engine with whatever is required
   by the profiling tool, and then averaging (if supported by the tool) the data
   in stage 3, and generating some graphs/reports from the data in stage 4
   (hopefully using native faculties the tool provides).

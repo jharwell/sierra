@@ -17,17 +17,16 @@ In all examples:
 - ``$HOME/git/sierra-sample-project/projects`` contains the SIERRA project
   plugin
 
-- ``$HOME/git/sierra-sample-project/projects`` is on
-  :envvar:`SIERRA_PLUGIN_PATH`.
+- ``$HOME/git/sierra-sample-project`` is on :envvar:`SIERRA_PLUGIN_PATH`.
 
 If your setup is different, adjust paths in the commands below as needed.
 
-.. IMPORTANT:: The examples are grouped by platform, so they can be pasted into
+.. IMPORTANT:: The examples are grouped by engine, so they can be pasted into
                the terminal and executed directly. However, parts of many
                commands use common functionality in the SIERRA core; just
                because you don't see stage5 examples for the ROS1+Gazebo
-               platform doesn't mean you can't run stage5 with that
-               platform. Non-uniformities in which commands are below are more a
+               engine doesn't mean you can't run stage5 with that
+               engine. Non-uniformities in which commands are below are more a
                limitation of the sample project than SIERRA itself.
 
 .. TIP:: To help shorten cmdlines, SIERRA supports the usual rcfile mechanism
@@ -49,8 +48,8 @@ experiments.
    --sierra-root=$HOME/exp \
    --expdef-template=exp/your-experiment.argos \
    --n-runs=3 \
-   --platform=platform.argos\
-   --project=argos_project \
+   --engine=engine.argos\
+   --project=projects.sample_argos \
    --exec-env=hpc.local \
    --physics-n-engines=1 \
    --exp-setup=exp_setup.T10000 \
@@ -102,8 +101,8 @@ options set.
    --sierra-root=$HOME/exp \
    --expdef-template=exp/your-experiment.argos \
    --n-runs=96 \
-   --platform=platform.argos\
-   --project=argos_project \
+   --engine=engine.argos\
+   --project=projects.sample_argos \
    --exec-env=hpc.slurm \
    --exp-setup=exp_setup.T10000 \
    --controller=foraging.footbot_foraging \
@@ -143,13 +142,13 @@ videos of simulations.
    sierra-cli \
    --sierra-root=$HOME/exp \
    --expdef-template=exp/your-experiment.argos \
-   --platform=platform.argos\
-   --project=argos_project \
+   --engine=engine.argos\
+   --project=projects.sample_argos \
    --controller=foraging.footbot_foraging \
    --scenario=LowBlockCount.10x10x2 \
    --exec-env=hpc.local \
    --n-runs=3 \
-   --platform-vc \
+   --engine-vc \
    --exp-graphs=none \
    --physics-n-engines=1 \
    --batch-criteria population_size.Log8
@@ -177,13 +176,13 @@ TWO variables/things you want to vary jointly)::
    sierra-cli \
    --sierra-root=$HOME/exp \
    --expdef-template=exp/your-experiment.argos \
-   --platform=platform.argos\
-   --project=argos_project \
+   --engine=engine.argos\
+   --project=projects.sample_argos \
    --controller=foraging.footbot_foraging \
    --scenario=LowBlockCount.10x10x2 \
    --exec-env=hpc.local \
    --n-runs=3 \
-   --platform-vc \
+   --engine-vc \
    --exp-graphs=none \
    --physics-n-engines=1 \
    --batch-criteria population_size.Log8 max_speed.1.9.C5
@@ -219,7 +218,7 @@ and ``--sierra-root``.
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --project=argos_project \
+   --project=projects.sample_argos \
    --pipeline 5 \
    --scenario-comparison \
    --dist-stats=conf95 \
@@ -250,7 +249,7 @@ these out for you from the ``--controller-list`` and ``--sierra-root``.
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --project=argos_project \
+   --project=projects.sample_argos \
    --pipeline 5 \
    --controller-comparison \
    --dist-stats=conf95 \
@@ -277,12 +276,12 @@ ROS1+Gazebo Examples
 Basic Example
 =============
 
-This examples shows the simplest way to use SIERRA with the ROS1+gazebo platform
+This examples shows the simplest way to use SIERRA with the ROS1+gazebo engine
 plugin::
 
    sierra-cli \
-   --platform=platform.ros1gazebo \
-   --project=ros1gazebo_project \
+   --engine=engine.ros1gazebo \
+   --project=projects.sample_ros1gazebo \
    --n-runs=4 \
    --exec-env=hpc.local \
    --expdef-template=exp/your-experiment.launch \
@@ -326,8 +325,8 @@ options set.
    export SIERRA_PLUGIN_PATH=$HOME/git/sierra-projects
 
    sierra-cli \
-   --platform=platform.ros1gazebo \
-   --project=ros1gazebo_project \
+   --engine=engine.ros1gazebo \
+   --project=projects.sample_ros1gazebo \
    --n-runs=96 \
    --exec-env=hpc.slurm \
    --expdef-template=exp/your-experiment.launch \
@@ -358,8 +357,8 @@ with TWO variables/things you want to vary jointly)::
    sierra-cli \
    --sierra-root=$HOME/exp \
    --expdef-template=exp/your-experiment.argos \
-   --platform=platform.ros1gazebo\
-   --project=ros1gazebo_project \
+   --engine=engine.ros1gazebo\
+   --project=projects.sample_ros1gazebo \
    --controller=turtlebot3_sim.wander \
    --scenario=HouseWorld.10x10x2 \
    --exec-env=hpc.local \
@@ -386,12 +385,12 @@ ROS1+Robot Examples
 Basic Example
 =============
 
-This examples shows the simplest way to use SIERRA with the ROS1+robot platform
+This examples shows the simplest way to use SIERRA with the ROS1+robot engine
 plugin::
 
    sierra-cli \
-   --platform=platform.ros1robot \
-   --project=ros1robot_project \
+   --engine=engine.ros1robot \
+   --project=projects.sample_ros1robot \
    --n-runs=4 \
    --expdef-template=exp/your-experiment.launch \
    --scenario=OutdoorWorld.16x16x2 \

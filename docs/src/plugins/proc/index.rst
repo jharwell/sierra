@@ -4,6 +4,8 @@
 Experiment Outputs Processing Plugins
 =====================================
 
+.. _plugins/proc/dataflow:
+
 Stage 3 Dataflow
 ================
 

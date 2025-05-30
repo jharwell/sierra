@@ -124,7 +124,7 @@ packages = ["sierra"]
 # "docs/_build/man/sierra-examples.7" = "share/man/sierra-examples.7"
 # "docs/_build/man/sierra-exec-envs.7" = "share/man/sierra-exec-envs.7"
 # "docs/_build/man/sierra-glossary.7" = "share/man/sierra-glossary.7"
-# "docs/_build/man/sierra-platforms.7" = "share/man/sierra-platforms.7"
+# "docs/_build/man/sierra-engines.7" = "share/man/sierra-engines.7"
 # "docs/_build/man/sierra-usage.7" = "share/man/sierra-usage.7"
 
 [[tool.uv.index]]

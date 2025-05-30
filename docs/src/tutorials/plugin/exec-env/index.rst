@@ -11,17 +11,17 @@ For the purposes of this tutorial, I will assume you are creating a new HPC
 :term:`Plugin` ``HAL``, and the code for that plugin lives in
 ``$HOME/git/plugins/hpc/HAL``.
 
-If you are creating a new plugin for an existing platform that comes with SIERRA
+If you are creating a new plugin for an existing engine that comes with SIERRA
 (e.g., :term:`ARGoS`) you have two options:
 
-#. Following :ref:`tutorials/plugin/platform` to create a new platform
-   to add support for your execution environment within the existing platform.
+#. Following :ref:`tutorials/plugin/engine` to create a new engine
+   to add support for your execution environment within the existing engine.
 
 #. Open a pull request for SIERRA with your created plugin to get it into the
    main repo. This should be the preferred option, as most execution environment
    plugins have utility beyond whatever group initially wrote them.
 
-If you are creating a new execution environment plugin for a new platform, then
+If you are creating a new execution environment plugin for a new engine, then
 you can ignore the above.
 
 Before beginning, create the following filesystem structure in
@@ -42,7 +42,7 @@ Creating The Cmdline Interface
 
 #. Defining any additional configuration/argument checking beyond what is
    possible in argparse via ``cmdline_postparse_configure()`` in your
-   ``plugin.py``. If your new platform doesn't need any new arguments, you can
+   ``plugin.py``. If your new engine doesn't need any new arguments, you can
    skip this step.
 
    .. code-block:: python
@@ -50,7 +50,7 @@ Creating The Cmdline Interface
       def cmdline_postparse_configure(argparse.Namespace) -> argparse.Namespace:
           """
           Additional configuration and/or validation of the passed cmdline
-          arguments pertaining to this platform.  Validation should be performed
+          arguments pertaining to this engine.  Validation should be performed
           with assert(), and the parsed argument object should be returned with
           any modifications/additions.
           """
@@ -77,8 +77,8 @@ Running Experiments
    in stages {1, 2} to generate the shell cmd(s) to execute
    :term:`Experiments<Experiment>` and :term:`Experimental Runs<Experimental
    Run>`. SIERRA essentially tries to mimic running experiments using a given
-   platform as close as possible to running them on the cmdline directly; thus,
-   configuring experiments for platform typically involves putting the needed
+   engine as close as possible to running them on the cmdline directly; thus,
+   configuring experiments for engine typically involves putting the needed
    shell commands into a "language" that SIERRA understands.
 
    .. tabs::
@@ -130,7 +130,7 @@ Running Experiments
 
       def exec_env_check(cmdopts: types.Cmdopts):
           """
-          Check the software environment (envvars, PATH, etc.) for this platform
+          Check the software environment (envvars, PATH, etc.) for this engine
           plugin prior to running anything in stage 2.
           """
           assert os.environ("MYVAR") != None, "MYVAR must be defined!"
@@ -153,9 +153,9 @@ After going through all the sections above and creating your plugin, tell SIERRA
 about it by putting ``$HOME/git/plugins`` on your
 :envvar:`SIERRA_PLUGIN_PATH`. Then your plugin can be selected as
 ``--exec-env=hpc.HAL``. Note that if you change what directory you put on the
-plugin path, how you selected your platform will change. E.g., if you put
+plugin path, how you selected your engine will change. E.g., if you put
 ``$HOME/git/`` on :envvar:`SIERRA_PLUGIN_PATH`, then your new plugin will be
-accessible via ``plugins.platform.HAL`` instead.
+accessible via ``plugins.engine.HAL`` instead.
 
 .. NOTE:: Execution environment plugin names have the same constraints as python
    package names (e.g., no dots, so ``HAL.dave`` is not a valid plugin name).

@@ -1,5 +1,5 @@
-* SIERRA                                                            :sierra:
-** TODO [#B] Add additional integration tests [60%]
+* SIERRA                                                             :sierra:
+** TODO [#B] Add additional integration tests [70%]
 - [X] Verifying ARGoS stage 1,2,3,4 outputs
 - [X] Testing ARGoS video generation
 - [X] Verifying ROS1+Gazebo stage 1 outputs
@@ -8,7 +8,7 @@
   tested with ARGoS.
 - [X] Test bivariate batch criteria
 - [X] Test on OSX (reall just getting the python environment setup).
-- [ ] Testing specific command line options and other elements of the SIERRA
+- [X] Testing specific command line options and other elements of the SIERRA
   core not tested by the plugin integration tests. This should get its own
   workflow file. What shows up as github badges should be a core+plugins yml
   file with an "Integration tests" label.
@@ -34,10 +34,6 @@ comparison.
 
 ** TODO Add --seed to gazebo commands so experiments are more idempotent
 
-** TODO [#A] Add plugin interface for experimental inputs
-- This is needed as part of making SIERRA directly able to support platforms
-  which can't take XML as input.
-
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time
 setup written to the pkl file.
@@ -47,15 +43,11 @@ setup written to the pkl file.
 Might be helpful to spot trends among different controllers. Would also need to
 be implemented in stage 5 as another comparison option.
 
-** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way
-better type checking
-** TODO [#B] Add .sierrarc to read common cmdline args/envvar settings from
 ** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
 Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 
-** TODO [#C] Check out the fastcore library
+** DONE [#C] Check out the fastcore library
 ** TODO [#C] Try Modin as a parallel pandas wrapper
-** TODO [#C] Fix all links in document to not be prefixed with 'ln-sierra'
 ** TODO [#B] Document why you need 2 GNU parallel processes for rosrobot :sierra:
    Because you can't have robot controllers running on the master, which could
    happen if you only had a single GNU parallel process.
@@ -188,3 +180,11 @@ AND reduce the # of jobs I need/total workflow runtime on github by a good bit.
 ** DONE [#B] Make all fs paths shown be relative to batch root
 CLOSED: [2024-11-19 Tue 11:27]
 - Screen will be much less cluttered; could make this toggleable if desired.
+** DONE [#A] Add plugin interface for experimental inputs
+- This is needed as part of making SIERRA directly able to support platforms
+  which can't take XML as input.
+
+** DONE [#B] Remove **kwargs usage from graphs--explicit arguments leads to way
+better type checking
+** DONE [#B] Add .sierrarc to read common cmdline args/envvar settings from
+** DONE [#C] Fix all links in document to not be prefixed with 'ln-sierra'

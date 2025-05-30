@@ -43,7 +43,7 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
         args.exec_jobs_per_node is not None
     ), "--exec-jobs-per-node is required (can't be computed from PBS)"
 
-    assert not args.platform_vc, "Platform visual capture not supported on PBS"
+    assert not args.engine_vc, "Engine visual capture not supported on PBS"
 
     return args
 

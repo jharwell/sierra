@@ -46,8 +46,8 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     _logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
     assert (
-        not args.platform_vc
-    ), "Platform visual capture not supported on robot.turtlebot3"
+        not args.engine_vc
+    ), "Engine visual capture not supported on robot.turtlebot3"
 
     return args
 
@@ -183,7 +183,7 @@ class ExpShellCmdsGenerator:
 
 def exec_env_check(cmdopts: types.Cmdopts) -> None:
     """
-    Verify execution environment in stage 2 for the :term:`ROS1+Robot` platform.
+    Verify execution environment in stage 2 for the :term:`ROS1+Robot` engine.
 
     Checks that a valid list of IPs for robots is set/passed, and checks that
     they are reachable.

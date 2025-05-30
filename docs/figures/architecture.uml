@@ -41,11 +41,11 @@ state "1. Generate\nExperimental\nInputs" as stage1  {
       state " .xml,.json,\n.launch,...  " as plugins1 #lightcoral
       }
    state " " as plugin1 #white ##white {
-      state "Platform" as platform1 #lightcoral
+      state "Engine" as engine1 #lightcoral
       state "Execution\nenvironment" as exec_env1 #lightcoral
       state "Experiment\ninput format" as expdef1 #lightcoral
 
-     platform1 -[hidden]d-> exec_env1
+     engine1 -[hidden]d-> exec_env1
      exec_env1 -[hidden]d-> expdef1
    }
    state "Host\nmachine\n" as resources1 #Cornflowerblue
@@ -60,10 +60,10 @@ state "2. Execute\nExperiments\n" as stage2  {
       state ".csv,.arrow,..." as plugins_out2 #lightcoral
    }
    state " " as plugin2 #white ##white {
-      state "Platform" as platform2 #lightcoral
+      state "Engine" as engine2 #lightcoral
       state "Execution\nenvironment" as exec_env2 #lightcoral
 
-     platform2 -[hidden]d-> exec_env2
+     engine2 -[hidden]d-> exec_env2
    }
    state "Host machine,\nHPC cluster,\nReal robots,..." as resources2  #Cornflowerblue
 }
@@ -78,11 +78,11 @@ state "3. Process\nExperiment\nOutputs" as stage3  {
    }
 
    state " " as plugin3 #white ##white {
-      state "Platform" as platform3 #lightcoral
+      state "Engine" as engine3 #lightcoral
       state "Processor set" as proc_set3 #lightcoral
       state "Storage" as storage3 #lightcoral
 
-      platform3 -[hidden]d-> proc_set3
+      engine3 -[hidden]d-> proc_set3
       proc_set3 -[hidden]d-> storage3
    }
    state "Host\nmachine\n" as resources3 #Cornflowerblue
@@ -98,11 +98,11 @@ state "4. Generate\nDeliverables\n" as stage4  {
    }
    state " "  as plugin4 #white ##white {
    top to bottom direction
-      state "Platform" as platform4 #lightcoral
+      state "Engine" as engine4 #lightcoral
       state "Deliverable\ngenerators" as deliverables4 #lightcoral
       state "Storage" as storage4 #lightcoral
 
-      platform4 -[hidden]d-> deliverables4
+      engine4 -[hidden]d-> deliverables4
       deliverables4 -[hidden]d-> storage4
    }
    state "Host\nmachine\n" as resources4 #Cornflowerblue
@@ -117,11 +117,11 @@ state "5. Compare\nDeliverables\n" as stage5  {
       state "Graphs (.png,...)" as final_outputs #lightcoral
    }
    state " " as plugin5 #white ##white {
-      state "Platform" as platform5 #lightcoral
+      state "Engine" as engine5 #lightcoral
       state "Comparator" as comparator5 #lightcoral
       state "Storage" as storage5 #lightcoral
 
-     platform5 -[hidden]d-> comparator5
+     engine5 -[hidden]d-> comparator5
      comparator5 -[hidden]d-> storage5
    }
 

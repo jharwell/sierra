@@ -59,12 +59,12 @@ class PipelineStage1:
 
         #. Generate changes to be applied to to the newly written per-experiment
            "template" XML file for each experiment which are non-:term:`Batch
-           Criteria` related (e.g., :term:`Platform` changes). These changes
+           Criteria` related (e.g., :term:`Engine` changes). These changes
            apply to all experiment runs in an experiment, but may differ across
-           experimental runs (e.g., # cores used for a simulator platform).
+           experimental runs (e.g., # cores used for a simulator engine).
 
         #. Generate per-experimental run changes for each experimental run in
-           the experiment, according to platform and :term:`Project`
+           the experiment, according to engine and :term:`Project`
            configuration.
 
         #. Write the input files for all experimental runs in all experiments to

@@ -22,7 +22,7 @@ def generate(
     cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: tp.List[types.YAMLDict]
 ) -> None:
     """
-    Generate linegraphs from: term:`Averaged Experimental Run Data` files.
+    Generate linegraphs from: term:`Averaged Run Output Data` files.
     """
 
     _logger.info(

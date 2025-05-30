@@ -8,10 +8,10 @@ SIERRA is capable of adapting its runtime infrastructure to a number of
 different robots. Supported environments that come with SIERRA are listed on
 this page.
 
-These plugins are tested with the following platforms (they may work with other
-platforms out of the box too):
+These plugins are tested with the following engines (they may work with other
+engines out of the box too):
 
-- :ref:`plugins/platform/ros1robot`
+- :ref:`plugins/engine/ros1robot`
 
 .. _plugins/exec-env/realrobot/turtlebot3:
 

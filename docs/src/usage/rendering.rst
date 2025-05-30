@@ -7,8 +7,8 @@ Rendering
 SIERRA's capabilities for rendering video outputs are detailed in this
 section. SIERRA can render frames (images) into videos from 3 sources:
 
-- Those captured using ``--platform-vc``, details :ref:`here
-  <usage/rendering/platform>`.
+- Those captured using ``--engine-vc``, details :ref:`here
+  <usage/rendering/engine>`.
 
 - Those imagized from project :term:`Raw Output` files via ``--project-imagizing`` using
   ``--project-rendering`` details :ref:`here
@@ -18,33 +18,33 @@ section. SIERRA can render frames (images) into videos from 3 sources:
   details :ref:`here <usage/rendering/bc>`.
 
 
-.. NOTE:: Using BOTH the platform and project rendering capabilities
-   simultaneously IS possible (i.e., passing ``--platform-vc`` and
+.. NOTE:: Using BOTH the engine and project rendering capabilities
+   simultaneously IS possible (i.e., passing ``--engine-vc`` and
    ``--project-rendering`` during stage 3), but discouraged unless you have
    multiple terrabytes of disk space available. ``--exp-range`` is your friend.
 
-.. _usage/rendering/platform:
+.. _usage/rendering/engine:
 
-Platform Visual Capture
+Engine Visual Capture
 =======================
 
-SIERRA can direct some platforms to capture frames during
-experiments. ``--platform-vc`` assumes that:
+SIERRA can direct some engines to capture frames during
+experiments. ``--engine-vc`` assumes that:
 
 - :program:`ffmpeg` is installed/can be found by the shell. Checked during stage
   3 if :term:`imagizing` is run.
 
-This is applicable to the following platforms:
+This is applicable to the following engines:
 
-- :term:`ARGoS`, selected via ``--platform=platform.argos``.
+- :term:`ARGoS`, selected via ``--engine=engine.argos``.
 
-.. IMPORTANT:: If the selected platform usually runs headless, then this option
+.. IMPORTANT:: If the selected engine usually runs headless, then this option
                will probably slow things down a LOT, so if you use it,
                ``--n-runs`` should probably be low, unless you have gobs of
                computing power available.
 
 
-.. _usage/rendering/platform/argos:
+.. _usage/rendering/engine/argos:
 
 ARGos Visual Capture
 --------------------
@@ -52,7 +52,7 @@ ARGos Visual Capture
 Visual capture in :term:`ARGoS` is done via frame capturing while running, and
 then the captured images stitched together into videos during stage 4.
 
-During stage 1 ``--platform-vc`` causes the ARGoS Qt/OpenGL
+During stage 1 ``--engine-vc`` causes the ARGoS Qt/OpenGL
 ``<visualization>`` subtree to be added to the ``--expdef-template`` when
 generating experimental inputs; it is removed otherwise. If ``<visualization>``
 already exists, it is removed and re-created. During stage 1 SIERRA assumes
@@ -63,7 +63,7 @@ that:
   we can output to a file.
 
 During stage 2, ARGoS outputs captured frames to ``frames/`` in each output
-directory.  During stage 4, ``--platform-vc`` causes frames captured during
+directory.  During stage 4, ``--engine-vc`` causes frames captured during
 stage 2 to be stitched together into a unique video file using :program:`ffmpeg`
 (precise command configurable via ``--render-cmd-opts``), and output to
 ``<batch_root>/videos/<exp>``.

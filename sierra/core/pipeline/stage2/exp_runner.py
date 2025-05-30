@@ -17,7 +17,7 @@ import typing as tp  # noqa: F401
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, config, platform, utils, batchroot, exec_env
+from sierra.core import types, config, engine, utils, batchroot, exec_env
 import sierra.core.plugin_manager as pm
 
 
@@ -162,12 +162,12 @@ class BatchExpRunner:
 
         """
         self.logger.info(
-            "Platform=%s, exec_env=%s",
-            self.cmdopts["platform"],
+            "Engine=%s, exec_env=%s",
+            self.cmdopts["engine"],
             self.cmdopts["exec_env"],
         )
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts["platform"])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["engine"])
 
         # Output some useful information before running
         if hasattr(module, "pre_exp_diagnostics"):
@@ -180,8 +180,8 @@ class BatchExpRunner:
         )
 
         # Verify environment is OK before running anything
-        self.logger.debug("Checking --platform execution environment")
-        platform.exec_env_check(self.cmdopts)
+        self.logger.debug("Checking --engine execution environment")
+        engine.exec_env_check(self.cmdopts)
 
         self.logger.debug("Checking --exec-env execution environment")
         exec_env.exec_env_check(self.cmdopts)
@@ -198,15 +198,15 @@ class BatchExpRunner:
         for exp in exp_to_run:
             exp_num = exp_all.index(exp)
 
-            # Run cmds for platform-specific things to setup the experiment
+            # Run cmds for engine-specific things to setup the experiment
             # (e.g., start daemons) if needed.
-            platform_generator = platform.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+            engine_generator = engine.ExpShellCmdsGenerator(self.cmdopts, exp_num)
             execenv_generator = exec_env.ExpShellCmdsGenerator(self.cmdopts, exp_num)
 
             for spec in execenv_generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
-            for spec in platform_generator.pre_exp_cmds():
+            for spec in engine_generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
             runner = ExpRunner(
@@ -214,12 +214,12 @@ class BatchExpRunner:
             )
             runner(exp.name, exp_num)
 
-            # Run cmds to cleanup {execenv, platform}-specific things now that
+            # Run cmds to cleanup {execenv, engine}-specific things now that
             # the experiment is done (if needed).
             for spec in execenv_generator.post_exp_cmds():
                 shell.run_from_spec(spec)
 
-            for spec in platform_generator.post_exp_cmds():
+            for spec in engine_generator.post_exp_cmds():
                 shell.run_from_spec(spec)
 
 
@@ -259,7 +259,6 @@ class ExpRunner:
         start = time.time()
 
         utils.dir_create_checked(exp_scratch_root, exist_ok=True)
-        print(exp_scratch_root)
 
         assert (
             self.cmdopts["exec_jobs_per_node"] is not None

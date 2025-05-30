@@ -25,7 +25,7 @@ manpages are:
 - ``sierra-usage`` - How to use SIERRA (everything BUT the command line
   interface).
 
-- ``sierra-platforms`` - The target platforms that SIERRA currently
+- ``sierra-engines`` - The target engines that SIERRA currently
   supports (e.g., ARGoS).
 
 - ``sierra-examples`` - Examples of SIERRA usage via
@@ -51,7 +51,7 @@ SIERRA ROSBridge
 
 SIERRA provides a :term:`ROS1` package containing functionality it uses to
 manage simulations and provide run-time support to :term:`projects<Project>`
-using a :term:`Platform` built on ROS. To use SIERRA with a ROS platform, you
+using a :term:`Engine` built on ROS. To use SIERRA with a ROS engine, you
 need to setup the SIERRA ROSbridge package here (details in README):
 `<https://github.com/jharwell/sierra_rosbridge>`_.
 

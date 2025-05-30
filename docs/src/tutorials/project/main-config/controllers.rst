@@ -8,7 +8,7 @@ root level dictionary ``mycategory`` defined in ``controllers.yaml``.
 
 A complete YAML configuration for a :term:`Controller Category`
 ``mycategory`` and a controller ``FizzBuzz`` is shown below, separated by
-platform. This configuration specifies that all graphs in the categories
+engine. This configuration specifies that all graphs in the categories
 of ``LN_MyCategory1``, ``LN_MyCategory2``, ``HM_MyCategory1``,
 ``HM_MyCategory2`` are applicable to ``FizzBuzz``, and should be generated
 if the necessary :term:`Experiment` output files exist. The
@@ -44,9 +44,9 @@ to the ``FizzBuzz`` controller.
         #   python dictionary.
         #
         # The ``xml`` section and subsections are optional. If
-        # ``--platform-vc`` is passed, then this section should be used to
+        # ``--engine-vc`` is passed, then this section should be used to
         # specify any changes to the XML needed to setup the selected
-        # platform for frame capture/video rendering by specifying the QT
+        # engine for frame capture/video rendering by specifying the QT
         # visualization functions to use.
         xml:
           element_change:
@@ -118,7 +118,7 @@ to the ``FizzBuzz`` controller.
         #   python dictionary.
         #
         # The ``xml`` section and subsections are optional. If
-        # ``--platform-vc`` is passed, then this section should be used to
+        # ``--engine-vc`` is passed, then this section should be used to
         # specify any changes to the XML needed to setup ROS1+Gazebo for
         # visual capture.
         #

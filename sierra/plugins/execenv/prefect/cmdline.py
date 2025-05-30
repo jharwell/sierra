@@ -24,7 +24,7 @@ class HPCCmdline(cmdline.BaseCmdline):
         self.init_cli(stages)
 
     def scaffold_cli(self) -> None:
-        desc = ("For platforms which are simulators (and can "
+        desc = ("For engines which are simulators (and can "
                 "therefore be run in HPC environments).")
         self.hpc = self.parser.add_argument_group('HPC options', desc)
 
@@ -35,8 +35,8 @@ class HPCCmdline(cmdline.BaseCmdline):
     def init_stage2(self) -> None:
         """Add HPC cmdline options.
 
-        Options may be interpreted differently between :term:`Platforms
-        <Platform>`, or ignored, depending. These include:
+        Options may be interpreted differently between :term:`Engines
+        <Engine>`, or ignored, depending. These include:
 
         - ``--exec-jobs-per-node``
 
@@ -66,7 +66,7 @@ class HPCCmdline(cmdline.BaseCmdline):
                               help="""
 
                               Redirect ALL output from simulations to
-                              /dev/null. Useful for platform where you can't
+                              /dev/null. Useful for engine where you can't
                               disable all INFO messages at compile time, and
                               don't want to have to grep through lots of
                               redundant stdout files to see if there were any
@@ -81,7 +81,7 @@ class HPCCmdline(cmdline.BaseCmdline):
                               help="""
 
                               Don't redirect ALL output from simulations to
-                              /dev/null. Useful for platform where you can't
+                              /dev/null. Useful for engine where you can't
                               disable all INFO messages at compile time, and
                               don't want to have to grep through lots of
                               redundant stdout files to see if there were any

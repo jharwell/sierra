@@ -4,7 +4,7 @@
 """
 Container module for interfaces for things related to experiments.
 
-Interfaces are implemented by {platforms, exec envs}.
+Interfaces are implemented by {engines, exec envs}.
 """
 
 # Core packages
@@ -48,7 +48,7 @@ class IExpShellCmdsGenerator(implements.Interface):
 
         These commands can include setting up things which are common to/should
         be the same for all experimental runs within the experiment, such as
-        launching daemons/background processes needed by the platform, setting
+        launching daemons/background processes needed by the engine, setting
         environment variables, etc.  These commands are run prior to each
         experiment in the batch during stage 2, in a `new` sub-shell which
         SIERRA uses to run all :term:`Experiment Runs <Experimental Run>` within
@@ -252,15 +252,15 @@ class IExpConfigurer(implements.Interface):
     def parallelism_paradigm(self) -> str:
         """Get the parallelism paradigm to use when generating experiments.
 
-        For most simulator-based platforms, you generally want parallelism
-        *across* multiple :term:`experimental runs <Experimental Run>; that is
+        For most simulator-based engines, you generally want parallelism
+        *across* multiple :term:`experimental runs <Experimental Run>`; that is
         all experimental runs in an :term:`Experiment` run in parallel, subject
         to the limits of your selected execution environment, configuration,
         etc.  This *also* means that experiments within a :term:`Batch
         Experiment` are processed serially.  Experiments using this paradigm
         should return ``per-exp``.
 
-        For most real hardware-based platforms, such as robots, you generally
+        For most real hardware-based engines, such as robots, you generally
         have to select parallelism *within* an experimental run; that is, each
         experimental run requires multiple remote sub-processes to execute, one
         per agent, since you can't have single physical agent/robot be part of

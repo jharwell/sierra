@@ -5,7 +5,7 @@ Creating a New SIERRA Project
 =============================
 
 .. IMPORTANT:: There are several :xref:`sample projects<SIERRA_SAMPLE_PROJECT`
-               available for all of SIERRA's built-in platforms and execution
+               available for all of SIERRA's built-in engines and execution
                environments which can be used in tandem with this guide to build
                your own project.
 
@@ -14,11 +14,11 @@ Preliminaries
 
 Before beginning, determine the following:
 
-- Do you need to create a new :term:`Platform` for your :term:`Project`? Unless
-  the simulator/hardware platform you want to use already has a SIERRA plugin,
-  you will have to do this. If so, following :ref:`tutorials/plugin/platform`.
+- Do you need to create a new :term:`Engine` for your :term:`Project`? Unless
+  the simulator/hardware engine you want to use already has a SIERRA plugin,
+  you will have to do this. If so, following :ref:`tutorials/plugin/engine`.
 
-  .. NOTE:: Currently there is no way to share projects across platforms; any
+  .. NOTE:: Currently there is no way to share projects across engines; any
    common code will have to be put into common python files and imported as
    needed.
 
@@ -32,9 +32,9 @@ Before beginning, determine the following:
   robot), you probably will have to create a new execution environment
   plugin. See :ref:`tutorials/plugin/exec-env` for details.
 
-The distinction between execution environments and platforms is important, and
+The distinction between execution environments and engines is important, and
 gets to one of the core ways in which SIERRA was designed, so it is worth taking
-a moment to understand. *Platforms* are the thing you are building your software
+a moment to understand. *Engines* are the thing you are building your software
 *against* (sort of like building against an API), while *execution environments*
 are the thing you want your software to run *on*.
 
@@ -46,7 +46,8 @@ Steps
    :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to find your
    project. For example, if your project is ``fizzbuzz.awesome``, and that
    directory is in ``projects`` as ``/path/to/projects/fizzbuzz.awesome``, then
-   ``/path/to/projects`` needs to be on :envvar:`SIERRA_PLUGIN_PATH`.
+   some subpath of ``/path/to/projects`` needs to be on
+   :envvar:`SIERRA_PLUGIN_PATH`.
 
 #. Create the following directory structure within your project directory (or
    copy and modify the one from an existing project, such as the SIERRA sample

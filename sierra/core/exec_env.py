@@ -204,7 +204,7 @@ def check_connectivity(
     if cmdopts["online_check_method"] == "ping+ssh":
         try:
             _logger.debug("Attempt to ping %s, type=%s", hostname, host_type)
-            timeout = config.kPlatform["ping_timeout"]
+            timeout = config.kEngine["ping_timeout"]
             subprocess.run(
                 f"ping -c 3 -W {timeout} {hostname}",
                 shell=True,
@@ -219,7 +219,7 @@ def check_connectivity(
     elif cmdopts["online_check_method"] == "nc+ssh":
         try:
             _logger.debug("Check for ssh tunnel to %s", nc_diag)
-            timeout = config.kPlatform["ping_timeout"]
+            timeout = config.kEngine["ping_timeout"]
             subprocess.run(
                 f"nc -z {hostname} {port}",
                 shell=True,
@@ -254,7 +254,7 @@ def check_connectivity(
     _logger.info("%s@%s online", host_type, hostname)
 
 
-def check_for_simulator(platform: str, exec_env: str, name: str):
+def check_for_simulator(engine: str, exec_env: str, name: str):
     shellname = get_executable_shellname(name)
 
     version_cmd = f"{shellname} -v"
@@ -267,7 +267,7 @@ def check_for_simulator(platform: str, exec_env: str, name: str):
         return res
     else:
         raise RuntimeError(
-            f"Bad --exec-env '{exec_env}' for platform '{platform}': cannot find '{name}'"
+            f"Bad --exec-env '{exec_env}' for engine '{engine}': cannot find '{name}'"
         )
 
 

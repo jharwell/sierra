@@ -26,7 +26,7 @@ One of the following:
 
 
 .. NOTE:: Windows is not supported currently. Not because it can't be supported,
-          but because there are not current any platform plugins that which work
+          but because there are not current any engine plugins that which work
           on windows. SIERRA is written in pure python, and could be made to
           work on windows with a little work.
 
@@ -40,6 +40,12 @@ Python 3.9+. Tested with 3.9-3.12. It may work for newer versions, probably
 won't for older; as older versions become EOL support for them is dropped and no
 effort is made at compatibility, in order to take advantage of newer language
 features.
+
+For all external plugins (e.g., those which don't come with SIERRA) which you
+would want to define/use, they will have to be packaged according to the
+guidance in :ref:`plugins/external`, specifically how module imports must be
+structured w.r.t. dynamic modifications to ``sys.path`` to support arbitrary
+plugin loading at runtime.
 
 .. _req/exp:
 
@@ -66,7 +72,7 @@ Experimental Design Requirements
    #. Through :term:`Batch Criteria` defining the ``arena_dims()`` function. See
       :ref:`tutorials/project/new-bc` to see how to implement this method. This
       method also requires additional hooks to be defined in the
-      :term:`Platform`--see :ref:`tutorials/plugin/platform/generate` for
+      :term:`Engine`--see :ref:`tutorials/plugin/engine/generate` for
       specifics.
 
    #. Through the cmdline, by encoding it as part of what is passed to
@@ -74,9 +80,9 @@ Experimental Design Requirements
       how to implement this method.
 
    Both methods can be made to work equivalently, and can be mixed within and
-   across platforms and batch criteria. That is, you can define some experiments
+   across engines and batch criteria. That is, you can define some experiments
    where the arena size is pulled from batch criteria, and some where it is
-   pulled from ``--scenario`` within the same platform/project.
+   pulled from ``--scenario`` within the same engine/project.
 
 .. _req/expdef:
 
@@ -96,8 +102,8 @@ General
    the single input file cannot be modified by SIERRA, limiting effectiveness.
    If your experiments use/require/support multiple input files, never fear!
    You can still use SIERRA. you just have to "flatten" your configuration
-   hierarchy into a single file; this is typically done at the :term:`Platform`
-   level via a simple expdef plugin hook; see :ref:`tutorials/plugin/platform`.
+   hierarchy into a single file; this is typically done at the :term:`Engine`
+   level via a simple expdef plugin hook; see :ref:`tutorials/plugin/engine`.
 
    See also :ref:`philosophy`.
 
@@ -114,10 +120,10 @@ General
    - Nominally capture the same number of datapoints
 
    That is, experiments always obey ``--exp-setup``, regardless if early
-   stopping conditions are met. For :term:`ROS1` platforms, the SIERRA
+   stopping conditions are met. For :term:`ROS1` engines, the SIERRA
    timekeeper ensures that all experiments are the same length; it is up to you
    to make sure all experiments capture the same # of data points. For other
-   :term:`Platforms <Platform>` (e.g., :term:`ARGoS`) it is up to you to ensure
+   :term:`Engines <Engine>` (e.g., :term:`ARGoS`) it is up to you to ensure
    both conditions.
 
    This is a necessary restriction for deterministic and non-surprising
@@ -165,32 +171,32 @@ Experiment Definition Format-based Restrictions
 
       .. include:: expdef/json.rst
 
-.. _req/platform:
+.. _req/engine:
 
-Platform-based Restrictions
-===========================
+Engine-based Restrictions
+=========================
 
-If you are using a built-in platform, the corresponding restrictions below
+If you are using a built-in engine, the corresponding restrictions below
 apply.
 
 
 .. tabs::
 
-   .. tab:: :term:`ARGoS` Platform
+   .. tab:: :term:`ARGoS` Engine
 
-      .. include:: platform/argos.rst
+      .. include:: engine/argos.rst
 
-   .. tab:: :term:`ROS1`-based Platforms
+   .. tab:: :term:`ROS1`-based Engines
 
-      .. include:: platform/ros1.rst
+      .. include:: engine/ros1.rst
 
-   .. tab:: :term:`ROS1+Robot` Platform
+   .. tab:: :term:`ROS1+Robot` Engine
 
-      .. include:: platform/ros1robot.rst
+      .. include:: engine/ros1robot.rst
 
-   .. tab:: :term:`ROS1+Gazebo` Platform
+   .. tab:: :term:`ROS1+Gazebo` Engine
 
-      .. include:: platform/ros1gazebo.rst
+      .. include:: engine/ros1gazebo.rst
 
 
 .. _req/project:
@@ -208,7 +214,7 @@ your code does not meet these assumptions, then you will need to make some
 
 #. Project code uses a configurable random seed. While this is not strictly
    required, all code should do this for reproducibility. See
-   :ref:`plugins/platform` for platform-specific details about random seeding
+   :ref:`plugins/engine` for engine-specific details about random seeding
    and usage with SIERRA.
 
 #. :term:`Experimental Runs<Experimental Run>` can be launched from *any*

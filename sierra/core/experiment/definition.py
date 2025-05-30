@@ -68,7 +68,7 @@ class WriterConfig():
           that is set for the
           :class:`~sierra.core.experiment.definition.BaseExpDef` instance.  This
           key is optional.  Can be used to add an extension; this is helpful
-          because some platforms require input files to have a certain
+          because some engines require input files to have a certain
           extension, and SIERRA strips out the extension passed to
           ``--expdef-template`` used as the bases for creating experiments.
 

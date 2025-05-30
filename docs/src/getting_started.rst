@@ -105,8 +105,8 @@ SIERRA! The steps to do so are:
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
-   - What platform you are targeting/want to run on: ``--platform``. See
-     :ref:`plugins/platform` for details.
+   - What engine you are targeting/want to run on: ``--engine``. See
+     :ref:`plugins/engine` for details.
 
    - What project to load: ``--project``. This is used to:
 
@@ -151,7 +151,7 @@ SIERRA! The steps to do so are:
    - Set :envvar:`SIERRA_PLUGIN_PATH` appropriately so SIERRA can find plugins
      you define.
 
-   Different platforms may require additional environments to be set.
+   Different engines may require additional environments to be set.
 
 #. Learn SIERRA's runtime :ref:`usage/runtime-tree`. When running,
    SIERRA will create a (rather) large directory structure for you, so reading

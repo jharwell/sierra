@@ -10,7 +10,7 @@ SIERRA is a command line tool and plugin framework for:
 
 - Improving the reproducibility of scientific research, particular in AI.
 
-It supports a wide range of platforms, execution environments, and experiment
+It supports a wide range of engines, execution environments, and experiment
 input/output formats via :ref:`plugins <plugins>`. SIERRA supports
 mix-and-match between all plugin types, subject to restrictions within the
 plugins themselves. This is THE most powerful feature of SIERRA, and makes it

@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 #
-"""Common cmdline classes :term:`Platforms <Platform>` using :term:`ROS1`.
+"""Common cmdline classes :term:`Engines <Engine>` using :term:`ROS1`.
 
 """
 
@@ -52,7 +52,7 @@ class ROSCmdline(cmd.BaseCmdline):
 
                                      This is useful when:
 
-                                     - Using the :term:`ROS1+Robot` platform and
+                                     - Using the :term:`ROS1+Robot` engine and
                                        each robot outputs their own metrics to a
                                        shared filesystem.
 

@@ -5,7 +5,7 @@ Main Configuration
 ==================
 
 The three main required configuration files that you must define so that SIERRA
-knows how to interact with your project are shown below for each platform SIERRA
+knows how to interact with your project are shown below for each engine SIERRA
 supports:
 
 .. tabs::

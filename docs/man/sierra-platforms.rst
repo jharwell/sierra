@@ -1,9 +1,9 @@
 ================
-SIERRA Platforms
+SIERRA Engines
 ================
 
 .. toctree::
 
-   /src/plugins/platform/argos/index.rst
-   /src/plugins/platform/ros1gazebo/index.rst
-   /src/plugins/platform/ros1robot/index.rst
+   /src/plugins/engine/argos/index.rst
+   /src/plugins/engine/ros1gazebo/index.rst
+   /src/plugins/engine/ros1robot/index.rst

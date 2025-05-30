@@ -47,7 +47,7 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     for k in keys:
         assert k in os.environ, f"Non-SLURM environment detected: '{k}' not found"
 
-    assert not args.platform_vc, "Platform visual capture not supported on SLURM"
+    assert not args.engine_vc, "Engine visual capture not supported on SLURM"
 
     # SLURM_TASKS_PER_NODE can be set to things like '1(x32),3', indicating
     # that not all nodes will run the same # of tasks. SIERRA expects all

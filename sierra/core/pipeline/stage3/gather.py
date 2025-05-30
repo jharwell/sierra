@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 
 """
-Classes for gathering :term:`Experimental Run Data`  files in a batch.
+Classes for gathering :term:`Run Output Data`  files in a batch.
 """
 
 # Core packages
@@ -262,7 +262,7 @@ class BaseGatherer:
 
 
 class DataGatherer(BaseGatherer):
-    """Gather :term:`Experimental Run Data` files from all runs.
+    """Gather :term:`Run Output Data` files from all runs.
 
     The configured output directory for each run is searched recursively for
     files to gather.  To be eligible for gathering and later processing, files
@@ -301,7 +301,7 @@ class DataGatherer(BaseGatherer):
 
 
 class ImagizeInputGatherer(BaseGatherer):
-    """Gather :term:`Experimental Run Data` files from all runs for imagizing.
+    """Gather :term:`Run Output Data` files from all runs for imagizing.
 
     The configured output directory for each run is searched recursively for
     directories containing files to gather.  To be eligible for gathering and

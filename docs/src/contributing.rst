@@ -66,6 +66,6 @@ repository.
       template expdef files in order to run experiments with a given controller.
 
   - ``plugins/`` - Plugins which provide broad customization of SIERRA, and
-    enables it to adapt to a wide variety of platforms and experiment outputs.
+    enables it to adapt to a wide variety of engines and experiment outputs.
 
 - ``docs/`` - Contains sphinx source code to generate these shiny docs.

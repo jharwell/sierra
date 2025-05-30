@@ -1,9 +1,9 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Classes for generating XML changes common to all :term:`ROS1` platforms.
+"""Classes for generating XML changes common to all :term:`ROS1` engines.
 
-I.e., changes which are platform-specific, but applicable to all projects using
+I.e., changes which are engine-specific, but applicable to all projects using
 ROS1.
 
 """
@@ -100,10 +100,10 @@ def _generate_all_exp_experiment(exp_def: definition.BaseExpDef,
     Writes generated changes to the simulation definition pickle file.
     """
     _logger.debug("Applying exp_setup=%s", cmdopts['exp_setup'])
-    robots_need_timekeeper = 'ros1robot' in cmdopts['platform']
+    robots_need_timekeeper = 'ros1robot' in cmdopts['engine']
 
     # Barrier start not needed in simulation
-    use_barrier_start = ('ros1robot' in cmdopts['platform'] and
+    use_barrier_start = ('ros1robot' in cmdopts['engine'] and
                          not cmdopts["no_master_node"])
 
     setup = exp.factory(cmdopts["exp_setup"],

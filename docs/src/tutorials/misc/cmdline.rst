@@ -8,7 +8,7 @@ This tutorial covers how to extend the SIERRA cmdline for
 
 - A new :term:`Project`
 
-- A new :term:`Platform`
+- A new :term:`Engine`
 
 The requirements/steps for each are largely the same, with differences shown
 below.
@@ -31,15 +31,15 @@ below.
       it is provided if you need to do some tricky validation beyond what is
       baked into argparse.
 
-   .. group-tab:: Platforms
+   .. group-tab:: Engines
 
-      Because of how SIERRA sets up the cmdline plugin, platform cmdlines cannot
+      Because of how SIERRA sets up the cmdline plugin, engine cmdlines cannot
       define the ``validate()`` function; it will never be called if defined.
       This is generally not an issue because each project is associated with
-      exactly one platform, and so can do any checks needed for the platform
-      there. If you need/want to validate arguments from platforms, you can do
+      exactly one engine, and so can do any checks needed for the engine
+      there. If you need/want to validate arguments from engines, you can do
       that via ``cmdline_postparse_configure()`` -- see
-      :ref:`tutorials/plugin/platform` for details.
+      :ref:`tutorials/plugin/engine` for details.
 
       Must define ``--exp-setup`` and make it available to SIERRA via the
       ``to_cmdopts()`` function.
@@ -47,7 +47,7 @@ below.
 
 With that out of the way, the steps to extend the SIERRA cmdline are as follows:
 
-#. Create ``cmdline.py`` in your project/platform plugin directory.
+#. Create ``cmdline.py`` in your project/engine plugin directory.
 
 #. Create a ``Cmdline`` class (MUST be named this way) which inherits from the
    SIERRA cmdline as follows:
@@ -59,9 +59,9 @@ With that out of the way, the steps to extend the SIERRA cmdline are as follows:
          .. literalinclude:: cmdline-project.py
             :language: python
 
-      .. group-tab:: Platforms
+      .. group-tab:: Engines
 
-         .. literalinclude:: cmdline-platform.py
+         .. literalinclude:: cmdline-engine.py
             :language: python
 
 
@@ -93,7 +93,7 @@ With that out of the way, the steps to extend the SIERRA cmdline are as follows:
            ...
            return opts
 
-     in the *platform* ``to_cmdopts()`` function. You can also hardcode this
+     in the *engine* ``to_cmdopts()`` function. You can also hardcode this
      to whatever you like.
 
 
@@ -102,7 +102,7 @@ With that out of the way, the steps to extend the SIERRA cmdline are as follows:
    If you created a cmdline for a :term:`Project`, there is nothing to do!
    SIERRA will pick it up automatically.
 
-   If you created a cmdline for a :term:`Platform`, then you will need to make
+   If you created a cmdline for a :term:`Engine`, then you will need to make
    sure your cmdline is used in the ``cmdline_parser()`` function in the
-   ``plugin.py`` for your new platform (see :ref:`tutorials/plugin/platform` for
+   ``plugin.py`` for your new engine (see :ref:`tutorials/plugin/engine` for
    details).

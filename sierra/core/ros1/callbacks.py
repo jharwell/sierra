@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 #
-"""Common classes and callbacks :term:`Platforms <Platform>` using :term:`ROS1`."""
+"""Common classes and callbacks :term:`Engines <Engine>` using :term:`ROS1`."""
 
 # Core packages
 import typing as tp

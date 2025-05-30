@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-Common variables module for the :term:`ROS1` platform.
+Common variables module for the :term:`ROS1` engine.
 """
 
 # Core packages

@@ -27,8 +27,8 @@ Experiments using the scientific method have an independent variable whose
 impact on results are measured through a series of trials. SIERRA allows you to
 express this as a research query on the command line, and then parses your query
 to make changes to a template input file to generate launch commands and
-experimental inputs to operationalize it. Switching from targeting platform A
-(e.g., ARGoS) to platform B (e.g., ROS1+Gazebo) is as easy as changing a single
+experimental inputs to operationalize it. Switching from targeting engine A
+(e.g., ARGoS) to engine B (e.g., ROS1+Gazebo) is as easy as changing a single
 command line argument. SIERRA handles the "backend" aspects of defining
 experimental inputs allowing you to focus on their *content*, rather than the
 mechanics of how to turn the content into something that can be executed.
@@ -43,14 +43,14 @@ The following plugins are active in this stage:
      - Used for
 
 
-   * - :ref:`Platform <plugins/platform>`
+   * - :ref:`Engine <plugins/engine>`
 
-     - Handling cmdline arguments needed by the selected platform, assisting
+     - Handling cmdline arguments needed by the selected engine, assisting
        with experimental input generation.
 
    * - :ref:`Experiment definition <plugins/expdef>`
 
-     - Generating inputs for the selected :term:`Platform` which can be executed
+     - Generating inputs for the selected :term:`Engine` which can be executed
        in stage 2 from the ``--expdef-template`` experiment template file.
 
    * - :ref:`Execution environment <plugins/exec-env>`
@@ -97,7 +97,7 @@ The following plugins are active in this stage:
 
      - Used for
 
-   * - :ref:`Platform <plugins/platform>`
+   * - :ref:`Engine <plugins/engine>`
 
      - Performing validation of execution environment before running experiments
        in stage 2.
@@ -130,9 +130,9 @@ The following plugins are active in this stage:
      - Used for
 
 
-   * - :ref:`Platform <plugins/platform>`
+   * - :ref:`Engine <plugins/engine>`
 
-     - Extracting any information needed from the platform in order to assist
+     - Extracting any information needed from the engine in order to assist
        with processing experimental outputs.
 
    * - :ref:`Storage <plugins/storage>`
@@ -152,7 +152,7 @@ Stage 4: Deliverable Generation
 ===============================
 
 SIERRA can generate many deliverables from the processed experimental results
-automatically (independent of the platform/execution environment!), thus greatly
+automatically (independent of the engine/execution environment!), thus greatly
 simplifying reproduction of previous results if you need to tweak a given graph
 (for example).
 
@@ -169,9 +169,9 @@ The following plugins are active in this stage:
 
      - Used for
 
-   * - :ref:`Platform <plugins/platform>`
+   * - :ref:`Engine <plugins/engine>`
 
-     - Extracting any information needed from the platform in order to assist
+     - Extracting any information needed from the engine in order to assist
        with generating deliverables, such as the # agents for a given
        :term:`Experimental Run`.
 
@@ -219,9 +219,9 @@ The following plugins are active in this stage:
 
      - Used for
 
-   * - :ref:`Platform <plugins/platform>`
+   * - :ref:`Engine <plugins/engine>`
 
-     - Extracting any information needed from the platform in order to assist
+     - Extracting any information needed from the engine in order to assist
        with generating comparative deliverables, such as the # agents for a
        given :term:`Experimental Run`.
 

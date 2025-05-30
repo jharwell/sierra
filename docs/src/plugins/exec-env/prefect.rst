@@ -18,7 +18,7 @@ corresponding to the plugins listed on this page:
      - Rationale
 
    * - All nodes on which jobs are run have a shared filesystem which contains
-     ``--sierra-root``.
+       ``--sierra-root``.
 
      - Standard feature on cluster/HPC environments. If for some reason this is
        not true, stage 2 outputs will have to be manually placed such that it is
@@ -41,7 +41,7 @@ stone to a remote Prefect-based execution environment, or as a debugging option.
 No additional configuration/environment variables are needed with this
 environment for use with SIERRA.
 
-.. _plugins/exec-env/prefect/dockerremote
+.. _plugins/exec-env/prefect/dockerremote:
 
 Remote+Docker Prefect Plugin
 ============================

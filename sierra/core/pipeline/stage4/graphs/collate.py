@@ -173,7 +173,7 @@ class UnivarGraphCollator:
 class BivarGraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
-    Results are put into a single :term:`Collated Experimental Run Data` file.
+    Results are put into a single :term:`Collated Run Output Data` file.
 
     """
 
@@ -288,7 +288,7 @@ class BivarGraphCollator:
 
 class ParallelCollator:
     """
-    Generate :term:`Collated Experimental Run Data` files from :term:`Summary .csv`.
+    Generate :term:`Collated Run Output Data` files from :term:`Summary .csv`.
 
     """
 

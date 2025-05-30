@@ -132,7 +132,7 @@ following partial SIERRA option set to explain the experiment tree::
   --sierra-root=$HOME/exp\
   --controller=CATEGORY.my_controller\
   --scenario=SS.12x6\
-  --platform=platform.argos\
+  --engine=engine.argos\
   --batch-criteria=population_size.Log8\
   --n-runs=4\
   --expdef-template=~/my-template.argos\
@@ -289,7 +289,7 @@ The meaning of each directory is discussed below.
 
   - ``...``
 
-  - ``collated/`` - Contains :term:`Collated Experimental Run Data`
+  - ``collated/`` - Contains :term:`Collated Run Output Data`
     files. During stage4, SIERRA will draw specific columns from .csv files
     under ``statistics`` according to configuration, and collate them under here
     for graph generation of *inter*\-experiment graphs.

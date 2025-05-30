@@ -1,6 +1,6 @@
 .. SPDX-License-Identifier:  MIT
 
-This applies to the following ROS-based platforms:
+This applies to the following ROS-based engines:
 
 - :term:`ROS1+Gazebo`
 

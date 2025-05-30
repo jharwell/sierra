@@ -26,7 +26,7 @@ def generate(
     targets: tp.List[types.YAMLDict],
     criteria: bc.IConcreteBatchCriteria,
 ) -> None:
-    """Generate graphs from :term:`Collated Experimental Run Data` files.
+    """Generate graphs from :term:`Collated Run Output Data` files.
 
     Performs the following steps:
 

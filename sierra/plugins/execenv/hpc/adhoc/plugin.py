@@ -44,7 +44,7 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
         args.nodefile
     ), f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
 
-    assert not args.platform_vc, "Platform visual capture not supported on Adhoc"
+    assert not args.engine_vc, "Engine visual capture not supported on Adhoc"
 
     return args
 

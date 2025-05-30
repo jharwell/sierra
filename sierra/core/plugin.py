@@ -5,7 +5,7 @@
 
 Checks that selected plugins implement the necessary classes and
  functions. Currently checkes: ``--storage``, ``--exec-env``, and
- ``--platform``.
+ ``--engine``.
 
 """
 
@@ -65,11 +65,11 @@ def exec_env_sanity_checks(exec_env: str, module) -> None:
             )
 
 
-def platform_sanity_checks(platform: str, module) -> None:
+def engine_sanity_checks(engine: str, module) -> None:
     """
-    Check the selected ``--platform`` plugin.
+    Check the selected ``--engine`` plugin.
     """
-    logging.trace("Verifying --platform plugin interface")  # type: ignore
+    logging.trace("Verifying --engine plugin interface")  # type: ignore
 
     req_classes = [
         "ExpConfigurer",
@@ -95,17 +95,17 @@ def platform_sanity_checks(platform: str, module) -> None:
     for c in req_classes:
         assert any(
             c in name for (name, _) in in_module
-        ), f"Platform plugin {platform} does not define {c}"
+        ), f"Engine plugin {engine} does not define {c}"
 
     for f in opt_classes:
         if not any(f in name for (name, _) in in_module):
             logging.debug(
                 (
-                    "Platform plugin %s does not define %s"
+                    "Engine plugin %s does not define %s"
                     "--some SIERRA functionality may not be available. "
                     "See docs for details."
                 ),
-                platform,
+                engine,
                 f,
             )
 
@@ -114,19 +114,19 @@ def platform_sanity_checks(platform: str, module) -> None:
     for f in req_functions:
         assert any(
             f in name for (name, _) in in_module
-        ), f"Platform plugin {platform} does not define {f}()"
+        ), f"Engine plugin {engine} does not define {f}()"
 
     for f in opt_functions:
         if not any(f in name for (name, _) in in_module):
             logging.debug(
                 (
-                    "Platform plugin %s does not define %s()"
+                    "Engine plugin %s does not define %s()"
                     "--some SIERRA functionality may not be available. "
                     "See docs for details."
                 ),
-                platform,
+                engine,
                 f,
             )
 
 
-__all__ = ["storage_sanity_checks", "exec_env_sanity_checks", "platform_sanity_checks"]
+__all__ = ["storage_sanity_checks", "exec_env_sanity_checks", "engine_sanity_checks"]

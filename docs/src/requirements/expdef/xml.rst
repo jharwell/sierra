@@ -10,11 +10,11 @@ in *specific* places in the ``--expdef-template``, they should be avoided.
   :ref:`tutorials/project/main-config` for details) in template input
   files possible.
 
-- ``__UUID__`` - XPath substitution optionally used when a :term:`ROS1` platform
+- ``__UUID__`` - XPath substitution optionally used when a :term:`ROS1` engine
   is selected in ``controllers.yaml`` (see :ref:`tutorials/project/main-config`)
   when adding XML tags to force addition of the tag once for every robot in the
   experiment, with ``__UUID__`` replaced with the configured robot prefix
   concatenated with its numeric ID (0-based). Can appear in XML attributes.
 
-- ``sierra`` - Used when the :term:`ROS1+Gazebo` platform is selected.  Should
+- ``sierra`` - Used when the :term:`ROS1+Gazebo` engine is selected.  Should
   not appear in XML tags or attributes.

@@ -62,14 +62,14 @@ class Pipeline:
             "expdef_template": self.args.expdef_template,
             "project": self.args.project,
             "exec_env": args.exec_env,
-            "platform_vc": self.args.platform_vc,
+            "engine_vc": self.args.engine_vc,
             "n_runs": args.n_runs,
             "project_imagizing": self.args.project_imagizing,
             "exp_overwrite": self.args.exp_overwrite,
             "exp_range": self.args.exp_range,
             "dist_stats": self.args.dist_stats,
             "skip_collate": self.args.skip_collate,
-            "platform": self.args.platform,
+            "engine": self.args.engine,
             "processing_serial": self.args.processing_serial,
             "plot_log_xscale": self.args.plot_log_xscale,
             "plot_enumerated_xscale": self.args.plot_enumerated_xscale,
@@ -106,11 +106,11 @@ class Pipeline:
             "comparison_type": self.args.comparison_type,
         }
 
-        # Load additional cmdline options from platform
+        # Load additional cmdline options from engine
         self.logger.debug(
-            "Updating cmdopts with extensions from '%s'", self.cmdopts["platform"]
+            "Updating cmdopts with extensions from '%s'", self.cmdopts["engine"]
         )
-        module = pm.module_load_tiered("cmdline", platform=self.cmdopts["platform"])
+        module = pm.module_load_tiered("cmdline", engine=self.cmdopts["engine"])
         self.cmdopts |= module.to_cmdopts(self.args)
 
         if self.pathset is not None:
@@ -129,8 +129,7 @@ class Pipeline:
         # project dir we combine the parent_dir (which is already a path) and
         # the name of the project (Y component).
         project = pm.pipeline.get_plugin(self.cmdopts["project"])
-        path = project["parent_dir"] / self.cmdopts["project"].split(".")[1]
-
+        path = project["parent_dir"] / "/".join(self.cmdopts["project"].split("."))
         self.cmdopts["project_root"] = str(path)
         self.cmdopts["project_config_root"] = str(path / "config")
         self.cmdopts["project_model_root"] = str(path / "models")

@@ -2,7 +2,7 @@
 General Usage
 =============
 
-This covers everything which is (mostly) :term:`Platform` independent and is not
+This covers everything which is (mostly) :term:`Engine` independent and is not
 the command line interface.
 
 .. toctree::

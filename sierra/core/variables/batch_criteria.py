@@ -27,7 +27,7 @@ class IQueryableBatchCriteria(implements.Interface):
     """Mixin interface for criteria which can be queried during stage {1,2}.
 
     Used to extract additional information needed for configuring some
-    :term:`Platforms <Platform>` and execution environments.
+    :term:`Engines <Engine>` and execution environments.
 
     """
 
@@ -254,13 +254,13 @@ class BatchCriteria():
 
         Not applicable to all criteria.
 
-        Must be implemented on a per-platform basis, as different platforms have
+        Must be implemented on a per-engine basis, as different engines have
         different means of computing the size of the arena.
 
         """
-        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(cmdopts['engine'])
         assert hasattr(module, 'arena_dims_from_criteria'), \
-            f"Platform plugin {module.__name__} does not implement arena_dims_from_criteria()"
+            f"Engine plugin {module.__name__} does not implement arena_dims_from_criteria()"
 
         return module.arena_dims_from_criteria(self)
 
@@ -432,7 +432,7 @@ class UnivarBatchCriteria(BatchCriteria):
         else:
             names = self.gen_exp_names()
 
-        module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module1 = pm.pipeline.get_plugin_module(cmdopts['engine'])
         module2 = pm.pipeline.get_plugin_module(cmdopts['expdef'])
         for d in names:
             path = self.batch_input_root / d / config.kPickleLeaf
@@ -551,7 +551,7 @@ class BivarBatchCriteria(BatchCriteria):
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
         n_adds2 = len(self.criteria2.gen_element_addlist())
 
-        module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        module1 = pm.pipeline.get_plugin_module(cmdopts['engine'])
         module2 = pm.pipeline.get_plugin_module(cmdopts['expdef'])
 
         for d in names:

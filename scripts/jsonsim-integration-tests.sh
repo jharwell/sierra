@@ -15,7 +15,7 @@ setup_env() {
     # features, so treat them all as errors.
     # export PYTHONWARNINGS=error
 
-    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/plugins/platform:$SAMPLE_ROOT/projects
+    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT
 
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
@@ -36,15 +36,15 @@ setup_env() {
 
     export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
-       --platform=platform.jsonsim \
-       --project=jsonsim_project \
+       --engine=plugins.jsonsim \
+       --project=projects.sample_jsonsim \
        --n-runs=4 \
        --expdef=expdef.json \
        --exp-setup=exp_setup.T10 \
        --expdef-template=$SAMPLE_ROOT/exp/jsonsim/template.json \
        --scenario=scenario1.10x10x10 \
        --controller=default.default \
-       --jsonsim-path=$SAMPLE_ROOT/plugins/platform/jsonsim/jsonsim.py \
+       --jsonsim-path=$SAMPLE_ROOT/plugins/jsonsim/jsonsim.py \
        --log-level=TRACE"
 
 }
@@ -58,7 +58,7 @@ bc=[\"max_speed.1.9.C5\"];
 template_stem=\"template\";
 scenario=\"scenario1.10x10x10\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"jsonsim_project\",controller=\"default.default\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_jsonsim\",controller=\"default.default\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -101,7 +101,7 @@ bc=[\"max_speed.1.9.C5\"];
 template_stem=\"template\";
 scenario=\"scenario1.10x10x10\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"jsonsim_project\",controller=\"default.default\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_jsonsim\",controller=\"default.default\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -148,7 +148,7 @@ bc=[\"max_speed.1.9.C5\"];
 template_stem=\"template\";
 scenario=\"scenario1.10x10x10\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"jsonsim_project\",controller=\"default.default\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_jsonsim\",controller=\"default.default\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -222,7 +222,7 @@ bc=[\"max_speed.1.9.C5\"];
 template_stem=\"template\";
 scenario=\"scenario1.10x10x10\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"jsonsim_project\",controller=\"default.default\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_jsonsim\",controller=\"default.default\",leaf=leaf).to_path();
 print(path)
 "
 

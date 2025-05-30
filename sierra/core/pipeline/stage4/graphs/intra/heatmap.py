@@ -22,7 +22,7 @@ def generate(
     cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: tp.List[types.YAMLDict]
 ) -> None:
     """
-    Generate heatmaps from: term:`Averaged Experimental Run Data` files.
+    Generate heatmaps from: term:`Averaged Run Output Data` files.
     """
     large_text = cmdopts["plot_large_text"]
 

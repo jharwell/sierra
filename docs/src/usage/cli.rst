@@ -18,17 +18,17 @@ SIERRA Core
 
 .. include:: cli-core.rst
 
-:term:`ARGoS` Platform
+:term:`ARGoS` Engine
 ======================
 
-.. include:: cli-platform-argos.rst
+.. include:: cli-engine-argos.rst
 
-:term:`ROS1+Gazebo` Platform
+:term:`ROS1+Gazebo` Engine
 ============================
 
-.. include:: cli-platform-ros1gazebo.rst
+.. include:: cli-engine-ros1gazebo.rst
 
-:term:`ROS1+Robot` Platform
+:term:`ROS1+Robot` Engine
 ===========================
 
-.. include:: cli-platform-ros1robot.rst
+.. include:: cli-engine-ros1robot.rst

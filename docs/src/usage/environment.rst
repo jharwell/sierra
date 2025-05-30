@@ -1,29 +1,26 @@
 .. _usage/env-vars:
 
+=====================
 Environment Variables
 =====================
 
+Core
+====
+
+
 .. envvar:: SIERRA_PLUGIN_PATH
 
-   Used for locating :term:`plugins <Plugin>`. The directory *containing* a
-   plugin directory outside the SIERRA source tree must be on
-   ``SIERRA_PLUGIN_PATH``. Paths are added to ``PYTHONPATH`` as needed to load
-   plugins correctly. For example, if you have a different ``--storage`` plugin
-   you'd like to use in plugin in ``$HOME/plugins/storage/infinite``, then you
-   need to add ``$HOME/plugins`` to your ``SIERRA_PLUGIN_PATH`` to so that
-   SIERRA will find it, and make it accessible as ``storage.infinite`` on the
-   cmdline. This variable is used in stages 1-5.
-
-   Used for locating :term:`projects <Project>`; all projects specifiable with
-   ``--project`` are directories found within the directories on this path. For
-   example, if you have a project ``$HOME/git/projects/myproject``, then
-   ``$HOME/git`` must be on ``SIERRA_PLUGIN_PATH`` in order for you to be able
-   to specify ``--project=projects.myproject``. This variable is used in stages
-   1-5.
-
-   You *cannot* just put the parent directory of your project on
-   :envvar:`PYTHONPATH` because SIERRA uses this path for other things
+   Used for locating :term:`plugins <Plugin>`. Each directory is searched
+   recursively for plugins matching one of the schemas SIERRA supports.  You
+   should not put directories which you put on here also on :envvar:`PYTHONPATH`
+   because (a) SIERRA modifies ``PYTHONPATH`` internally in specific ways to
+   support dynamic searching/loading of plugins, and the interaction between
+   ``PYTHONPATH`` and ``sys.path`` can have subtle consequences across python
+   versions and systems, and (b) SIERRA uses this path for other things
    internally (e.g., computing the paths to YAML config files).
+
+   This variable is used in stages 1-5. See :ref:`plugins/external` for more
+   information.
 
 .. envvar:: SIERRA_RCFILE
 
@@ -44,27 +41,17 @@ Environment Variables
 
    Used for locating projects per the usual python mechanisms.
 
-.. envvar:: ARGOS_PLUGIN_PATH
-
-   Must be set to contain the library directory where you installed/built ARGoS,
-   as well as the library directory for your project ``.so``. Checked to be
-   non-empty before running stage 2 for all ``--exec-env`` plugins. SIERRA does
-   `not` modify this variable, so it needs to be setup properly prior to
-   invoking SIERRA (i.e., the directory containing the :term:`Project` ``.so``
-   file needs to be on it). SIERRA can't know, in general, where the location of
-   the C++ code corresponding to the loaded :term:`Project` is.
-
 .. envvar:: SIERRA_ARCH
 
    Can be used to determine the names of executables launch in HPC environment,
    so that in environments with multiple queues/sub-clusters with different
    architectures simulators can be compiled natively for each for maximum
    performance. Can be any string. If defined, then instead of searching for the
-   ``foobar`` executable for some platform on ``PATH``, SIERRA will look for
+   ``foobar`` executable for some engine on ``PATH``, SIERRA will look for
    ``foobar-$SIERRA_ARCH``.
 
-   .. IMPORTANT:: Not all platforms use this variable--see the docs for your
-                  platform of interest.
+   .. IMPORTANT:: Not all engines use this variable--see the docs for your
+                  engine of interest.
 
 .. envvar:: SIERRA_NODEFILE
 
@@ -74,6 +61,20 @@ Environment Variables
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
    defined and ``--nodefile`` is not passed SIERRA will throw an error.
+
+
+Plugins
+=======
+
+.. envvar:: ARGOS_PLUGIN_PATH
+
+   Must be set to contain the library directory where you installed/built ARGoS,
+   as well as the library directory for your project ``.so``. Checked to be
+   non-empty before running stage 2 for all ``--exec-env`` plugins. SIERRA does
+   `not` modify this variable, so it needs to be setup properly prior to
+   invoking SIERRA (i.e., the directory containing the :term:`Project` ``.so``
+   file needs to be on it). SIERRA can't know, in general, where the location of
+   the C++ code corresponding to the loaded :term:`Project` is.
 
 .. envvar:: PARALLEL
 
@@ -104,7 +105,7 @@ Environment Variables
      --env SIERRA_PLUGIN_PATH"
 
    Don't forget to include :envvar:`ARGOS_PLUGIN_PATH`,
-   :envvar:`ROS_PACKAGE_PATH`, etc., depending on your chosen :term:`Platform`.
+   :envvar:`ROS_PACKAGE_PATH`, etc., depending on your chosen :term:`Engine`.
 
 .. envvar:: PARALLEL_SHELL
 
@@ -177,3 +178,8 @@ Environment Variables
 
             Globally unique ID for a job on a HPC cluster managed by the SLURM
             scheduler. Useful for creating unique output files/logging paths.
+
+.. envvar:: PREFECT_API_URL
+
+            The URL of the prefect server to use. Used by
+            :ref:`plugins/execenv/prefect/dockerremote`.

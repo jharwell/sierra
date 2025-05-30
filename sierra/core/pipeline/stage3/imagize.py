@@ -118,7 +118,7 @@ def _proc_single_exp(HM_config: types.YAMLDict, imagize_opts: dict) -> None:
     """Create images from the averaged ``.mean`` files from a single experiment.
 
     If no ``.mean`` files suitable for averaging are found, nothing is done. See
-    :ref:`usage/rendering` for per-platform descriptions of what
+    :ref:`usage/rendering` for per-engine descriptions of what
     "suitable" means.
 
     Arguments:

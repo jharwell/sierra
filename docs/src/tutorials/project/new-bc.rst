@@ -7,7 +7,7 @@ Create A New Batch Criteria
 If you have a new experimental variable that you have added to your C++ library,
 **AND** which is exposed via the input file, then you need to do the
 following to get it to work with SIERRA as a :term:`Batch Criteria`. For the
-purposes of this tutorial, we will assume that the :term:`Platform` you are
+purposes of this tutorial, we will assume that the :term:`Engine` you are
 using supports XML; analogous steps apply for other file formats.
 
 Required Steps

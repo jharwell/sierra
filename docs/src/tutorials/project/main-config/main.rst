@@ -2,7 +2,7 @@
 
    .. group-tab:: ARGoS
 
-      An example main configuration file for the ARGoS platform:
+      An example main configuration file for the ARGoS engine:
 
       .. code-block:: YAML
 
@@ -37,7 +37,7 @@
 
    .. group-tab:: ROS1+Gazebo
 
-      An example main configuration file for the ROS1+Gazebo platform:
+      An example main configuration file for the ROS1+Gazebo engine:
 
       .. code-block:: YAML
 
@@ -64,13 +64,13 @@
            # can be easily accommodated without copy-pasting.
            perf: 'perf-config.yaml'
 
-        # Configuration specific to the ROS platforms. This
-        # dictionary is required if that platform is selected, and
+        # Configuration specific to the ROS engines. This
+        # dictionary is required if that engine is selected, and
         # optional otherwise.
         ros:
-          # The list of robot configuration for the platform that you want
+          # The list of robot configuration for the engine that you want
           # SIERRA to support (that actual list of robots supported by the
-          # platform can be much larger).
+          # engine can be much larger).
           robots:
             # The name of a supported robot which can be passed to
             # ``--robot``. Can be any valid python string, and does not
@@ -106,7 +106,7 @@
 
    .. group-tab:: ROS1+Robot
 
-      An example main configuration file for the ROS1+Robot platform:
+      An example main configuration file for the ROS1+Robot engine:
 
       .. code-block:: YAML
 
@@ -132,13 +132,13 @@
            # can be easily accommodated without copy-pasting.
            perf: 'perf-config.yaml'
 
-        # Configuration specific to the ROS platforms. This
-        # dictionary is required if that platform is selected, and
+        # Configuration specific to the ROS engines. This
+        # dictionary is required if that engine is selected, and
         # optional otherwise.
         ros:
-          # The list of robot configuration for the platform that you want
+          # The list of robot configuration for the engine that you want
           # SIERRA to support (that actual list of robots supported by the
-          # platform can be much larger).
+          # engine can be much larger).
           robots:
             # The name of a supported robot which can be passed to
             # ``--robot``. Can be any valid python string, and does not

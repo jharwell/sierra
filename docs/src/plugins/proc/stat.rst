@@ -9,7 +9,7 @@
 Statistics Generation
 =====================
 
-When doing Monte Carlo simulations, or dealing with any sort of :term:`Platform`
+When doing Monte Carlo simulations, or dealing with any sort of :term:`Engine`
 or :term:`Project` which contains randomness, data analysis an the ensemble
 level is required. This plugin supports such analysis by automatically computing
 statistics to e.g., enable plotting 95% confidence intervals on graph

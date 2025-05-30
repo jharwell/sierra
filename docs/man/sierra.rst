@@ -19,7 +19,7 @@ The following manpages are available:
 - :manpage:`sierra-usage` - How to use SIERRA (everything BUT the command line
   interface).
 
-- :manpage:`sierra-platforms` - The target platforms that SIERRA currently
+- :manpage:`sierra-engines` - The target engines that SIERRA currently
   supports (e.g., ARGoS).
 
 - :manpage:`sierra-exec-envs` - The target execution environments that SIERRA

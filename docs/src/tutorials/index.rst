@@ -17,7 +17,6 @@ needs.
    project/main-config/index.rst
    project/graphs-config.rst
    project/stage5-config.rst
-   project/expdef-template/index.rst
    project/generators.rst
    project/new-bc.rst
    project/hooks.rst
@@ -45,7 +44,7 @@ needs.
    :maxdepth: 1
    :caption: Extending SIERRA with new plugins:
 
-   plugin/platform/index.rst
+   plugin/engine/index.rst
    plugin/exec-env/index.rst
    plugin/storage/index.rst
    plugin/expdef/index.rst

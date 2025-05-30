@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 
-"""Classes for the ``--exp-setup`` cmdline option for ROS1 platforms.
+"""Classes for the ``--exp-setup`` cmdline option for ROS1 engines.
 
 See :ref:`usage/vars/expsetup` for usage documentation.
 

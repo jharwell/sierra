@@ -36,7 +36,7 @@ batch experiment. The outputs of this phase include:
 - A modified expdef template file unique to each experiment in the batch which
   contains modifications to the original ``--expdef-template`` from the
   ``--batch-criteria`` This file (probably) *cannot* be actually run by the
-  selected platform (i.e., it is not well formed, yet).
+  selected engine (i.e., it is not well formed, yet).
 
 .. plantuml::
 
@@ -83,7 +83,7 @@ include:
 
 - A unique directory for each :term:`Experimental Run` in each experiment
   containing all inputs. These are files which can actually be *run* by the
-  selected platform.
+  selected engine.
 
 - A modified expdef template file unique to each experimental run in the
   experiment containing all modifications that SIERRA was directed to make
@@ -93,7 +93,7 @@ include:
 
   - ``--batch-criteria``
 
-  - ``--platform``
+  - ``--engine``
 
   - ``--project``
 
@@ -138,9 +138,9 @@ include:
    factory --> expdef : Controller support\nfrom .yaml config
    factory --> expdef : Joint\n~--controller + --scenario generator\nexpdef changes
 
-   plugins --> expdef : Per-experiment --platform\nexpdef changes
+   plugins --> expdef : Per-experiment --engine\nexpdef changes
    plugins --> expdef : Per-experiment --exec-env\nexpdef changes
 
-   plugins --> expdef : Per-run ~--platform\nexpdef changes
+   plugins --> expdef : Per-run ~--engine\nexpdef changes
    plugins --> expdef : Per-run ~--project\nexpdef changes
    expdef -> filesystem: Write for each run 0...j

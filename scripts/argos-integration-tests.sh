@@ -22,7 +22,7 @@ setup_env() {
     # AND the sample project library path.
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
     export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
-    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
+    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT:./sierra/plugins/engine
 
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
@@ -40,8 +40,8 @@ setup_env() {
 
     export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
-       --platform=platform.argos \
-       --project=argos_project \
+       --engine=engine.argos \
+       --project=projects.sample_argos \
        --exp-setup=exp_setup.T100.K5 \
        --n-runs=4 \
        -xstrict \
@@ -166,7 +166,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
     batch_root=$(python3 -c "${batch_root_cmd}")
@@ -207,7 +207,7 @@ bc=[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
     batch_root_cmd2="from sierra.core import batchroot;
@@ -215,7 +215,7 @@ bc=[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -303,7 +303,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -389,7 +389,7 @@ bc=[\"population_size.Linear2.C2\", \"max_speed.1.9.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
     batch_root1=$(python3 -c"${batch_root_cmd1}")
@@ -432,7 +432,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
     batch_root=$(python3 -c"${batch_root_cmd}")
@@ -490,7 +490,7 @@ bc=[\"population_size.Linear2.C2\", \"max_speed.1.9.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -572,7 +572,7 @@ bc=[\"${bc}\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
         batch_root=$(python3 -c"${batch_root_cmd}")
@@ -661,7 +661,7 @@ stage5_univar_test() {
     # from bash -> python
     export SIERRA_STAGE5_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
-       --project=argos_project \
+       --project=projects.sample_argos \
        --pipeline 5 \
        --n-runs=4 \
        --bc-univar \
@@ -702,8 +702,8 @@ stage5_univar_test() {
 stage5_univar_check_cc_outputs() {
     batch_criteria=$1
 
-    cc_csv_root=$SIERRA_ROOT/argos_project/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs
-    cc_graph_root=$SIERRA_ROOT/argos_project/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs
+    cc_csv_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs
+    cc_graph_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs
 
     # The sample project should generate 18 csvs (1 mean + 1 stddev +
     # 7 bw stats per controller ) and 2 graphs
@@ -714,8 +714,8 @@ stage5_univar_check_cc_outputs() {
 stage5_univar_check_sc_outputs() {
     batch_criteria=$1
 
-    sc_csv_root=$SIERRA_ROOT/argos_project/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs
-    sc_graph_root=$SIERRA_ROOT/argos_project/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs
+    sc_csv_root=$SIERRA_ROOT/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs
+    sc_graph_root=$SIERRA_ROOT/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs
     # The sample project should generate 18 csvs (1 mean + 1 stddev +
     # 7 bw stats per controller ) and 2 graphs
     [[ "$(ls $sc_csv_root | wc -l)" -eq "18" ]] || false
@@ -743,7 +743,7 @@ stage5_bivar_test() {
     # Compare the controllers
     export SIERRA_STAGE5_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
-       --project=argos_project \
+       --project=projects.sample_argos \
        --pipeline 5 \
        --n-runs=4 \
        --bc-bivar \
@@ -770,8 +770,8 @@ stage5_bivar_test() {
         --plot-transpose-graphs \
         --controllers-list=foraging.footbot_foraging,foraging.footbot_foraging_slow"
 
-        cc_csv_root=$SIERRA_ROOT/argos_project/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs
-        cc_graph_root=$SIERRA_ROOT/argos_project/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs
+        cc_csv_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs
+        cc_graph_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs
 
         rm -rf $cc_csv_root
         rm -rf $cc_graph_root
@@ -803,7 +803,7 @@ bc=[\"population_size.Linear1.C1\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -818,7 +818,7 @@ print(path)
     --controller=foraging.footbot_foraging \
     --batch-criteria population_size.Linear1.C1 \
     --pipeline 1 2 3 4 \
-    --platform-vc"
+    --engine-vc"
 
     cameras=(overhead
              sw
@@ -853,7 +853,7 @@ bc=[\"population_size.Linear1.C1\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -903,7 +903,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"argos_project\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -931,13 +931,14 @@ print(path)
 ################################################################################
 # Run Tests
 ################################################################################
-setup_env
 
 # Exit anytime SIERRA crashes or a command fails
 set -e
 
 # Echo cmds to stdout
 set -x
+
+setup_env
 
 func=NONE
 exec_env=''

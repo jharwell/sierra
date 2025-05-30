@@ -324,7 +324,7 @@ def get_n_agents(main_config: types.YAMLDict,
     """
     Get the # agents used for a specific :term:`Experiment`.
     """
-    module1 = pm.pipeline.get_plugin_module(cmdopts['platform'])
+    module1 = pm.pipeline.get_plugin_module(cmdopts['engine'])
 
     # Get # agents to send to shell cmds generator. We try:
     #

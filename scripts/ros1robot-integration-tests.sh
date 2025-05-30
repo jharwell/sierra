@@ -36,8 +36,8 @@ setup_env() {
 
     export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
-       --platform=platform.ros1robot \
-       --project=ros1robot_project \
+       --engine=engine.ros1robot \
+       --project=projects.sample_ros1robot \
        --exp-setup=exp_setup.T10.K5.N50\
        --n-runs=4 \
        --expdef-template=$SAMPLE_ROOT/exp/ros1robot/turtlebot3.launch \
@@ -77,7 +77,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"turtlebot3\";
 scenario=\"OutdoorWorld.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1robot_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1robot\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
 print(path)
 "
 

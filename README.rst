@@ -101,12 +101,12 @@ Why SIERRA?
   Essentially, SIERRA handles the “engineering” parts of research on the
   backend, acting as a compiler of sorts, turning research queries into
   executable objects by generating experiments, configuring execution
-  environments or platforms, running the generated experiments, and processing
+  environments or engines, running the generated experiments, and processing
   experimental results to generate statistics, and/or visualizations. It also
   handles random seeds, algorithm stochasticity, and other low-level
   details.
 
-- It supports a wide range of platforms, execution environments, and
+- It supports a wide range of execution engines, execution environments, and
   experiment input/output formats via plugins. SIERRA supports mix-and-match
   between all plugin types, subject to restrictions within the plugins
   themselves. This is and makes it very easy to run experiments on different

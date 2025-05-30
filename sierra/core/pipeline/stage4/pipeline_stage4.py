@@ -141,8 +141,8 @@ class PipelineStage4:
 
         Video generation: The following is run:
 
-        #. :func:`~sierra.core.pipeline.stage4.render.from_platform()`,
-           if ``--platform-vc`` was passed
+        #. :func:`~sierra.core.pipeline.stage4.render.from_engine()`,
+           if ``--engine-vc`` was passed
 
         #. :func:`~sierra.core.pipeline.stage4.render.from_project_imagized()`,
            if ``--project-imagizing`` was passed previously to generate frames,
@@ -292,7 +292,7 @@ class PipelineStage4:
     def _run_rendering(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """Render captured frames and/or imagized frames into videos."""
         if (
-            (not self.cmdopts["platform_vc"])
+            (not self.cmdopts["engine_vc"])
             and (not self.cmdopts["project_rendering"])
             and (not (criteria.is_bivar() and self.cmdopts["bc_rendering"]))
         ):
@@ -301,13 +301,13 @@ class PipelineStage4:
         self.logger.info("Rendering videos...")
         start = time.time()
 
-        if self.cmdopts["platform_vc"]:
-            render.from_platform(self.main_config, self.cmdopts, self.pathset, criteria)
+        if self.cmdopts["engine_vc"]:
+            render.from_engine(self.main_config, self.cmdopts, self.pathset, criteria)
         else:
             self.logger.debug(
                 (
-                    "--platform-vc not passed--(possibly) skipping "
-                    "rendering frames captured by the platform"
+                    "--engine-vc not passed--(possibly) skipping "
+                    "rendering frames captured by the engine"
                 )
             )
 

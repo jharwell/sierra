@@ -10,7 +10,7 @@ FAQ
 
    A: SIERRA does *not* create the output directory you tell it that all outputs
    for a simulation run will lie under--that is the responsibility of the
-   :term:`Platform` and/or :term:`Project`. SIERRA just reads outputs from the
+   :term:`Engine` and/or :term:`Project`. SIERRA just reads outputs from the
    specified location.
 
 #. Q: I'm really confused by all the terminology that SIERRA uses--how can I

@@ -48,8 +48,8 @@ setup_env() {
     export SIERRA_BASE_CMD_ARGOS="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
        --controller=foraging.footbot_foraging \
-       --platform=platform.argos \
-       --project=argos_project \
+       --engine=engine.argos \
+       --project=projects.sample_argos \
        --exp-setup=exp_setup.T50.K5 \
        --n-runs=4 \
        -xstrict \
@@ -61,21 +61,6 @@ setup_env() {
        --log-level=TRACE"
 
     export PARALLEL="--env LD_LIBRARY_PATH"
-
-    export SIERRA_BASE_CMD_ROS1GAZEBO="$COVERAGE_CMD \
-       --sierra-root=$SIERRA_ROOT \
-       --platform=platform.ros1gazebo \
-       --project=ros1gazebo_project \
-       --exp-setup=exp_setup.T10.K5.N50\
-       --n-runs=4 \
-       -xstrict\
-       --expdef-template=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
-       --scenario=HouseWorld.10x10x2 \
-       --controller=turtlebot3.wander \
-       --robot turtlebot3\
-       -xno-devnull \
-       --log-level=TRACE"
-
 }
 
 ################################################################################
@@ -87,7 +72,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"turtlebot3\";
 scenario=\"OutdoorWorld.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1robot_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1robot\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
 print(path)
 "
     batch_root=$(python3 -c"${batch_root_cmd}")

@@ -36,7 +36,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     kHelpMsg = ("Usage:\n\nsierra-cli [-v | --version] [OPTION]...\n\n"
                 "What command line options SIERRA accepts depends on the loaded\n"
-                "--project, --platform, --exec-env, and project-specific options.\n"
+                "--project, --engine, --exec-env, and project-specific options.\n"
                 "'man sierra-cli' will give you the full set of options that\n"
                 "comes with SIERRA.\n\n")
 
@@ -121,36 +121,36 @@ class BootstrapCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
                                default="INFO")
 
-        bootstrap.add_argument("--platform",
+        bootstrap.add_argument("--engine",
                                help="""
-                               This argument defines the :term:`Platform` you
+                               This argument defines the :term:`Engine` you
                                want to run experiments on.
 
                                The value of this argument determines the
                                execution environment for experiments; different
-                               platforms (e.g., simulator, real robots) will
+                               engines (e.g., simulator, real robots) will
                                have different configuration options.
 
                                Valid values can be any folder name inside a
                                folder on the :envvar:`SIERRA_PLUGIN_PATH` (with
                                ``/`` replaced with ``.`` as you would expect for
                                using path names to address python packages). The
-                               platforms which come with SIERRA are:
+                               engines which come with SIERRA are:
 
-                               - ``platform.argos`` - This directs SIERRA to run
+                               - ``engine.argos`` - This directs SIERRA to run
                                  experiments using the :term:`ARGoS`
-                                 simulator. Selecting this platform assumes your
+                                 simulator. Selecting this engine assumes your
                                  code has been developed and configured for
                                  ARGoS.
 
-                               - ``platform.ros1gazebo`` - This directs SIERRA to
+                               - ``engine.ros1gazebo`` - This directs SIERRA to
                                  run experiments using the :term:`Gazebo`
                                  simulator and :term:`ROS1`. Selecting this
-                                 platform assumes your code has been developed
+                                 engine assumes your code has been developed
                                  and configured for Gazebo and ROS1.
 
                                """,
-                               default='platform.argos')
+                               default='engine.argos')
 
         bootstrap.add_argument("--skip-pkg-checks",
                                help="""
@@ -166,7 +166,7 @@ class BootstrapCmdline(BaseCmdline):
         bootstrap.add_argument("--exec-env",
                                help="""
                                This argument defines `how` experiments are going
-                               to be run, using the ``--platform`` you have
+                               to be run, using the ``--engine`` you have
                                selected.
 
                                Valid values can be any folder name inside a
@@ -204,7 +204,7 @@ class BootstrapCmdline(BaseCmdline):
                                - ``robot.turtlebot3`` - This will direct SIERRA
                                  to run experiments on real Turtlebots.
 
-                               Not all platforms support all execution
+                               Not all engines support all execution
                                environments.
                                """ + self.stage_usage_doc([1, 2]),
                                default='hpc.local')
@@ -351,7 +351,7 @@ class CoreCmdline(BaseCmdline):
 
                                      The template ``.xml`` input file for the
                                      batch experiment. Beyond the requirements
-                                     for the specific ``--platform``, the
+                                     for the specific ``--engine``, the
                                      content of the file can be anything valid
                                      for the format, with the exception of the
                                      SIERRA requirements detailed in
@@ -476,20 +476,20 @@ class CoreCmdline(BaseCmdline):
 
                                  """ + self.stage_usage_doc([2, 3, 4]))
 
-        self.multistage.add_argument("--platform-vc",
+        self.multistage.add_argument("--engine-vc",
                                      help="""
 
-                                    For applicable ``--platforms``, enable
+                                    For applicable ``--engines``, enable
                                     visual capturing of run-time data during
                                     stage 2. This data can be frames (i.e., .png
                                     files), or rendering videos, depending on
-                                    the platform. If the captured data was
+                                    the engine. If the captured data was
                                     frames, then SIERRA can render the captured
                                     frames into videos during stage 4. If the
-                                    selected ``--platform`` does not support
+                                    selected ``--engine`` does not support
                                     visual capture, then this option has no
                                     effect. See
-                                    :ref:`usage/rendering/platform`
+                                    :ref:`usage/rendering/engine`
                                     for full details.
 
                                     """ + self.stage_usage_doc([1, 4]),
@@ -516,7 +516,7 @@ class CoreCmdline(BaseCmdline):
                                     the result of a single experiment within a
                                     batch.
 
-                                    If ``--platform`` is a simulator and
+                                    If ``--engine`` is a simulator and
                                     ``--exec-env`` is something other than
                                     ``hpc.local`` then this may be be used to
                                     determine the concurrency of experimental
@@ -608,7 +608,7 @@ class CoreCmdline(BaseCmdline):
                                      For example, in a bivariate batch criteria
                                      composed of
 
-                                    - :ref:`plugins/platform/argos/bc/population-size`
+                                    - :ref:`plugins/engine/argos/bc/population-size`
                                       on the X axis (rows)
 
                                     - Another batch criteria which does not
@@ -734,8 +734,8 @@ class CoreCmdline(BaseCmdline):
 
                                  Specify a list of compute nodes which SIERpRA
                                  will use to run jobs. For simulator
-                                 :term:`Platforms <Platform>`, these are HPC
-                                 resource nodes. For real robot platforms, these
+                                 :term:`Engines <Engine>`, these are HPC
+                                 resource nodes. For real robot engines, these
                                  are robot hostnames/IP addresses. This
                                  information can also be supplied via the
                                  :envvar:`SIERRA_NODEFILE` environment
@@ -1251,7 +1251,7 @@ class CoreCmdline(BaseCmdline):
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     """
-    Fallback if the selected platform cmdline doesn't define this function.
+    Fallback if the selected engine cmdline doesn't define this function.
 
     Totally fine to not define this function.
     """

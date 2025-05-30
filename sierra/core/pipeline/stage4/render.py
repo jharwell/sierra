@@ -6,7 +6,7 @@
 
 Frames can be:
 
-- Captured by by the ``--platform`` during stage 2.
+- Captured by by the ``--engine`` during stage 2.
 
 - Generated during stage 3 of SIERRA via imagizing.
 
@@ -110,13 +110,13 @@ def _worker(q: mp.Queue, main_config: types.YAMLDict) -> None:
             break
 
 
-def from_platform(
+def from_engine(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     criteria: bc.IConcreteBatchCriteria,
 ) -> None:
-    """Render frames (images) captured in by a platform into videos.
+    """Render frames (images) captured in by a engine into videos.
 
     Frames are stitched together to make a video using :program:`ffmpeg`.  Output
     format controlled via configuration.
@@ -143,8 +143,8 @@ def from_platform(
         output_dir = pathset.video_root / exp.name
 
         for run in exp.iterdir():
-            platform = cmdopts["platform"].split(".")[1]
-            frames_leaf = config.kRendering[platform]["frames_leaf"]
+            engine = cmdopts["engine"].split(".")[1]
+            frames_leaf = config.kRendering[engine]["frames_leaf"]
             opts = {
                 "ofile_name": run.name + config.kRenderFormat,
                 "input_dir": str(exp / run / frames_leaf),
@@ -246,4 +246,4 @@ def from_bivar_heatmaps(
     _parallel(main_config, cmdopts, inputs)
 
 
-__all__ = ["from_project_imagized", "from_platform", "from_bivar_heatmaps"]
+__all__ = ["from_project_imagized", "from_engine", "from_bivar_heatmaps"]

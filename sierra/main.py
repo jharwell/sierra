@@ -19,7 +19,7 @@ import typing as tp
 # Project packages
 import sierra.core.cmdline as cmd
 from sierra import version
-from sierra.core import platform, plugin, startup, batchroot, exec_env, utils
+from sierra.core import engine, plugin, startup, batchroot, exec_env, utils
 from sierra.core.pipeline.pipeline import Pipeline
 import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: ignore
@@ -91,13 +91,13 @@ class SIERRA:
         path = f"{bootstrap_args.project}.cmdline"
         module = pm.module_load(path)
 
-        # Load core cmdline+platform extensions
-        platform_parser = platform.cmdline_parser(bootstrap_args.platform)
+        # Load core cmdline+engine extensions
+        engine_parser = engine.cmdline_parser(bootstrap_args.engine)
 
         # Parse all cmdline args and validate. This is done BEFORE post-hoc
         # configuration, because you shouldn't have to configure things post-hoc
         # in order for them to be valid.
-        parents = [platform_parser] if platform_parser else []
+        parents = [engine_parser] if engine_parser else []
         nonbootstrap_cmdline = module.Cmdline(parents, [-1, 1, 2, 3, 4, 5])
 
         self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
@@ -107,14 +107,14 @@ class SIERRA:
 
         nonbootstrap_cmdline.validate(self.args)
 
-        # Configure cmdopts for platform + execution environment by modifying
+        # Configure cmdopts for engine + execution environment by modifying
         # arguments/adding new arguments as needed, and perform additional
         # validation.
         self.args = exec_env.cmdline_postparse_configure(
             bootstrap_args.exec_env, self.args
         )
-        self.args = platform.cmdline_postparse_configure(
-            bootstrap_args.platform, bootstrap_args.exec_env, self.args
+        self.args = engine.cmdline_postparse_configure(
+            bootstrap_args.engine, bootstrap_args.exec_env, self.args
         )
 
         self.args.__dict__["project"] = bootstrap_args.project
@@ -139,9 +139,9 @@ class SIERRA:
         return manager
 
     def _verify_plugins(self, manager, bootstrap_args: argparse.Namespace) -> None:
-        # Verify platform plugin
-        module = manager.get_plugin_module(bootstrap_args.platform)
-        plugin.platform_sanity_checks(bootstrap_args.platform, module)
+        # Verify engine plugin
+        module = manager.get_plugin_module(bootstrap_args.engine)
+        plugin.engine_sanity_checks(bootstrap_args.engine, module)
 
         # Verify execution environment plugin
         module = manager.get_plugin_module(bootstrap_args.exec_env)

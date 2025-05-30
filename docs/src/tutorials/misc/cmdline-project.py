@@ -6,10 +6,10 @@ import sierra.core.cmdline as cmd
 from matrix import cmdline as cmd
 
 
-class Cmdline(cmd.PlatformCmdline):
+class Cmdline(cmd.EngineCmdline):
     """
     Defines cmdline extensions to the core command line arguments for all
-    projects using the :class:`~matrix.cmdline.PlatformCmdline` class.
+    projects using the :class:`~matrix.cmdline.EngineCmdline` class.
 
     Arguments:
 

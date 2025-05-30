@@ -179,6 +179,6 @@ kExperimentalRunData = {
     'n_datapoints_1D': 50
 }
 
-kPlatform = {
+kEngine = {
     'ping_timeout': 10  # seconds
 }

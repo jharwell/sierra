@@ -1,4 +1,4 @@
-These options are for all :term:`Platforms <Platform>`.
+These options are for all :term:`Engines <Engine>`.
 
 Bootstrap+Multi-stage Options
 -----------------------------

@@ -42,8 +42,8 @@ setup_env() {
 
     export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
-       --platform=platform.ros1gazebo \
-       --project=ros1gazebo_project \
+       --engine=engine.ros1gazebo \
+       --project=projects.sample_ros1gazebo \
        --exp-setup=exp_setup.T5.K5\
        --n-runs=4 \
        -xstrict \
@@ -99,7 +99,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"turtlebot3_house\";
 scenario=\"HouseWorld.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1gazebo\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
 print(path)
 "
 
@@ -140,7 +140,7 @@ bc=[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"];
 template_stem=\"turtlebot3_house\";
 scenario=\"HouseWorld.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1gazebo\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
 print(path)
 "
     batch_root_cmd2="from sierra.core import batchroot;
@@ -148,7 +148,7 @@ bc=[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"];
 template_stem=\"turtlebot3_house\";
 scenario=\"HouseWorld.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1gazebo\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
 print(path)
 "
     batch_root1=$(python3 -c"${batch_root_cmd1}")
@@ -228,7 +228,7 @@ bc=[\"population_size.Linear3.C3\"];
 template_stem=\"turtlebot3_house\";
 scenario=\"HouseWorld.10x10x2\";
 leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"ros1gazebo_project\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1gazebo\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
 print(path)
 "
 

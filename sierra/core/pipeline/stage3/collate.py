@@ -231,9 +231,9 @@ def _proc_single_exp(
     process_opts: types.SimpleDict,
     spec: gather.ProcessSpec,
 ) -> None:
-    """Collate :term:`Experimental Run Data` files together (reduce operation).
+    """Collate :term:`Run Output Data` files together (reduce operation).
 
-    :term:`Experimental Run Data` files gathered from N :term:`Experimental Runs
+    :term:`Run Output Data` files gathered from N :term:`Experimental Runs
     <Experimental Run>` are combined together into a single :term:`Summary .csv`
     per :term:`Experiment` with 1 column per run.
     """

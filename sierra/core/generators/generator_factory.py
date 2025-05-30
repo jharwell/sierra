@@ -74,7 +74,7 @@ class ControllerGenerator():
     def _pp_for_element_add(self,
                             add: definition.ElementAdd,
                             robot_id: tp.Optional[int] = None) -> definition.ElementAdd:
-        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts['engine'])
 
         if '__UUID__' in add.path:
             prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
@@ -91,9 +91,9 @@ class ControllerGenerator():
         # allow that explicitly here. Otherwise, we force all tag adds to be
         # unique.
         if '__UUID__' in add.path:
-            # We can't use platform.population_size_from_def() here because we
+            # We can't use engine.population_size_from_def() here because we
             # haven't added any tags to the experiment definition yet, and if
-            # the platform relies on added tags to calculate population sizes,
+            # the engine relies on added tags to calculate population sizes,
             # then this won't work.
             controllers = config.kYAML.controllers
             assert hasattr(self.spec.criteria, 'n_agents'), \
