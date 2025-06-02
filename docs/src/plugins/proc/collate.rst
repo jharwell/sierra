@@ -127,3 +127,58 @@ different plugin.
 
 Configuration
 =============
+
+Configuration for this plugin consists of *what* data to collate, and some
+tweaks for *how* that data should be collated.
+
+Cmdline
+-------
+
+The cmdline options for this plugin are below.
+
+.. todo:: Fill this in with the appropriate auto-generated blob.
+
+.. _plugins/proc/collate/config/yaml:
+
+YAML
+----
+
+Controls *what* to collate. Collated data is usually "interesting" in some way,
+usually related to system performance. Thus, configuration lives in a
+``perf.yaml``file. In the ``main.yaml`` for the project:
+
+.. code-block:: YAML
+
+   # Per-project configuration for SIERRA core. This dictionary is
+   # mandatory.
+   sierra:
+
+     # Configuration for performance measures. This key is mandatory
+     # for all experiments. The value is the location of the .yaml
+     # configuration file for performance measures. It is a separate
+     # config file so that multiple scenarios within a single
+     # project which define performance measures in different ways
+     # can be easily accommodated without copy-pasting.
+     perf: 'perf-config.yaml'
+
+In the selected ``perf-config.yaml``; can have any name, but must match whatever
+is specified in ``main.yaml``:
+
+
+.. code-block:: YAML
+
+   # Root key. Must be named as shown. Contains a list of config items.
+   perf:
+
+     # Each config item must have the 'file' and 'cols' fields. 'file' specifies
+     # a filepath, relative to the output directory for each experimental run,
+     # containing the data columns of interest. 'cols' specifies the columns of
+     # interest.
+     - file: 'output1D.csv'
+       cols:
+         - 'col1'
+         - 'col2'
+     - file: 'subdir1/subdir2/output1D.csv'
+       cols:
+         - 'col1'
+     ...

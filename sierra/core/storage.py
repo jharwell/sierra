@@ -27,7 +27,4 @@ def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> Non
     return storage.df_write(df, path, **kwargs)  # type: ignore
 
 
-__all__ = [
-    'df_read',
-    'df_write'
-]
+__all__ = ["df_read", "df_write"]

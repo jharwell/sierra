@@ -7,11 +7,6 @@ Configuration for summary performance measures. Does not have to be named
    # Root key is required.
    perf:
 
-     # Is the performance measure for the project inverted, meaning that
-     # lower values are better. This key is optional; defaults to False if
-     # omitted.
-     inverted: true
-
      # The CSV file under ``statistics/`` for each experiment which
      # contains the averaged performance information for the
      # experiment. This key is required.

@@ -477,7 +477,7 @@ stage3_univar_check_outputs() {
 
     # Check stage3 generated statistics
     for stat in "${to_check[@]}"; do
-        [ -f "$stat_root/collated/exp${i}-collected-data-collected_food.csv" ] || false
+        [ -f "$stat_root/collated/exp${i}/collected-data-collected_food.csv" ] || false
         for i in {0..2}; do
             [ -f "$stat_root/exp${i}/collected-data.${stat}" ] || false
         done
@@ -542,7 +542,7 @@ stage3_bivar_check_outputs() {
         for i in {0..1}; do
             for j in {0..2}; do
                 [ -f "$stat_root/c1-exp${i}+c2-exp${j}/collected-data.${stat}" ] || false
-                [ -f "$stat_root/collated/c1-exp${i}+c2-exp${j}-collected-data-collected_food.csv" ] || false
+                [ -f "$stat_root/collated/c1-exp${i}+c2-exp${j}/collected-data-collected_food.csv" ] || false
 
             done
         done

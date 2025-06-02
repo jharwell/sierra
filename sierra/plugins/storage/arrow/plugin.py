@@ -17,7 +17,7 @@ import pandas as pd
 
 
 def suffixes() -> tp.Set[str]:
-    return {'.arrow'}
+    return {".arrow"}
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore

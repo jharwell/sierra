@@ -46,6 +46,7 @@ class GatherSpec:
     ):
         self.exp_name = exp_name
         self.item_stem_path = item_stem_path
+        self.perfcol = perfcol
 
     def __repr__(self) -> str:
         return f"{self.exp_name}: {self.item_stem_path}"
@@ -125,10 +126,13 @@ class BaseGatherer:
             self._wait_for_memory()
             to_process = self._gather_item_from_runs(exp_output_root, spec, runs)
             n_gathered_from = len(to_process.dfs)
-            assert n_gathered_from == len(runs), (
-                "Data not gathered from all experimental runs: "
-                f"{n_gathered_from} != {len(runs)}"
-            )
+            if n_gathered_from != len(runs):
+                self.logger.warn(
+                    "Data not gathered for %s from all experimental runs: %s runs != %s (--n-runs)",
+                    spec.item_stem_path,
+                    n_gathered_from,
+                    len(runs),
+                )
 
             # Put gathered files in the process queue
             self.processq.put(to_process)
@@ -148,15 +152,25 @@ class BaseGatherer:
         to_process = ProcessSpec(gather=spec)
 
         for i, run in enumerate(runs):
-            df = storage.df_read(
-                run / self.run_metrics_leaf / spec.item_stem_path,
-                self.gather_opts["storage"],
-                index_col=False,
-            )
-            # Indices here must match so that the appropriate data from each run
-            # are matched with the name of the run in collated performance data.
-            to_process.exp_run_names.append(run.name)
-            to_process.dfs.append(df)
+            path = run / self.run_metrics_leaf / spec.item_stem_path
+            if path.exists() and path.stat().st_size > 0:
+                df = storage.df_read(
+                    path,
+                    self.gather_opts["storage"],
+                    index_col=False,
+                )
+                if nonumeric := df.select_dtypes(exclude="number").columns.tolist():
+                    self.logger.warning(
+                        "Non-numeric columns are not supported: dropping %s from %s",
+                        nonumeric,
+                        path.relative_to(exp_output_root),
+                    )
+                    df = df.drop(columns=nonumeric)
+
+                # Indices here must match so that the appropriate data from each run
+                # are matched with the name of the run in collated performance data.
+                to_process.exp_run_names.append(run.name)
+                to_process.dfs.append(df)
 
         return to_process
 
@@ -243,9 +257,9 @@ class BaseGatherer:
             df1 = storage.df_read(path1, self.gather_opts["storage"])
             df2 = storage.df_read(path2, self.gather_opts["storage"])
 
-            assert len(df1.columns) == len(df2.columns), (
-                f"Dataframes from {path1} and {path2} do not have " "the same # columns"
-            )
+            assert len(df1.columns) == len(
+                df2.columns
+            ), f"Dataframes from {path1} and {path2} do not have the same # columns"
             assert sorted(df1.columns) == sorted(
                 df2.columns
             ), f"Columns from {path1} and {path2} not identical"

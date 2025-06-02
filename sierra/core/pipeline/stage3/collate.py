@@ -24,7 +24,6 @@ import pathlib
 
 # 3rd party packages
 import pandas as pd
-import numpy as np
 import psutil
 
 # Project packages
@@ -210,18 +209,23 @@ class ExpDataGatherer(gather.BaseGatherer):
             ):
                 continue
 
-            # Must be a configured perf file
-            intra_perf_csv = self.main_config["sierra"]["perf"]["intra_perf_csv"]
-            if intra_perf_csv not in item.name:
+            # Any number of perf metrics can be configured, so look for a match.
+            files = self.main_config["sierra"]["perf"]
+            perf_confs = [f for f in files if f["file"] in item.name]
+            if not perf_confs:
                 continue
 
-            to_gather.append(
-                gather.GatherSpec(
-                    exp_name=exp_name,
-                    item_stem_path=item.relative_to(proj_output_root),
-                    perfcol=self.main_config["sierra"]["perf"]["intra_perf_col"],
-                )
-            )
+            # If we get a file match, then all the columns from that file should
+            # be added to the set of things to collate.
+            for conf in perf_confs:
+                for col in conf["cols"]:
+                    to_gather.append(
+                        gather.GatherSpec(
+                            exp_name=exp_name,
+                            item_stem_path=item.relative_to(proj_output_root),
+                            perfcol=col,
+                        )
+                    )
         return to_gather
 
 
@@ -237,42 +241,32 @@ def _proc_single_exp(
     <Experimental Run>` are combined together into a single :term:`Summary .csv`
     per :term:`Experiment` with 1 column per run.
     """
-    # To support inverted performance measures where smaller is better
-    invert_perf = main_config["sierra"]["perf"].get("inverted", False)
-    intra_perf_csv = pathlib.Path(main_config["sierra"]["perf"]["intra_perf_csv"])
-    intra_perf_col = main_config["sierra"]["perf"]["intra_perf_col"]
-
     utils.dir_create_checked(batch_stat_collate_root, exist_ok=True)
 
     collated = {}
 
-    # TODO: Make this actually support multiple perf columns.
-    key = (intra_perf_csv, intra_perf_col)
+    key = (spec.gather.item_stem_path, spec.gather.perfcol)
     collated[key] = pd.DataFrame(index=spec.dfs[0].index, columns=spec.exp_run_names)
     for i, df in enumerate(spec.dfs):
-        assert intra_perf_col in df.columns, f"{intra_perf_col} not in {df.columns}"
+        assert (
+            spec.gather.perfcol in df.columns
+        ), f"{spec.gather.perfcol} not in {df.columns}"
 
-        perf_df = df[intra_perf_col]
-        # Invert performance if configured.
-        if invert_perf:
-            perf_df = 1.0 / perf_df
-            # This is a bit of a hack. But also not a hack at all,
-            # because infinite performance is not possible. This
-            # is... Schrodinger's Hack.
-            perf_df = perf_df.replace([-np.inf, np.inf], 0)
-
+        perf_df = df[spec.gather.perfcol]
         collated[key][spec.exp_run_names[i]] = perf_df
 
     for perf_file_path, col in collated:
         df = utils.df_fill(
             collated[(perf_file_path, col)], process_opts["df_homogenize"]
         )
-        fname = (
-            f"{spec.gather.exp_name}-{perf_file_path.stem}-{col}"
-            + config.kStorageExt["csv"]
-        )
-        opath = batch_stat_collate_root / fname
-        storage.df_write(df, opath, "storage.csv", index=False)
+        parent = batch_stat_collate_root / spec.gather.exp_name / perf_file_path.parent
+        utils.dir_create_checked(parent, exist_ok=True)
+
+        # This preserves the directory structure of stuff in the per-run output
+        # run; if something is in a subdir there, it will show up in a subdir in
+        # the collated outputs too.
+        fname = f"{perf_file_path.stem}-{col}" + config.kStorageExt["csv"]
+        storage.df_write(df, parent / fname, "storage.csv", index=False)
 
 
 __all__ = [

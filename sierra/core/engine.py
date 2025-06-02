@@ -87,7 +87,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
         _logger.debug(
             (
                 "Skipping execution environment check for "
-                "--engine='%s': does not define exec_env_check()"
+                "--engine=%s: does not define exec_env_check()"
             ),
             cmdopts["engine"],
         )

@@ -203,9 +203,15 @@ print(path)
         [[ $n_rows == 49 ]] && true || false
         [[ $n_cols == 3 ]] && true || false
 
-        [ -f "$stat_root/collated/exp${exp}-output1D-col1.csv" ] || false
-        n_rows=$(wc -l < "$stat_root/collated/exp${exp}-output1D-col1.csv")
-        n_cols=$(awk -F\, '{print NF; exit}' "$stat_root/collated/exp${exp}-output1D-col1.csv")
+        [ -f "$stat_root/collated/exp${exp}/subdir1/subdir2/output1D-col1.csv" ] || false
+        n_rows=$(wc -l < "$stat_root/collated/exp${exp}/subdir1/subdir2/output1D-col1.csv")
+        n_cols=$(awk -F\, '{print NF; exit}' "$stat_root/collated/exp${exp}/subdir1/subdir2/output1D-col1.csv")
+        [[ $n_rows == 51 ]] && true || false
+        [[ $n_cols == 4 ]] && true || false
+
+        [ -f "$stat_root/collated/exp${exp}/subdir3/output1D-col2.csv" ] || false
+        n_rows=$(wc -l < "$stat_root/collated/exp${exp}/subdir3/output1D-col2.csv")
+        n_cols=$(awk -F\, '{print NF; exit}' "$stat_root/collated/exp${exp}/subdir3/output1D-col2.csv")
         [[ $n_rows == 51 ]] && true || false
         [[ $n_cols == 4 ]] && true || false
     done
