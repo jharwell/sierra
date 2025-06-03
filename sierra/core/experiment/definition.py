@@ -22,7 +22,7 @@ import implements
 from sierra.core import types
 
 
-class WriterConfig():
+class WriterConfig:
     """Config for writing :class:`~sierra.core.experiment.definition.BaseExpDef`.
 
     Different parts of the AST can be written to multiple files, as configured.
@@ -92,18 +92,15 @@ class WriterConfig():
 
 
 class BaseExpDef(implements.Interface):
-    """Base class for experiment definitions.
-    """
+    """Base class for experiment definitions."""
 
-    def __init__(self,
-                 input_fpath: pathlib.Path,
-                 write_config: tp.Optional[WriterConfig] = None) -> None:
+    def __init__(
+        self, input_fpath: pathlib.Path, write_config: tp.Optional[WriterConfig] = None
+    ) -> None:
         pass
 
     def write(self, base_opath: pathlib.Path) -> None:
-        """Write the definition stored in the object to the filesystem.
-
-        """
+        """Write the definition stored in the object to the filesystem."""
         raise NotImplementedError
 
     def flatten(self, keys: tp.List[str]) -> None:
@@ -124,11 +121,13 @@ class BaseExpDef(implements.Interface):
         """
         raise NotImplementedError
 
-    def attr_change(self,
-                    path: str,
-                    attr: str,
-                    value: tp.Union[str, int, float],
-                    noprint: bool = False) -> bool:
+    def attr_change(
+        self,
+        path: str,
+        attr: str,
+        value: tp.Union[str, int, float],
+        noprint: bool = False,
+    ) -> bool:
         """Change the specified attribute of the element at the specified path.
 
         Only the attribute of the *FIRST* element matching the specified path is
@@ -147,11 +146,13 @@ class BaseExpDef(implements.Interface):
         """
         raise NotImplementedError
 
-    def attr_add(self,
-                 path: str,
-                 attr: str,
-                 value: tp.Union[str, int, float],
-                 noprint: bool = False) -> bool:
+    def attr_add(
+        self,
+        path: str,
+        attr: str,
+        value: tp.Union[str, int, float],
+        noprint: bool = False,
+    ) -> bool:
         """Add the specified attribute to the element matching the specified path.
 
         Only the *FIRST* element matching the specified path searching from the
@@ -214,10 +215,7 @@ class BaseExpDef(implements.Interface):
         """
         raise NotImplementedError
 
-    def element_remove_all(self,
-                           path: str,
-                           tag: str,
-                           noprint: bool = False) -> bool:
+    def element_remove_all(self, path: str, tag: str, noprint: bool = False) -> bool:
         """Remove the specified child tag(s) in the enclosing parent.
 
         If more than one tag matches in the parent, all matching child tags are
@@ -235,27 +233,26 @@ class BaseExpDef(implements.Interface):
         """
         raise NotImplementedError
 
-    def element_add(self,
-                    path: str,
-                    tag: str,
-                    attr: tp.Optional[types.StrDict] = None,
-                    allow_dup: bool = True,
-                    noprint: bool = False) -> bool:
+    def element_add(
+        self,
+        path: str,
+        tag: str,
+        attr: tp.Optional[types.StrDict] = None,
+        allow_dup: bool = True,
+        noprint: bool = False,
+    ) -> bool:
         """
         Add tag name as a child element of enclosing parent.
         """
         raise NotImplementedError
 
 
-class AttrChange():
+class AttrChange:
     """
     Specification for a change to an existing expdef attribute.
     """
 
-    def __init__(self,
-                 path: str,
-                 attr: str,
-                 value: tp.Union[str, int, float]) -> None:
+    def __init__(self, path: str, attr: str, value: tp.Union[str, int, float]) -> None:
         self.path = path
         self.attr = attr
         self.value = value
@@ -264,10 +261,22 @@ class AttrChange():
         yield from [self.path, self.attr, self.value]
 
     def __repr__(self) -> str:
-        return self.path + '/' + self.attr + ': ' + str(self.value)
+        return self.path + "/" + self.attr + ": " + str(self.value)
 
 
-class ElementRm():
+class NullMod:
+    """
+    Specification for a null-change (no change) to an existing expdef.
+    """
+
+    def __init__(self) -> None:
+        pass
+
+    def __iter__(self):
+        yield from []
+
+
+class ElementRm:
     """
     Specification for removal of an existing expdef tag.
     """
@@ -290,26 +299,28 @@ class ElementRm():
         yield from [self.path, self.tag]
 
     def __repr__(self) -> str:
-        return self.path + '/' + self.tag
+        return self.path + "/" + self.tag
 
 
-class ElementAdd():
+class ElementAdd:
     """
     Specification for adding a new expdef tag.
 
     The tag may be added idempotently, or duplicates can be allowed.
     """
-    @staticmethod
-    def as_root(tag: str,
-                attr: types.StrDict) -> 'ElementAdd':
-        return ElementAdd('', tag, attr, False, True)
 
-    def __init__(self,
-                 path: str,
-                 tag: str,
-                 attr: types.StrDict,
-                 allow_dup: bool,
-                 as_root: bool = False):
+    @staticmethod
+    def as_root(tag: str, attr: types.StrDict) -> "ElementAdd":
+        return ElementAdd("", tag, attr, False, True)
+
+    def __init__(
+        self,
+        path: str,
+        tag: str,
+        attr: types.StrDict,
+        allow_dup: bool,
+        as_root: bool = False,
+    ):
         """
         Init the object.
 
@@ -335,10 +346,10 @@ class ElementAdd():
         yield from [self.path, self.tag, self.attr]
 
     def __repr__(self) -> str:
-        return self.path + '/' + self.tag + ': ' + str(self.attr)
+        return self.path + "/" + self.tag + ": " + str(self.attr)
 
 
-class AttrChangeSet():
+class AttrChangeSet:
     """
     Data structure for :class:`AttrChange` objects.
 
@@ -346,8 +357,9 @@ class AttrChangeSet():
     of correctness (i.e., different orders won't cause crashes).
 
     """
+
     @staticmethod
-    def unpickle(fpath: pathlib.Path) -> 'AttrChangeSet':
+    def unpickle(fpath: pathlib.Path) -> "AttrChangeSet":
         """Unpickle changes.
 
         You don't know how many there are, so go until you get an exception.
@@ -356,29 +368,28 @@ class AttrChangeSet():
         exp_def = AttrChangeSet()
 
         try:
-            with open(fpath, 'rb') as f:
+            with open(fpath, "rb") as f:
                 while True:
                     exp_def |= AttrChangeSet(*pickle.load(f))
         except EOFError:
             pass
         return exp_def
 
-    def __init__(self, *args: AttrChange) -> None:
+    def __init__(self, *args: tp.Union[AttrChange, NullMod]) -> None:
         self.changes = set(args)
-
         self.logger = logging.getLogger(__name__)
 
     def __len__(self) -> int:
         return len(self.changes)
 
-    def __iter__(self) -> tp.Iterator[AttrChange]:
+    def __iter__(self) -> tp.Iterator[tp.Union[AttrChange, NullMod]]:
         return iter(self.changes)
 
-    def __ior__(self, other: 'AttrChangeSet') -> 'AttrChangeSet':
+    def __ior__(self, other: "AttrChangeSet") -> "AttrChangeSet":
         self.changes |= other.changes
         return self
 
-    def __or__(self, other: 'AttrChangeSet') -> 'AttrChangeSet':
+    def __or__(self, other: "AttrChangeSet") -> "AttrChangeSet":
         new = AttrChangeSet(*self.changes)
         new |= other
         return new
@@ -395,11 +406,11 @@ class AttrChangeSet():
         if delete and utils.path_exists(fpath):
             fpath.unlink()
 
-        with open(fpath, 'ab') as f:
+        with open(fpath, "ab") as f:
             utils.pickle_dump(self.changes, f)
 
 
-class ElementRmList():
+class ElementRmList:
     """
     Data structure for :class:`ElementRm` objects.
 
@@ -421,7 +432,7 @@ class ElementRmList():
     def __repr__(self) -> str:
         return str(self.rms)
 
-    def extend(self, other: 'ElementRmList') -> None:
+    def extend(self, other: "ElementRmList") -> None:
         self.rms.extend(other.rms)
 
     def append(self, other: ElementRm) -> None:
@@ -433,11 +444,11 @@ class ElementRmList():
         if delete and utils.path_exists(fpath):
             fpath.unlink()
 
-        with open(fpath, 'ab') as f:
+        with open(fpath, "ab") as f:
             utils.pickle_dump(self.rms, f)
 
 
-class ElementAddList():
+class ElementAddList:
     """
     Data structure for :class:`ElementAdd` objects.
 
@@ -447,7 +458,7 @@ class ElementAddList():
     """
 
     @staticmethod
-    def unpickle(fpath: pathlib.Path) -> tp.Optional['ElementAddList']:
+    def unpickle(fpath: pathlib.Path) -> tp.Optional["ElementAddList"]:
         """Unpickle modifications.
 
         You don't know how many there are, so go until you get an exception.
@@ -456,7 +467,7 @@ class ElementAddList():
         exp_def = ElementAddList()
 
         try:
-            with open(fpath, 'rb') as f:
+            with open(fpath, "rb") as f:
                 while True:
                     exp_def.append(*pickle.load(f))
         except EOFError:
@@ -475,7 +486,7 @@ class ElementAddList():
     def __repr__(self) -> str:
         return str(self.adds)
 
-    def extend(self, other: 'ElementAddList') -> None:
+    def extend(self, other: "ElementAddList") -> None:
         self.adds.extend(other.adds)
 
     def append(self, other: ElementAdd) -> None:
@@ -490,19 +501,17 @@ class ElementAddList():
         if delete and utils.path_exists(fpath):
             fpath.unlink()
 
-        with open(fpath, 'ab') as f:
+        with open(fpath, "ab") as f:
             utils.pickle_dump(self.adds, f)
 
 
 __all__ = [
-    'BaseExpDef',
-    'WriterConfig',
-    'AttrChange',
-    'AttrChangeSet',
-    'ElementAdd',
-    'ElementAddList',
-    'ElementRm',
-    'ElementRmList',
-
-
+    "BaseExpDef",
+    "WriterConfig",
+    "AttrChange",
+    "AttrChangeSet",
+    "ElementAdd",
+    "ElementAddList",
+    "ElementRm",
+    "ElementRmList",
 ]

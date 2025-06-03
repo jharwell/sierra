@@ -385,8 +385,9 @@ def module_load_tiered(
     # If that didn't work, check the engine plugin
     if engine is not None:
         engine_path = f"{engine}.{path}"
-        logging.trace("Using engine component path %s", engine_path)  # type: ignore
-        return module_load(engine_path)
+        if module_exists(engine_path):
+            logging.trace("Using engine component path %s", engine_path)  # type: ignore
+            return module_load(engine_path)
 
     # If that didn't work, then check the SIERRA core
     core_path = f"sierra.core.{path}"

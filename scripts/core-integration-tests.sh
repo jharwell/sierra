@@ -24,7 +24,7 @@ setup_env() {
     # AND the sample project library path.
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
     export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
-    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
+    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT
 
     # Required to get coverage.py to work with the installed version
     # of SIERRA. Omitting this results in either nothing getting
@@ -58,6 +58,19 @@ setup_env() {
        -xno-devnull \
        --with-robot-leds \
        --with-robot-rab\
+       --log-level=TRACE"
+
+    export SIERRA_BASE_CMD_JSONSIM="$COVERAGE_CMD \
+       --sierra-root=$SIERRA_ROOT \
+       --controller=default.default \
+       --engine=plugins.jsonsim \
+       --project=projects.sample_jsonsim \
+       --jsonsim-path=$SAMPLE_ROOT/plugins/jsonsim/jsonsim.py \
+       --exp-setup=exp_setup.T50.K5 \
+       --n-runs=4 \
+       --expdef=expdef.json \
+       --expdef-template=$SAMPLE_ROOT/exp/jsonsim/template.json \
+       --scenario=scenario1.10x10x10 \
        --log-level=TRACE"
 
     export PARALLEL="--env LD_LIBRARY_PATH"
@@ -94,6 +107,35 @@ print(path)
 
     $SIERRA_CMD
 
+    rm -rf $SIERRA_ROOT
+}
+################################################################################
+# Check usage of builtin batch criteria
+################################################################################
+builtin_bc_test() {
+        batch_root_cmd="from sierra.core import batchroot;
+bc=[\"builtin.MonteCarlo.C5\"];
+template_stem=\"template\";
+scenario=\"scenario1.10x10x10\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_jsonsim\",controller=\"default.default\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
+    input_root=$batch_root/exp-inputs/
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD_JSONSIM \
+                    --batch-criteria builtin.MonteCarlo.C5"
+    $SIERRA_CMD --pipeline 1
+
+    # Check SIERRA directory structure
+    for i in {0..4}; do
+        [ -d "$input_root/exp$i" ] || false
+    done
+
+    $SIERRA_CMD --pipeline 2 3 4
     rm -rf $SIERRA_ROOT
 }
 

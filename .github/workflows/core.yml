@@ -24,6 +24,7 @@ jobs:
         function:
           - cmdline_opts_test
           - env_vars_test
+          - builtin_bc_test
 
         exclude:
           - os: ubuntu-22.04
