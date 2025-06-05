@@ -85,17 +85,6 @@ FAQ
    necessary source CSV file does not exist. This is usually enough to
    identify the culprit.
 
-#. Q: Stage 3 takes a very long time--why?
-
-   A: SIERRA is conservative, and attempts to verify all the results of all runs
-   within each experiment it processes during stage 3, which can be VERY
-   computationally intensive, depending on how many outputs are generated for
-   each runs. During early experimental runs, this can be helpful to identify
-   which runs crashed/did not finish/etc as a result of errors in the project
-   C++ library. For later runs, or runs in which you are generating outputs for
-   rendering, this is unnecessary, and can be disabled with
-   ``--df-skip-verify``.
-
 #. Q: SIERRA does not overwrite the input configuration for my experiment/SIERRA
    won't run my experiments again after they run the first time--why?
 

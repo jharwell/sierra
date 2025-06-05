@@ -106,15 +106,18 @@ Why SIERRA?
   handles random seeds, algorithm stochasticity, and other low-level
   details.
 
-- It supports a wide range of execution engines, execution environments, and
-  experiment input/output formats via plugins. SIERRA supports mix-and-match
-  between all plugin types, subject to restrictions within the plugins
-  themselves. This is and makes it very easy to run experiments on different
-  hardware, targeting different simulators, generating different outputs, etc.,
-  all with little to no configuration changes by the user.
+- It has deep support arbitrary parameter sweeps: numeric, categorical, etc.
 
-- SIERRA can be used with code written in any language; only bindings must be
-  written in python.
+- It supports a wide range of execution engines/environments, and experiment
+  input/output formats via plugins. SIERRA supports mix-and-match between all
+  plugin types, subject to restrictions within the plugins themselves. This is
+  and makes it very easy to run experiments on different hardware, targeting
+  different simulators, generating different outputs, etc., all with little to
+  no configuration changes by the user.
+
+- SIERRA maximizes reusability of code and configuration; it is designed so that
+  *no* copy-pasting is ever needed, improving code quality with no additional
+  effort from users.
 
 - SIERRA has a rich model framework allowing you to run arbitrary models,
   generate data, and plot it on the same figure as empirical

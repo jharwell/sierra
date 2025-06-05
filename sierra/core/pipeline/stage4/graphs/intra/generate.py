@@ -28,7 +28,7 @@ def generate(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    controller_config: types.YAMLDict,
+    controller_config: tp.Optional[types.YAMLDict],
     graphs_config: types.YAMLDict,
     criteria: bc.IConcreteBatchCriteria,
 ) -> None:
@@ -108,7 +108,7 @@ class IntraExpGraphGenerator:
     def __init__(
         self,
         main_config: types.YAMLDict,
-        controller_config: types.YAMLDict,
+        controller_config: tp.Optional[types.YAMLDict],
         graphs_config: types.YAMLDict,
         cmdopts: types.Cmdopts,
     ) -> None:
@@ -156,18 +156,27 @@ class IntraExpGraphGenerator:
         the YAML configuration for the selected controller.
         """
         keys = []
-        for category in list(self.controller_config.keys()):
-            if category not in self.cmdopts["controller"]:
-                continue
-            for controller in self.controller_config[category]["controllers"]:
-                if controller["name"] not in self.cmdopts["controller"]:
+        if self.controller_config:
+            for category in list(self.controller_config.keys()):
+                if category not in self.cmdopts["controller"]:
                     continue
+                for controller in self.controller_config[category]["controllers"]:
+                    if controller["name"] not in self.cmdopts["controller"]:
+                        continue
 
-                # valid to specify no graphs, and only to inherit graphs
-                keys = controller.get("graphs", [])
-                if "graphs_inherit" in controller:
-                    for inherit in controller["graphs_inherit"]:
-                        keys.extend(inherit)  # optional
+                    # valid to specify no graphs, and only to inherit graphs
+                    keys = controller.get("graphs", [])
+                    if "graphs_inherit" in controller:
+                        for inherit in controller["graphs_inherit"]:
+                            keys.extend(inherit)  # optional
+
+        else:
+            keys = [k for k in self.graphs_config]
+            self.logger.warning(
+                "Missing controller graph config--generating all enabled "
+                "intra-experiment graphs for all controllers: %s",
+                keys,
+            )
 
         # Get keys for enabled graphs
         LN_keys = [k for k in self.graphs_config if k in keys]

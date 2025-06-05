@@ -21,10 +21,8 @@ from sierra.core import types, config
 from sierra.core.experiment import definition
 
 
-class SimpleBatchScaffoldSpec():
-    def __init__(self,
-                 criteria: bc.BatchCriteria,
-                 log: bool = False) -> None:
+class SimpleBatchScaffoldSpec:
+    def __init__(self, criteria: bc.BatchCriteria, log: bool = False) -> None:
         self.criteria = criteria
         self.chgs = criteria.gen_attr_changelist()
         self.adds = criteria.gen_element_addlist()
@@ -36,41 +34,46 @@ class SimpleBatchScaffoldSpec():
         self.mods = []
         self.is_compound = False
 
-        assert len(self.rms) == 0, \
-            "Batch criteria cannot remove expdef elements"
+        assert len(self.rms) == 0, "Batch criteria cannot remove expdef elements"
 
         if self.chgs:
             self.mods = self.chgs
             self.n_exps = len(self.chgs)
             if log:
-                self.logger.info(("Calculating scaffold: cli='%s': Modify %s "
-                                  "expdef elements per experiment"),
-                                 self.criteria.cli_arg,
-                                 len(self.chgs[0]))
+                self.logger.info(
+                    (
+                        "Calculating scaffold: cli=%s: Modify %s "
+                        "expdef elements per experiment"
+                    ),
+                    self.criteria.cli_arg,
+                    len(self.chgs[0]),
+                )
         elif self.adds:
             self.mods = self.adds
             self.n_exps = len(self.adds)
             if log:
-                self.logger.info(("Calculating scaffold: cli='%s': Add %s expdef "
-                                  "elements per experiment"),
-                                 self.criteria.cli_arg,
-                                 len(self.adds[0]))
+                self.logger.info(
+                    (
+                        "Calculating scaffold: cli=%s: Add %s expdef "
+                        "elements per experiment"
+                    ),
+                    self.criteria.cli_arg,
+                    len(self.adds[0]),
+                )
         else:
-            raise RuntimeError(("This spec can't be used with compound "
-                                "scaffolding"))
+            raise RuntimeError(("This spec can't be used with compound " "scaffolding"))
 
-    def __iter__(self) -> tp.Iterator[tp.Union[definition.AttrChangeSet,
-                                               definition.ElementAddList]]:
+    def __iter__(
+        self,
+    ) -> tp.Iterator[tp.Union[definition.AttrChangeSet, definition.ElementAddList]]:
         return iter(self.mods)
 
     def __len__(self) -> int:
         return self.n_exps
 
 
-class CompoundBatchScaffoldSpec():
-    def __init__(self,
-                 criteria: bc.BatchCriteria,
-                 log: bool = False) -> None:
+class CompoundBatchScaffoldSpec:
+    def __init__(self, criteria: bc.BatchCriteria, log: bool = False) -> None:
         self.criteria = criteria
         self.chgs = criteria.gen_attr_changelist()
         self.adds = criteria.gen_element_addlist()
@@ -82,8 +85,7 @@ class CompoundBatchScaffoldSpec():
         self.is_compound = True
         self.mods = []
 
-        assert len(self.rms) == 0, \
-            "Batch criteria cannot remove expdef elements"
+        assert len(self.rms) == 0, "Batch criteria cannot remove expdef elements"
 
         if self.chgs and self.adds:
             for addlist in self.adds:
@@ -93,22 +95,27 @@ class CompoundBatchScaffoldSpec():
                     self.n_exps += 1
 
             if log:
-                self.logger.info(("Calculating scaffold: cli='%s': Add  "
-                                  "%s expdef elements AND modify %s expdef  "
-                                  "elements per experiment"),
-                                 self.criteria.cli_arg,
-                                 len(self.adds[0]),
-                                 len(self.chgs[0]))
+                self.logger.info(
+                    (
+                        "Calculating scaffold: cli=%s: Add  "
+                        "%s expdef elements AND modify %s expdef  "
+                        "elements per experiment"
+                    ),
+                    self.criteria.cli_arg,
+                    len(self.adds[0]),
+                    len(self.chgs[0]),
+                )
 
         else:
-            raise RuntimeError(("This spec can only be used with compound "
-                                "scaffolding"))
+            raise RuntimeError(
+                ("This spec can only be used with compound " "scaffolding")
+            )
 
     def __len__(self) -> int:
         return self.n_exps
 
 
-class ExperimentSpec():
+class ExperimentSpec:
     """
     The specification for a single experiment with a batch.
 
@@ -126,11 +133,13 @@ class ExperimentSpec():
     - Full scenario name
     """
 
-    def __init__(self,
-                 criteria: bc.IConcreteBatchCriteria,
-                 batch_input_root: pathlib.Path,
-                 exp_num: int,
-                 cmdopts: types.Cmdopts) -> None:
+    def __init__(
+        self,
+        criteria: bc.IConcreteBatchCriteria,
+        batch_input_root: pathlib.Path,
+        exp_num: int,
+        cmdopts: types.Cmdopts,
+    ) -> None:
         self.exp_num = exp_num
         exp_name = criteria.gen_exp_names()[exp_num]
 
@@ -146,53 +155,59 @@ class ExperimentSpec():
 
         if criteria.is_bivar():
             bivar = tp.cast(bc.BivarBatchCriteria, criteria)
-            from_bivar_bc1 = hasattr(bivar.criteria1,
-                                     'exp_scenario_name')
-            from_bivar_bc2 = hasattr(bivar.criteria2,
-                                     'exp_scenario_name')
+            from_bivar_bc1 = hasattr(bivar.criteria1, "exp_scenario_name")
+            from_bivar_bc2 = hasattr(bivar.criteria2, "exp_scenario_name")
         else:
-            from_univar_bc = hasattr(criteria,
-                                     'exp_scenario_name')
+            from_univar_bc = hasattr(criteria, "exp_scenario_name")
 
         # Need to get per-experiment arena dimensions from batch criteria, as
         # they might be different for each experiment
         if from_univar_bc:
             self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
             self.scenario_name = criteria.exp_scenario_name(exp_num)
-            self.logger.debug("Read scenario dimensions '%s' from univariate batch criteria",
-                              self.arena_dim)
+            self.logger.debug(
+                "Read scenario dimensions '%s' from univariate batch criteria",
+                self.arena_dim,
+            )
         elif from_bivar_bc1 or from_bivar_bc2:
             self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
-            self.logger.debug("Read scenario dimensions '%s' bivariate batch criteria",
-                              self.arena_dim)
+            self.logger.debug(
+                "Read scenario dimensions '%s' bivariate batch criteria", self.arena_dim
+            )
             self.scenario_name = criteria.exp_scenario_name(exp_num)
 
         else:  # Default case: scenario dimensions read from cmdline
-            module = pm.module_load_tiered(project=cmdopts['project'],
-                                           path='generators.scenario')
-            kw = module.to_dict(cmdopts['scenario'])
+            module = pm.module_load_tiered(
+                project=cmdopts["project"], path="generators.scenario"
+            )
+            kw = module.to_dict(cmdopts["scenario"])
             self.arena_dim = ArenaExtent(
-                Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
-            self.logger.debug("Read scenario dimensions %s from cmdline spec",
-                              self.arena_dim)
+                Vector3D(kw["arena_x"], kw["arena_y"], kw["arena_z"])
+            )
+            self.logger.debug(
+                "Read scenario dimensions %s from cmdline spec", self.arena_dim
+            )
 
-            self.scenario_name = cmdopts['scenario']
+            self.scenario_name = cmdopts["scenario"]
 
 
-def scaffold_spec_factory(criteria: bc.BatchCriteria,
-                          **kwargs) -> tp.Union[SimpleBatchScaffoldSpec,
-                                                CompoundBatchScaffoldSpec]:
+def scaffold_spec_factory(
+    criteria: bc.BatchCriteria, **kwargs
+) -> tp.Union[SimpleBatchScaffoldSpec, CompoundBatchScaffoldSpec]:
     chgs = criteria.gen_attr_changelist()
     adds = criteria.gen_element_addlist()
 
     if chgs and adds:
-        logging.debug("Create compound batch experiment scaffolding spec for '%s'",
-                      criteria.cli_arg)
+        logging.debug(
+            "Create compound batch experiment scaffolding spec for '%s'",
+            criteria.cli_arg,
+        )
         return CompoundBatchScaffoldSpec(criteria, **kwargs)
     else:
-        logging.debug("Create simple batch experiment scaffolding spec for '%s'",
-                      criteria.cli_arg)
+        logging.debug(
+            "Create simple batch experiment scaffolding spec for '%s'", criteria.cli_arg
+        )
         return SimpleBatchScaffoldSpec(criteria, **kwargs)
 
 
-__all__ = ['ExperimentSpec']
+__all__ = ["ExperimentSpec"]

@@ -23,7 +23,8 @@ below.
       .. NOTE:: The ``--scenario`` argument can be used to encode the arena
                 dimensions used in an experiment; this is one of two ways to
                 communicate to SIERRA that size of the experimental arena for
-                each :term:`Experiment`. See :ref:`req/exp` for more details.
+                each :term:`Experiment`. See :ref:`req/exp/arena-size` for more
+                details.
 
       Can define the ``validate()`` function in their derived cmdline classes.
       This function is optional, and should assert() as needed to check cmdline

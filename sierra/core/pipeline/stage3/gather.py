@@ -98,7 +98,7 @@ class BaseGatherer:
 
     def __call__(self, exp_output_root: pathlib.Path) -> None:
         """Process the output files found in the output save path."""
-        if not self.gather_opts["df_skip_verify"]:
+        if self.gather_opts["df_verify"]:
             self._verify_exp_outputs(exp_output_root)
 
         self.logger.info("Gathering raw outputs from %s...", exp_output_root.name)
@@ -297,7 +297,6 @@ class DataGatherer(BaseGatherer):
         to_gather = []
         proj_output_root = run_output_root / self.run_metrics_leaf
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
-
         for item in proj_output_root.rglob("*"):
             if (
                 item.is_file()

@@ -15,15 +15,16 @@ import typing as tp
 import sierra.version
 from sierra.core import utils, types
 
-kVersionMsg = ("reSearch pIpEline for Reproducibility, Reusability and "
-               f"Automation (SIERRA) v{sierra.version.__version__}.\n"
-               "License: MIT.\n"
-               "This is free software: you are free to change and redistribute it.\n"
-               "SIERRA comes with no warranty.\n\n"
-
-               "See the documentation at "
-               "https://sierra.readthedocs.io/en/master/,\n"
-               "or 'man sierra' for details.\n")
+kVersionMsg = (
+    "reSearch pIpEline for Reproducibility, Reusability and "
+    f"Automation (SIERRA) v{sierra.version.__version__}.\n"
+    "License: MIT.\n"
+    "This is free software: you are free to change and redistribute it.\n"
+    "SIERRA comes with no warranty.\n\n"
+    "See the documentation at "
+    "https://sierra.readthedocs.io/en/master/,\n"
+    "or 'man sierra' for details.\n"
+)
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -34,16 +35,18 @@ class ArgumentParser(argparse.ArgumentParser):
 
     """
 
-    kHelpMsg = ("Usage:\n\nsierra-cli [-v | --version] [OPTION]...\n\n"
-                "What command line options SIERRA accepts depends on the loaded\n"
-                "--project, --engine, --exec-env, and project-specific options.\n"
-                "'man sierra-cli' will give you the full set of options that\n"
-                "comes with SIERRA.\n\n")
+    kHelpMsg = (
+        "Usage:\n\nsierra-cli [-v | --version] [OPTION]...\n\n"
+        "What command line options SIERRA accepts depends on the loaded\n"
+        "--project, --engine, --exec-env, and project-specific options.\n"
+        "'man sierra-cli' will give you the full set of options that\n"
+        "comes with SIERRA.\n\n"
+    )
 
     def error(self, message):
         self.print_usage(sys.stderr)
         # self.print_help(sys.stderr)
-        self.exit(2, f'{self.prog}: error: {message}\n')
+        self.exit(2, f"{self.prog}: error: {message}\n")
 
     def print_help(self, file=None):
         if file is None:
@@ -59,11 +62,11 @@ class BaseCmdline:
     """
 
     @staticmethod
-    def stage_usage_doc(stages: tp.List[int],
-                        omitted: str = "If omitted: N/A.") -> str:
+    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
         lst = ",".join(map(str, stages))
         header = "\n.. TIP:: Used by stage {0}; can be omitted otherwise. {1}\n".format(
-            lst, omitted)
+            lst, omitted
+        )
         return header
 
     @staticmethod
@@ -73,9 +76,9 @@ class BaseCmdline:
 
     @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
-        lst = "".join(map(lambda graph: "   - " +
-                          utils.sphinx_ref(graph) + "\n",
-                          graphs))
+        lst = "".join(
+            map(lambda graph: "   - " + utils.sphinx_ref(graph) + "\n", graphs)
+        )
         return f"\n.. TIP:: Applicable graphs:\n\n{lst}\n"
 
 
@@ -85,44 +88,50 @@ class BootstrapCmdline(BaseCmdline):
     """
 
     def __init__(self) -> None:
-        self.parser = ArgumentParser(add_help=True,
-                                     allow_abbrev=False)
+        self.parser = ArgumentParser(add_help=True, allow_abbrev=False)
 
-        bootstrap = self.parser.add_argument_group('Bootstrap options',
-                                                   'Bare-bones options for bootstrapping SIERRA')
+        bootstrap = self.parser.add_argument_group(
+            "Bootstrap options", "Bare-bones options for bootstrapping SIERRA"
+        )
 
-        bootstrap.add_argument("--project",
-                               help="""
+        bootstrap.add_argument(
+            "--project",
+            help="""
 
                                  Specify which :term:`Project` to load.
 
-                               """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
+                               """
+            + self.stage_usage_doc([1, 2, 3, 4, 5]),
+        )
 
-        bootstrap.add_argument("--version", "-v",
-                               help="""
+        bootstrap.add_argument(
+            "--version",
+            "-v",
+            help="""
 
                                Display SIERRA version information on stdout and
                                then exit.
 
                                """,
-                               action='store_true')
+            action="store_true",
+        )
 
-        bootstrap.add_argument("--log-level",
-                               choices=["ERROR",
-                                        "INFO",
-                                        "WARNING",
-                                        "DEBUG",
-                                        "TRACE"],
-                               help="""
+        bootstrap.add_argument(
+            "--log-level",
+            choices=["ERROR", "INFO", "WARNING", "DEBUG", "TRACE"],
+            help="""
 
                                  The level of logging to use when running
                                  SIERRA.
 
-                                 """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
-                               default="INFO")
+                                 """
+            + self.stage_usage_doc([1, 2, 3, 4, 5]),
+            default="INFO",
+        )
 
-        bootstrap.add_argument("--engine",
-                               help="""
+        bootstrap.add_argument(
+            "--engine",
+            help="""
                                This argument defines the :term:`Engine` you
                                want to run experiments on.
 
@@ -150,10 +159,12 @@ class BootstrapCmdline(BaseCmdline):
                                  and configured for Gazebo and ROS1.
 
                                """,
-                               default='engine.argos')
+            default="engine.argos",
+        )
 
-        bootstrap.add_argument("--skip-pkg-checks",
-                               help="""
+        bootstrap.add_argument(
+            "--skip-pkg-checks",
+            help="""
 
                                Skip the usual startup package checks. Only do
                                this if you are SURE you will never use the
@@ -161,10 +172,12 @@ class BootstrapCmdline(BaseCmdline):
                                don't have installed/can't install.
 
                                """,
-                               action='store_true')
+            action="store_true",
+        )
 
-        bootstrap.add_argument("--exec-env",
-                               help="""
+        bootstrap.add_argument(
+            "--exec-env",
+            help="""
                                This argument defines `how` experiments are going
                                to be run, using the ``--engine`` you have
                                selected.
@@ -206,67 +219,75 @@ class BootstrapCmdline(BaseCmdline):
 
                                Not all engines support all execution
                                environments.
-                               """ + self.stage_usage_doc([1, 2]),
-                               default='hpc.local')
+                               """
+            + self.stage_usage_doc([1, 2]),
+            default="hpc.local",
+        )
 
-        bootstrap.add_argument("--rcfile",
-                               help="""
+        bootstrap.add_argument(
+            "--rcfile",
+            help="""
 
                                  Specify the rcfile SIERRA should read
                                  additional cmdline arguments from. Any rcfile
                                  arguments overriden by cmdline args, if both
                                  are present. See also :envvar:`SIERRA_RCFILE`.
 
-                                 """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
+                                 """
+            + self.stage_usage_doc([1, 2, 3, 4, 5]),
+        )
 
 
 class CoreCmdline(BaseCmdline):
-    """Defines the core command line arguments for SIERRA using :class:`argparse`.
+    """Defines the core command line arguments for SIERRA using :class:`argparse`."""
 
-    """
-
-    def __init__(self,
-                 parents: tp.Optional[tp.List[ArgumentParser]],
-                 stages: tp.List[int]) -> None:
+    def __init__(
+        self, parents: tp.Optional[tp.List[ArgumentParser]], stages: tp.List[int]
+    ) -> None:
         self.scaffold_cli(parents)
         self.init_cli(stages)
 
-    def scaffold_cli(self,
-                     parents: tp.Optional[tp.List[ArgumentParser]]) -> None:
+    def scaffold_cli(self, parents: tp.Optional[tp.List[ArgumentParser]]) -> None:
         """
         Scaffold CLI by defining the parser and common argument groups.
         """
         if parents is not None:
-            self.parser = ArgumentParser(prog='sierra-cli',
-                                         parents=parents,
-                                         add_help=False,
-                                         allow_abbrev=False)
+            self.parser = ArgumentParser(
+                prog="sierra-cli", parents=parents, add_help=False, allow_abbrev=False
+            )
         else:
-            self.parser = ArgumentParser(prog='sierra-cli',
-                                         add_help=False,
-                                         allow_abbrev=False)
+            self.parser = ArgumentParser(
+                prog="sierra-cli", add_help=False, allow_abbrev=False
+            )
 
-        self.multistage = self.parser.add_argument_group('Multi-stage options',
-                                                         'Options which are used in multiple pipeline stages')
+        self.multistage = self.parser.add_argument_group(
+            "Multi-stage options", "Options which are used in multiple pipeline stages"
+        )
         self.stage1 = self.parser.add_argument_group(
-            'Stage1: General options for generating experiments')
+            "Stage1: General options for generating experiments"
+        )
         self.stage2 = self.parser.add_argument_group(
-            'Stage2: General options for running experiments')
+            "Stage2: General options for running experiments"
+        )
         self.stage3 = self.parser.add_argument_group(
-            'Stage3: General options for eprocessing experiment results')
+            "Stage3: General options for eprocessing experiment results"
+        )
         self.stage4 = self.parser.add_argument_group(
-            'Stage4: General options for generating graphs')
+            "Stage4: General options for generating graphs"
+        )
         self.stage5 = self.parser.add_argument_group(
-            'Stage5: General options for controller comparison')
+            "Stage5: General options for controller comparison"
+        )
         self.shortforms = self.parser.add_argument_group(
-            title='Shortform aliases',
+            title="Shortform aliases",
             description="""
                         Most cmdline options to SIERRA are longform (i.e.,
                         ``--option``), but some families of options have
                         shortforms (i.e., ``-o`` for ``--option``) as
                         well. Shortform arguments behave the same as their
                         longform counterparts.
-                        """)
+                        """,
+        )
 
     def init_cli(self, stages: tp.List[int]) -> None:
         """Define cmdline arguments for stages 1-5."""
@@ -293,8 +314,11 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline shortform arguments for all pipeline stages.
         """
-        self.shortforms.add_argument("-p", action="append", nargs="+",
-                                     help="""
+        self.shortforms.add_argument(
+            "-p",
+            action="append",
+            nargs="+",
+            help="""
                                      Alias of ``--plot-``; any number of
                                      ``--plot-XX`` option can be passed
                                      with separate ``-p`` arguments .
@@ -303,10 +327,14 @@ class CoreCmdline(BaseCmdline):
                                      ignored.
 
                                      .. versionadded:: 1.3.14
-                                     """)
+                                     """,
+        )
 
-        self.shortforms.add_argument("-e", action="append", nargs="+",
-                                     help="""
+        self.shortforms.add_argument(
+            "-e",
+            action="append",
+            nargs="+",
+            help="""
                                      Alias of ``--exp-``; any number of
                                      ``--exp-XX`` option can be passed
                                      with separate ``-e`` arguments .
@@ -315,10 +343,14 @@ class CoreCmdline(BaseCmdline):
                                      ignored.
 
                                      .. versionadded:: 1.3.14
-                                     """)
+                                     """,
+        )
 
-        self.shortforms.add_argument("-x", action="append", nargs="+",
-                                     help="""
+        self.shortforms.add_argument(
+            "-x",
+            action="append",
+            nargs="+",
+            help="""
                                      Alias of ``--exec-``; any number of
                                      ``--exec-XX`` option can be passed
                                      with separate ``-x`` arguments .
@@ -327,10 +359,14 @@ class CoreCmdline(BaseCmdline):
                                      ignored.
 
                                      .. versionadded:: 1.3.14
-                                     """)
+                                     """,
+        )
 
-        self.shortforms.add_argument("-s", action="append", nargs="+",
-                                     help="""
+        self.shortforms.add_argument(
+            "-s",
+            action="append",
+            nargs="+",
+            help="""
                                      Alias of ``--skip``; any number of
                                      ``--skip-XX`` option can be passed
                                      with separate ``-s`` arguments .
@@ -339,15 +375,17 @@ class CoreCmdline(BaseCmdline):
                                      ignored.
 
                                      .. versionadded:: 1.3.14
-                                     """)
+                                     """,
+        )
 
     def init_multistage(self) -> None:
         """
         Define cmdline arguments which are used in multiple pipeline stages.
         """
-        self.multistage.add_argument("--expdef-template",
-                                     metavar="filepath",
-                                     help="""
+        self.multistage.add_argument(
+            "--expdef-template",
+            metavar="filepath",
+            help="""
 
                                      The template ``.xml`` input file for the
                                      batch experiment. Beyond the requirements
@@ -357,10 +395,13 @@ class CoreCmdline(BaseCmdline):
                                      SIERRA requirements detailed in
                                      :ref:`tutorials/project/expdef-template`.
 
-                                     """ + self.stage_usage_doc([1, 2, 3, 4]))
+                                     """
+            + self.stage_usage_doc([1, 2, 3, 4]),
+        )
 
-        self.multistage.add_argument("--exp-overwrite",
-                                     help="""
+        self.multistage.add_argument(
+            "--exp-overwrite",
+            help="""
 
                                      When SIERRA calculates the batch experiment
                                      root (or any child path in the batch
@@ -374,12 +415,15 @@ class CoreCmdline(BaseCmdline):
                                      experiment, forcing the user to be explicit
                                      with potentially dangerous actions.
 
-                                     """ + self.stage_usage_doc([1, 2]),
-                                     action='store_true')
+                                     """
+            + self.stage_usage_doc([1, 2]),
+            action="store_true",
+        )
 
-        self.multistage.add_argument("--sierra-root",
-                                     metavar="dirpath",
-                                     help="""
+        self.multistage.add_argument(
+            "--sierra-root",
+            metavar="dirpath",
+            help="""
 
                                      Root directory for all SIERRA generated and
                                      created files.
@@ -390,12 +434,15 @@ class CoreCmdline(BaseCmdline):
                                      needed. Can persist between invocations of
                                      SIERRA.
 
-                                 """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
-                                     default="<home directory>/exp")
+                                 """
+            + self.stage_usage_doc([1, 2, 3, 4, 5]),
+            default="<home directory>/exp",
+        )
 
-        self.multistage.add_argument("--batch-criteria",
-                                     metavar="[<category>.<definition>,...]",
-                                     help="""
+        self.multistage.add_argument(
+            "--batch-criteria",
+            metavar="[<category>.<definition>,...]",
+            help="""
 
                                      Definition of criteria(s) to use to define
                                      the experiment.
@@ -414,12 +461,15 @@ class CoreCmdline(BaseCmdline):
                                      criteria defined by the parser for
                                      ``<category>``).
 
-                                 """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
-                                     nargs='+',
-                                     default=[])
+                                 """
+            + self.stage_usage_doc([1, 2, 3, 4, 5]),
+            nargs="+",
+            default=[],
+        )
 
-        self.multistage.add_argument("--pipeline",
-                                     help="""
+        self.multistage.add_argument(
+            "--pipeline",
+            help="""
                                      Define which stages of the experimental
                                      pipeline to run:
 
@@ -449,12 +499,13 @@ class CoreCmdline(BaseCmdline):
                                        run. Not part of default pipeline.
 
                                      """,
-                                     type=int,
-                                     nargs='*',
-                                     default=[1, 2, 3, 4]
-                                     )
-        self.multistage.add_argument("--exp-range",
-                                     help="""
+            type=int,
+            nargs="*",
+            default=[1, 2, 3, 4],
+        )
+        self.multistage.add_argument(
+            "--exp-range",
+            help="""
 
                                     Set the experiment numbers from the batch to
                                     run, average, generate intra-experiment
@@ -474,10 +525,13 @@ class CoreCmdline(BaseCmdline):
                                     single experiment with real robots which
                                     failed for some reason.
 
-                                 """ + self.stage_usage_doc([2, 3, 4]))
+                                 """
+            + self.stage_usage_doc([2, 3, 4]),
+        )
 
-        self.multistage.add_argument("--engine-vc",
-                                     help="""
+        self.multistage.add_argument(
+            "--engine-vc",
+            help="""
 
                                     For applicable ``--engines``, enable
                                     visual capturing of run-time data during
@@ -492,24 +546,30 @@ class CoreCmdline(BaseCmdline):
                                     :ref:`usage/rendering/engine`
                                     for full details.
 
-                                    """ + self.stage_usage_doc([1, 4]),
-                                     action='store_true')
+                                    """
+            + self.stage_usage_doc([1, 4]),
+            action="store_true",
+        )
 
-        self.multistage.add_argument("--processing-serial",
-                                     help="""
+        self.multistage.add_argument(
+            "--processing-serial",
+            help="""
 
                                     If TRUE, then results processing/graph
                                     generation will be performed serially,
                                     rather than using parallellism where
                                     possible.
 
-                                 """ + self.stage_usage_doc([3, 4]),
-                                     action='store_true')
+                                 """
+            + self.stage_usage_doc([3, 4]),
+            action="store_true",
+        )
 
-        self.multistage.add_argument("--n-runs",
-                                     type=int,
-                                     default=1,
-                                     help="""
+        self.multistage.add_argument(
+            "--n-runs",
+            type=int,
+            default=1,
+            help="""
 
                                     The # of experimental runs that will be
                                     executed and their results processed to form
@@ -522,10 +582,13 @@ class CoreCmdline(BaseCmdline):
                                     determine the concurrency of experimental
                                     runs.
 
-                                     """ + self.stage_usage_doc([1, 2]))
+                                     """
+            + self.stage_usage_doc([1, 2]),
+        )
 
-        self.multistage.add_argument("--skip-collate",
-                                     help="""
+        self.multistage.add_argument(
+            "--skip-collate",
+            help="""
 
                                     Specify that no collation of data across
                                     experiments within a batch (stage 4) or
@@ -536,11 +599,14 @@ class CoreCmdline(BaseCmdline):
                                     generally idempotent unless you change the
                                     stage3 options (YMMV).
 
-                                     """ + self.stage_usage_doc([3, 4]),
-                                     action='store_true')
+                                     """
+            + self.stage_usage_doc([3, 4]),
+            action="store_true",
+        )
         # Plotting options
-        self.multistage.add_argument("--plot-log-xscale",
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-log-xscale",
+            help="""
 
                            Place the set of X values used to generate intra- and
                            inter-experiment graphs into the logarithmic
@@ -548,14 +614,15 @@ class CoreCmdline(BaseCmdline):
                            large system sizes, so that the plots are more
                            readable.
 
-                           """ +
+                           """
+            + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
+            + self.stage_usage_doc([4, 5]),
+            action="store_true",
+        )
 
-                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`']) +
-                                     self.stage_usage_doc([4, 5]),
-                                     action='store_true')
-
-        self.multistage.add_argument("--plot-enumerated-xscale",
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-enumerated-xscale",
+            help="""
 
                                      Instead of using the values generated by a
                                      given batch criteria for the X values, use
@@ -564,14 +631,15 @@ class CoreCmdline(BaseCmdline):
                                      involves large system sizes, so that the
                                      plots are more readable.
 
-                                     """ +
+                                     """
+            + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
+            + self.stage_usage_doc([4, 5]),
+            action="store_true",
+        )
 
-                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`']) +
-                                     self.stage_usage_doc([4, 5]),
-                                     action='store_true')
-
-        self.multistage.add_argument("--plot-log-yscale",
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-log-yscale",
+            help="""
 
                                      Place the set of Y values used to generate
                                      intra - and inter-experiment graphs into
@@ -579,26 +647,32 @@ class CoreCmdline(BaseCmdline):
                                      the batch criteria involves large system
                                      sizes, so that the plots are more readable.
 
-                                     """ +
+                                     """
+            + self.graphs_applicable_doc(
+                [
+                    ":func:`~sierra.core.graphs.summary_line`",
+                    ":func:`~sierra.core.graphs.StackedLineGraph`",
+                ]
+            )
+            + self.stage_usage_doc([4, 5]),
+            action="store_true",
+        )
 
-                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`',
-                                                                 ':func:`~sierra.core.graphs.StackedLineGraph`']) +
-                                     self.stage_usage_doc([4, 5]),
-                                     action='store_true')
-
-        self.multistage.add_argument("--plot-regression-lines",
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-regression-lines",
+            help="""
 
                                      For all 2D generated scatterplots, plot a
                                      linear regression line and the equation of
-                                     the line to the legend. """ +
+                                     the line to the legend. """
+            + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
+            + self.stage_usage_doc([4, 5]),
+        )
 
-                                     self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`']) +
-                                     self.stage_usage_doc([4, 5]))
-
-        self.multistage.add_argument("--plot-primary-axis",
-                                     type=int,
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-primary-axis",
+            type=int,
+            help="""
 
 
                                      This option allows you to override the
@@ -634,14 +708,19 @@ class CoreCmdline(BaseCmdline):
                                     from bivariate batch criteria.
 
                                     """
-                                     +
-                                     self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`',
-                                                                 ':class:`~sierra.core.graphs.StackedLineGraph`']) +
-                                     self.stage_usage_doc([4, 5]),
-                                     default=None)
+            + self.graphs_applicable_doc(
+                [
+                    ":class:`~sierra.core.graphs.heatmap.Heatmap`",
+                    ":class:`~sierra.core.graphs.StackedLineGraph`",
+                ]
+            )
+            + self.stage_usage_doc([4, 5]),
+            default=None,
+        )
 
-        self.multistage.add_argument("--plot-large-text",
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-large-text",
+            help="""
                                           This option specifies that the title,
                                           X/Y axis labels/tick labels should be
                                           larger than the SIERRA default.  This
@@ -652,11 +731,14 @@ class CoreCmdline(BaseCmdline):
                                           see easily.  The SIERRA defaults are
                                           generally fine for the one
                                           column/journal paper format.
-                                          """ + self.stage_usage_doc([4, 5]),
-                                     action='store_true')
+                                          """
+            + self.stage_usage_doc([4, 5]),
+            action="store_true",
+        )
 
-        self.multistage.add_argument("--plot-transpose-graphs",
-                                     help="""
+        self.multistage.add_argument(
+            "--plot-transpose-graphs",
+            help="""
                                           Transpose the X, Y axes in generated
                                           graphs.  Useful as a general way to
                                           tweak graphs for best use of space
@@ -667,13 +749,18 @@ class CoreCmdline(BaseCmdline):
                                           Renamed from ``--transpose-graphs`` to
                                           make its relation to other plotting
                                           options clearer.
-                                          """ +
-                                     self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`']) +
-                                     self.stage_usage_doc([4, 5]),
-                                     action='store_true')
+                                          """
+            + self.graphs_applicable_doc(
+                [":class:`~sierra.core.graphs.heatmap.Heatmap`"]
+            )
+            + self.stage_usage_doc([4, 5]),
+            action="store_true",
+        )
 
-        self.multistage.add_argument("--expdef", choices=['expdef.xml', 'expdef.json'],
-                                     help="""
+        self.multistage.add_argument(
+            "--expdef",
+            choices=["expdef.xml", "expdef.json"],
+            help="""
                                           Specify the experiment definition
                                           format, so that SIERRA can select an
                                           appropriate plugin to read/write files
@@ -695,15 +782,18 @@ class CoreCmdline(BaseCmdline):
                                                 json files.  This causes
                                                 ``--expdef-template`` to be
                                                 parsed as JSON.
-                                          """ + self.stage_usage_doc([1, 4, 5]),
-                                     default='expdef.xml')
+                                          """
+            + self.stage_usage_doc([1, 4, 5]),
+            default="expdef.xml",
+        )
 
     def init_stage1(self) -> None:
         """
         Define cmdline arguments for stage 1.
         """
-        self.stage1.add_argument("--preserve-seeds",
-                                 help="""
+        self.stage1.add_argument(
+            "--preserve-seeds",
+            help="""
 
                                  Preserve previously generated random seeds for
                                  experiments (the default). Useful for
@@ -714,23 +804,27 @@ class CoreCmdline(BaseCmdline):
                                  not affected by ``--exp-overwrite``.
 
                                  """,
-                                 default=True)
+            default=True,
+        )
 
-        self.stage1.add_argument("--no-preserve-seeds",
-                                 help="""
+        self.stage1.add_argument(
+            "--no-preserve-seeds",
+            help="""
 
                                  Opposite of ``--preserve-seeds``.
 
                                  """,
-                                 dest='preserve_seeds',
-                                 action='store_false')
+            dest="preserve_seeds",
+            action="store_false",
+        )
 
     def init_stage2(self) -> None:
         """
         Define cmdline arguments for stage 2.
         """
-        self.stage2.add_argument("--nodefile",
-                                 help="""
+        self.stage2.add_argument(
+            "--nodefile",
+            help="""
 
                                  Specify a list of compute nodes which SIERpRA
                                  will use to run jobs. For simulator
@@ -742,27 +836,31 @@ class CoreCmdline(BaseCmdline):
                                  variable; this argument takes priority if both
                                  are supplied.
 
-                                 """)
+                                 """,
+        )
 
     def init_stage3(self) -> None:
         """
         Define cmdline arguments for stage 3.
         """
 
-        self.stage3.add_argument('--df-skip-verify',
-                                 help="""
+        self.stage3.add_argument(
+            "--df-verify",
+            help="""
 
                                  SIERRA generally assumes/relies on all
                                  dataframes with the same name having the same #
                                  of columns which are of equivalent length
                                  across :term:`Experimental Runs <Experimental
                                  Run>` (different columns within a dataframe can
-                                 of course have different lengths). This is
-                                 strictly verified during stage 3 by default.
+                                 of course have different lengths). However this
+                                 is not checked by default.
 
-                                 If passed, then the verification step will be
-                                 skipped during experimental results processing,
-                                 and outputs will be averaged directly.
+                                 If passed, then the verification step not be
+                                 skipped, and will be
+                                 executed during experimental results
+                                 processing, and outputs will be averaged
+                                 directly.
 
                                  If not all the corresponding CSV files in all
                                  experiments generated the same # rows, then
@@ -771,13 +869,16 @@ class CoreCmdline(BaseCmdline):
                                  take a long time with large # of runs and/or
                                  dataframes per experiment.
 
-                                 """ + self.stage_usage_doc([3]),
-                                 action='store_true',
-                                 default=False)
+                                 """
+            + self.stage_usage_doc([3]),
+            action="store_true",
+            default=False,
+        )
 
-        self.stage3.add_argument("--storage", choices=['storage.csv',
-                                                       'storage.arrow'],
-                                 help="""
+        self.stage3.add_argument(
+            "--storage",
+            choices=["storage.csv", "storage.arrow"],
+            help="""
 
                                  Specify the storage medium for
                                  :term:`Experimental Run` outputs, so that
@@ -797,12 +898,15 @@ class CoreCmdline(BaseCmdline):
                                  Regardless of the value of this option, SIERRA
                                  always generates CSV files as it runs and
                                  averages outputs, generates graphs, etc.
-                                 """ + self.stage_usage_doc([3]),
-                                 default='storage.csv')
+                                 """
+            + self.stage_usage_doc([3]),
+            default="storage.csv",
+        )
 
-        self.stage3.add_argument("--dist-stats",
-                                 choices=['none', 'all', 'conf95', 'bw'],
-                                 help="""
+        self.stage3.add_argument(
+            "--dist-stats",
+            choices=["none", "all", "conf95", "bw"],
+            help="""
 
                                  Specify what kinds of statistics, if any,
                                  should be calculated on the distribution of
@@ -818,23 +922,27 @@ class CoreCmdline(BaseCmdline):
 
                                  - ``bw`` - Calculate statistics necessary to
                                    show box and whisker plots around each point
-                                   in the graph. """ +
-
-                                 utils.sphinx_ref(':func:`~sierra.core.graphs.summary_line`') +
-                                 """ only).
+                                   in the graph. """
+            + utils.sphinx_ref(":func:`~sierra.core.graphs.summary_line`")
+            + """ only).
 
                                  - ``all`` - Generate all possible statistics,
                                    and plot all possible statistics on graphs.
-                                   """ +
-                                 self.graphs_applicable_doc([':func:`~sierra.core.graphs.summary_line`',
-                                                             ':func:`~sierra.core.graphs.StackedLineGraph`'])
-                                   +
-                                 self.stage_usage_doc([3, 4]),
-                                 default='none')
+                                   """
+            + self.graphs_applicable_doc(
+                [
+                    ":func:`~sierra.core.graphs.summary_line`",
+                    ":func:`~sierra.core.graphs.StackedLineGraph`",
+                ]
+            )
+            + self.stage_usage_doc([3, 4]),
+            default="none",
+        )
 
-        self.stage3.add_argument("--processing-mem-limit",
-                                 type=int,
-                                 help="""
+        self.stage3.add_argument(
+            "--processing-mem-limit",
+            type=int,
+            help="""
 
 
                                  Specify, as a percent in [0, 100], how much
@@ -844,22 +952,24 @@ class CoreCmdline(BaseCmdline):
                                  other users without per-user memory
                                  restrictions.
 
-                                 """ + self.stage_usage_doc([3, 4]),
-                                 default=90)
+                                 """
+            + self.stage_usage_doc([3, 4]),
+            default=90,
+        )
 
-        self.stage3.add_argument("--df-homogenize",
-                                 help="""
+        self.stage3.add_argument(
+            "--df-homogenize",
+            help="""
 
                                  SIERRA generally assumes/relies on all
                                  dataframes with the same name having the same #
                                  of columns which are of equivalent length
                                  across: term: `Experimental Runs < Experimental
                                  Run >` (different columns within a dataframe
-                                 can of course have different lengths). This is
-                                 checked during stage 3 unless
-                                 ``--df-skip-verify`` is passed. If strict
-                                 verification is skipped, then SIERRA provides
-                                 the following options when processing
+                                 can of course have different lengths). This not
+                                 checked unless ``--df-verify`` is passed. If
+                                 strict verification is skipped, then SIERRA
+                                 provides the following options when processing
                                  dataframes during stage {3, 4} to to homogenize
                                  them:
 
@@ -890,15 +1000,17 @@ class CoreCmdline(BaseCmdline):
                                  experiment started.
 
                                  """,
-                                 default='none')
+            default="none",
+        )
 
     def init_stage4(self) -> None:
         """
         Define cmdline arguments for stage 4.
         """
-        self.stage4.add_argument("--exp-graphs",
-                                 choices=['intra', 'inter', 'all', 'none'],
-                                 help="""
+        self.stage4.add_argument(
+            "--exp-graphs",
+            choices=["intra", "inter", "all", "none"],
+            help="""
 
                                  Specify which types of graphs should be
                                  generated from experimental results:
@@ -925,11 +1037,14 @@ class CoreCmdline(BaseCmdline):
                                    skip graph generation if only video outputs
                                    are desired.
 
-                                 """ + self.stage_usage_doc([4]),
-                                 default='all')
+                                 """
+            + self.stage_usage_doc([4]),
+            default="all",
+        )
 
-        self.stage4.add_argument("--project-no-LN",
-                                 help="""
+        self.stage4.add_argument(
+            "--project-no-LN",
+            help="""
 
                                  Specify that the intra-experiment and
                                  inter-experiment linegraphs defined in project
@@ -944,10 +1059,12 @@ class CoreCmdline(BaseCmdline):
                                  applicable.
 
                                  """,
-                                 action='store_true')
+            action="store_true",
+        )
 
-        self.stage4.add_argument("--project-no-HM",
-                                 help="""
+        self.stage4.add_argument(
+            "--project-no-HM",
+            help="""
 
                                  Specify that the intra-experiment heatmaps
                                  defined in project YAML configuration should
@@ -969,12 +1086,14 @@ class CoreCmdline(BaseCmdline):
                                  .. versionadded:: 1.2.20
 
                                  """,
-                                 action='store_true')
+            action="store_true",
+        )
 
         # Model options
-        models = self.parser.add_argument_group('Models')
-        models.add_argument('--models-enable',
-                            help="""
+        models = self.parser.add_argument_group("Models")
+        models.add_argument(
+            "--models-enable",
+            help="""
 
                             Enable running of all models; otherwise, no models
                             are run, even if they appear in the project config
@@ -982,14 +1101,17 @@ class CoreCmdline(BaseCmdline):
                             default is that most users won't have them.
 
                             """,
-                            action="store_true")
+            action="store_true",
+        )
 
         # Rendering options
         rendering = self.parser.add_argument_group(
-            'Stage4: Rendering (see also stage1 rendering options)')
+            "Stage4: Rendering (see also stage1 rendering options)"
+        )
 
-        rendering.add_argument("--render-cmd-opts",
-                               help="""
+        rendering.add_argument(
+            "--render-cmd-opts",
+            help="""
 
                                Specify the :program:`ffmpeg` options to appear
                                between the specification of the input image
@@ -998,11 +1120,14 @@ class CoreCmdline(BaseCmdline):
                                frame grabbing set to a frames size of 1600x1200
                                to output a reasonable quality video.
 
-                               """ + self.stage_usage_doc([4]),
-                               default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
+                               """
+            + self.stage_usage_doc([4]),
+            default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p",
+        )
 
-        rendering.add_argument("--project-imagizing",
-                               help="""
+        rendering.add_argument(
+            "--project-imagizing",
+            help="""
 
                                Enable generation of image files from CSV files
                                captured during stage 2 and averaged during stage
@@ -1010,11 +1135,14 @@ class CoreCmdline(BaseCmdline):
                                :ref:`usage/rendering/project` for
                                details and restrictions.
 
-                               """ + self.stage_usage_doc([3, 4]),
-                               action='store_true')
+                               """
+            + self.stage_usage_doc([3, 4]),
+            action="store_true",
+        )
 
-        rendering.add_argument("--project-rendering",
-                               help="""
+        rendering.add_argument(
+            "--project-rendering",
+            help="""
 
                                Enable generation of videos from imagized CSV
                                files created as a result of
@@ -1022,11 +1150,14 @@ class CoreCmdline(BaseCmdline):
                                :ref:`usage/rendering/project` for
                                details.
 
-                               """ + self.stage_usage_doc([4]),
-                               action='store_true')
+                               """
+            + self.stage_usage_doc([4]),
+            action="store_true",
+        )
 
-        rendering.add_argument("--bc-rendering",
-                               help="""
+        rendering.add_argument(
+            "--bc-rendering",
+            help="""
 
                                Enable generation of videos from generated
                                graphs, such as heatmaps. Bivariate batch
@@ -1034,15 +1165,18 @@ class CoreCmdline(BaseCmdline):
 
                                .. versionadded:: 1.2.20
 
-                               """ + self.stage_usage_doc([4]),
-                               action='store_true')
+                               """
+            + self.stage_usage_doc([4]),
+            action="store_true",
+        )
 
     def init_stage5(self) -> None:
         """
         Define cmdline arguments for stage 5.
         """
-        self.stage5.add_argument("--controllers-list",
-                                 help="""
+        self.stage5.add_argument(
+            "--controllers-list",
+            help="""
 
                                  Comma separated list of controllers to compare
                                  within ``--sierra-root``.
@@ -1051,30 +1185,40 @@ class CoreCmdline(BaseCmdline):
                                  for as the controller of primary interest if
                                  ``--comparison-type`` is passed.
 
-                                 """ + self.stage_usage_doc([5]))
+                                 """
+            + self.stage_usage_doc([5]),
+        )
 
-        self.stage5.add_argument("--controllers-legend",
-                                 help="""
+        self.stage5.add_argument(
+            "--controllers-legend",
+            help="""
 
                                  Comma separated list of names to use on the
                                  legend for the generated comparison graphs,
                                  specified in the same order as the
                                  ``--controllers-list``.
 
-                                 """ + self.stage_usage_doc([5],
-                                                            "If omitted: the raw controller names will be used."))
+                                 """
+            + self.stage_usage_doc(
+                [5], "If omitted: the raw controller names will be used."
+            ),
+        )
 
-        self.stage5.add_argument("--scenarios-list",
-                                 help="""
+        self.stage5.add_argument(
+            "--scenarios-list",
+            help="""
 
                                  Comma separated list of scenarios to compare
                                  ``--controller`` across within
                                  ``--sierra-root``.
 
-                                 """ + self.stage_usage_doc([5]))
+                                 """
+            + self.stage_usage_doc([5]),
+        )
 
-        self.stage5.add_argument("--scenarios-legend",
-                                 help="""
+        self.stage5.add_argument(
+            "--scenarios-legend",
+            help="""
 
                                  Comma separated list of names to use on the
                                  legend for the generated inter-scenario
@@ -1082,34 +1226,47 @@ class CoreCmdline(BaseCmdline):
                                  specified in the same order as the
                                  ``--scenarios-list``.
 
-                                 """ + self.stage_usage_doc([5],
-                                                            "If omitted: the raw scenario names will be used."))
-        self.stage5.add_argument("--scenario-comparison",
-                                 help="""
+                                 """
+            + self.stage_usage_doc(
+                [5], "If omitted: the raw scenario names will be used."
+            ),
+        )
+        self.stage5.add_argument(
+            "--scenario-comparison",
+            help="""
 
                                  Perform a comparison of ``--controller`` across
                                  ``--scenarios-list`` (univariate batch criteria
                                  only).
 
-                                 """ + self.stage_usage_doc([5],
-                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
-                                 action='store_true')
+                                 """
+            + self.stage_usage_doc(
+                [5],
+                "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed.",
+            ),
+            action="store_true",
+        )
 
-        self.stage5.add_argument("--controller-comparison",
-                                 help="""
+        self.stage5.add_argument(
+            "--controller-comparison",
+            help="""
 
                                  Perform a comparison of ``--controllers-list``
                                  across all scenarios at least one controller
                                  has been run on.
 
-                                 """ + self.stage_usage_doc([5],
-                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
-                                 action='store_true')
+                                 """
+            + self.stage_usage_doc(
+                [5],
+                "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed.",
+            ),
+            action="store_true",
+        )
 
-        self.stage5.add_argument("--comparison-type",
-                                 choices=['LNraw',
-                                          'HMraw', 'HMdiff', 'HMscale'],
-                                 help=r"""
+        self.stage5.add_argument(
+            "--comparison-type",
+            choices=["LNraw", "HMraw", "HMdiff", "HMscale"],
+            help=r"""
 
                                  Specify how controller comparisons should be
                                  performed.
@@ -1158,10 +1315,15 @@ class CoreCmdline(BaseCmdline):
                                  ``--controllers-legend`` is used if passed for
                                  legend.
 
-                                 """.format(utils.sphinx_ref(':func:`~sierra.core.graphs.summary_line`')) + self.stage_usage_doc([5]))
+                                 """.format(
+                utils.sphinx_ref(":func:`~sierra.core.graphs.summary_line`")
+            )
+            + self.stage_usage_doc([5]),
+        )
 
-        self.stage5.add_argument("--bc-univar",
-                                 help="""
+        self.stage5.add_argument(
+            "--bc-univar",
+            help="""
 
                                  Specify that the batch criteria is
                                  univariate. This cannot be deduced from the
@@ -1174,11 +1336,14 @@ class CoreCmdline(BaseCmdline):
                                  the batch criteria for each scenaro we compare
                                  controllers within.
 
-                                 """ + self.stage_usage_doc([5]),
-                                 action='store_true')
+                                 """
+            + self.stage_usage_doc([5]),
+            action="store_true",
+        )
 
-        self.stage5.add_argument("--bc-bivar",
-                                 help="""
+        self.stage5.add_argument(
+            "--bc-bivar",
+            help="""
 
                                  Specify that the batch criteria is
                                  bivariate. This cannot be deduced from the
@@ -1191,8 +1356,10 @@ class CoreCmdline(BaseCmdline):
                                  re-generate the batch criteria for each scenaro
                                  we compare controllers in .
 
-                                 """ + self.stage_usage_doc([5]),
-                                 action='store_true')
+                                 """
+            + self.stage_usage_doc([5]),
+            action="store_true",
+        )
 
     def validate(self, args: argparse.Namespace) -> None:
         """
@@ -1207,46 +1374,53 @@ class CoreCmdline(BaseCmdline):
         self._validate_check_bc(args)
         self._validate_check_pipeline(args)
 
-        assert args.sierra_root is not None, \
-            '--sierra-root is required for all stages'
+        assert args.sierra_root is not None, "--sierra-root is required for all stages"
 
     def _validate_check_bc(self, args: argparse.Namespace) -> None:
-        assert len(args.batch_criteria) <= 2, \
-            "Too many batch criteria passed"
+        assert len(args.batch_criteria) <= 2, "Too many batch criteria passed"
 
         if len(args.batch_criteria) == 2:
-            assert args.batch_criteria[0] != args.batch_criteria[1], \
-                "Duplicate batch criteria passed"
+            assert (
+                args.batch_criteria[0] != args.batch_criteria[1]
+            ), "Duplicate batch criteria passed"
 
-            assert isinstance(args.batch_criteria, list), \
-                'Batch criteria not passed as list on cmdline'
+            assert isinstance(
+                args.batch_criteria, list
+            ), "Batch criteria not passed as list on cmdline"
 
     def _validate_check_pipeline(self, args: argparse.Namespace) -> None:
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
-            assert args.expdef_template is not None, \
-                '--expdef-template is required for running stage 1'
-            assert args.scenario is not None, \
-                '--scenario is required for running stage 1'
-            assert args.n_runs is not None, \
-                '--n-runs is required for running stage 1'
+            assert (
+                args.expdef_template is not None
+            ), "--expdef-template is required for running stage 1"
+            assert (
+                args.scenario is not None
+            ), "--scenario is required for running stage 1"
+            assert args.n_runs is not None, "--n-runs is required for running stage 1"
 
-        assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
-            'Only 1-5 are valid pipeline stages'
+        assert all(
+            stage in [1, 2, 3, 4, 5] for stage in args.pipeline
+        ), "Only 1-5 are valid pipeline stages"
 
         if any(stage in args.pipeline for stage in [1, 2, 3, 4]):
-            assert len(args.batch_criteria) > 0, \
-                '--batch-criteria is required for running stages 1-4'
-            assert args.controller is not None, \
-                '--controller is required for running stages 1-4'
+            assert (
+                len(args.batch_criteria) > 0
+            ), "--batch-criteria is required for running stages 1-4"
+            assert (
+                args.controller is not None
+            ), "--controller is required for running stages 1-4"
 
         if 5 in args.pipeline:
-            assert args.bc_univar or args.bc_bivar, \
-                '--bc-univar or --bc-bivar is required for stage 5'
-            assert args.scenario_comparison or args.controller_comparison, \
-                '--scenario-comparison or --controller-comparison required for stage 5'
+            assert (
+                args.bc_univar or args.bc_bivar
+            ), "--bc-univar or --bc-bivar is required for stage 5"
+            assert (
+                args.scenario_comparison or args.controller_comparison
+            ), "--scenario-comparison or --controller-comparison required for stage 5"
             if args.scenario_comparison:
-                assert args.controller is not None, \
-                    '--controller is required for --scenario-comparison'
+                assert (
+                    args.controller is not None
+                ), "--controller is required for --scenario-comparison"
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
@@ -1275,8 +1449,8 @@ def sphinx_cmdline_stage5():
 
 
 __all__ = [
-    'ArgumentParser',
-    'BaseCmdline',
-    'BootstrapCmdline',
-    'CoreCmdline',
+    "ArgumentParser",
+    "BaseCmdline",
+    "BootstrapCmdline",
+    "CoreCmdline",
 ]

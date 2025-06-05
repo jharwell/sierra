@@ -49,7 +49,7 @@ def proc_batch_exp(
 
     stat_opts = {
         "template_input_leaf": template_input_leaf,
-        "df_skip_verify": cmdopts["df_skip_verify"],
+        "df_verify": cmdopts["df_verify"],
         "dist_stats": cmdopts["dist_stats"],
         "project_imagizing": cmdopts["project_imagizing"],
         "processing_mem_limit": cmdopts["processing_mem_limit"],

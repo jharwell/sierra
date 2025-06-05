@@ -166,7 +166,7 @@ class IBivarBatchCriteria(implements.Interface):
         """
         Get the Y-label for a graph.
 
-        Returns:p
+        Returns:
 
             The Y-label that should be used for the graphs of various
             performance measures across batch criteria. Only needed by bivar

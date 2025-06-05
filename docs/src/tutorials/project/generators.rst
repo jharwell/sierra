@@ -56,14 +56,11 @@ Within this file, you must define the following functions:
                  which specify the X,Y,Z dimensions of the arena a unique
                  tag/short scenario name unique among all scenarios for the
                  project, which is used which creating the SIERRA runtime
-                 directory structure.
+                 directory structure. If you aren't interested in setting the
+                 dimensions of the arena from the cmdline, return -1 for the
+                 X,Y,Z components.
                  """
                  ...
-
-      .. NOTE:: This function is one of the two ways in which the requirement
-                that the size of the arena (i.e., the volume or plane of real or
-                simulation space) to use during experiments is known to SIERRA
-                can be communicated. For more details, see :ref:`req/exp`.
 
 .. _tutorials/project/generators/exp:
 

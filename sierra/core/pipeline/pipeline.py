@@ -84,7 +84,7 @@ class Pipeline:
             # stage 2
             "nodefile": self.args.nodefile,
             # stage 3
-            "df_skip_verify": self.args.df_skip_verify,
+            "df_verify": self.args.df_verify,
             "df_homogenize": self.args.df_homogenize,
             "render_cmd_opts": self.args.render_cmd_opts,
             "processing_mem_limit": self.args.processing_mem_limit,

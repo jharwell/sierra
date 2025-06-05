@@ -28,10 +28,7 @@ One of the following:
 .. NOTE:: Windows is not supported currently. Not because it can't be supported,
           but because there are not current any engine plugins that which work
           on windows. SIERRA is written in pure python, and could be made to
-          work on windows with a little work.
-
-          If windows support would be helpful for your intended usage of SIERRA,
-          please get in touch with me.
+          work on windows with minimal work.
 
 Python Requirements
 ===================
@@ -52,19 +49,23 @@ plugin loading at runtime.
 Experimental Design Requirements
 ================================
 
+.. _req/exp/arena-size:
+
+Arena Size
+----------
+
+These requires only apply if you want to execute :term:`Experiments` which have
+different arena sizes (e.g., you want to put the same # of agents in
+increasingly large/small areas to figure out how their behavior changes).
+
 #. The experimental arena size for each :term:`Experiment` in all :term:`Batch
-   Experiments <Batch Experiment>` is defined. The size of the arena in which
-   the agent(s) operate is used by SIERRA for a number of things, such as
-   creating unique directory paths, computing metrics, etc.
-
-   For experiments which will run in simulation, this is usually obtained from
-   the configured limits on the simulated space set in the simulator input
-   files(s). If your simulation environment is more of a "treadmill" (i.e., it
-   renders around agents as they move and is effectively infinite), then you
-   will have to create some mechanism for a set size for the simulation.
-
-   For real-world experiments, this is usually just an estimate of the lab/test
-   range space size.
+   Experiments <Batch Experiment>` is defined. For experiments which will run in
+   simulation, this is usually obtained from the configured limits on the
+   simulated space set in the simulator input files(s). If your simulation
+   environment is more of a "treadmill" (i.e., it renders around agents as they
+   move and is effectively infinite), then you will have to create some
+   mechanism for a set size for the simulation.  For real-world experiments,
+   this is usually just an estimate of the lab/test range space size.
 
    There are two ways in which the arena size used in experiments can be
    communicated to SIERRA, which SIERRA tries in the following order:
@@ -91,7 +92,7 @@ Experimental Definition Requirements
 
 This section details restrictions on how experiments are defined from a provided
 template file, with some restrictions depending on the file format (XML, JSON,
-...).
+etc.).
 
 General
 -------
@@ -203,9 +204,6 @@ apply.
 
 Requirements For Project Code
 =============================
-
-General
--------
 
 SIERRA makes a few assumptions about how :term:`Experimental Runs<Experimental
 Run>` using your C/C++ library can be launched, and how they output data. If

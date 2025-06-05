@@ -64,11 +64,14 @@ def _gen_summary_linegraph(
         model_root=None,
     )
 
+    # 2025-06-05 [JRH]: We always write stage {3,4} output data files as .csv
+    # because that is currently SIERRA's 'native' format; this may change in the
+    # future.
     graphs.summary_line(
         paths=paths,
         input_stem=graph["dest_stem"],
         output_stem=graph["dest_stem"],
-        medium=cmdopts["storage"],
+        medium="storage.csv",
         legend=[legend],
         stats=cmdopts["dist_stats"],
         title=graph["title"],
@@ -99,9 +102,9 @@ def _gen_stacked_linegraph(
         input_stem=graph["dest_stem"],
         output_stem=graph["dest_stem"],
         stats=cmdopts["dist_stats"],
-        medium=cmdopts["storage"],
+        medium="storage.csv",
         title=graph["title"],
-        xlabel=graph.get("xlabel", None),
+        xlabel=graph.get("xlabel", "Time"),
         ylabel=graph.get("ylabel", None),
         logyscale=cmdopts["plot_log_yscale"],
         large_text=cmdopts["plot_large_text"],

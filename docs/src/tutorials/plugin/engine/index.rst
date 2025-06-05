@@ -211,9 +211,10 @@ In ``generators/engine.py``, you may define the following functions:
    .. tab:: ``arena_dims_from_criteria()``
 
       This function is optional; only needed if the dimensions are not specified
-      on the cmdline, which can be useful if the batch criteria involves
-      changing them; e.g., evaluating behavior with different arena shapes. See
-      :ref:`req/exp` for more details.
+      on the cmdline for a scenario where you want to change the size of the
+      arena from what it is in the template file, which can be useful if the
+      batch criteria involves changing them; e.g., evaluating behavior with
+      different arena shapes. See :ref:`req/exp/arena-size` for more details.
 
    .. code-block:: python
 
@@ -275,7 +276,7 @@ In ``generators/engine.py``, you may define the following functions:
    - All :term:`Batch Criteria` that you use must have the arena dimensions
      extractable when passed to ``arena_dims_from_criteria()``.
 
-   See :ref:`req/exp` for more details.
+   See :ref:`req/exp/arena-size` for more info.
 
 
 #. In ``plugin.py``, you may define the following classes which are used in

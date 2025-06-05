@@ -252,7 +252,11 @@ class ExpRunner:
         """Execute experimental runs for a single experiment."""
         exp_input_root = self.pathset.input_root / exp_name
         exp_scratch_root = self.pathset.scratch_root / exp_name
-        self.logger.info("Running exp%s in '%s'", exp_num, exp_input_root)
+        self.logger.info(
+            "Running exp%s in <batch root>/%s",
+            exp_num,
+            exp_input_root.relative_to(self.pathset.root),
+        )
         sys.stdout.flush()
 
         wd = exp_input_root.relative_to(pathlib.Path().home())
@@ -260,6 +264,8 @@ class ExpRunner:
 
         utils.dir_create_checked(exp_scratch_root, exist_ok=True)
 
+        # TODO: This restriction should be removed/pushed down to execution
+        # environments that require it.
         assert (
             self.cmdopts["exec_jobs_per_node"] is not None
         ), "# parallel jobs can't be None"

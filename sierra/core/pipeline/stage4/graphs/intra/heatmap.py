@@ -47,11 +47,14 @@ def generate(
                 parent=pathset.parent,
                 model_root=None,
             )
+            # 2025-06-05 [JRH]: We always write stage {3,4} output data files as
+            # .csv because that is currently SIERRA's 'native' format; this may
+            # change in the future.
             graphs.heatmap(
                 paths=graph_pathset,
                 input_stem=graph["src_stem"],
                 output_stem=graph["dest_stem"],
-                medium=cmdopts["storage"],
+                medium="storage.csv",
                 title=graph.get("title", None),
                 xlabel=graph.get("xlabel", "X"),
                 ylabel=graph.get("ylabel", "Y"),

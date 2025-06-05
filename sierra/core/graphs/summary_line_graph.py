@@ -117,9 +117,6 @@ def generate(
     stat_dfs = _read_stats(stats, medium, paths.input_root, input_stem)
     plot = _plot_stats(dataset, stats, stat_dfs)
 
-    # Configure ticks
-    plot = _plot_ticks(plot, logyscale, xticks, xticklabels)
-
     # Add legend
     plot.opts(legend_position="bottom")
 
@@ -128,6 +125,10 @@ def generate(
 
     # Add X,Y labels
     plot.opts(ylabel=ylabel, xlabel=xlabel)
+
+    # Configure ticks (must be last so not overwritten by what you get from
+    # plotting the lines)
+    plot = _plot_ticks(plot, logyscale, xticks, xticklabels)
 
     # Set fontsizes
     plot.opts(
@@ -353,7 +354,7 @@ def _plot_ticks(
     if xticklabels is not None:
         plot.opts(xticks=[(i, j) for i, j in zip(xticks, xticklabels)], xrotation=90)
 
-        return plot
+    return plot
 
 
 def _read_stats(

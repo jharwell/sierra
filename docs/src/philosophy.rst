@@ -67,6 +67,18 @@ This manifests in some important ways:
 - Deliverables in stage 4 are sourced from a single input file, rather than
   pulling data from multiple files.
 
+Maximum Reusability
+===================
+
+SIERRA is designed the way it is to maximize reusability. When used properly,
+you should 100% *NEVER* have to copy-paste YAML configuration, python code,
+etc., between projects/engines/etc. For a beginner user, the amount of
+configuration can seeing annoying/daunting, and that is one of the ways in which
+SIERRA's usability needs to improve, but for advanced users with lots of
+projects, the amount of configuration maximizes reusability.
+
+.. todo:: Provide some concrete details on this.
+
 Separation Of Data Types
 ========================
 

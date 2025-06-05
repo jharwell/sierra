@@ -32,6 +32,7 @@ def generate(
     stats: str = "none",
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
+    points: tp.Optional[bool] = False,
     large_text: bool = False,
     legend: tp.Optional[tp.List[str]] = None,
     cols: tp.Optional[tp.List[str]] = None,
@@ -83,7 +84,7 @@ def generate(
     stat_dfs = _read_stats(stats, paths.input_root, input_stem, medium)
 
     # Plot specified columns from dataframe.
-    plot = _plot_selected_cols(dataset, model, legend)
+    plot = _plot_selected_cols(dataset, model, legend, points)
 
     # Plot stats if they have been computed
     if "conf95" in stats and "stddev" in stat_dfs:
@@ -136,6 +137,7 @@ def _plot_selected_cols(
     dataset: hv.Dataset,
     model_info: models.ModelInfo,
     legend: tp.List[str],
+    show_points: bool,
 ) -> hv.NdOverlay:
     """
     Plot the  selected columns in a dataframe.
@@ -152,9 +154,15 @@ def _plot_selected_cols(
             for vdim in dataset.vdims
         ]
     )
-    # Plot the points for each curve
+    # Plot the points for each curve if configured to do so, OR if there aren't
+    # that many. If you print them and there are a lot, you essentially get
+    # really fat lines which doesn't look good.
     plot *= hv.Overlay(
-        [hv.Points((dataset[dataset.kdims[0]], dataset[v])) for v in dataset.vdims]
+        [
+            hv.Points((dataset[dataset.kdims[0]], dataset[v]))
+            for v in dataset.vdims
+            if len(dataset[v]) <= 50 or show_points
+        ]
     )
 
     # Plot models if they have been computed
@@ -232,11 +240,10 @@ def _read_stats(
 ) -> tp.Dict[str, pd.DataFrame]:
     dfs = {}
     if setting in ["conf95", "bw", "all"]:
-        exts = config.kStats["conf95"].exts
+        exts = config.kStats[setting].exts
 
         for k in exts:
             ipath = stats_root / (input_stem + exts[k])
-
             if utils.path_exists(ipath):
                 dfs[k] = storage.df_read(ipath, medium)
             else:

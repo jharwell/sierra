@@ -2,9 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 
-"""Stage 1 of the experimental pipeline: generating experimental inputs.
-
-"""
+"""Stage 1 of the experimental pipeline: generating experimental inputs."""
 
 # Core packges
 import logging
@@ -27,19 +25,23 @@ class PipelineStage1:
 
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 pathset: batchroot.PathSet,
-                 controller: str,
-                 criteria: bc.IConcreteBatchCriteria) -> None:
-        self.generator = BatchExpDefGenerator(controller_name=controller,
-                                              scenario_basename=cmdopts['scenario'],
-                                              criteria=criteria,
-                                              pathset=pathset,
-                                              cmdopts=cmdopts)
-        self.creator = BatchExpCreator(criteria=criteria,
-                                       cmdopts=cmdopts,
-                                       pathset=pathset)
+    def __init__(
+        self,
+        cmdopts: types.Cmdopts,
+        pathset: batchroot.PathSet,
+        controller: str,
+        criteria: bc.IConcreteBatchCriteria,
+    ) -> None:
+        self.generator = BatchExpDefGenerator(
+            controller_name=controller,
+            scenario_basename=cmdopts["scenario"],
+            criteria=criteria,
+            pathset=pathset,
+            cmdopts=cmdopts,
+        )
+        self.creator = BatchExpCreator(
+            criteria=criteria, cmdopts=cmdopts, pathset=pathset
+        )
         self.pathset = pathset
 
         self.cmdopts = cmdopts
@@ -72,17 +74,20 @@ class PipelineStage1:
 
         """
 
-        self.logger.info("Generating input files for batch experiment in %s...",
-                         self.pathset.root)
+        self.logger.info(
+            "Generating input files for batch experiment in %s...", self.pathset.root
+        )
         self.creator.create(self.generator)
 
-        n_exp_in_batch = len(self.criteria.gen_attr_changelist()) + \
-            len(self.criteria.gen_element_addlist())
-        self.logger.info("%d input files generated in %d experiments.",
-                         self.cmdopts['n_runs'] * n_exp_in_batch,
-                         n_exp_in_batch)
+        n_exp_in_batch = len(self.criteria.gen_attr_changelist()) + len(
+            self.criteria.gen_element_addlist()
+        )
+        self.logger.info(
+            "Generated batch experiment: %d experiments, %d runs per experiment, %d runs total",
+            n_exp_in_batch,
+            self.cmdopts["n_runs"],
+            self.cmdopts["n_runs"] * n_exp_in_batch,
+        )
 
 
-__all__ = [
-    'PipelineStage1'
-]
+__all__ = ["PipelineStage1"]

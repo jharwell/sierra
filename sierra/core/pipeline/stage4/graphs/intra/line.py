@@ -38,26 +38,31 @@ def generate(
             if graph["type"] != "stacked_line":
                 continue
 
-            try:
-                _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
+            _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
 
-                paths = graphs.PathSet(
-                    input_root=pathset.stat_root,
-                    output_root=pathset.graph_root,
-                    parent=pathset.parent,
-                    model_root=None,
-                )
+            paths = graphs.PathSet(
+                input_root=pathset.stat_root,
+                output_root=pathset.graph_root,
+                parent=pathset.parent,
+                model_root=None,
+            )
+
+            try:
+                # 2025-06-05 [JRH]: We always write stage {3,4} output data
+                # files as .csv because that is currently SIERRA's 'native'
+                # format; this may change in the future.
                 graphs.stacked_line(
                     paths=paths,
                     input_stem=graph["src_stem"],
                     output_stem=graph["dest_stem"],
-                    medium=cmdopts["storage"],
+                    medium="storage.csv",
                     stats=cmdopts["dist_stats"],
                     cols=graph.get("cols", None),
                     title=graph.get("title", None),
                     legend=graph.get("legend", None),
                     xlabel=graph.get("xlabel", None),
                     ylabel=graph.get("ylabel", None),
+                    points=graph.get("points", False),
                     logyscale=cmdopts["plot_log_yscale"],
                     large_text=cmdopts["plot_large_text"],
                 )

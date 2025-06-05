@@ -38,7 +38,6 @@ class PipelineStage4:
     This stage is idempotent.
 
     Attributes:
-
         cmdopts: Dictionary of parsed cmdline options.
 
         controller_config: YAML configuration file found in
@@ -48,41 +47,15 @@ class PipelineStage4:
                            graphs in both inter- and intra-experiment graph
                            generation.
 
-        inter_LN_config: YAML configuration file found in
-                         ``<project_config_root>/inter-graphs-line.yaml``
-                         Contains configuration for categories of linegraphs
-                         that can potentially be generated for all controllers
-                         `across` experiments in a batch. Which linegraphs are
-                         actually generated for a given controller is controlled
-                         by ``<project_config_root>/controllers.yaml``.
-
-        intra_LN_config: YAML configuration file found in
-                         ``<project_config_root>/intra-graphs-line.yaml``
-                         Contains configuration for categories of linegraphs
-                         that can potentially be generated for all controllers
-                         `within` each experiment in a batch. Which linegraphs
-                         are actually generated for a given controller in each
-                         experiment is controlled by
-                         ``<project_config_root>/controllers.yaml``.
-
-        intra_HM_config: YAML configuration file found in
-                         ``<project_config_root>/intra-graphs-hm.yaml`` Contains
-                         configuration for categories of heatmaps that can
-                         potentially be generated for all controllers `within`
-                         each experiment in a batch. Which heatmaps are actually
-                         generated for a given controller in each experiment is
+        graphs_config: YAML configuration file found in
+                         ``<project_config_root>/graphs.yaml``
+                         Contains configuration for categories of graphs
+                         that *can* potentially be generated for all controllers
+                         *across* experiments in a batch and *within* each
+                         experiment in a batch. Which linegraphs are
+                         *actually* generated for a given controller is
                          controlled by
                          ``<project_config_root>/controllers.yaml``.
-
-        inter_HM_config: YAML configuration file found in
-                         ``<project_config_root>/inter-graphs-hm.yaml`` Contains
-                         configuration for categories of heatmaps that can
-                         potentially be generated for all controllers `across`
-                         each experiment in a batch. Which heatmaps are actually
-                         generated for a given controller in each experiment is
-                         controlled by
-                         ``<project_config_root>/controllers.yaml``.
-
     """
 
     def __init__(
@@ -98,8 +71,12 @@ class PipelineStage4:
         self.project_config_root = pathlib.Path(self.cmdopts["project_config_root"])
         controllers_yaml = self.project_config_root / config.kYAML.controllers
 
-        with utils.utf8open(controllers_yaml) as f:
-            self.controller_config = yaml.load(f, yaml.FullLoader)
+        if controllers_yaml.exists():
+            with utils.utf8open(controllers_yaml) as f:
+                self.controller_config = yaml.load(f, yaml.FullLoader)
+        else:
+            self.controller_config = None
+
         self.logger = logging.getLogger(__name__)
 
         # Load YAML config
@@ -157,7 +134,7 @@ class PipelineStage4:
             if criteria.is_univar() and self.cmdopts["models_enable"]:
                 self._run_intra_models(criteria)
 
-            if self.graphs_config is not None:
+            if self.graphs_config is not None and "intra-exp" in self.graphs_config:
                 self._run_intra_graph_generation(criteria)
 
         # Collation must be after intra-experiment graph generation, so that all
@@ -169,7 +146,7 @@ class PipelineStage4:
             if criteria.is_univar() and self.cmdopts["models_enable"]:
                 self._run_inter_models(criteria)
 
-            if self.graphs_config is not None:
+            if self.graphs_config is not None and "inter-exp" in self.graphs_config:
                 self._run_inter_graph_generation(criteria)
 
         # Rendering must be after graph generation in case we should be
@@ -255,7 +232,7 @@ class PipelineStage4:
 
     def _calc_inter_targets(
         self, loaded_graphs: types.YAMLDict
-    ) -> tp.List[types.YAMLDict]:
+    ) -> tp.Optional[tp.List[types.YAMLDict]]:
         """Calculate what inter-experiment graphs to generate.
 
         This also defines what CSV files need to be collated, as one graph is
@@ -264,20 +241,29 @@ class PipelineStage4:
 
         """
         keys = []
-        for category in list(self.controller_config.keys()):
-            if category not in self.cmdopts["controller"]:
-                continue
-            for controller in self.controller_config[category]["controllers"]:
-                if controller["name"] not in self.cmdopts["controller"]:
+        if self.controller_config:
+            for category in list(self.controller_config.keys()):
+                if category not in self.cmdopts["controller"]:
                     continue
+                for controller in self.controller_config[category]["controllers"]:
+                    if controller["name"] not in self.cmdopts["controller"]:
+                        continue
 
-                # valid to specify no graphs, and only to inherit graphs
-                keys = controller.get("graphs", [])
-                if "graphs_inherit" in controller:
-                    for inherit in controller["graphs_inherit"]:
-                        keys.extend(inherit)  # optional
-
-        self.logger.debug("Loaded %s inter-experiment categories: %s", len(keys), keys)
+                    # valid to specify no graphs, and only to inherit graphs
+                    keys = controller.get("graphs", [])
+                    if "graphs_inherit" in controller:
+                        for inherit in controller["graphs_inherit"]:
+                            keys.extend(inherit)  # optional
+            self.logger.debug(
+                "Loaded %s inter-experiment categories: %s", len(keys), keys
+            )
+        else:
+            keys = [k for k in loaded_graphs]
+            self.logger.debug(
+                "Missing controller graph config--generating all "
+                "inter-experiment graphs for all controllers: %s",
+                keys,
+            )
 
         filtered_keys = [k for k in loaded_graphs if k in keys]
         targets = [loaded_graphs[k] for k in filtered_keys]
@@ -381,6 +367,12 @@ class PipelineStage4:
         self.logger.info("Intra-experiment graph generation complete: %s", str(sec))
 
     def _run_collation(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        if not self.graphs_config or "inter-exp" not in self.graphs_config:
+            self.logger.debug(
+                "Skipping inter-experiment collation: no output graphs defined"
+            )
+            return
+
         targets = self._calc_inter_targets(
             loaded_graphs=self.graphs_config["inter-exp"],
         )
