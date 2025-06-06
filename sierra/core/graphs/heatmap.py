@@ -32,6 +32,7 @@ def generate(
     output_stem: str,
     medium: str,
     title: str,
+    colnames: tp.Tuple[str, str, str] = ("x", "y", "z"),
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
     zlabel: tp.Optional[str] = None,
@@ -57,10 +58,9 @@ def generate(
        ...
 
     The ``x``,``y`` columns are the indices, and the ``z`` column is the value
-    in that cell.
+    in that cell. The names of these columns are configurable.
 
     """
-
     hv.extension("matplotlib")
 
     input_fpath = paths.input_root / (input_stem + ext)
@@ -70,8 +70,8 @@ def generate(
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
-            output_fpath.relative_to(paths.parent.resolve()),
-            input_fpath.relative_to(paths.parent.resolve()),
+            output_fpath.relative_to(paths.batchroot.resolve()),
+            input_fpath.relative_to(paths.batchroot.resolve()),
         )
         return False
 
@@ -86,17 +86,19 @@ def generate(
 
     # Read .csv and create raw heatmap from default configuration
     df = storage.df_read(input_fpath, medium)
-    dataset = hv.Dataset(df, kdims=["x", "y"], vdims="z")
+    dataset = hv.Dataset(df, kdims=[colnames[0], colnames[1]], vdims=colnames[2])
 
     # Transpose if requested
     if transpose:
         dataset.data = dataset.data.transpose()
 
     # Plot heatmap, without showing the Z-value in each cell
-    plot = hv.HeatMap(dataset, kdims=["x", "y"], vdims=["z"]).opts(show_values=False)
+    plot = hv.HeatMap(
+        dataset, kdims=[colnames[0], colnames[1]], vdims=[colnames[2]]
+    ).opts(show_values=False)
 
-    xticks = dataset.data["x"]
-    yticks = dataset.data["y"]
+    xticks = dataset.data[colnames[0]]
+    yticks = dataset.data[colnames[1]]
 
     # Add X,Y ticks
     if xticklabels:
@@ -128,8 +130,10 @@ def generate(
     if zlabel:
         plot.opts(colorbar_opts={"label": zlabel})
 
+    plot.opts(fig_inches=config.kGraphBaseSize)
+
     hv.save(
-        plot.opts(fig_inches=config.kGraphBaseSize),
+        plot,
         output_fpath,
         fig=config.kImageType,
         dpi=config.kGraphDPI,
@@ -138,7 +142,7 @@ def generate(
 
     _logger.debug(
         "Graph written to <batchroot>/%s",
-        output_fpath.relative_to(paths.parent.resolve()),
+        output_fpath.relative_to(paths.batchroot),
     )
     return True
 

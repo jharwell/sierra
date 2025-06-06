@@ -20,6 +20,7 @@ core. This is in line with the Principle of Least Surprise. If you need/want to
 override some aspect of functionality for a built-in SIERRA plugin, create a new
 plugin with a new name, and use that.
 
+
 Configurability
 ===============
 
@@ -28,3 +29,6 @@ cmdline arguments, YAML config, or some combination thereof. If a configuration
 item is present in *both* cmdline arguments and YAML config, it is up to the
 plugin to decide which takes precedence if both are present. This is to enable
 multiple use cases.
+
+Plugins should respect all core SIERRA cmdline arguments, as well as all
+general-purpose arguments for all stages the plugin can be used in.

@@ -68,8 +68,8 @@ def generate(
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
-            output_fpath.relative_to(paths.parent),
-            input_fpath.relative_to(paths.parent),
+            output_fpath.relative_to(paths.batchroot.resolve()),
+            input_fpath.relative_to(paths.batchroot.resolve()),
         )
         return False
 
@@ -128,7 +128,7 @@ def generate(
 
     _logger.debug(
         "Graph written to <batchroot>/%s",
-        output_fpath.relative_to(paths.parent),
+        output_fpath.relative_to(paths.batchroot),
     )
     return True
 

@@ -1,0 +1,37 @@
+mycategory:
+  # The filepath of the source data file relative to the output directory for an
+  # experimental run to look for the column(s) to plot, sans the extension.
+  - src_stem: 'somesubdir/foo'
+
+  # The filepath of the graph to be generated (extension/image type is
+  # determined elsewhere). This allows for multiple graphs to be generated from
+  # the same data file by plotting different combinations of columns.
+  - dest_stem: 'bar'
+
+  # The title the graph should have. LaTeX syntax is supported (uses
+  # matplotlib after all). Optional. Defaults to '' if omitted.
+  - title: 'My Title'
+
+  # The type of graph. Must be 'heatmap'.
+  - graph_type: 'heatmap'
+
+  # The Z colorbar label to use. Optional. Defaults to '' if omitted.
+  - zlabel: 'My colorbar label'
+
+  # The X axis label to use. Optional. Defaults to '' if omitted.
+  - xlabel: 'My X-axis label'
+
+  # The Y axis label to use. Optional. Defaults to '' if omitted.
+  - ylabel: 'My Y-axis label'
+
+  # The name of the column containing the X axis values. Defaults to x if
+  # omitted.
+  - x: 'x'
+
+  # The name of the column containing the Y axis values. Defaults to y if
+  # omitted.
+  - y: 'y'
+
+  # The name of the column containing the Z axis values. Defaults to z if
+  # omitted.
+  - z: 'z'

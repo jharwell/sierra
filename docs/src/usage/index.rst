@@ -25,5 +25,4 @@ SIERRA.
    :caption: Advanced Usage
 
    deep-dive.rst
-   rendering.rst
    stage5.rst

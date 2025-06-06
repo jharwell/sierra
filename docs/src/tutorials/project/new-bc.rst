@@ -94,6 +94,12 @@ Required Steps
    :class:`sierra.core.variables.population_size.Parser` for a simple example of
    this.
 
+   .. IMPORTANT:: While the mini "language" that your batch criteria is
+                  configured with on the cmdline and parsed with a parser can be
+                  anything, there are some restrictions on special chars which
+                  may come into play when using external programs with via
+                  subprocess shell commands (e.g., ``[``, ``]``, etc.).
+
 #. Define a factory function to dynamically create classes from the base class
    definition of ``MyVar`` in ``my_var.py``. It must have the following
    signature:

@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 
 """
-Classes for gathering :term:`Run Output Data`  files in a batch.
+Classes for gathering :term:`Raw Output Data`  files in a batch.
 """
 
 # Core packages
@@ -276,7 +276,7 @@ class BaseGatherer:
 
 
 class DataGatherer(BaseGatherer):
-    """Gather :term:`Run Output Data` files from all runs.
+    """Gather :term:`Raw Output Data` files from all runs.
 
     The configured output directory for each run is searched recursively for
     files to gather.  To be eligible for gathering and later processing, files
@@ -314,7 +314,7 @@ class DataGatherer(BaseGatherer):
 
 
 class ImagizeInputGatherer(BaseGatherer):
-    """Gather :term:`Run Output Data` files from all runs for imagizing.
+    """Gather :term:`Raw Output Data` files from all runs for imagizing.
 
     The configured output directory for each run is searched recursively for
     directories containing files to gather.  To be eligible for gathering and
@@ -348,7 +348,7 @@ class ImagizeInputGatherer(BaseGatherer):
 
         for item in proj_output_root.iterdir():
             if not item.is_dir():
-                self.logger.debug(
+                self.logger.trace(
                     (
                         "Skip <run_output_root>/%s for imagizing "
                         "gather: files must be in subdir"
@@ -358,27 +358,10 @@ class ImagizeInputGatherer(BaseGatherer):
                 continue
 
             for imagizable in item.iterdir():
-                if not imagizable.is_file():
-                    self.logger.debug(
-                        (
-                            "Skip subdir '%s/' of "
-                            "<run_output_root>/%s for imagizing "
-                            "gather: recursion not supported"
-                        ),
-                        imagizable.name,
-                        imagizable.relative_to(proj_output_root),
-                    )
-                    continue
-
                 if (
                     not any(s in plugin.suffixes() for s in imagizable.suffixes)
                     and imagizable.stat().st_size > 0
                 ):
-                    self.logger.debug(
-                        ("Skip '%s': suffix not supported by " "storage plugin %s"),
-                        imagizable.name,
-                        self.gather_opts["storage"],
-                    )
                     continue
 
                 if item.name in imagizable.name:
@@ -389,10 +372,7 @@ class ImagizeInputGatherer(BaseGatherer):
                             perfcol=None,
                         )
                     )
-                else:
-                    self.logger.warning(
-                        "Skip '%s': name does not match %s", imagizable.name, item.name
-                    )
+
         return to_gather
 
 

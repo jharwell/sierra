@@ -288,7 +288,9 @@ class PipelineStage4:
         start = time.time()
 
         if self.cmdopts["engine_vc"]:
-            render.from_engine(self.main_config, self.cmdopts, self.pathset, criteria)
+            render.from_engine(
+                self.graphs_config["intra-exp"], self.cmdopts, self.pathset, criteria
+            )
         else:
             self.logger.debug(
                 (
@@ -299,7 +301,7 @@ class PipelineStage4:
 
         if self.cmdopts["project_rendering"]:
             render.from_project_imagized(
-                self.main_config, self.cmdopts, self.pathset, criteria
+                self.graphs_config["intra-exp"], self.cmdopts, self.pathset, criteria
             )
         else:
             self.logger.debug(
@@ -312,7 +314,7 @@ class PipelineStage4:
 
         if criteria.is_bivar() and self.cmdopts["bc_rendering"]:
             render.from_bivar_heatmaps(
-                self.main_config, self.cmdopts, self.pathset, criteria
+                self.graphs_config["intra-exp"], self.cmdopts, self.pathset, criteria
             )
         else:
             self.logger.debug(

@@ -56,7 +56,7 @@ class PipelineStage3:
 
             if utils.path_exists(intra_HM_path):
                 self.logger.info(
-                    ("Loading intra-experiment heatmap config for " "project '%s'"),
+                    ("Loading intra-experiment graph config for project=%s"),
                     self.cmdopts["project"],
                 )
                 intra_HM_config = yaml.load(

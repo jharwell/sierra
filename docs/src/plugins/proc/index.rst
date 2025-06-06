@@ -182,3 +182,4 @@ plugins which come with SIERRA are below.
    stat.rst
    collate.rst
    imagize.rst
+   models.rst

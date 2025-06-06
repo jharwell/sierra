@@ -95,7 +95,11 @@ def generate(
     )
 
     if not utils.path_exists(input_fpath):
-        _logger.debug("Not generating %s: %s does not exist", output_fpath, input_fpath)
+        _logger.debug(
+            "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
+            output_fpath.relative_to(paths.batchroot.resolve()),
+            input_fpath.relative_to(paths.batchroot.resolve()),
+        )
         return False
 
     df = storage.df_read(input_fpath, medium, index_col="Experiment ID")
@@ -152,7 +156,7 @@ def generate(
     plt.close("all")
 
     _logger.debug(
-        "Graph written to <batchroot>/%s", output_fpath.relative_to(paths.parent)
+        "Graph written to <batchroot>/%s", output_fpath.relative_to(paths.batchroot)
     )
 
     return True

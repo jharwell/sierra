@@ -70,7 +70,7 @@ class Pipeline:
             "dist_stats": self.args.dist_stats,
             "skip_collate": self.args.skip_collate,
             "engine": self.args.engine,
-            "processing_serial": self.args.processing_serial,
+            "processing_parallelism": self.args.processing_parallelism,
             "plot_log_xscale": self.args.plot_log_xscale,
             "plot_enumerated_xscale": self.args.plot_enumerated_xscale,
             "plot_log_yscale": self.args.plot_log_yscale,

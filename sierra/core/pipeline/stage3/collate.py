@@ -24,7 +24,6 @@ import pathlib
 
 # 3rd party packages
 import pandas as pd
-import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
@@ -50,15 +49,13 @@ def proc_batch_exp(
     """
     pool_opts = {}
 
-    if cmdopts["processing_serial"]:
-        pool_opts["n_gatherers"] = 1
-        pool_opts["n_processors"] = 1
-    else:
-        # Aways need to have at least one of each! If SIERRA is invoked on a
-        # machine with 2 or less logical cores, the calculation with
-        # psutil.cpu_count() will return 0 for # gatherers.
-        pool_opts["n_gatherers"] = max(1, int(psutil.cpu_count() * 0.25))
-        pool_opts["n_processors"] = max(1, int(psutil.cpu_count() * 0.75))
+    parallelism = cmdopts["processing_parallelism"]
+
+    # Aways need to have at least one of each! If SIERRA is invoked on a machine
+    # with 2 or less logical cores, the calculation with psutil.cpu_count() will
+    # return 0 for # gatherers.
+    pool_opts["n_gatherers"] = max(1, int(parallelism * 0.25))
+    pool_opts["n_processors"] = max(1, int(parallelism * 0.75))
 
     worker_opts = {
         "project": cmdopts["project"],
@@ -235,9 +232,9 @@ def _proc_single_exp(
     process_opts: types.SimpleDict,
     spec: gather.ProcessSpec,
 ) -> None:
-    """Collate :term:`Run Output Data` files together (reduce operation).
+    """Collate :term:`Raw Output Data` files together (reduce operation).
 
-    :term:`Run Output Data` files gathered from N :term:`Experimental Runs
+    :term:`Raw Output Data` files gathered from N :term:`Experimental Runs
     <Experimental Run>` are combined together into a single :term:`Summary .csv`
     per :term:`Experiment` with 1 column per run.
     """

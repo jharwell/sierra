@@ -18,5 +18,5 @@ import typing as tp
 class PathSet:
     input_root: pathlib.Path
     output_root: pathlib.Path
-    parent: pathlib.Path
+    batchroot: pathlib.Path
     model_root: tp.Optional[pathlib.Path]

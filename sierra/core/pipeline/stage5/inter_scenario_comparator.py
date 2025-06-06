@@ -216,7 +216,9 @@ class UnivarInterScenarioComparator:
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
             output_root=self.stage5_roots.graph_root,
-            parent=pathlib.Path(self.cmdopts["sierra_root"], self.cmdopts["project"]),
+            batchroot=pathlib.Path(
+                self.cmdopts["sierra_root"], self.cmdopts["project"]
+            ),
             model_root=None,
         )
 

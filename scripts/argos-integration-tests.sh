@@ -889,7 +889,7 @@ print(path)
         [[ $(ls -A $imagize_root/exp0/floor-state/*.png) > /dev/null ]]  || false
 
         # Check generated videos
-        [ -f "$video_root/exp0/floor-state.mp4" ] || false
+        [ -f "$video_root/exp0/floor-state/floor-state.mp4" ] || false
         rm -rf $SIERRA_ROOT
     done
 }

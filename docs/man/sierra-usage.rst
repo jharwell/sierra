@@ -12,4 +12,3 @@ the command line interface.
    /src/usage/subprograms.rst
    /src/usage/environment.rst
    /src/usage/variables.rst
-   /src/usage/rendering.rst

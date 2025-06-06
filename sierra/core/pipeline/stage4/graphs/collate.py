@@ -13,7 +13,6 @@ import json
 
 # 3rd party packages
 import pandas as pd
-import psutil
 
 # Project packages
 from sierra.core import utils, config, types, storage, batchroot
@@ -80,7 +79,7 @@ class UnivarGraphCollator:
 
     def __call__(self, criteria, target: types.YAMLDict) -> None:
         self.logger.info(
-            "Files from univariate experiment  in <batch_root>/%s for graph '%s'",
+            "Files from univariate experiment in <batch_root>/%s for graph '%s'",
             self.pathset.output_root.relative_to(self.pathset.root),
             target["src_stem"],
         )
@@ -172,7 +171,7 @@ class UnivarGraphCollator:
 class BivarGraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
-    Results are put into a single :term:`Collated Run Output Data` file.
+    Results are put into a single :term:`Collated Output Data` file.
 
     """
 
@@ -287,7 +286,7 @@ class BivarGraphCollator:
 
 class ParallelCollator:
     """
-    Generate :term:`Collated Run Output Data` files from :term:`Summary .csv`.
+    Generate :term:`Collated Output Data` files from :term:`Summary .csv`.
 
     """
 
@@ -314,10 +313,7 @@ class ParallelCollator:
             for graph in category:
                 q.put(graph)
 
-        if self.cmdopts["processing_serial"]:
-            parallelism = 1
-        else:
-            parallelism = psutil.cpu_count()
+        parallelism = self.cmdopts["processing_parallelism"]
 
         for _ in range(0, parallelism):
             p = mp.Process(

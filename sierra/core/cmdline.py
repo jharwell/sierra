@@ -10,6 +10,7 @@ import sys
 import typing as tp
 
 # 3rd party packages
+import psutil
 
 # Project packages
 import sierra.version
@@ -97,10 +98,8 @@ class BootstrapCmdline(BaseCmdline):
         bootstrap.add_argument(
             "--project",
             help="""
-
-                                 Specify which :term:`Project` to load.
-
-                               """
+                 Specify which :term:`Project` to load.
+                 """
             + self.stage_usage_doc([1, 2, 3, 4, 5]),
         )
 
@@ -108,11 +107,8 @@ class BootstrapCmdline(BaseCmdline):
             "--version",
             "-v",
             help="""
-
-                               Display SIERRA version information on stdout and
-                               then exit.
-
-                               """,
+                 Display SIERRA version information on stdout and then exit.
+                 """,
             action="store_true",
         )
 
@@ -120,11 +116,8 @@ class BootstrapCmdline(BaseCmdline):
             "--log-level",
             choices=["ERROR", "INFO", "WARNING", "DEBUG", "TRACE"],
             help="""
-
-                                 The level of logging to use when running
-                                 SIERRA.
-
-                                 """
+                 The level of logging to use when running SIERRA.
+                 """
             + self.stage_usage_doc([1, 2, 3, 4, 5]),
             default="INFO",
         )
@@ -132,94 +125,84 @@ class BootstrapCmdline(BaseCmdline):
         bootstrap.add_argument(
             "--engine",
             help="""
-                               This argument defines the :term:`Engine` you
-                               want to run experiments on.
+                 This argument defines the :term:`Engine` you want to run
+                 experiments on.
 
-                               The value of this argument determines the
-                               execution environment for experiments; different
-                               engines (e.g., simulator, real robots) will
-                               have different configuration options.
+                 The value of this argument determines the execution environment
+                 for experiments; different engines (e.g., simulator, real
+                 robots) will have different configuration options.
 
-                               Valid values can be any folder name inside a
-                               folder on the :envvar:`SIERRA_PLUGIN_PATH` (with
-                               ``/`` replaced with ``.`` as you would expect for
-                               using path names to address python packages). The
-                               engines which come with SIERRA are:
+                 Valid values can be any folder name inside a folder on the
+                 :envvar:`SIERRA_PLUGIN_PATH` (with ``/`` replaced with ``.`` as
+                 you would expect for using path names to address python
+                 packages).  The engines which come with SIERRA are:
 
-                               - ``engine.argos`` - This directs SIERRA to run
-                                 experiments using the :term:`ARGoS`
-                                 simulator. Selecting this engine assumes your
-                                 code has been developed and configured for
-                                 ARGoS.
+                     - ``engine.argos`` - This directs SIERRA to run experiments
+                       using the :term:`ARGoS` simulator.  Selecting this engine
+                       assumes your code has been developed and configured for
+                       ARGoS.
 
-                               - ``engine.ros1gazebo`` - This directs SIERRA to
-                                 run experiments using the :term:`Gazebo`
-                                 simulator and :term:`ROS1`. Selecting this
-                                 engine assumes your code has been developed
-                                 and configured for Gazebo and ROS1.
+                     - ``engine.ros1gazebo`` - This directs SIERRA to run
+                       experiments using the :term:`Gazebo` simulator and
+                       :term:`ROS1`.  Selecting this engine assumes your code
+                       has been developed and configured for Gazebo and ROS1.
 
-                               """,
+                     - ``engine.ros1robot`` - This directs SIERRA to run
+                       experiments using :term:`ROS1` on a real robot of your
+                       choosing.  Selecting this engine assumes your code has
+                       been developed and configured for ROS1.
+                 """,
             default="engine.argos",
         )
 
         bootstrap.add_argument(
             "--skip-pkg-checks",
             help="""
-
-                               Skip the usual startup package checks. Only do
-                               this if you are SURE you will never use the
-                               SIERRA functionality which requires packages you
-                               don't have installed/can't install.
-
-                               """,
+                 Skip the usual startup package checks.  Only do this if you are
+                 SURE you will never use the SIERRA functionality which requires
+                 packages you don't have installed/can't install.
+                 """,
             action="store_true",
         )
 
         bootstrap.add_argument(
             "--exec-env",
             help="""
-                               This argument defines `how` experiments are going
-                               to be run, using the ``--engine`` you have
-                               selected.
+                 This argument defines `how` experiments are going to be run,
+                 using the ``--engine`` you have selected.
 
-                               Valid values can be any folder name inside a
-                               folder on the :envvar:`SIERRA_PLUGIN_PATH` (with
-                               ``/`` replaced with ``.`` as you would expect for
-                               using path names to address python packages). The
-                               execution environments which come with SIERRA
-                               are:
+                 Valid values can be any folder name inside a folder on the
+                 :envvar:`SIERRA_PLUGIN_PATH` (with ``/`` replaced with ``.`` as
+                 you would expect for using path names to address python
+                 packages).  The execution environments which come with SIERRA
+                 are:
 
-                               - ``hpc.local`` - This directs SIERRA to run
-                                 experiments on the local machine. See
-                                 :ref:`plugins/exec-env/hpc/local` for a
-                                 detailed description.
+                     - ``hpc.local`` - This directs SIERRA to run experiments on
+                       the local machine.  See :ref:`plugins/exec-env/hpc/local`
+                       for a detailed description.
 
-                               - ``hpc.pbs`` - The directs SIERRA to run
-                                 experiments spread across multiple allocated
-                                 nodes in an HPC computing environment managed
-                                 by TORQUE-PBS. See
-                                 :ref:`plugins/exec-env/hpc/pbs` for a detailed
-                                 description.
+                     - ``hpc.pbs`` - The directs SIERRA to run experiments
+                       spread across multiple allocated nodes in an HPC
+                       computing environment managed by TORQUE-PBS.  See
+                       :ref:`plugins/exec-env/hpc/pbs` for a detailed
+                       description.
 
-                               - ``hpc.slurm`` - The directs SIERRA to run
-                                 experiments spread across multiple allocated
-                                 nodes in an HPC computing environment managed
-                                 by SLURM. See
-                                 :ref:`plugins/exec-env/hpc/slurm` for a
-                                 detailed description.
+                     - ``hpc.slurm`` - The directs SIERRA to run experiments
+                       spread across multiple allocated nodes in an HPC
+                       computing environment managed by SLURM.  See
+                       :ref:`plugins/exec-env/hpc/slurm` for a detailed
+                       description.
 
-                               - ``hpc.adhoc`` - This will direct SIERRA to run
-                                 experiments on an ad-hoc network of
-                                 computers. See
-                                 :ref:`plugins/exec-env/hpc/adhoc` for a
-                                 detailed description.
+                     - ``hpc.adhoc`` - This will direct SIERRA to run
+                       experiments on an ad-hoc network of computers.  See
+                       :ref:`plugins/exec-env/hpc/adhoc` for a detailed
+                       description.
 
-                               - ``robot.turtlebot3`` - This will direct SIERRA
-                                 to run experiments on real Turtlebots.
+                     - ``robot.turtlebot3`` - This will direct SIERRA to run
+                       experiments on real Turtlebots.
 
-                               Not all engines support all execution
-                               environments.
-                               """
+                 Not all engines support all execution environments.
+                 """
             + self.stage_usage_doc([1, 2]),
             default="hpc.local",
         )
@@ -227,13 +210,10 @@ class BootstrapCmdline(BaseCmdline):
         bootstrap.add_argument(
             "--rcfile",
             help="""
-
-                                 Specify the rcfile SIERRA should read
-                                 additional cmdline arguments from. Any rcfile
-                                 arguments overriden by cmdline args, if both
-                                 are present. See also :envvar:`SIERRA_RCFILE`.
-
-                                 """
+                 Specify the rcfile SIERRA should read additional cmdline
+                 arguments from.  Any rcfile arguments overriden by cmdline
+                 args, if both are present.  See also :envvar:`SIERRA_RCFILE`.
+                 """
             + self.stage_usage_doc([1, 2, 3, 4, 5]),
         )
 
@@ -319,15 +299,13 @@ class CoreCmdline(BaseCmdline):
             action="append",
             nargs="+",
             help="""
-                                     Alias of ``--plot-``; any number of
-                                     ``--plot-XX`` option can be passed
-                                     with separate ``-p`` arguments .
-                                     If the argument to ``-p`` does not map
-                                     to a valid ``plot-XX`` option it is
-                                     ignored.
+                 Alias of ``--plot-``; any number of ``--plot-XX`` option can be
+                 passed with separate ``-p`` arguments .  If the argument to
+                 ``-p`` does not map to a valid ``plot-XX`` option it is
+                 ignored.
 
-                                     .. versionadded:: 1.3.14
-                                     """,
+                 .. versionadded:: 1.3.14
+                 """,
         )
 
         self.shortforms.add_argument(
@@ -335,15 +313,12 @@ class CoreCmdline(BaseCmdline):
             action="append",
             nargs="+",
             help="""
-                                     Alias of ``--exp-``; any number of
-                                     ``--exp-XX`` option can be passed
-                                     with separate ``-e`` arguments .
-                                     If the argument to ``-e`` does not map
-                                     to a valid ``exp-XX`` option it is
-                                     ignored.
+                 Alias of ``--exp-``; any number of ``--exp-XX`` option can be
+                 passed with separate ``-e`` arguments .  If the argument to
+                 ``-e`` does not map to a valid ``exp-XX`` option it is ignored.
 
-                                     .. versionadded:: 1.3.14
-                                     """,
+                 .. versionadded:: 1.3.14
+                 """,
         )
 
         self.shortforms.add_argument(
@@ -351,15 +326,13 @@ class CoreCmdline(BaseCmdline):
             action="append",
             nargs="+",
             help="""
-                                     Alias of ``--exec-``; any number of
-                                     ``--exec-XX`` option can be passed
-                                     with separate ``-x`` arguments .
-                                     If the argument to ``-x`` does not map
-                                     to a valid ``exec-XX`` option it is
-                                     ignored.
+                 Alias of ``--exec-``; any number of ``--exec-XX`` option can be
+                 passed with separate ``-x`` arguments .  If the argument to
+                 ``-x`` does not map to a valid ``exec-XX`` option it is
+                 ignored.
 
-                                     .. versionadded:: 1.3.14
-                                     """,
+                 .. versionadded:: 1.3.14
+                 """,
         )
 
         self.shortforms.add_argument(
@@ -367,15 +340,13 @@ class CoreCmdline(BaseCmdline):
             action="append",
             nargs="+",
             help="""
-                                     Alias of ``--skip``; any number of
-                                     ``--skip-XX`` option can be passed
-                                     with separate ``-s`` arguments .
-                                     If the argument to ``-s`` does not map
-                                     to a valid ``skip-XX`` option it is
-                                     ignored.
+                 Alias of ``--skip``; any number of ``--skip-XX`` option can be
+                 passed with separate ``-s`` arguments .  If the argument to
+                 ``-s`` does not map to a valid ``skip-XX`` option it is
+                 ignored.
 
-                                     .. versionadded:: 1.3.14
-                                     """,
+                 .. versionadded:: 1.3.14
+                 """,
         )
 
     def init_multistage(self) -> None:
@@ -386,36 +357,27 @@ class CoreCmdline(BaseCmdline):
             "--expdef-template",
             metavar="filepath",
             help="""
-
-                                     The template ``.xml`` input file for the
-                                     batch experiment. Beyond the requirements
-                                     for the specific ``--engine``, the
-                                     content of the file can be anything valid
-                                     for the format, with the exception of the
-                                     SIERRA requirements detailed in
-                                     :ref:`tutorials/project/expdef-template`.
-
-                                     """
+                 The template ``.xml`` input file for the batch experiment.
+                 Beyond the requirements for the specific ``--engine``, the
+                 content of the file can be anything valid for the format, with
+                 the exception of the SIERRA requirements detailed in
+                 :ref:`tutorials/project/expdef-template`.
+                 """
             + self.stage_usage_doc([1, 2, 3, 4]),
         )
 
         self.multistage.add_argument(
             "--exp-overwrite",
             help="""
-
-                                     When SIERRA calculates the batch experiment
-                                     root (or any child path in the batch
-                                     experiment root) during stage {1, 2}, if
-                                     the calculated path already exists it is
-                                     treated as a fatal error and no
-                                     modifications to the filesystem are
-                                     performed. This flag overwrides the default
-                                     behavior. Provided to avoid accidentally
-                                     overwrite input/output files for an
-                                     experiment, forcing the user to be explicit
-                                     with potentially dangerous actions.
-
-                                     """
+                 When SIERRA calculates the batch experiment root (or any child
+                 path in the batch experiment root) during stage {1, 2}, if the
+                 calculated path already exists it is treated as a fatal error
+                 and no modifications to the filesystem are performed.  This
+                 flag overwrides the default behavior.  Provided to avoid
+                 accidentally overwrite input/output files for an experiment,
+                 forcing the user to be explicit with potentially dangerous
+                 actions.
+                 """
             + self.stage_usage_doc([1, 2]),
             action="store_true",
         )
@@ -424,17 +386,13 @@ class CoreCmdline(BaseCmdline):
             "--sierra-root",
             metavar="dirpath",
             help="""
+                 Root directory for all SIERRA generated and created files.
 
-                                     Root directory for all SIERRA generated and
-                                     created files.
-
-                                     Subdirectories for controllers, scenarios,
-                                     experiment/experimental run inputs/outputs
-                                     will be created in this directory as
-                                     needed. Can persist between invocations of
-                                     SIERRA.
-
-                                 """
+                 Subdirectories for controllers, scenarios,
+                 experiment/experimental run inputs/outputs will be created in
+                 this directory as needed.  Can persist between invocations of
+                 SIERRA.
+                 """
             + self.stage_usage_doc([1, 2, 3, 4, 5]),
             default="<home directory>/exp",
         )
@@ -443,25 +401,19 @@ class CoreCmdline(BaseCmdline):
             "--batch-criteria",
             metavar="[<category>.<definition>,...]",
             help="""
+                 Definition of criteria(s) to use to define the experiment.
 
-                                     Definition of criteria(s) to use to define
-                                     the experiment.
+                 Specified as a list of 0 or 1 space separated strings, each
+                 with the following general structure:
 
-                                     Specified as a list of 0 or 1 space
-                                     separated strings, each with the following
-                                     general structure:
+                 ``<category>.<definition>``
 
-                                     ``<category>.<definition>``
-
-                                     ``<category>`` must be a filename from the
-                                     ``core/variables/`` or from a ``--project``
-                                     ``<project>/variables/`` directory, and
-                                     ``<definition>`` must be a parsable namne
-                                     (according to the requirements of the
-                                     criteria defined by the parser for
-                                     ``<category>``).
-
-                                 """
+                 ``<category>`` must be a filename from the ``core/variables/``
+                 or from a ``--project`` ``<project>/variables/`` directory, and
+                 ``<definition>`` must be a parsable namne (according to the
+                 requirements of the criteria defined by the parser for
+                 ``<category>``).
+                 """
             + self.stage_usage_doc([1, 2, 3, 4, 5]),
             nargs="+",
             default=[],
@@ -470,35 +422,27 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument(
             "--pipeline",
             help="""
-                                     Define which stages of the experimental
-                                     pipeline to run:
+                 Define which stages of the experimental pipeline to run:
 
-                                     - Stage1 - Generate the experiment
-                                       definition from the template input file,
-                                       batch criteria, and other command line
-                                       options. Part of default pipeline.
+                     - Stage1 - Generate the experiment definition from the
+                       template input file, batch criteria, and other command
+                       line options.  Part of default pipeline.
 
-                                     - Stage2 - Run a previously generated
-                                       experiment. Part of default pipeline.
+                     - Stage2 - Run a previously generated experiment.  Part of
+                       default pipeline.
 
-                                     - Stage3 - Post-process experimental
-                                       results after running the batch
-                                       experiment; some parts of this can be
-                                       done in parallel. Part of default
-                                       pipeline.
+                     - Stage3 - Post-process experimental results after running
+                       the batch experiment; some parts of this can be done in
+                       parallel.  Part of default pipeline.
 
-                                     - Stage4 - Perform deliverable generation
-                                       after processing results for a batch
-                                       experiment, which can include shiny
-                                       graphs and videos. Part of default
-                                       pipeline.
+                     - Stage4 - Perform deliverable generation after processing
+                       results for a batch experiment, which can include shiny
+                       graphs and videos.  Part of default pipeline.
 
-                                     - Stage5 - Perform graph generation for
-                                       comparing controllers AFTER graph
-                                       generation for batch experiments has been
-                                       run. Not part of default pipeline.
-
-                                     """,
+                     - Stage5 - Perform graph generation for comparing
+                       controllers AFTER graph generation for batch experiments
+                       has been run.  Not part of default pipeline.
+                 """,
             type=int,
             nargs="*",
             default=[1, 2, 3, 4],
@@ -506,63 +450,47 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument(
             "--exp-range",
             help="""
+                 Set the experiment numbers from the batch to run, average,
+                 generate intra-experiment graphs from, or generate
+                 inter-experiment graphs from (0 based).  Specified in the form
+                 ``min_exp_num:max_exp_num`` (closed interval/inclusive).  If
+                 omitted, runs, averages, and generates intra-experiment and
+                 inter-experiment performance measure graphs for all experiments
+                 in the batch (default behavior).
 
-                                    Set the experiment numbers from the batch to
-                                    run, average, generate intra-experiment
-                                    graphs from, or generate inter-experiment
-                                    graphs from (0 based). Specified in the form
-                                    ``min_exp_num:max_exp_num`` (closed
-                                    interval/inclusive). If omitted, runs,
-                                    averages, and generates intra-experiment and
-                                    inter-experiment performance measure graphs
-                                    for all experiments in the batch (default
-                                    behavior).
-
-                                    This is useful to re-run part of a batch
-                                    experiment in HPC environments if SIERRA
-                                    gets killed before it finishes running all
-                                    experiments in the batch, or to redo a
-                                    single experiment with real robots which
-                                    failed for some reason.
-
-                                 """
+                 This is useful to re-run part of a batch experiment in HPC
+                 environments if SIERRA gets killed before it finishes running
+                 all experiments in the batch, or to redo a single experiment
+                 with real robots which failed for some reason.
+                 """
             + self.stage_usage_doc([2, 3, 4]),
         )
 
         self.multistage.add_argument(
             "--engine-vc",
             help="""
-
-                                    For applicable ``--engines``, enable
-                                    visual capturing of run-time data during
-                                    stage 2. This data can be frames (i.e., .png
-                                    files), or rendering videos, depending on
-                                    the engine. If the captured data was
-                                    frames, then SIERRA can render the captured
-                                    frames into videos during stage 4. If the
-                                    selected ``--engine`` does not support
-                                    visual capture, then this option has no
-                                    effect. See
-                                    :ref:`usage/rendering/engine`
-                                    for full details.
-
-                                    """
+                 For applicable ``--engines``, enable visual capturing of
+                 run-time data during stage 2.  This data can be frames (i.e.,
+                 .png files), or rendering videos, depending on the engine.  If
+                 the captured data was frames, then SIERRA can render the
+                 captured frames into videos during stage 4.  If the selected
+                 ``--engine`` does not support visual capture, then this option
+                 has no effect.  See :ref:`usage/rendering/engine` for full
+                 details.
+                 """
             + self.stage_usage_doc([1, 4]),
             action="store_true",
         )
 
         self.multistage.add_argument(
-            "--processing-serial",
+            "--processing-parallelism",
+            type=int,
             help="""
-
-                                    If TRUE, then results processing/graph
-                                    generation will be performed serially,
-                                    rather than using parallellism where
-                                    possible.
-
-                                 """
+                 The level of parallelism to use in results processing/graph
+                 generation.
+                 """
             + self.stage_usage_doc([3, 4]),
-            action="store_true",
+            default=psutil.cpu_count(),
         )
 
         self.multistage.add_argument(
@@ -570,36 +498,27 @@ class CoreCmdline(BaseCmdline):
             type=int,
             default=1,
             help="""
+                 The # of experimental runs that will be executed and their
+                 results processed to form the result of a single experiment
+                 within a batch.
 
-                                    The # of experimental runs that will be
-                                    executed and their results processed to form
-                                    the result of a single experiment within a
-                                    batch.
-
-                                    If ``--engine`` is a simulator and
-                                    ``--exec-env`` is something other than
-                                    ``hpc.local`` then this may be be used to
-                                    determine the concurrency of experimental
-                                    runs.
-
-                                     """
+                 If ``--engine`` is a simulator and ``--exec-env`` is something
+                 other than ``hpc.local`` then this may be be used to determine
+                 the concurrency of experimental runs.
+                 """
             + self.stage_usage_doc([1, 2]),
         )
 
         self.multistage.add_argument(
             "--skip-collate",
             help="""
-
-                                    Specify that no collation of data across
-                                    experiments within a batch (stage 4) or
-                                    across runs within an experiment (stage 3)
-                                    should be performed. Useful if collation
-                                    takes a long time and multiple types of
-                                    stage 4 outputs are desired. Collation is
-                                    generally idempotent unless you change the
-                                    stage3 options (YMMV).
-
-                                     """
+                 Specify that no collation of data across experiments within a
+                 batch (stage 4) or across runs within an experiment (stage 3)
+                 should be performed.  Useful if collation takes a long time and
+                 multiple types of stage 4 outputs are desired.  Collation is
+                 generally idempotent unless you change the stage3 options
+                 (YMMV).
+                 """
             + self.stage_usage_doc([3, 4]),
             action="store_true",
         )
@@ -607,14 +526,11 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument(
             "--plot-log-xscale",
             help="""
-
-                           Place the set of X values used to generate intra- and
-                           inter-experiment graphs into the logarithmic
-                           space. Mainly useful when the batch criteria involves
-                           large system sizes, so that the plots are more
-                           readable.
-
-                           """
+                 Place the set of X values used to generate intra- and
+                 inter-experiment graphs into the logarithmic space.  Mainly
+                 useful when the batch criteria involves large system sizes, so
+                 that the plots are more readable.
+                 """
             + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
             + self.stage_usage_doc([4, 5]),
             action="store_true",
@@ -623,15 +539,11 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument(
             "--plot-enumerated-xscale",
             help="""
-
-                                     Instead of using the values generated by a
-                                     given batch criteria for the X values, use
-                                     an enumerated list[0, ..., len(X value) -
-                                     1]. Mainly useful when the batch criteria
-                                     involves large system sizes, so that the
-                                     plots are more readable.
-
-                                     """
+                 Instead of using the values generated by a given batch criteria
+                 for the X values, use an enumerated list[0, ..., len(X value) -
+                 1].  Mainly useful when the batch criteria involves large
+                 system sizes, so that the plots are more readable.
+                 """
             + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
             + self.stage_usage_doc([4, 5]),
             action="store_true",
@@ -640,14 +552,11 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument(
             "--plot-log-yscale",
             help="""
-
-                                     Place the set of Y values used to generate
-                                     intra - and inter-experiment graphs into
-                                     the logarithmic space. Mainly useful when
-                                     the batch criteria involves large system
-                                     sizes, so that the plots are more readable.
-
-                                     """
+                 Place the set of Y values used to generate intra - and
+                 inter-experiment graphs into the logarithmic space.  Mainly
+                 useful when the batch criteria involves large system sizes, so
+                 that the plots are more readable.
+                 """
             + self.graphs_applicable_doc(
                 [
                     ":func:`~sierra.core.graphs.summary_line`",
@@ -673,41 +582,32 @@ class CoreCmdline(BaseCmdline):
             "--plot-primary-axis",
             type=int,
             help="""
+                 This option allows you to override the primary axis, which is
+                 normally is computed based on the batch criteria.
 
+                 For example, in a bivariate batch criteria composed of
 
-                                     This option allows you to override the
-                                     primary axis, which is normally is computed
-                                     based on the batch criteria.
+                     - :ref:`plugins/engine/argos/bc/population-size` on the X
+                       axis (rows)
 
-                                     For example, in a bivariate batch criteria
-                                     composed of
+                     - Another batch criteria which does not affect system size
+                       (columns)
 
-                                    - :ref:`plugins/engine/argos/bc/population-size`
-                                      on the X axis (rows)
+                 Metrics will be calculated by `computing` across .csv rows and
+                 `projecting` down the columns by default, since system size
+                 will only vary within a row.  Passing a value of 1 to this
+                 option will override this calculation, which can be useful in
+                 bivariate batch criteria in which you are interested in the
+                 effect of the OTHER non-size criteria on various performance
+                 measures.
 
-                                    - Another batch criteria which does not
-                                      affect system size (columns)
+                 0=criteria of interest varies across `rows`.
 
-                                    Metrics will be calculated by `computing`
-                                    across .csv rows and `projecting` down the
-                                    columns by default, since system size will
-                                    only vary within a row. Passing a value of 1
-                                    to this option will override this
-                                    calculation, which can be useful in
-                                    bivariate batch criteria in which you are
-                                    interested in the effect of the OTHER
-                                    non-size criteria on various performance
-                                    measures.
+                 1=criteria of interest varies across `columns`.
 
-                                    0=criteria of interest varies across `rows`.
-
-                                    1=criteria of interest varies across
-                                    `columns`.
-
-                                    This option only affects generating graphs
-                                    from bivariate batch criteria.
-
-                                    """
+                 This option only affects generating graphs from bivariate batch
+                 criteria.
+                 """
             + self.graphs_applicable_doc(
                 [
                     ":class:`~sierra.core.graphs.heatmap.Heatmap`",
@@ -739,17 +639,15 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument(
             "--plot-transpose-graphs",
             help="""
-                                          Transpose the X, Y axes in generated
-                                          graphs.  Useful as a general way to
-                                          tweak graphs for best use of space
-                                          within a paper.
+                 Transpose the X, Y axes in generated graphs.  Useful as a
+                 general way to tweak graphs for best use of space within a
+                 paper.
 
-                                          .. versionchanged:: 1.2.20
+                 .. versionchanged:: 1.2.20
 
-                                          Renamed from ``--transpose-graphs`` to
-                                          make its relation to other plotting
-                                          options clearer.
-                                          """
+                 Renamed from ``--transpose-graphs`` to make its relation to
+                 other plotting options clearer.
+                 """
             + self.graphs_applicable_doc(
                 [":class:`~sierra.core.graphs.heatmap.Heatmap`"]
             )
@@ -761,28 +659,21 @@ class CoreCmdline(BaseCmdline):
             "--expdef",
             choices=["expdef.xml", "expdef.json"],
             help="""
-                                          Specify the experiment definition
-                                          format, so that SIERRA can select an
-                                          appropriate plugin to read/write files
-                                          of that format, and manipulate
-                                          in-memory representations to create
-                                          runnable experiments.  Any plugin on
-                                          :envvar:`SIERRA_PLUGIN_PATH` can be
-                                          used, but the ones that come with
-                                          SIERRA are:
+                 Specify the experiment definition format, so that SIERRA can
+                 select an appropriate plugin to read/write files of that
+                 format, and manipulate in-memory representations to create
+                 runnable experiments.  Any plugin on
+                 :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
+                 come with SIERRA are:
 
-                                              - ``expdef.xml`` - Experimental
-                                                definitions are created from XML
-                                                files.  This causes
-                                                ``--expdef-template`` to be
-                                                parsed as XML.
+                     - ``expdef.xml`` - Experimental definitions are created
+                       from XML files.  This causes ``--expdef-template`` to be
+                       parsed as XML.
 
-                                              - ``expdef.json`` - Experimental
-                                                definitions are created from
-                                                json files.  This causes
-                                                ``--expdef-template`` to be
-                                                parsed as JSON.
-                                          """
+                     - ``expdef.json`` - Experimental definitions are created
+                       from json files.  This causes ``--expdef-template`` to be
+                       parsed as JSON.
+                 """
             + self.stage_usage_doc([1, 4, 5]),
             default="expdef.xml",
         )
@@ -794,26 +685,20 @@ class CoreCmdline(BaseCmdline):
         self.stage1.add_argument(
             "--preserve-seeds",
             help="""
-
-                                 Preserve previously generated random seeds for
-                                 experiments (the default). Useful for
-                                 regenerating experiments when you change
-                                 parameters/python code that don't affects
-                                 experimental outputs (e.g.,
-                                 paths). Preserving/overwriting random seeds is
-                                 not affected by ``--exp-overwrite``.
-
-                                 """,
+                 Preserve previously generated random seeds for experiments (the
+                 default).  Useful for regenerating experiments when you change
+                 parameters/python code that don't affects experimental outputs
+                 (e.g., paths).  Preserving/overwriting random seeds is not
+                 affected by ``--exp-overwrite``.
+                 """,
             default=True,
         )
 
         self.stage1.add_argument(
             "--no-preserve-seeds",
             help="""
-
-                                 Opposite of ``--preserve-seeds``.
-
-                                 """,
+                 Opposite of ``--preserve-seeds``.
+                 """,
             dest="preserve_seeds",
             action="store_false",
         )
@@ -825,18 +710,13 @@ class CoreCmdline(BaseCmdline):
         self.stage2.add_argument(
             "--nodefile",
             help="""
-
-                                 Specify a list of compute nodes which SIERpRA
-                                 will use to run jobs. For simulator
-                                 :term:`Engines <Engine>`, these are HPC
-                                 resource nodes. For real robot engines, these
-                                 are robot hostnames/IP addresses. This
-                                 information can also be supplied via the
-                                 :envvar:`SIERRA_NODEFILE` environment
-                                 variable; this argument takes priority if both
-                                 are supplied.
-
-                                 """,
+                 Specify a list of compute nodes which SIERpRA will use to run
+                 jobs.  For simulator :term:`Engines <Engine>`, these are HPC
+                 resource nodes.  For real robot engines, these are robot
+                 hostnames/IP addresses.  This information can also be supplied
+                 via the :envvar:`SIERRA_NODEFILE` environment variable; this
+                 argument takes priority if both are supplied.
+                 """,
         )
 
     def init_stage3(self) -> None:
@@ -847,29 +727,22 @@ class CoreCmdline(BaseCmdline):
         self.stage3.add_argument(
             "--df-verify",
             help="""
+                 SIERRA generally assumes/relies on all dataframes with the same
+                 name having the same # of columns which are of equivalent
+                 length across :term:`Experimental Runs <Experimental Run>`
+                 (different columns within a dataframe can of course have
+                 different lengths).  However this is not checked by default.
 
-                                 SIERRA generally assumes/relies on all
-                                 dataframes with the same name having the same #
-                                 of columns which are of equivalent length
-                                 across :term:`Experimental Runs <Experimental
-                                 Run>` (different columns within a dataframe can
-                                 of course have different lengths). However this
-                                 is not checked by default.
+                 If passed, then the verification step not be skipped, and will
+                 be executed during experimental results processing, and outputs
+                 will be averaged directly.
 
-                                 If passed, then the verification step not be
-                                 skipped, and will be
-                                 executed during experimental results
-                                 processing, and outputs will be averaged
-                                 directly.
-
-                                 If not all the corresponding CSV files in all
-                                 experiments generated the same # rows, then
-                                 SIERRA will (probably) crash during experiments
-                                 exist and/or have the stage4. Verification can
-                                 take a long time with large # of runs and/or
-                                 dataframes per experiment.
-
-                                 """
+                 If not all the corresponding CSV files in all experiments
+                 generated the same # rows, then SIERRA will (probably) crash
+                 during experiments exist and/or have the stage4.  Verification
+                 can take a long time with large # of runs and/or dataframes per
+                 experiment.
+                 """
             + self.stage_usage_doc([3]),
             action="store_true",
             default=False,
@@ -879,26 +752,21 @@ class CoreCmdline(BaseCmdline):
             "--storage",
             choices=["storage.csv", "storage.arrow"],
             help="""
+                 Specify the storage medium for :term:`Experimental Run`
+                 outputs, so that SIERRA can select an appropriate plugin to
+                 read them.  Any plugin on :envvar:`SIERRA_PLUGIN_PATH`, but the
+                 ones that come with SIERRA are:
 
-                                 Specify the storage medium for
-                                 :term:`Experimental Run` outputs, so that
-                                 SIERRA can select an appropriate plugin to read
-                                 them. Any plugin on
-                                 :envvar:`SIERRA_PLUGIN_PATH`, but the ones that
-                                 come with SIERRA are:
+                     - ``storage.csv`` - Experimental run outputs are stored in
+                       a per-run directory as one or more CSV files.
 
-                                 - ``storage.csv`` - Experimental run outputs
-                                   are stored in a per-run directory as one or
-                                   more CSV files.
+                     - ``storage.arrow`` - Experimental run outputs are stored
+                       in a per-run directory as one or more apache arrow files.
 
-                                 - ``storage.arrow`` - Experimental run outputs
-                                   are stored in a per-run directory as one or
-                                   more apache arrow files.
-
-                                 Regardless of the value of this option, SIERRA
-                                 always generates CSV files as it runs and
-                                 averages outputs, generates graphs, etc.
-                                 """
+                 Regardless of the value of this option, SIERRA always generates
+                 CSV files as it runs and averages outputs, generates graphs,
+                 etc.
+                 """
             + self.stage_usage_doc([3]),
             default="storage.csv",
         )
@@ -907,28 +775,25 @@ class CoreCmdline(BaseCmdline):
             "--dist-stats",
             choices=["none", "all", "conf95", "bw"],
             help="""
+                 Specify what kinds of statistics, if any, should be calculated
+                 on the distribution of experimental data during stage 3 for
+                 inclusion on graphs during stage 4:
 
-                                 Specify what kinds of statistics, if any,
-                                 should be calculated on the distribution of
-                                 experimental data during stage 3 for inclusion
-                                 on graphs during stage 4:
+                     - ``none`` - Only calculate and show raw mean on graphs.
 
-                                 - ``none`` - Only calculate and show raw mean
-                                   on graphs.
+                     - ``conf95`` - Calculate standard deviation of experimental
+                       distribution and show 95%% confidence interval on
+                       relevant graphs.
 
-                                 - ``conf95`` - Calculate standard deviation of
-                                   experimental distribution and show 95%%
-                                   confidence interval on relevant graphs.
-
-                                 - ``bw`` - Calculate statistics necessary to
-                                   show box and whisker plots around each point
-                                   in the graph. """
+                     - ``bw`` - Calculate statistics necessary to show box and
+                       whisker plots around each point in the graph.
+                 """
             + utils.sphinx_ref(":func:`~sierra.core.graphs.summary_line`")
-            + """ only).
+            + """only).
 
-                                 - ``all`` - Generate all possible statistics,
-                                   and plot all possible statistics on graphs.
-                                   """
+                  - ``all`` - Generate all possible statistics, and plot all
+                    possible statistics on graphs.
+              """
             + self.graphs_applicable_doc(
                 [
                     ":func:`~sierra.core.graphs.summary_line`",
@@ -943,16 +808,11 @@ class CoreCmdline(BaseCmdline):
             "--processing-mem-limit",
             type=int,
             help="""
-
-
-                                 Specify, as a percent in [0, 100], how much
-                                 memory SIERRA should try to limit itself to
-                                 using. This is useful on systems with limited
-                                 memory, or on systems which are shared with
-                                 other users without per-user memory
-                                 restrictions.
-
-                                 """
+                 Specify, as a percent in [0, 100], how much memory SIERRA
+                 should try to limit itself to using.  This is useful on systems
+                 with limited memory, or on systems which are shared with other
+                 users without per-user memory restrictions.
+                 """
             + self.stage_usage_doc([3, 4]),
             default=90,
         )
@@ -960,46 +820,36 @@ class CoreCmdline(BaseCmdline):
         self.stage3.add_argument(
             "--df-homogenize",
             help="""
+                 SIERRA generally assumes/relies on all dataframes with the same
+                 name having the same # of columns which are of equivalent
+                 length across: term: `Experimental Runs < Experimental Run >`
+                 (different columns within a dataframe can of course have
+                 different lengths).  This not checked unless ``--df-verify`` is
+                 passed.  If strict verification is skipped, then SIERRA
+                 provides the following options when processing dataframes
+                 during stage {3, 4} to to homogenize them:
 
-                                 SIERRA generally assumes/relies on all
-                                 dataframes with the same name having the same #
-                                 of columns which are of equivalent length
-                                 across: term: `Experimental Runs < Experimental
-                                 Run >` (different columns within a dataframe
-                                 can of course have different lengths). This not
-                                 checked unless ``--df-verify`` is passed. If
-                                 strict verification is skipped, then SIERRA
-                                 provides the following options when processing
-                                 dataframes during stage {3, 4} to to homogenize
-                                 them:
+                     - ``none`` - Don't do anything.  This may or may not
+                       produce crashes during stage 4, depending on what you are
+                       doing.
 
-                                 - ``none`` - Don't do anything. This may or may
-                                   not produce crashes during stage 4, depending
-                                   on what you are doing.
+                     - ``pad`` - Project last valid value in columns which are
+                       too short down the column to make it match those which
+                       are longer.
 
-                                 - ``pad`` - Project last valid value in columns
-                                   which are too short down the column to make
-                                   it match those which are longer.
+                 Note that this may result in invalid data/graphs if the filled
+                 columns are intervallic, interval average, or cumulative
+                 average data.  If the data is a cumulative count of something,
+                 then this policy will have no ill effects.
 
-                                   Note that this may result in invalid
-                                   data/graphs if the filled columns are
-                                   intervallic, interval average, or cumulative
-                                   average data. If the data is a cumulative
-                                   count of something, then this policy will
-                                   have no ill effects.
+                     - ``zero`` - Same as ``pad``, but always fill with zeroes.
 
-                                 - ``zero`` - Same as ``pad``, but always fill
-                                   with zeroes.
-
-                                 Homogenization is performed just before writing
-                                 dataframes to the specified storage
-                                 medium. Useful with real robot experiments if
-                                 the number of datapoints captured per-robot is
-                                 slightly different, depending on when they
-                                 started executing relative to when the
-                                 experiment started.
-
-                                 """,
+                 Homogenization is performed just before writing dataframes to
+                 the specified storage medium.  Useful with real robot
+                 experiments if the number of datapoints captured per-robot is
+                 slightly different, depending on when they started executing
+                 relative to when the experiment started.
+                 """,
             default="none",
         )
 
@@ -1011,33 +861,28 @@ class CoreCmdline(BaseCmdline):
             "--exp-graphs",
             choices=["intra", "inter", "all", "none"],
             help="""
+                 Specify which types of graphs should be generated from
+                 experimental results:
 
-                                 Specify which types of graphs should be
-                                 generated from experimental results:
+                     - ``intra`` - Generate intra-experiment graphs from the
+                       results of a single experiment within a batch, for each
+                       experiment in the batch(this can take a long time with
+                       large batch experiments).  If any intra-experiment models
+                       are defined and enabled, those are run and the results
+                       placed on appropriate graphs.
 
-                                 - ``intra`` - Generate intra-experiment graphs
-                                   from the results of a single experiment
-                                   within a batch, for each experiment in the
-                                   batch(this can take a long time with large
-                                   batch experiments). If any intra-experiment
-                                   models are defined and enabled, those are run
-                                   and the results placed on appropriate graphs.
+                     - ``inter`` - Generate inter-experiment graphs _across_ the
+                       results of all experiments in a batch.  These are very
+                       fast to generate, regardless of batch experiment size.
+                       If any inter-experiment models are defined and enabled,
+                       those are run and the results placed on appropriate
+                       graphs.
 
-                                 - ``inter`` - Generate inter-experiment graphs
-                                   _across_ the results of all experiments in a
-                                   batch. These are very fast to generate,
-                                   regardless of batch experiment size. If any
-                                   inter-experiment models are defined and
-                                   enabled, those are run and the results placed
-                                   on appropriate graphs.
+                     - ``all`` - Generate all types of graphs.
 
-                                 - ``all`` - Generate all types of graphs.
-
-                                 - ``none`` - Skip graph generation; provided to
-                                   skip graph generation if only video outputs
-                                   are desired.
-
-                                 """
+                     - ``none`` - Skip graph generation; provided to skip graph
+                       generation if only video outputs are desired.
+                 """
             + self.stage_usage_doc([4]),
             default="all",
         )
@@ -1045,47 +890,36 @@ class CoreCmdline(BaseCmdline):
         self.stage4.add_argument(
             "--project-no-LN",
             help="""
+                 Specify that the intra-experiment and inter-experiment
+                 linegraphs defined in project YAML configuration should not be
+                 generated.  Useful if you are working on something which
+                 results in the generation of other types of graphs, and the
+                 generation of those linegraphs is not currently needed only
+                 slows down your development cycle.
 
-                                 Specify that the intra-experiment and
-                                 inter-experiment linegraphs defined in project
-                                 YAML configuration should not be
-                                 generated. Useful if you are working on
-                                 something which results in the generation of
-                                 other types of graphs, and the generation of
-                                 those linegraphs is not currently needed only
-                                 slows down your development cycle.
-
-                                 Model linegraphs are still generated, if
-                                 applicable.
-
-                                 """,
+                 Model linegraphs are still generated, if applicable.
+                 """,
             action="store_true",
         )
 
         self.stage4.add_argument(
             "--project-no-HM",
             help="""
+                 Specify that the intra-experiment heatmaps defined in project
+                 YAML configuration should not be generated.  Useful if:
 
-                                 Specify that the intra-experiment heatmaps
-                                 defined in project YAML configuration should
-                                 not be generated. Useful if:
+                     - You are working on something which results in the
+                       generation of other types of graphs, and the generation
+                       of heatmaps only slows down your development cycle.
 
-                                 - You are working on something which results in
-                                   the generation of other types of graphs, and
-                                   the generation of heatmaps only slows down
-                                   your development cycle.
+                     - You are working on stage5 comparison graphs for bivariate
+                       batch criteria, and re-generating many heatmaps during
+                       stage4 is taking too long.
 
-                                 - You are working on stage5 comparison graphs
-                                   for bivariate batch criteria, and
-                                   re-generating many heatmaps during stage4 is
-                                   taking too long.
+                 Model heatmaps are still generated, if applicable.
 
-                                 Model heatmaps are still generated, if
-                                 applicable.
-
-                                 .. versionadded:: 1.2.20
-
-                                 """,
+                 .. versionadded:: 1.2.20
+                 """,
             action="store_true",
         )
 
@@ -1094,13 +928,11 @@ class CoreCmdline(BaseCmdline):
         models.add_argument(
             "--models-enable",
             help="""
-
-                            Enable running of all models; otherwise, no models
-                            are run, even if they appear in the project config
-                            file. The logic behind having models disabled by
-                            default is that most users won't have them.
-
-                            """,
+                 Enable running of all models; otherwise, no models are run,
+                 even if they appear in the project config file.  The logic
+                 behind having models disabled by default is that most users
+                 won't have them.
+                 """,
             action="store_true",
         )
 
@@ -1112,15 +944,12 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument(
             "--render-cmd-opts",
             help="""
-
-                               Specify the :program:`ffmpeg` options to appear
-                               between the specification of the input image
-                               files and the specification of the output
-                               file. The default is suitable for use with ARGoS
-                               frame grabbing set to a frames size of 1600x1200
-                               to output a reasonable quality video.
-
-                               """
+                 Specify the :program:`ffmpeg` options to appear between the
+                 specification of the input image files and the specification of
+                 the output file.  The default is suitable for use with ARGoS
+                 frame grabbing set to a frames size of 1600x1200 to output a
+                 reasonable quality video.
+                 """
             + self.stage_usage_doc([4]),
             default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p",
         )
@@ -1128,14 +957,10 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument(
             "--project-imagizing",
             help="""
-
-                               Enable generation of image files from CSV files
-                               captured during stage 2 and averaged during stage
-                               3 for each experiment. See
-                               :ref:`usage/rendering/project` for
-                               details and restrictions.
-
-                               """
+                 Enable generation of image files from CSV file s captured during
+                 stage 2 and averaged during stage 3 for each experiment.  See
+                 :ref:`usage/rendering/project` for details and restrictions.
+                 """
             + self.stage_usage_doc([3, 4]),
             action="store_true",
         )
@@ -1158,14 +983,11 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument(
             "--bc-rendering",
             help="""
+                 Enable generation of videos from generated graphs, such as
+                 heatmaps.  Bivariate batch criteria only.
 
-                               Enable generation of videos from generated
-                               graphs, such as heatmaps. Bivariate batch
-                               criteria only.
-
-                               .. versionadded:: 1.2.20
-
-                               """
+                 .. versionadded:: 1.2.20
+                 """
             + self.stage_usage_doc([4]),
             action="store_true",
         )
@@ -1177,28 +999,23 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument(
             "--controllers-list",
             help="""
+                 Comma separated list of controllers to compare within
+                 ``--sierra-root``.
 
-                                 Comma separated list of controllers to compare
-                                 within ``--sierra-root``.
-
-                                 The first controller in this list will be used
-                                 for as the controller of primary interest if
-                                 ``--comparison-type`` is passed.
-
-                                 """
+                 The first controller in this list will be used for as the
+                 controller of primary interest if ``--comparison-type`` is
+                 passed.
+                 """
             + self.stage_usage_doc([5]),
         )
 
         self.stage5.add_argument(
             "--controllers-legend",
             help="""
-
-                                 Comma separated list of names to use on the
-                                 legend for the generated comparison graphs,
-                                 specified in the same order as the
-                                 ``--controllers-list``.
-
-                                 """
+                 Comma separated list of names to use on the legend for the
+                 generated comparison graphs, specified in the same order as the
+                 ``--controllers-list``.
+                 """
             + self.stage_usage_doc(
                 [5], "If omitted: the raw controller names will be used."
             ),
@@ -1207,26 +1024,20 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument(
             "--scenarios-list",
             help="""
-
-                                 Comma separated list of scenarios to compare
-                                 ``--controller`` across within
-                                 ``--sierra-root``.
-
-                                 """
+                 Comma separated list of scenarios to compare ``--controller``
+                 across within ``--sierra-root``.
+                 """
             + self.stage_usage_doc([5]),
         )
 
         self.stage5.add_argument(
             "--scenarios-legend",
             help="""
-
-                                 Comma separated list of names to use on the
-                                 legend for the generated inter-scenario
-                                 controller comparison graphs(if applicable),
-                                 specified in the same order as the
-                                 ``--scenarios-list``.
-
-                                 """
+                 Comma separated list of names to use on the legend for the
+                 generated inter-scenario controller comparison graphs(if
+                 applicable), specified in the same order as the
+                 ``--scenarios-list``.
+                 """
             + self.stage_usage_doc(
                 [5], "If omitted: the raw scenario names will be used."
             ),
@@ -1234,12 +1045,9 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument(
             "--scenario-comparison",
             help="""
-
-                                 Perform a comparison of ``--controller`` across
-                                 ``--scenarios-list`` (univariate batch criteria
-                                 only).
-
-                                 """
+                 Perform a comparison of ``--controller`` across
+                 ``--scenarios-list`` (univariate batch criteria only).
+                 """
             + self.stage_usage_doc(
                 [5],
                 "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed.",
@@ -1250,12 +1058,9 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument(
             "--controller-comparison",
             help="""
-
-                                 Perform a comparison of ``--controllers-list``
-                                 across all scenarios at least one controller
-                                 has been run on.
-
-                                 """
+                 Perform a comparison of ``--controllers-list`` across all
+                 scenarios at least one controller has been run on.
+                 """
             + self.stage_usage_doc(
                 [5],
                 "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed.",
@@ -1267,55 +1072,43 @@ class CoreCmdline(BaseCmdline):
             "--comparison-type",
             choices=["LNraw", "HMraw", "HMdiff", "HMscale"],
             help=r"""
+                 Specify how controller comparisons should be performed.
 
-                                 Specify how controller comparisons should be
-                                 performed.
+                 If the batch criteria is univariate, the options are:
 
-                                 If the batch criteria is univariate, the
-                                 options are:
+                     - ``LNraw`` - Output raw 1D performance measures using a
+                       single {0} for each measure, with all
+                       ``--controllers-list`` controllers shown on the same
+                       graph.
 
-                                 - ``LNraw`` - Output raw 1D performance
-                                   measures using a single {0} for each measure,
-                                   with all ``--controllers-list`` controllers
-                                   shown on the same graph.
+                 If the batch criteria is bivariate, the options are:
 
-                                 If the batch criteria is bivariate, the options
-                                 are:
+                     - ``LNraw`` - Output raw performance measures as a set of
+                       {0}, where each line graph is constructed from the i-th
+                       row/column for the 2D dataframe for the performance
+                       results for all controllers.
 
-                                 - ``LNraw`` - Output raw performance measures
-                                   as a set of {0}, where each line graph is
-                                   constructed from the i-th row/column for the
-                                   2D dataframe for the performance results for
-                                   all controllers.
+                 .. NOTE:: SIERRA cannot currently plot statistics on the
+                 linegraphs built from slices of the 2D CSVs/heatmaps generated
+                 during stage4, because statistics generation is limited to
+                 stage3.  This limitation may be removed in a future release.
 
-                                   .. NOTE:: SIERRA cannot currently plot
-                                      statistics on the linegraphs built from
-                                      slices of the 2D CSVs/heatmaps generated
-                                      during stage4, because statistics
-                                      generation is limited to stage3. This
-                                      limitation may be removed in a future
-                                      release.
+                     - ``HMraw`` - Output raw 2D performance measures as a set
+                       of dual heatmaps comparing all controllers against the
+                       controller of primary interest(one per pair).
 
-                                 - ``HMraw`` - Output raw 2D performance
-                                   measures as a set of dual heatmaps comparing
-                                   all controllers against the controller of
-                                   primary interest(one per pair).
+                     - ``HMdiff`` - Subtract the performance measure of the
+                       controller of primary interest against all other
+                       controllers, pairwise, outputting one 2D heatmap per
+                       comparison.
 
-                                 - ``HMdiff`` - Subtract the performance measure
-                                   of the controller of primary interest against
-                                   all other controllers, pairwise, outputting
-                                   one 2D heatmap per comparison.
+                     - ``HMscale`` - Scale controller performance measures
+                       against those of the controller of primary interest by
+                       dividing, outputing one 2D heatmap per comparison.
 
-                                 - ``HMscale`` - Scale controller performance
-                                   measures against those of the controller of
-                                   primary interest by dividing, outputing one
-                                   2D heatmap per comparison.
-
-                                 For all comparison types,
-                                 ``--controllers-legend`` is used if passed for
-                                 legend.
-
-                                 """.format(
+                 For all comparison types, ``--controllers-legend`` is used if
+                 passed for legend.
+                 """.format(
                 utils.sphinx_ref(":func:`~sierra.core.graphs.summary_line`")
             )
             + self.stage_usage_doc([5]),
@@ -1324,19 +1117,14 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument(
             "--bc-univar",
             help="""
-
-                                 Specify that the batch criteria is
-                                 univariate. This cannot be deduced from the
-                                 command line ``--batch-criteria`` argument in
-                                 all cases because we are comparing controllers
-                                 `across` scenarios, and each scenario
-                                 (potentially) has a different batch criteria
-                                 definition, which will result in (potentially)
-                                 erroneous comparisons if we don't re-generate
-                                 the batch criteria for each scenaro we compare
-                                 controllers within.
-
-                                 """
+                 Specify that the batch criteria is univariate.  This cannot be
+                 deduced from the command line ``--batch-criteria`` argument in
+                 all cases because we are comparing controllers `across`
+                 scenarios, and each scenario (potentially) has a different
+                 batch criteria definition, which will result in (potentially)
+                 erroneous comparisons if we don't re-generate the batch
+                 criteria for each scenaro we compare controllers within.
+                 """
             + self.stage_usage_doc([5]),
             action="store_true",
         )
@@ -1344,19 +1132,14 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument(
             "--bc-bivar",
             help="""
-
-                                 Specify that the batch criteria is
-                                 bivariate. This cannot be deduced from the
-                                 command line ``--batch-criteria`` argument in
-                                 all cases because we are comparing controllers
-                                 `across` scenarios, and each
-                                 scenario(potentially) has a different batch
-                                 criteria definition, which will result in
-                                 (potentially) erroneous comparisons if we don't
-                                 re-generate the batch criteria for each scenaro
-                                 we compare controllers in .
-
-                                 """
+                 Specify that the batch criteria is bivariate.  This cannot be
+                 deduced from the command line ``--batch-criteria`` argument in
+                 all cases because we are comparing controllers `across`
+                 scenarios, and each scenario(potentially) has a different batch
+                 criteria definition, which will result in (potentially)
+                 erroneous comparisons if we don't re-generate the batch
+                 criteria for each scenaro we compare controllers in .
+                 """
             + self.stage_usage_doc([5]),
             action="store_true",
         )

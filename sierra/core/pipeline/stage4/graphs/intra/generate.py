@@ -75,7 +75,7 @@ def generate(
 
 
 class IntraExpGraphGenerator:
-    """Generates graphs from :term:`Averaged Run Output Data` files.
+    """Generates graphs from :term:`Processed Output Data` files.
 
     Which graphs are generated is controlled by YAML configuration files parsed
     in :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.

@@ -1,8 +1,8 @@
 .. _plugins/engine/argos:
 
-==============
+============
 ARGoS Engine
-==============
+============
 
 `<https://www.argos-sim.info/index.php>`_. Requires ARGoS >= 3.0.0-beta59.
 
@@ -37,37 +37,30 @@ experiments can be reproduced exactly. By default SIERRA does not overwrite its
 generated random seeds for each experiment once generated; you can override with
 ``--no-preserve-seeds``.
 
+Visual Capture and Rendering
+============================
 
-Engines
-=========
+This engine can render it's simulation environment offscreen into a virtual
+buffer using :program:`Xvfb`, and output captured frames as PNG images during
+stage 2, which can then be rendered into per-run videos during stage 4 (see
+:ref:`plugins/deliverable/rendering/engine` for more details).
 
+To use:
 
-.. list-table::
-   :header-rows: 1
+- Install :program:`Xvfb` so that it can installed/can be found by the shell
+  during stage 2.
 
-   * - Engine
+- Pass ``--engine-vc`` during stage 2. This will slow ARGoS down a LOT, so if
+  you use it, ``--n-runs`` should probably be low, unless you have gobs of
+  computing power available. ARGoS will output captured frames to ``frames/`` in
+  each experimental run output directory.
 
-     - Description
+- Pass ``--engine-vc`` during stage 4, which causes frames captured during stage
+  2 to be stitched together into a unique video file using :program:`ffmpeg`
+  (precise command configurable via ``--render-cmd-opts``), and output under
+  ``<batch_root>/videos/<exp>``.
 
-     - Reference
-
-   * - :ref:`ARGoS <plugins/engine/argos>`
-
-     - Simulator for fast simulation of large swarms. Requires ARGoS >=
-       3.0.0-beta59.
-
-     - `ARGoS <https://www.argos-sim.info/index.php>`_
-
-   * - :ref:`ROS1+Gazebo <plugins/engine/ros1gazebo>`
-
-     - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
-       Noetic or later.
-
-     - `ROS1 <https://ros.org>`_ + `Gazebo <https://github.com/gazebosim/gz-sim>`_
-
-   * - :ref:`ROS1+Robot <plugins/engine/ros1robot>`
-
-     - Using ROS1 with a real robot engine of your choice. ROS1 Noetic or
-       later is required.
-
-     - `ROS1+Robot <https://ros.org>`_
+.. NOTE:: During stage 1 ``--engine-vc`` causes the ARGoS Qt/OpenGL
+          ``<visualization>`` subtree to be added to the ``--expdef-template``
+          when generating experimental inputs; it is removed otherwise. If
+          ``<visualization>`` already exists, it is removed and re-created.

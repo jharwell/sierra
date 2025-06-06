@@ -25,7 +25,6 @@ import logging
 import pathlib
 
 # 3rd party packages
-import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
@@ -35,7 +34,7 @@ _logger = logging.getLogger(__name__)
 
 
 def _parallel(
-    main_config: types.YAMLDict,
+    render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     inputs: tp.List[types.SimpleDict],
 ) -> None:
@@ -49,41 +48,36 @@ def _parallel(
         q.put(spec)
 
     # Render videos in parallel--waaayyyy faster
-    if cmdopts["processing_serial"]:
-        parallelism = 1
-    else:
-        parallelism = psutil.cpu_count()
+    parallelism = cmdopts["processing_parallelism"]
 
     for _ in range(0, parallelism):
-        p = mp.Process(target=_worker, args=(q, main_config))
+        p = mp.Process(target=_worker, args=(q, render_config))
         p.start()
 
     q.join()
 
 
-def _worker(q: mp.Queue, main_config: types.YAMLDict) -> None:
+def _worker(q: mp.Queue, render_config: types.YAMLDict) -> None:
     assert shutil.which("ffmpeg") is not None, "ffmpeg not found"
 
     while True:
         # Wait for 3 seconds after the queue is empty before bailing
         try:
             render_opts = q.get(True, 3)
-            output_dir = pathlib.Path(render_opts["output_dir"])
 
-            _logger.info("Rendering images in %s...", output_dir.name)
+            _logger.info("Rendering images in %s...", render_opts["exp_root"].name)
 
             opts = render_opts["ffmpeg_opts"].split(" ")
 
             ipaths = "'{0}/*.{1}'".format(render_opts["input_dir"], config.kImageType)
-            opath = pathlib.Path(render_opts["output_dir"], render_opts["ofile_name"])
             cmd = ["ffmpeg", "-y", "-pattern_type", "glob", "-i", ipaths]
             cmd.extend(opts)
-            cmd.extend([str(opath)])
+            cmd.extend([str(render_opts["output_path"])])
 
             to_run = " ".join(cmd)
             _logger.trace("Run cmd: %s", to_run)  # type: ignore
 
-            utils.dir_create_checked(render_opts["output_dir"], exist_ok=True)
+            utils.dir_create_checked(render_opts["output_path"].parent, exist_ok=True)
 
             with subprocess.Popen(
                 to_run, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE
@@ -91,7 +85,7 @@ def _worker(q: mp.Queue, main_config: types.YAMLDict) -> None:
                 proc.wait()
 
             # We use communicate(), not wait() to avoid issues with IO buffers
-            # becoming full (i.e., you get deadlocks with wait() regularly).
+            # becoming full (e.g., you get deadlocks with wait() regularly).
             stdout_raw, stderr_raw = proc.communicate()
 
             # Only show output if the process failed (i.e., did not return 0)
@@ -111,7 +105,7 @@ def _worker(q: mp.Queue, main_config: types.YAMLDict) -> None:
 
 
 def from_engine(
-    main_config: types.YAMLDict,
+    render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     criteria: bc.IConcreteBatchCriteria,
@@ -145,36 +139,37 @@ def from_engine(
         for run in exp.iterdir():
             engine = cmdopts["engine"].split(".")[1]
             frames_leaf = config.kRendering[engine]["frames_leaf"]
+            output_path = output_dir / (run.name + config.kRenderFormat)
             opts = {
-                "ofile_name": run.name + config.kRenderFormat,
+                "exp_root": pathset.imagize_root / exp.name,
+                "output_path": output_path,
                 "input_dir": str(exp / run / frames_leaf),
-                "output_dir": str(output_dir),
                 "ffmpeg_opts": cmdopts["render_cmd_opts"],
             }
             inputs.append(copy.deepcopy(opts))
 
-    _parallel(main_config, cmdopts, inputs)
+    _parallel(render_config, cmdopts, inputs)
 
 
 def from_project_imagized(
-    main_config: types.YAMLDict,
+    render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     criteria: bc.IConcreteBatchCriteria,
 ) -> None:
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
-    Frames (images) in each subdirectory in the imagize root (see
-    :ref:`usage/runtime-tree`) are stitched together to make a
-    video using :program:`ffmpeg`.  Output format controlled via configuration.
+    Frames (images) in the imagize root (see :ref:`usage/runtime-tree`) are
+    stitched together to make a video using :program:`ffmpeg`.  Output format
+    controlled via configuration.
 
     Targets to render are found in::
 
-      <batch_root>/imagize/<subdir_name>
+        <batch_root>/imagize/<subdir_path>
 
     Videos are output in::
 
-      <batch_root>/videos/<exp>/<subdir_name>
+        <batch_root>/videos/<exp>/<subdir_path>
 
     For more details, see :ref:`usage/rendering`.
 
@@ -185,28 +180,46 @@ def from_project_imagized(
     )
 
     inputs = []
-    for exp in exp_to_render:
-        exp_imagize_root = pathset.imagize_root / exp.name
-        if not exp_imagize_root.exists():
-            continue
+    # For each category of imagized/rendered graphs
+    for category in render_config:
+        # For each graph in each category
+        for graph in render_config[category]:
 
-        output_dir = pathset.video_root / exp.name
+            # Across all experiments
+            for exp in exp_to_render:
+                exp_imagize_root = pathset.imagize_root / exp.name
+                if not exp_imagize_root.exists():
+                    continue
 
-        for candidate in exp_imagize_root.iterdir():
-            if candidate.is_dir():
-                opts = {
-                    "input_dir": str(candidate),
-                    "output_dir": str(output_dir),
-                    "ofile_name": candidate.name + config.kRenderFormat,
-                    "ffmpeg_opts": cmdopts["render_cmd_opts"],
-                }
-                inputs.append(copy.deepcopy(opts))
+                # Check all directories recursively
+                for candidate in exp_imagize_root.rglob("*"):
+                    path = pathlib.Path(dict(graph)["src_stem"])
+                    fragment = path.parent / path.name
+                    if candidate.is_file():
+                        continue
 
-    _parallel(main_config, cmdopts, inputs)
+                    if str(fragment) not in str(candidate):
+                        continue
+
+                    output_path = (
+                        pathset.video_root
+                        / exp.name
+                        / candidate.relative_to(exp_imagize_root)
+                    ) / (candidate.name + config.kRenderFormat)
+                    inputs.append(
+                        {
+                            "input_dir": candidate,
+                            "exp_root": pathset.imagize_root / exp.name,
+                            "output_path": output_path,
+                            "ffmpeg_opts": cmdopts["render_cmd_opts"],
+                        }
+                    )
+
+    _parallel(render_config, cmdopts, inputs)
 
 
 def from_bivar_heatmaps(
-    main_config: types.YAMLDict,
+    render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     criteria: bc.IConcreteBatchCriteria,
@@ -237,13 +250,13 @@ def from_bivar_heatmaps(
 
             opts = {
                 "input_dir": str(candidate),
-                "output_dir": str(output_dir),
-                "ofile_name": candidate.name + config.kRenderFormat,
+                "exp_root": pathset.imagize_root / pathset.candidate.name,
+                "output_path": output_dir / (candidate.name + config.kRenderFormat),
                 "ffmpeg_opts": cmdopts["render_cmd_opts"],
             }
             inputs.append(copy.deepcopy(opts))
 
-    _parallel(main_config, cmdopts, inputs)
+    _parallel(render_config, cmdopts, inputs)
 
 
 __all__ = ["from_project_imagized", "from_engine", "from_bivar_heatmaps"]

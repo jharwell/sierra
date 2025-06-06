@@ -18,6 +18,15 @@ and improving reproducability of experiments (i.e., less cryptic/subtle errors
 because of a ROS ``<include>`` which is different between the package versions
 installed on one system and another).
 
+Don't Modify User Directory Structures
+======================================
+
+:term:`Experimental Runs <Experimental Run>` will generate some sort of
+directory structure in their output directory; it might be flat, it might be
+deeply nested. SIERRA maintains this directory structure during stages {3,4} in
+the interest of the Principle Of Least Surprise, and to make it easier for
+SIERRA outputs to interoperate with other user scripts.
+
 Assert Often, Fail Early
 ========================
 

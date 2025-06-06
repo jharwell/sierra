@@ -144,3 +144,11 @@ where SIERRA analyzes things like:
   ``hv.X``, because that will make it easier/cleaner to reuse code common to
   usage of hv in stage 4/5. This decision is a long way off, and doesn't really
   matter at this juncture.
+
+- The contributions of each dimension in an N-dim batch criteria to the observed
+  performance (i.e., principle component analysis).
+
+- Regression testing: given the cmdline args + a pointer to some blessed
+  referenced data, generate a report of what items passed and which failed. This
+  should be fairly straightforward, because the blessed data would come from a
+  previous experiment, and therefore be packaged in SIERRA's directory structure.

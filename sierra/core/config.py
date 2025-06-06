@@ -9,19 +9,21 @@ Contains all SIERRA hard-coded configuration in one place.
 import logging
 import typing as tp
 import packaging
+import holoviews as hv
 
 # 3rd party packages
 
 # Project packages
 from sierra.core import types
 
+
 ################################################################################
 # Holoviews Configuration
 ################################################################################
 def bokeh_init():
     # Only needed when hv backend is bokeh
-    logging.getLogger('selenium').setLevel(logging.WARNING)
-    logging.getLogger('urllib3').setLevel(logging.WARNING)
+    logging.getLogger("selenium").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 def mpl_init():
@@ -30,49 +32,48 @@ def mpl_init():
     # messages which occur during import.
     #
     # Only needed when the hv backend is mpl
-    logging.getLogger('matplotlib').setLevel(logging.WARNING)
-    logging.getLogger('PIL').setLevel(logging.WARNING)
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.WARNING)
 
     import matplotlib as mpl
 
-    # 2025-05-09 [JRH]: Doing this here has no effect, as it has to be done in
-    # each file you want to use mpl as the backend -_-.
-    # hv.extension('matplotlib')
-
-    mpl.rcParams['lines.linewidth'] = 3
-    mpl.rcParams['lines.markersize'] = 10
-    mpl.rcParams['figure.max_open_warning'] = 1000
-    mpl.rcParams['axes.formatter.limits'] = (-4, 4)
+    mpl.rcParams["lines.linewidth"] = 3
+    mpl.rcParams["lines.markersize"] = 10
+    mpl.rcParams["figure.max_open_warning"] = 1000
+    mpl.rcParams["axes.formatter.limits"] = (-4, 4)
 
     # Use latex to render all math, so that it matches how the math renders in
     # papers.
-    mpl.rcParams['text.usetex'] = True
+    mpl.rcParams["text.usetex"] = True
 
     # Set MPL backend (headless for non-interactive use). Must be BEFORE
     # importing pyplot reduce import loading time.
-    mpl.use('agg')
+    mpl.use("Agg")
 
     import matplotlib.pyplot as plt
 
     # Set MPL style
-    plt.style.use('seaborn-v0_8-colorblind')
+    plt.style.use("seaborn-v0_8-colorblind")
 
 
 # Actually initialize holoviews
 bokeh_init()
 mpl_init()
 
+hv.core.cache_size = 10
+hv.config.cache_size = 0
+hv.config.warning_level = 0
 ################################################################################
 # General Configuration
 ################################################################################
 
 
-kImageType = 'png'
+kImageType = "png"
 
-kRenderFormat = '.mp4'
+kRenderFormat = ".mp4"
 
-kPickleExt = '.pkl'
-kPickleLeaf = 'exp_def' + kPickleExt
+kPickleExt = ".pkl"
+kPickleLeaf = "exp_def" + kPickleExt
 kRandomSeedsLeaf = "seeds" + kPickleExt
 
 kGraphDPI = 100
@@ -80,105 +81,95 @@ kGraphDPI = 100
 kGraphBaseSize = 10.0  # inches
 
 kGraphTextSizeSmall: types.IntDict = {
-    'title': 24,
-    'xyz_label': 18,
-    'tick_label': 12,
-    'legend_label': 18
+    "title": 24,
+    "xyz_label": 18,
+    "tick_label": 12,
+    "legend_label": 18,
 }
 
 kGraphTextSizeLarge: types.IntDict = {
-    'title': 36,
-    'xyz_label': 24,
-    'tick_label': 24,
-    'legend_label': 32
+    "title": 36,
+    "xyz_label": 24,
+    "tick_label": 24,
+    "legend_label": 32,
 }
 
 # These are the file extensions that files read/written by a given storage
 # plugin should have. Once processed by SIERRA they are written out as CSV files
 # with new extensions contextualizing them.
-kStorageExt: types.StrDict = {
-    'csv': '.csv',
-    'arrow': '.arrow'
-}
+kStorageExt: types.StrDict = {"csv": ".csv", "arrow": ".arrow"}
 
 kStats: tp.Dict[str, types.StatisticsSpec] = {
     # The default for averaging
-    'mean': types.StatisticsSpec({'mean': '.mean'}),
-
+    "mean": types.StatisticsSpec({"mean": ".mean"}),
     # For calculating 95% confidence intervals
-    'conf95': types.StatisticsSpec({'stddev': '.stddev'}),
-
+    "conf95": types.StatisticsSpec({"stddev": ".stddev"}),
     # For calculating box and whisker plots
-    'bw': types.StatisticsSpec({'median': '.median',
-                                'q1': '.q1',
-                                'q3': '.q3',
-                                'whislo': '.whislo',
-                                'whishi': '.whishi',
-                                'cilo': '.cilo',
-                                'cihi': '.cihi'
-                                })
+    "bw": types.StatisticsSpec(
+        {
+            "median": ".median",
+            "q1": ".q1",
+            "q3": ".q3",
+            "whislo": ".whislo",
+            "whishi": ".whishi",
+            "cilo": ".cilo",
+            "cihi": ".cihi",
+        }
+    ),
 }
 
-kModelsExt: types.StrDict = {
-    'model': '.model',
-    'legend': '.legend'
-}
+kModelsExt: types.StrDict = {"model": ".model", "legend": ".legend"}
 
 kRendering = {
-    'argos': {
-        'frames_leaf': 'frames',
+    "argos": {
+        "frames_leaf": "frames",
     }
 }
 kARGoS: tp.Dict[str, tp.Any] = {
-    'physics_iter_per_tick': 10,
-    'min_version': packaging.version.parse('3.0.0-beta53'),
-    'launch_cmd': 'argos3',
-    'launch_file_ext': '.argos',
-    'n_secs_per_run': 5000,  # seconds
-    'n_ticks_per_sec': 5,
-
+    "physics_iter_per_tick": 10,
+    "min_version": packaging.version.parse("3.0.0-beta53"),
+    "launch_cmd": "argos3",
+    "launch_file_ext": ".argos",
+    "n_secs_per_run": 5000,  # seconds
+    "n_ticks_per_sec": 5,
     # These are the cell sizes for use with the spatial_hash method for the
     # dynamics2D engine. Since that method should only be used with lots of
     # robots (per the docs), we set a cell a little larger than the robot.
-    'spatial_hash2D': {
-        'foot-bot': 0.5,
-        'e-puck': 0.5,
-    }
+    "spatial_hash2D": {
+        "foot-bot": 0.5,
+        "e-puck": 0.5,
+    },
 }
 
 
 kROS: types.SimpleDict = {
-    'launch_cmd': 'roslaunch',
-    'launch_file_ext': '.launch',
-    'param_file_ext': '.params',
-    'n_ticks_per_sec': 5,
-    'n_secs_per_run': 1000,  # seconds
-    'port_base': 11235,
-    'inter_run_pause': 60  # seconds
+    "launch_cmd": "roslaunch",
+    "launch_file_ext": ".launch",
+    "param_file_ext": ".params",
+    "n_ticks_per_sec": 5,
+    "n_secs_per_run": 1000,  # seconds
+    "port_base": 11235,
+    "inter_run_pause": 60,  # seconds
 }
 
-kYAML = types.YAMLConfigFileSpec(main='main.yaml',
-                                 controllers='controllers.yaml',
-                                 models='models.yaml',
-                                 stage5='stage5.yaml')
+kYAML = types.YAMLConfigFileSpec(
+    main="main.yaml",
+    controllers="controllers.yaml",
+    models="models.yaml",
+    stage5="stage5.yaml",
+)
 
 kGazebo = {
-    'launch_cmd': 'gazebo',
-    'min_version': '11.0.0',
-    'physics_iter_per_tick': 1000,
-
+    "launch_cmd": "gazebo",
+    "min_version": "11.0.0",
+    "physics_iter_per_tick": 1000,
 }
 
-kGNUParallel: types.StrDict = {
-    'cmdfile_stem': 'commands',
-    'cmdfile_ext': '.txt'
-}
+kGNUParallel: types.StrDict = {"cmdfile_stem": "commands", "cmdfile_ext": ".txt"}
 
 kExperimentalRunData = {
     # Default # datapoints in each .csv of one-dimensional data.
-    'n_datapoints_1D': 50
+    "n_datapoints_1D": 50
 }
 
-kEngine = {
-    'ping_timeout': 10  # seconds
-}
+kEngine = {"ping_timeout": 10}  # seconds

@@ -249,7 +249,9 @@ class UnivarIntraScenarioComparator:
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
             output_root=self.stage5_roots.graph_root,
-            parent=pathlib.Path(self.cmdopts["sierra_root"], self.cmdopts["project"]),
+            batchroot=pathlib.Path(
+                self.cmdopts["sierra_root"], self.cmdopts["project"]
+            ),
             model_root=None,
         )
 
@@ -627,7 +629,7 @@ class BivarIntraScenarioComparator:
             paths = graphs.PathSet(
                 input_root=self.stage5_roots.csv_root,
                 output_root=self.stage5_roots.graph_root,
-                parent=pathlib.Path(
+                batchroot=pathlib.Path(
                     self.cmdopts["sierra_root"], self.cmdopts["project"]
                 ),
                 model_root=None,
@@ -752,7 +754,7 @@ class BivarIntraScenarioComparator:
             graph_pathset = graphs.PathSet(
                 input_root=self.stage5_roots.csv_root,
                 output_root=self.stage5_roots.graph_root,
-                parent=pathlib.Path(
+                batchroot=pathlib.Path(
                     self.cmdopts["sierra_root"], self.cmdopts["project"]
                 ),
                 model_root=None,
