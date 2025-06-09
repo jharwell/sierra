@@ -16,7 +16,7 @@ import pathlib
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.utils import ArenaExtent
 from sierra.core.vector import Vector3D
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 from sierra.core import types, config
 from sierra.core.experiment import definition
 

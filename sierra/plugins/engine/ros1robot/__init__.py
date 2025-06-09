@@ -12,3 +12,7 @@ See :ref:`plugins/engine/ros1robot`.
 # 3rd party packages
 
 # Project packages
+
+
+def sierra_plugin_type() -> str:
+    return "pipeline"

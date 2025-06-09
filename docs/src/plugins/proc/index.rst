@@ -32,19 +32,19 @@ At the highest level we have the following in the context of pipeline stages
       state "Processed Output Data" as proc #skyblue
    }
 
-   state "4. Generate\nDeliverables\n" as stage4  {
-      state "Deliverables " as deliverables #skyblue
+   state "4. Generate\nProducts\n" as stage4  {
+      state "Products " as products #skyblue
    }
 
    raw --> proc
-   proc --> deliverables
+   proc --> products
 
 The :term:`Raw Output Data` files from experimental runs is processed during
 stage 3 into :term:`Processed Output Data` files. In stage 4 those processed
-files are turned into deliverables of various sorts. All stage 4 deliverables
+files are turned into products of various sorts. All stage 4 products
 are sourced from a *single* data file, to encourage and enable reusability of
 code across projects. As such, it is the job of active stage 3 plugins to make
-sure all the data needed to generate a given deliverable appear in the same
+sure all the data needed to generate a given product appear in the same
 file. The process of doing this is called :term:`Data Collation`.
 
 .. IMPORTANT::
@@ -178,8 +178,11 @@ With that context and framing, the documentation for each of the processing
 plugins which come with SIERRA are below.
 
 .. toctree::
+   :maxdepth: 1
 
    stat.rst
    collate.rst
    imagize.rst
+   compress.rst
+   decompress.rst
    models.rst

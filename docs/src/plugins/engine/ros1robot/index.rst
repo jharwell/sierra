@@ -43,7 +43,7 @@ manage random number generation, if needed, to maximize reproducability.
 
 See:
 
-- :ref:`tutorials/project/expdef-template`
+- :ref:`plugins/expdef`
 
 - :ref:`plugins/engine/ros1gazebo`
 

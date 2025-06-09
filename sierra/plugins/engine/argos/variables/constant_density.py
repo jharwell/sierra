@@ -39,17 +39,16 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
     """
 
-    def __init__(self,
-                 cli_arg: str,
-                 main_config: types.YAMLDict,
-                 batch_input_root: pathlib.Path,
-                 target_density: float,
-                 dimensions: tp.List[ArenaExtent],
-                 scenario_tag: str) -> None:
-        bc.UnivarBatchCriteria.__init__(self,
-                                        cli_arg,
-                                        main_config,
-                                        batch_input_root)
+    def __init__(
+        self,
+        cli_arg: str,
+        main_config: types.YAMLDict,
+        batch_input_root: pathlib.Path,
+        target_density: float,
+        dimensions: tp.List[ArenaExtent],
+        scenario_tag: str,
+    ) -> None:
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.target_density = target_density
         self.dimensions = dimensions
         self.scenario_tag = scenario_tag
@@ -70,68 +69,41 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
         """
         dims = self.dimensions[exp_num]
-        return self.scenario_tag + '.' + 'x'.join([str(dims.xsize()),
-                                                   str(dims.ysize()),
-                                                   str(dims.zsize())])
+        return (
+            self.scenario_tag
+            + "."
+            + "x".join([str(dims.xsize()), str(dims.ysize()), str(dims.zsize())])
+        )
 
 
-class Parser():
+def parse(arg: str) -> types.CLIArgSpec:
     """Enforces specification of a :class:`ConstantDensity` derived batch criteria.
 
+    Returns:
+       Dict:
+             target_density: Floating point value of parsed target density
+             arena_size_inc: Integer increment for arena size
     """
+    ret = {}
 
-    def __call__(self, arg: str) -> types.CLIArgSpec:
-        """
-        Parse the cmdline argument.
+    sections = arg.split(".")
+    # remove variable name, leaving only the spec
+    spec = ".".join(sections[1:])
 
-        Returns:
+    regex = r"(\d+)p(\d+)\.I(\d+)\.C(\d+)"
+    res = re.match(regex, spec)
 
-            Dict:
-                target_density: Floating point value of parsed target density
-                arena_size_inc: Integer increment for arena size
+    assert len(res.groups()) == 4, f"Spec must match {regex}, have {spec}"
 
-        """
-        ret = {}
+    # groups(0) is always the full matched string; subsequent groups are the
+    # captured groups from the () expressions.
+    characteristic = float(res.group(1))
+    mantissa = float("0." + res.group(2))
+    ret["target_density"] = characteristic + mantissa
+    ret["arena_size_inc"] = int(res.group(3))
+    ret["cardinality"] = int(res.group(4))
 
-        sections = arg.split('.')
-        # remove variable name, leaving only the spec
-        sections = sections[1:]
-
-        # Need to have 2 dot/3 parts
-        assert len(sections) == 3, \
-            (f"Spec must have 3 sections separated by '.'; have "
-             f"{len(sections)} sections from '{arg}'")
-
-        # Parse density
-        res = re.search('[0-9]+', sections[0])
-        assert res is not None, \
-            f"Bad density characteristic spec in section '{sections[0]}'"
-
-        characteristic = float(res.group(0))
-
-        res = re.search('p[0-9]+', sections[0])
-        assert res is not None, \
-            f"Bad density mantissa spec in section '{sections[0]}'"
-        mantissa = float("0." + res.group(0)[1:])
-
-        ret['target_density'] = characteristic + mantissa
-
-        # Parse arena size increment
-        res = re.search('I[0-9]+', sections[1])
-        assert res is not None, \
-            f"Bad arena increment spec in section '{sections[1]}'"
-        ret['arena_size_inc'] = int(res.group(0)[1:])
-
-        # Parse cardinality
-        res = re.search('C[0-9]+', sections[2])
-        assert res is not None, \
-            f"Bad cardinality spec in section '{sections[2]}'"
-
-        ret['cardinality'] = int(res.group(0)[1:])
-
-        return ret
+    return ret
 
 
-__all__ = [
-    'ConstantDensity'
-]
+__all__ = ["ConstantDensity", "parse"]

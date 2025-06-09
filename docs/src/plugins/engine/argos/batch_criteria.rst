@@ -44,7 +44,7 @@ Cmdline Syntax
 - ``N`` - The maximum population size.
 
 - ``cardinality`` - If the model is ``Linear``, then this can be used
-  to specify how many experiments to generate; i.e, it defines the `size` of the
+  to specify how many experiments to generate; i.e, it defines the *size* of the
   linear increment. Defaults to 10 if omitted.
 
 Examples

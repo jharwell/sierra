@@ -8,3 +8,7 @@
 # 3rd party packages
 
 # Project packages
+
+
+def sierra_plugin_type() -> str:
+    return "pipeline"

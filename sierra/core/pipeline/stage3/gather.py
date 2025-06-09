@@ -21,7 +21,6 @@ import pandas as pd  # noqa
 
 # Project packages
 from sierra.core import types, utils, storage
-import sierra.core.plugin_manager as pm
 
 
 class GatherSpec:
@@ -96,12 +95,20 @@ class BaseGatherer:
 
         self.logger = logging.getLogger(__name__)
 
+    def calc_gather_items(
+        self, run_output_root: pathlib.Path, exp_name: str
+    ) -> tp.List[GatherSpec]:
+        raise NotImplementedError
+
     def __call__(self, exp_output_root: pathlib.Path) -> None:
         """Process the output files found in the output save path."""
         if self.gather_opts["df_verify"]:
             self._verify_exp_outputs(exp_output_root)
 
-        self.logger.info("Gathering raw outputs from %s...", exp_output_root.name)
+        self.logger.info(
+            "Gathering raw outputs from %s...",
+            exp_output_root.relative_to(exp_output_root.parent.parent),
+        )
 
         pattern = "{}_run{}_output".format(
             re.escape(str(self.gather_opts["template_input_leaf"])), r"\d+"
@@ -128,8 +135,12 @@ class BaseGatherer:
             n_gathered_from = len(to_process.dfs)
             if n_gathered_from != len(runs):
                 self.logger.warn(
-                    "Data not gathered for %s from all experimental runs: %s runs != %s (--n-runs)",
+                    (
+                        "Data not gathered for %s from all experimental runs "
+                        "in %s: %s runs != %s (--n-runs)"
+                    ),
                     spec.item_stem_path,
+                    exp_output_root.relative_to(exp_output_root.parent.parent),
                     n_gathered_from,
                     len(runs),
                 )
@@ -157,6 +168,7 @@ class BaseGatherer:
                 df = storage.df_read(
                     path,
                     self.gather_opts["storage"],
+                    run_output_root=run,
                     index_col=False,
                 )
                 if nonumeric := df.select_dtypes(exclude="number").columns.tolist():
@@ -275,105 +287,4 @@ class BaseGatherer:
                 )
 
 
-class DataGatherer(BaseGatherer):
-    """Gather :term:`Raw Output Data` files from all runs.
-
-    The configured output directory for each run is searched recursively for
-    files to gather.  To be eligible for gathering and later processing, files
-    must:
-
-        - Be non-empty
-
-        - Have a suffix which supported by the selected ``--storage`` plugin.
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(__name__)
-
-    def calc_gather_items(
-        self, run_output_root: pathlib.Path, exp_name: str
-    ) -> tp.List[GatherSpec]:
-        to_gather = []
-        proj_output_root = run_output_root / self.run_metrics_leaf
-        plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
-        for item in proj_output_root.rglob("*"):
-            if (
-                item.is_file()
-                and any(s in plugin.suffixes() for s in item.suffixes)
-                and item.stat().st_size > 0
-            ):
-                to_gather.append(
-                    GatherSpec(
-                        exp_name=exp_name,
-                        item_stem_path=item.relative_to(proj_output_root),
-                        perfcol=None,
-                    )
-                )
-        return to_gather
-
-
-class ImagizeInputGatherer(BaseGatherer):
-    """Gather :term:`Raw Output Data` files from all runs for imagizing.
-
-    The configured output directory for each run is searched recursively for
-    directories containing files to gather.  To be eligible for gathering and
-    later processing, files must:
-
-        - Be in a directory with the same name as the file, sans extension.
-
-        - Be non-empty
-
-        - Have a suffix which supported by the selected ``--storage`` plugin.
-
-    Recursive nesting of files *within* a directory containing files to imagize
-    is not supported--why would you do this anyway?
-    """
-
-    def __init__(
-        self,
-        main_config: types.YAMLDict,
-        gather_opts: types.SimpleDict,
-        processq: mp.Queue,
-    ) -> None:
-        super().__init__(main_config, gather_opts, processq)
-        self.logger = logging.getLogger(__name__)
-
-    def calc_gather_items(
-        self, run_output_root: pathlib.Path, exp_name: str
-    ) -> tp.List[GatherSpec]:
-        to_gather = []
-        proj_output_root = run_output_root / self.run_metrics_leaf
-        plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
-
-        for item in proj_output_root.iterdir():
-            if not item.is_dir():
-                self.logger.trace(
-                    (
-                        "Skip <run_output_root>/%s for imagizing "
-                        "gather: files must be in subdir"
-                    ),
-                    item.name,
-                )
-                continue
-
-            for imagizable in item.iterdir():
-                if (
-                    not any(s in plugin.suffixes() for s in imagizable.suffixes)
-                    and imagizable.stat().st_size > 0
-                ):
-                    continue
-
-                if item.name in imagizable.name:
-                    to_gather.append(
-                        GatherSpec(
-                            exp_name=exp_name,
-                            item_stem_path=imagizable.relative_to(proj_output_root),
-                            perfcol=None,
-                        )
-                    )
-
-        return to_gather
-
-
-__all__ = ["GatherSpec", "BaseGatherer", "DataGatherer", "ImagizeInputGatherer"]
+__all__ = ["GatherSpec", "BaseGatherer"]

@@ -13,7 +13,7 @@ SIERRA's capabilities for imagizing (translating from :term:`Raw Output Data`
 files into images) are detailed in this section. Imagize inputs are treated as
 snapshots of 2D or 3D data over time, and after being be turned into image files
 in stage 3 they can be rendered into videos in stage 4 (see
-:ref:`plugins/deliverable/render`).
+:ref:`plugins/product/render`).
 
 .. _plugins/proc/imagize/req:
 
@@ -41,20 +41,21 @@ SIERRA can turn them into images and render them:
 - The name of the subdir of ``main.run_metrics_leaf`` has a corresponding entry
   in ``graphs.yaml``. This is to enable selective imagizing of graphs, so that
   you don't get bogged down if you want to capture imagizing data en masse, but
-  only render some of it to videos later. See
-  :ref:`tutorials/project/graphs-config` for details.
+  only render some of it to videos later. See :ref:`plugins/product/graphs`
+  for details.
 
 .. IMPORTANT::
 
    Generating the images for each experiment does not happen automatically as
    part of stage 3 because it can take a LONG time and is idempotent. You should
-   only pass ``--project-imagizing`` the first time you run stage 3 after
+   only pass ``--proc proc.imagize`` the first time you run stage 3 after
    running stage 2.
 
 Usage
 =====
 
-To use, pass ``--project-imagizing`` during stage 3.
+This plugin can be selected by adding ``proc.imagize`` to the list passed to
+``--proc``.
 
 Configuration
 =============

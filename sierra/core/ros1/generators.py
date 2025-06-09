@@ -19,7 +19,7 @@ from sierra.core.experiment import spec as expspec
 import sierra.core.utils as scutils
 from sierra.core import types, config
 import sierra.core.ros1.variables.exp_setup as exp
-from sierra.core import plugin_manager as pm
+from sierra.core import plugin as pm
 
 _logger = logging.getLogger(__name__)
 

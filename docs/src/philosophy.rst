@@ -70,10 +70,10 @@ just changed the configuration for".
 
 This manifests in some important ways:
 
-- Separating results processing in stage 3 from deliverable generation in stage
+- Separating results processing in stage 3 from product generation in stage
   \4.
 
-- Deliverables in stage 4 are sourced from a single input file, rather than
+- Products in stage 4 are sourced from a single input file, rather than
   pulling data from multiple files.
 
 Maximum Reusability
@@ -93,7 +93,7 @@ Separation Of Data Types
 
 Any statistics generated during say stage 3 are stored in *separate* files from
 the actual data, even if the chosen ``--storage`` plugin and/or
-``--deliverable`` plugin supports them in a single file. This is for reasons of:
+``--prod`` plugin supports them in a single file. This is for reasons of:
 
 - Readability in the files themselves. For time series/1D data, separating
   doesn't really provide benefits, but for 2D data it does. For 3D data, and

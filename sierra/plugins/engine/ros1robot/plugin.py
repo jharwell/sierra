@@ -154,7 +154,9 @@ class ExpRunShellCmdsGenerator:
             ret.extend([types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)])
         return ret
 
-    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(
+        self, host: str, run_output_root: pathlib.Path
+    ) -> tp.List[types.ShellCmdSpec]:
         if host == "master":
             return []
         else:

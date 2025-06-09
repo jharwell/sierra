@@ -25,7 +25,7 @@ from sierra.core.experiment import definition
 
 @implements.implements(bc.IConcreteBatchCriteria)
 @implements.implements(bc.IQueryableBatchCriteria)
-class PopulationSize(population_size.BasePopulationSize):
+class PopulationSize(population_size.PopulationSize):
     """A univariate range of system sizes used to define batch experiments.
 
     This class is a base class which should (almost) never be used on its
@@ -40,16 +40,17 @@ class PopulationSize(population_size.BasePopulationSize):
 
     """
 
-    def __init__(self,
-                 cli_arg: str,
-                 main_config: types.YAMLDict,
-                 batch_input_root: pathlib.Path,
-                 robot: str,
-                 sizes: tp.List[int]) -> None:
-        population_size.BasePopulationSize.__init__(self,
-                                                    cli_arg,
-                                                    main_config,
-                                                    batch_input_root)
+    def __init__(
+        self,
+        cli_arg: str,
+        main_config: types.YAMLDict,
+        batch_input_root: pathlib.Path,
+        robot: str,
+        sizes: tp.List[int],
+    ) -> None:
+        population_size.PopulationSize.__init__(
+            self, cli_arg, main_config, batch_input_root
+        )
         self.sizes = sizes
         self.robot = robot
         self.logger = logging.getLogger(__name__)
@@ -60,49 +61,42 @@ class PopulationSize(population_size.BasePopulationSize):
         Generate XML modifications to set system sizes.
         """
         if not self.element_adds:
-            robot_config = self.main_config['ros']['robots'][self.robot]
-            prefix = robot_config['prefix']
+            robot_config = self.main_config["ros"]["robots"][self.robot]
+            prefix = robot_config["prefix"]
 
             for s in self.sizes:
                 per_robot = definition.ElementAddList()
-                per_robot.append(definition.ElementAdd(".",
-                                                       "master",
-                                                       {},
-                                                       True))
-                per_robot.append(definition.ElementAdd("./master",
-                                                       "group",
-                                                       {
-                                                           'ns': 'sierra'
-                                                       },
-                                                       False))
-                per_robot.append(definition.ElementAdd("./master/group/[@ns='sierra']",
-                                                       "param",
-                                                       {
-                                                           'name': 'experiment/n_agents',
-                                                           'value': str(s)
-                                                       },
-                                                       False))
+                per_robot.append(definition.ElementAdd(".", "master", {}, True))
+                per_robot.append(
+                    definition.ElementAdd("./master", "group", {"ns": "sierra"}, False)
+                )
+                per_robot.append(
+                    definition.ElementAdd(
+                        "./master/group/[@ns='sierra']",
+                        "param",
+                        {"name": "experiment/n_agents", "value": str(s)},
+                        False,
+                    )
+                )
 
                 for i in range(0, s):
 
                     # Note that we don't try to do any of the robot bringup
                     # here--we can't know the exact node/package names without
                     # using a lot of (brittle) config.
-                    ns = f'{prefix}{i}'
-                    per_robot.append(definition.ElementAdd("./robot",
-                                                           "group",
-                                                           {
-                                                               'ns': ns
-                                                           },
-                                                           True))
+                    ns = f"{prefix}{i}"
+                    per_robot.append(
+                        definition.ElementAdd("./robot", "group", {"ns": ns}, True)
+                    )
 
-                    per_robot.append(definition.ElementAdd(f"./robot/group/[@ns='{ns}']",
-                                                           "param",
-                                                           {
-                                                               "name": "tf_prefix",
-                                                               "value": ns
-                    },
-                        True))
+                    per_robot.append(
+                        definition.ElementAdd(
+                            f"./robot/group/[@ns='{ns}']",
+                            "param",
+                            {"name": "tf_prefix", "value": ns},
+                            True,
+                        )
+                    )
 
                 self.element_adds.append(per_robot)
 
@@ -110,37 +104,28 @@ class PopulationSize(population_size.BasePopulationSize):
 
     def gen_exp_names(self) -> tp.List[str]:
         adds = self.gen_element_addlist()
-        return ['exp' + str(x) for x in range(0, len(adds))]
+        return ["exp" + str(x) for x in range(0, len(adds))]
 
     def n_agents(self, exp_num: int) -> int:
         return self.sizes[exp_num]
 
 
-def factory(cli_arg: str,
-            main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts,
-            batch_input_root: pathlib.Path,
-            **kwargs) -> PopulationSize:
-    """Create a :class:`PopulationSize` derived class from the cmdline definition.
-
-    """
-    parser = population_size.Parser()
-    attr = parser(cli_arg)
-    max_sizes = parser.to_sizes(attr)
+def factory(
+    cli_arg: str,
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    batch_input_root: pathlib.Path,
+    **kwargs,
+) -> PopulationSize:
+    """Create a :class:`PopulationSize` derived class from the cmdline definition."""
+    max_sizes = population_size.parse(cli_arg)
 
     def __init__(self) -> None:
-        PopulationSize.__init__(self,
-                                cli_arg,
-                                main_config,
-                                batch_input_root,
-                                cmdopts['robot'],
-                                max_sizes)
+        PopulationSize.__init__(
+            self, cli_arg, main_config, batch_input_root, cmdopts["robot"], max_sizes
+        )
 
-    return type(cli_arg,  # type: ignore
-                (PopulationSize,),
-                {"__init__": __init__})
+    return type(cli_arg, (PopulationSize,), {"__init__": __init__})  # type: ignore
 
 
-__all__ = [
-    'PopulationSize'
-]
+__all__ = ["PopulationSize"]

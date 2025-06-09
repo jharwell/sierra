@@ -46,7 +46,8 @@ class ShellCmdSpec:
 
     Contains:
 
-        - The cmd to run.
+        - The cmd to run. This should end in a ';' so that multiple commands can
+          be specified to run in sequence.
 
         - Whether or not it should be strictly run in a shell via
           ``shell=True``.
@@ -65,6 +66,7 @@ class ShellCmdSpec:
 @dataclass
 class YAMLConfigFileSpec:
     main: str
+    graphs: str
     controllers: str
     models: str
     stage5: str

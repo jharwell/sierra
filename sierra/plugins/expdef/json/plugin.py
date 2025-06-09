@@ -257,16 +257,19 @@ class ExpDef:
                 self.logger.warning("Parent element '%s' not found", path)
             return False
 
-        match = matches[0].value
-        if attr not in match.keys() or isinstance(match[attr], (list, dict)):
-            if not noprint:
-                self.logger.warning("Attribute '%s' not found in path '%s'", attr, path)
-            return False
+        for m in matches:
+            match = m.value
+            if attr not in match.keys() or isinstance(match[attr], (list, dict)):
+                if not noprint:
+                    self.logger.warning(
+                        "Attribute '%s' not found in path '%s'", attr, m.full_path
+                    )
+                return False
 
-        match[attr] = value
-        self.logger.trace(
-            "Modify attr: '%s/%s' = '%s'", path, attr, value  # type: ignore
-        )
+            match[attr] = value
+            self.logger.trace(
+                "Modify attr: '%s/%s' = '%s'", m.full_path, attr, value  # type: ignore
+            )
 
         self.attr_chgs.add(definition.AttrChange(path, attr, value))
         return True
@@ -288,16 +291,19 @@ class ExpDef:
                 self.logger.warning("Node '%s' not found", path)
             return False
 
-        match = matches[0].value
-        if attr in match:
-            if not noprint:
-                self.logger.warning("Attribute '%s' already in path '%s'", attr, path)
-            return False
+        for m in matches:
+            match = m.value
+            if attr in match:
+                if not noprint:
+                    self.logger.warning(
+                        "Attribute '%s' already in path '%s'", attr, m.full_path
+                    )
+                return False
 
-        match[attr] = value
-        self.logger.trace(
-            "Add new attribute: '%s/%s' = '%s'", path, attr, value  # type: ignore
-        )
+            match[attr] = value
+            self.logger.trace(
+                "Add new attribute: '%s/%s' = '%s'", m.full_path, attr, value  # type: ignore
+            )
         self.attr_chgs.add(definition.AttrChange(path, attr, value))
         return True
 

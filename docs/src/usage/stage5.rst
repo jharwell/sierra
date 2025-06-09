@@ -5,9 +5,9 @@ Pipeline Stage 5
 ================
 
 The main idea of this pipeline stage is to "collate" the results of one or more
-:term:`Summary .csv` files present in different :term:`Batch Experiments <Batch
-Experiment>` into a :term:`Inter-Batch .csv` file, and then use that file to
-generate graphs. Any :term:`Summary .csv` that is present in multiple
+:term:`Batch Summary Data` files present in different :term:`Batch Experiments
+<Batch Experiment>` into a :term:`Inter-Batch Data` file, and then use that file
+to generate graphs. Any :term:`Batch Summary Data` that is present in multiple
 :term:`Batch Experiments <Batch Experiment>` can be used during stage 5!  This
 gives this pipeline stage tremendous flexibility as a camera-ready graph
 generation tool.

@@ -198,7 +198,9 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(
+        self, host: str, run_output_root: pathlib.Path
+    ) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to run after an experimental run has finished.
 
         These commands are run during stage 2 in the `same` sub-shell as the
@@ -211,7 +213,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
 
 class IExpConfigurer(implements.Interface):
-    """Perform addition configuration after creating experiments in stage 1.
+    """Perform additional configuration after creating experiments in stage 1.
 
     E.g., creating directories store outputs in if they are not created by the
     simulator/:term:`Project` code.

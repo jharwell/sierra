@@ -152,8 +152,16 @@ kROS: types.SimpleDict = {
     "inter_run_pause": 60,  # seconds
 }
 
+# 2025-06-23 [JRH]: These are empirically determined minimum values which
+# generally result in all data being processed in stage {3,4}. Change with
+# extreme caution.
+
+kGatherWorkerRetries = 3
+kProcessWorkerRetries = 3
+
 kYAML = types.YAMLConfigFileSpec(
     main="main.yaml",
+    graphs="graphs.yaml",
     controllers="controllers.yaml",
     models="models.yaml",
     stage5="stage5.yaml",

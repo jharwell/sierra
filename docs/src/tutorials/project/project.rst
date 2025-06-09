@@ -74,7 +74,7 @@ Steps
         .. tab:: ``graphs.yaml``
 
            Configuration for graph generation during stage 4. This file is
-           optional. See :doc:`graphs-config` for documentation.
+           optional. See :ref:`plugins/product/graphs` for documentation.
 
         .. tab:: ``stage5.yaml``
 
@@ -133,12 +133,12 @@ Steps
    :ref:`tutorials/project/main-config`.
 
 #. Define graphs to be generated from :term:`Experiment` outputs by following
-   :doc:`graphs-config`. Strictly speaking this is optional, but automated graph
-   generation during stage 4 is one of the most useful parts of SIERRA, so its
-   kind of silly if you don't do this.
+   :ref:`plugins/product/graphs`. Strictly speaking this is optional, but
+   automated graph generation during stage 4 is one of the most useful parts of
+   SIERRA, so its kind of silly if you don't do this.
 
 #. Setup your ``--expdef-template`` appropriately by following
-   :ref:`tutorials/project/expdef-template`.
+   :ref:`plugins/expdef`.
 
 Optional Steps
 ==============

@@ -1,21 +1,379 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Sanity checks for verifying selected plugins.
+"""SIERRA plugin management to make SIERRA OPEN/CLOSED.
 
-Checks that selected plugins implement the necessary classes and
- functions. Currently checkes: ``--storage``, ``--exec-env``, and
- ``--engine``.
-
+Also contains checks that selected plugins implement the necessary classes and
+functions.  Currently checkes: ``--storage``, ``--exec-env``, and ``--engine``.
 """
 
 # Core packages
-import inspect
+# Core packages
+import importlib.util
+import importlib
+import typing as tp
+import sys
 import logging
+import pathlib
+import inspect
 
 # 3rd party packages
 
+# 3rd party packages
+import json
+
 # Project packages
+from sierra.core import types
+
+
+class BasePluginManager:
+    """Base class for common functionality."""
+
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+        self.loaded = {}  # type: tp.Dict[str, tp.Dict]
+
+    def available_plugins(self):
+        raise NotImplementedError
+
+    def load_plugin(self, name: str) -> None:
+        """Load a plugin module."""
+        plugins = self.available_plugins()
+        if name not in plugins:
+            self.logger.fatal("Cannot locate plugin %s", name)
+            self.logger.fatal(
+                "Loaded plugins: %s\n",
+                json.dumps(self.loaded, default=lambda x: "<ModuleSpec>", indent=4),
+            )
+            raise Exception(f"Cannot locate plugin '{name}'")
+
+        init = importlib.util.module_from_spec(plugins[name]["init_spec"])
+        plugins[name]["init_spec"].loader.exec_module(init)
+
+        if not hasattr(init, "sierra_plugin_type"):
+            self.logger.warning(
+                "Cannot load plugin %s: __init__.py does not define sierra_plugin_type()",
+                name,
+            )
+            return
+
+        plugin_type = init.sierra_plugin_type()
+
+        # The name of the module is only needed for pipeline plugins, not
+        # project plugins.
+        if plugins[name]["module_spec"] is None and plugin_type == "pipeline":
+            if not hasattr(init, "sierra_plugin_module"):
+                self.logger.warning(
+                    "Cannot load plugin %s: __init__.py does not define sierra_plugin_module()",
+                    name,
+                )
+                return
+
+            modname = init.sierra_plugin_module()
+            fpath = (
+                plugins[name]["parent_dir"] / name.replace(".", "/") / f"{modname}.py"
+            )
+            plugins[name]["module_spec"] = importlib.util.spec_from_file_location(
+                modname, fpath
+            )
+
+        if plugin_type == "pipeline":
+            self._load_pipeline_plugin(name)
+
+        elif plugin_type == "project":
+            self._load_project_plugin(name)
+        else:
+            self.logger.warning(
+                "Unknown plugin type '%s' for %s: cannot load", plugin_type, name
+            )
+
+    def get_plugin(self, name: str) -> dict:
+        try:
+            return self.loaded[name]
+        except KeyError:
+            self.logger.fatal("No such plugin %s", name)
+            self.logger.fatal(
+                "Loaded plugins: %s\n",
+                json.dumps(self.loaded, default=lambda x: "<ModuleSpec>", indent=4),
+            )
+            raise
+
+    def get_plugin_module(self, name: str) -> types.ModuleType:
+        try:
+            return self.loaded[name]["module"]
+        except KeyError:
+            self.logger.fatal("No such plugin %s", name)
+            self.logger.fatal(
+                "Loaded plugins: %s\n",
+                json.dumps(self.loaded, default=lambda x: "<ModuleSpec>", indent=4),
+            )
+            raise
+
+    def has_plugin(self, name: str) -> bool:
+        return name in self.loaded
+
+    def _load_pipeline_plugin(self, name: str) -> None:
+        if name in self.loaded:
+            self.logger.warning("Pipeline plugin %s already loaded", name)
+            return
+
+        plugins = self.available_plugins()
+
+        # The parent directory of the plugin must be on sys.path so it can be
+        # imported, so we put in on there if it isn't.
+        new = str(plugins[name]["parent_dir"])
+        if new not in sys.path:
+            sys.path = [new] + sys.path[0:]
+            self.logger.debug("Updated sys.path with %s", [new])
+
+        module = importlib.util.module_from_spec(plugins[name]["module_spec"])
+        plugins[name]["module_spec"].loader.exec_module(module)
+
+        # When importing with importlib, the module is not automatically added
+        # to sys.modules. This means that trying to pickle anything in it will
+        # fail with a rather cryptic 'AttributeError', so we explicitly add the
+        # last path component of the plugin name--which is the actual name of
+        # the module the plugin lives in--to sys.modules so that pickling will
+        # work.
+        sys_modname = name.split(".")[1]
+        if sys_modname not in sys.modules:
+            sys.modules[sys_modname] = module
+
+        self.loaded[name] = {
+            "spec": plugins[name]["module_spec"],
+            "parent_dir": plugins[name]["parent_dir"],
+            "module": module,
+        }
+        self.logger.debug(
+            "Loaded pipeline plugin %s from %s -> %s",
+            name,
+            plugins[name]["parent_dir"],
+            name,
+        )
+
+    def _load_project_plugin(self, name: str) -> None:
+        if name in self.loaded:
+            self.logger.warning("Project plugin %s already loaded", name)
+            return
+
+        plugins = self.available_plugins()
+
+        # The parent directory of the plugin must be on sys.path so it can be
+        # imported, so we put in on there if it isn't.
+        new = str(plugins[name]["parent_dir"])
+        if new not in sys.path:
+            sys.path = [new] + sys.path[0:]
+            self.logger.debug("Updated sys.path with %s", [new])
+
+        self.loaded[name] = {
+            "spec": plugins[name]["module_spec"],
+            "parent_dir": plugins[name]["parent_dir"],
+        }
+
+        self.logger.debug(
+            ("Loaded project plugin %s from %s -> %s"),
+            name,
+            plugins[name]["parent_dir"],
+            name,
+        )
+
+
+class FilePluginManager(BasePluginManager):
+    """Plugins are ``.py`` files within a root plugin directory.
+
+    Intended for use with :term:`models <Model>`.
+
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.search_root = None  # type: tp.Optional[pathlib.Path]
+        self.plugins = {}  # type: tp.Dict[str, tp.Dict]
+
+    def initialize(self, project: str, search_root: pathlib.Path) -> None:
+        self.search_root = search_root
+
+    def available_plugins(self) -> tp.Dict[str, tp.Dict]:
+        """Get the available plugins in the configured plugin root."""
+        assert self.search_root is not None, "FilePluginManager not initialized!"
+
+        if self.plugins:
+            return self.plugins
+
+        for candidate in self.search_root.iterdir():
+            if candidate.is_file() and ".py" in candidate.name:
+                name = candidate.stem
+                spec = importlib.util.spec_from_file_location(name, candidate)
+                self.plugins[name] = {
+                    "spec": spec,
+                    "parent_dir": self.search_root,
+                    "type": "pipeline",
+                }
+        return self.plugins
+
+
+class DirectoryPluginManager(BasePluginManager):
+    """Container for managing directory-based plugins."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.plugins = {}  # type: tp.Dict[str, tp.Dict]
+
+    def initialize(self, project: str, search_path: tp.List[pathlib.Path]) -> None:
+        self.logger.debug(
+            "Initializing with plugin search path %s", [str(p) for p in search_path]
+        )
+
+        for path in search_path:
+            if not path.exists():
+                self.logger.warning(
+                    "Non-existent path '%s' on SIERRA_PLUGIN_PATH", path
+                )
+                continue
+
+            self.logger.debug("Searching for plugins in '%s'", path)
+
+            def recursive_search(root: pathlib.Path) -> None:
+                try:
+                    for f in root.iterdir():
+                        if not f.is_dir():
+                            continue
+                        recursive_search(f)
+
+                        plugin = f / "plugin.py"
+                        init = f / "__init__.py"
+                        cookie = f / ".sierraplugin"
+
+                        if not (init.exists() and (plugin.exists() or cookie.exists())):
+                            continue
+
+                        name = f"{f.parent.name}.{f.name}"
+
+                        if plugin.exists():
+                            module_spec = importlib.util.spec_from_file_location(
+                                f.name, plugin
+                            )
+                        else:
+                            module_spec = None
+
+                        init_spec = importlib.util.spec_from_file_location(
+                            "__init__", init
+                        )
+
+                        self.logger.debug("Found plugin in '%s' -> %s", f, name)
+
+                        self.plugins[name] = {
+                            "parent_dir": root.parent,
+                            "module_spec": module_spec,
+                            "init_spec": init_spec,
+                        }
+                except FileNotFoundError:
+                    self.logger.warning(
+                        "Malformed plugin in %s: not loading", f.relative_to(path)
+                    )
+                    pass
+
+            recursive_search(path)
+
+    def available_plugins(self):
+        return self.plugins
+
+
+def module_exists(name: str) -> bool:
+    """
+    Check if a module exists before trying to import it.
+    """
+    try:
+        _ = __import__(name)
+    except ImportError:
+        return False
+    else:
+        return True
+
+
+def module_load(name: str) -> types.ModuleType:
+    """
+    Import the specified module.
+    """
+    return __import__(name, fromlist=["*"])
+
+
+def bc_load(cmdopts: types.Cmdopts, category: str):
+    """
+    Load the specified :term:`Batch Criteria`.
+    """
+    path = f"variables.{category}"
+    return module_load_tiered(
+        project=cmdopts["project"], engine=cmdopts["engine"], path=path
+    )
+
+
+def module_load_tiered(
+    path: str, project: tp.Optional[str] = None, engine: tp.Optional[str] = None
+) -> types.ModuleType:
+    """Attempt to load the specified python module with tiered precedence.
+
+    Generally, the precedence is project -> project submodule -> engine module
+    -> SIERRA core module, to allow users to override SIERRA core functionality
+    with ease. Specifically:
+
+    #. Check if the requested module is a project. If it is, return it.
+
+    #. Check if the requested module is a part of a project (i.e.,
+       ``<project>.<path>`` exists). If it does, return it. This requires that
+       :envvar:`SIERRA_PLUGIN_PATH` to be set properly.
+
+    #. Check if the requested module is provided by the engine plugin (i.e.,
+       ``sierra.engine.<engine>.<path>`` exists). If it does, return it.
+
+    #. Check if the requested module is part of the SIERRA core (i.e.,
+       ``sierra.core.<path>`` exists). If it does, return it.
+
+    If no match was found using any of these, throw an error.
+
+    """
+    # First, see if the requested module is a project
+    if module_exists(path):
+        logging.trace("Using project path %s", path)  # type: ignore
+        return module_load(path)
+
+    # First, see if the requested module is part of the project plugin
+    if project is not None:
+        component_path = f"{project}.{path}"
+        if module_exists(component_path):
+            logging.trace(
+                "Using project component path %s", component_path  # type: ignore
+            )
+            return module_load(component_path)
+        else:
+            logging.trace(
+                "Project component path %s does not exist",  # type: ignore
+                component_path,
+            )
+
+    # If that didn't work, check the engine plugin
+    if engine is not None:
+        engine_path = f"{engine}.{path}"
+        if module_exists(engine_path):
+            logging.trace("Using engine component path %s", engine_path)  # type: ignore
+            return module_load(engine_path)
+
+    # If that didn't work, then check the SIERRA core
+    core_path = f"sierra.core.{path}"
+    if module_exists(core_path):
+        logging.trace("Using SIERRA core path %s", core_path)  # type: ignore
+        return module_load(core_path)
+    else:
+        logging.trace("SIERRA core path %s does not exist", core_path)  # type: ignore
+
+    # Module does not exist
+    error = (
+        f"project: '{project}' "
+        f"engine: '{engine}' "
+        f"path: '{path}' "
+        f"sys.path: {sys.path}"
+    )
+    raise ImportError(error)
 
 
 def storage_sanity_checks(medium: str, module) -> None:
@@ -24,13 +382,50 @@ def storage_sanity_checks(medium: str, module) -> None:
     """
     logging.trace("Verifying --storage plugin interface")  # type: ignore
 
-    functions = ["df_read", "df_write"]
+    functions = ["df_read", "df_write", "suffixes"]
     in_module = inspect.getmembers(module, inspect.isfunction)
 
     for f in functions:
         assert any(
-            f in name for (name, _) in in_module
+            f == name for (name, _) in in_module
         ), f"Storage medium {medium} does not define {f}()"
+
+
+def expdef_sanity_checks(expdef: str, module) -> None:
+    """
+    Check the selected ``--expdef`` plugin.
+    """
+    logging.trace("Verifying --expdef plugin interface")  # type: ignore
+
+    functions = ["root_querypath", "unpickle"]
+    module_funcs = inspect.getmembers(module, inspect.isfunction)
+    module_classes = inspect.getmembers(module, inspect.isclass)
+    classes = ["ExpDef", "Writer"]
+
+    for c in classes:
+        assert any(
+            c == name for (name, _) in module_classes
+        ), f"Expdef plugin {expdef} does not define {c}"
+
+    for f in functions:
+        assert any(
+            f == name for (name, _) in module_funcs
+        ), f"Expdef  {expdef} does not define {f}()"
+
+
+def proc_sanity_checks(proc: str, module) -> None:
+    """
+    Check the selected ``--proc`` plugin.
+    """
+    logging.trace("Verifying --proc plugin interface")  # type: ignore
+
+    functions = ["proc_batch_exp"]
+    in_module = inspect.getmembers(module, inspect.isfunction)
+
+    for f in functions:
+        assert any(
+            f == name for (name, _) in in_module
+        ), f"Processing plugin  {proc} does not define {f}()"
 
 
 def exec_env_sanity_checks(exec_env: str, module) -> None:
@@ -45,7 +440,7 @@ def exec_env_sanity_checks(exec_env: str, module) -> None:
     opt_classes = ["ExpRunShellCmdsGenerator", "ExpShellCmdsGenerator"]
 
     for c in opt_classes:
-        if not any(c in name for (name, _) in in_module):
+        if not any(c == name for (name, _) in in_module):
             logging.debug(
                 (
                     "Execution environment plugin %s does not define "
@@ -94,7 +489,7 @@ def engine_sanity_checks(engine: str, module) -> None:
 
     for c in req_classes:
         assert any(
-            c in name for (name, _) in in_module
+            c == name for (name, _) in in_module
         ), f"Engine plugin {engine} does not define {c}"
 
     for f in opt_classes:
@@ -113,11 +508,11 @@ def engine_sanity_checks(engine: str, module) -> None:
 
     for f in req_functions:
         assert any(
-            f in name for (name, _) in in_module
+            f == name for (name, _) in in_module
         ), f"Engine plugin {engine} does not define {f}()"
 
     for f in opt_functions:
-        if not any(f in name for (name, _) in in_module):
+        if not any(f == name for (name, _) in in_module):
             logging.debug(
                 (
                     "Engine plugin %s does not define %s()"
@@ -129,4 +524,19 @@ def engine_sanity_checks(engine: str, module) -> None:
             )
 
 
-__all__ = ["storage_sanity_checks", "exec_env_sanity_checks", "engine_sanity_checks"]
+# Singletons
+pipeline = DirectoryPluginManager()
+models = FilePluginManager()
+
+__all__ = [
+    "FilePluginManager",
+    "DirectoryPluginManager",
+    "module_exists",
+    "module_load",
+    "bc_load",
+    "module_load_tiered",
+    "storage_sanity_checks",
+    "exec_env_sanity_checks",
+    "engine_sanity_checks",
+    "proc_sanity_checks",
+]

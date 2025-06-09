@@ -8,8 +8,8 @@
 # 3rd party packages
 
 # Project packages
-from .stacked_line_graph import generate as stacked_line
-from .summary_line_graph import generate as summary_line
+from .stacked_line import generate as stacked_line
+from .summary_line import generate as summary_line
 from .heatmap import generate as heatmap
 from .pathset import PathSet
 

@@ -12,7 +12,7 @@ Data Collation
 Motivation
 ==========
 
-When generating deliverables, it is often necessary to perform some sort of
+When generating products, it is often necessary to perform some sort of
 non-statistical mathematical analysis on the results. These calculations
 *cannot* be done on the intra-experiment processed data files, because any
 calculated statistical distributions from them will be invalid; this can be
@@ -131,12 +131,10 @@ Configuration
 Configuration for this plugin consists of *what* data to collate, and some
 tweaks for *how* that data should be collated.
 
-Cmdline
--------
+This plugin can be selected by adding ``proc.collate`` to the list passed to
+``--proc``.
 
-The cmdline options for this plugin are below.
-
-.. todo:: Fill this in with the appropriate auto-generated blob.
+.. todo:: Fill this in with the appropriate auto-generated blob for cmdline opts.
 
 .. _plugins/proc/collate/config/yaml:
 

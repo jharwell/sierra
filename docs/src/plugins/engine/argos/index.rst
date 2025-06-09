@@ -43,7 +43,7 @@ Visual Capture and Rendering
 This engine can render it's simulation environment offscreen into a virtual
 buffer using :program:`Xvfb`, and output captured frames as PNG images during
 stage 2, which can then be rendered into per-run videos during stage 4 (see
-:ref:`plugins/deliverable/rendering/engine` for more details).
+:ref:`plugins/product/render` for more details).
 
 To use:
 

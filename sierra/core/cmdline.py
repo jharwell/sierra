@@ -361,7 +361,7 @@ class CoreCmdline(BaseCmdline):
                  Beyond the requirements for the specific ``--engine``, the
                  content of the file can be anything valid for the format, with
                  the exception of the SIERRA requirements detailed in
-                 :ref:`tutorials/project/expdef-template`.
+                 :ref:`plugins/expdef`.
                  """
             + self.stage_usage_doc([1, 2, 3, 4]),
         )
@@ -435,13 +435,12 @@ class CoreCmdline(BaseCmdline):
                        the batch experiment; some parts of this can be done in
                        parallel.  Part of default pipeline.
 
-                     - Stage4 - Perform deliverable generation after processing
-                       results for a batch experiment, which can include shiny
-                       graphs and videos.  Part of default pipeline.
+                     - Stage4 - Perform deliverable/product generation after
+                       processing results for a batch experiment, which can
+                       include shiny graphs and videos.  Part of default
+                       pipeline.
 
-                     - Stage5 - Perform graph generation for comparing
-                       controllers AFTER graph generation for batch experiments
-                       has been run.  Not part of default pipeline.
+                     - Stage5 - Compare generated products.
                  """,
             type=int,
             nargs="*",
@@ -475,7 +474,7 @@ class CoreCmdline(BaseCmdline):
                  the captured data was frames, then SIERRA can render the
                  captured frames into videos during stage 4.  If the selected
                  ``--engine`` does not support visual capture, then this option
-                 has no effect.  See :ref:`usage/rendering/engine` for full
+                 has no effect.  See :ref:`plugins/proc/render` for more
                  details.
                  """
             + self.stage_usage_doc([1, 4]),
@@ -487,7 +486,11 @@ class CoreCmdline(BaseCmdline):
             type=int,
             help="""
                  The level of parallelism to use in results processing/graph
-                 generation.
+                 generation producer-consumer queue.  This value is used to
+                 allocate consumers and produces in a 3:1 ratio.  If you are
+                 doing a LOT of processing, you may want to oversubscribe your
+                 machine by passing a higher than default value to overcome
+                 slowdown with high disk I/O.
                  """
             + self.stage_usage_doc([3, 4]),
             default=psutil.cpu_count(),
@@ -531,7 +534,9 @@ class CoreCmdline(BaseCmdline):
                  useful when the batch criteria involves large system sizes, so
                  that the plots are more readable.
                  """
-            + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
+            + self.graphs_applicable_doc(
+                [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
+            )
             + self.stage_usage_doc([4, 5]),
             action="store_true",
         )
@@ -544,7 +549,9 @@ class CoreCmdline(BaseCmdline):
                  1].  Mainly useful when the batch criteria involves large
                  system sizes, so that the plots are more readable.
                  """
-            + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
+            + self.graphs_applicable_doc(
+                [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
+            )
             + self.stage_usage_doc([4, 5]),
             action="store_true",
         )
@@ -559,8 +566,8 @@ class CoreCmdline(BaseCmdline):
                  """
             + self.graphs_applicable_doc(
                 [
-                    ":func:`~sierra.core.graphs.summary_line`",
-                    ":func:`~sierra.core.graphs.StackedLineGraph`",
+                    ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`",
+                    ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
                 ]
             )
             + self.stage_usage_doc([4, 5]),
@@ -574,7 +581,9 @@ class CoreCmdline(BaseCmdline):
                                      For all 2D generated scatterplots, plot a
                                      linear regression line and the equation of
                                      the line to the legend. """
-            + self.graphs_applicable_doc([":func:`~sierra.core.graphs.summary_line`"])
+            + self.graphs_applicable_doc(
+                [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
+            )
             + self.stage_usage_doc([4, 5]),
         )
 
@@ -610,8 +619,8 @@ class CoreCmdline(BaseCmdline):
                  """
             + self.graphs_applicable_doc(
                 [
-                    ":class:`~sierra.core.graphs.heatmap.Heatmap`",
-                    ":class:`~sierra.core.graphs.StackedLineGraph`",
+                    ":py:func:`Heatmap <sierra.core.graphs.heatmap.generate>`",
+                    ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
                 ]
             )
             + self.stage_usage_doc([4, 5]),
@@ -649,7 +658,7 @@ class CoreCmdline(BaseCmdline):
                  other plotting options clearer.
                  """
             + self.graphs_applicable_doc(
-                [":class:`~sierra.core.graphs.heatmap.Heatmap`"]
+                [":py:func:`Heatmap <sierra.core.graphs.heatmap.generate>`"]
             )
             + self.stage_usage_doc([4, 5]),
             action="store_true",
@@ -725,6 +734,43 @@ class CoreCmdline(BaseCmdline):
         """
 
         self.stage3.add_argument(
+            "--proc",
+            choices=[
+                "proc.statistics",
+                "proc.imagize",
+                "proc.collate",
+                "proc.decompress",
+                "proc.compress",
+            ],
+            help="""
+                 Specify the set of plugins to run during stage 3 for data
+                 processing.  The plugins are executed IN ORDER of appearance,
+                 so make sure to handle dependencies.  Any plugin on
+                 :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
+                 come with SIERRA are:
+
+                     - ``proc.statistics`` - Generate statistics from all
+                       :term:`Raw Output Data` files.
+
+                     - ``proc.imagize`` - :term:`Imagize` :term:`Raw Output
+                       Data` files.
+
+                     - ``proc.collate`` - Performs :term:`Data Collation` on
+                       :term:`Raw Output Data` files.
+
+                     - ``proc.compress`` - Performs data compression on all
+                       :term:`Raw Output Data` files.
+
+                     - ``proc.decompress`` - Performs data decompression on all
+                       :term:`Raw Output Data` files previously compresed with
+                       ``proc.compress``. 
+                 """
+            + self.stage_usage_doc([3]),
+            nargs="+",
+            default=["proc.statistics", "proc.collate"],
+        )
+
+        self.stage3.add_argument(
             "--df-verify",
             help="""
                  SIERRA generally assumes/relies on all dataframes with the same
@@ -788,7 +834,9 @@ class CoreCmdline(BaseCmdline):
                      - ``bw`` - Calculate statistics necessary to show box and
                        whisker plots around each point in the graph.
                  """
-            + utils.sphinx_ref(":func:`~sierra.core.graphs.summary_line`")
+            + utils.sphinx_ref(
+                ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"
+            )
             + """only).
 
                   - ``all`` - Generate all possible statistics, and plot all
@@ -796,12 +844,39 @@ class CoreCmdline(BaseCmdline):
               """
             + self.graphs_applicable_doc(
                 [
-                    ":func:`~sierra.core.graphs.summary_line`",
-                    ":func:`~sierra.core.graphs.StackedLineGraph`",
+                    ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`",
+                    ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
                 ]
             )
             + self.stage_usage_doc([3, 4]),
             default="none",
+        )
+
+        self.stage3.add_argument(
+            "--compress-remove-after",
+            action="store_true",
+            help="""
+                 If the ``proc.compress`` plugin is run, remove the uncompressed
+                 :term:`Raw Output Data` files after compression.  This can save
+                 TONS of disk space.  No data is lost because everything output
+            by each :term:`Experimental Run` is in the compressed archive.
+                 """
+            + self.stage_usage_doc([3]),
+            default=False,
+        )
+        self.stage3.add_argument(
+            "--imagize-no-stats",
+            action="store_true",
+            help="""
+                 If the ``proc.imagize`` plugin is run, don't run statistics
+                 generation/assume it has already been run.  This can save TONS
+                 of time for large imagizing workloads/workloads where the
+            memory limitations of the SIERRA host machine are such that you need
+            to specify different levels of ``--processing-parallelism`` for
+            statistics calculations/imagizing to avoid filling up memory.
+                 """
+            + self.stage_usage_doc([3]),
+            default=False,
         )
 
         self.stage3.add_argument(
@@ -857,6 +932,31 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 4.
         """
+
+        self.stage4.add_argument(
+            "--prod",
+            choices=[
+                "prod.graphs",
+                "prod.render",
+            ],
+            help="""
+                 Specify the set of plugins to run during stage 4 for
+                 product/deliverable generation.  The plugins are executed IN
+                 ORDER of appearance, so make sure to handle dependencies.  Any
+                 plugin on :envvar:`SIERRA_PLUGIN_PATH` can be used, but the
+                 ones that come with SIERRA are:
+
+                     - ``prod.graphs`` - Generate graphs :term:`Processed Output
+                       Data` files.
+
+                     - ``prod.render`` - Render previously :term:`imagized
+                       <Imagize>` files into videos.
+                 """
+            + self.stage_usage_doc([4]),
+            nargs="+",
+            default=["prod.graphs"],
+        )
+
         self.stage4.add_argument(
             "--exp-graphs",
             choices=["intra", "inter", "all", "none"],
@@ -955,27 +1055,12 @@ class CoreCmdline(BaseCmdline):
         )
 
         rendering.add_argument(
-            "--project-imagizing",
-            help="""
-                 Enable generation of image files from CSV file s captured during
-                 stage 2 and averaged during stage 3 for each experiment.  See
-                 :ref:`usage/rendering/project` for details and restrictions.
-                 """
-            + self.stage_usage_doc([3, 4]),
-            action="store_true",
-        )
-
-        rendering.add_argument(
             "--project-rendering",
             help="""
-
-                               Enable generation of videos from imagized CSV
-                               files created as a result of
-                               ``--project-imagizing``. See
-                               :ref:`usage/rendering/project` for
-                               details.
-
-                               """
+                 Enable generation of videos from imagized CSV files created as
+                 a result of running the ``proc.imagize`` plugin.  See
+                 :ref:`plugins/product/render` for details.
+                 """
             + self.stage_usage_doc([4]),
             action="store_true",
         )
@@ -1109,7 +1194,9 @@ class CoreCmdline(BaseCmdline):
                  For all comparison types, ``--controllers-legend`` is used if
                  passed for legend.
                  """.format(
-                utils.sphinx_ref(":func:`~sierra.core.graphs.summary_line`")
+                utils.sphinx_ref(
+                    ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"
+                )
             )
             + self.stage_usage_doc([5]),
         )

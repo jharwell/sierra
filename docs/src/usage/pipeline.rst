@@ -143,15 +143,15 @@ The following plugins are active in this stage:
    * - :ref:`Processors <plugins/proc>`
 
      - Processing raw experimental outputs into a form suitable for generating
-       deliverables in stage 4.
+       products in stage 4.
 
 Some parts of this stage are done in parallel by default. Part of default
 pipeline.
 
-Stage 4: Deliverable Generation
-===============================
+Stage 4: Product Generation
+===========================
 
-SIERRA can generate many deliverables from the processed experimental results
+SIERRA can generate many products from the processed experimental results
 automatically (independent of the engine/execution environment!), thus greatly
 simplifying reproduction of previous results if you need to tweak a given graph
 (for example).
@@ -172,14 +172,14 @@ The following plugins are active in this stage:
    * - :ref:`Engine <plugins/engine>`
 
      - Extracting any information needed from the engine in order to assist
-       with generating deliverables, such as the # agents for a given
+       with generating products, such as the # agents for a given
        :term:`Experimental Run`.
 
-   * - :ref:`Deliverable Generators <plugins/proc>`
+   * - :ref:`Product Generators <plugins/proc>`
 
      -
 
-        .. TODO:: The hard-corded deliverable generation options below will
+        .. TODO:: The hard-corded product generation options below will
                   eventually be replaced by a proper set of plugins. Right now
                   it is plugin-ish, in the since there are various hooks to
                   extend/customize.
@@ -194,10 +194,10 @@ The following plugins are active in this stage:
         - Videos built from captured experimental output .csv files.
 
         - Processing raw experimental outputs into a form suitable for
-          generating deliverables in stage 4.
+          generating products in stage 4.
 
-For some examples, see the "Generating Deliverables" section of
-:xref:`2022-aamas-demo`. See :ref:`usage/rendering` for details about
+For some examples, see the "Generating Products" section of
+:xref:`2022-aamas-demo`. See :ref:`plugins/product/render` for details about
 rendering capabilities.
 
 Part of default pipeline.
@@ -222,14 +222,14 @@ The following plugins are active in this stage:
    * - :ref:`Engine <plugins/engine>`
 
      - Extracting any information needed from the engine in order to assist
-       with generating comparative deliverables, such as the # agents for a
+       with generating comparative products, such as the # agents for a
        given :term:`Experimental Run`.
 
    * - :ref:`Comparative Generators <plugins/comparators>`
 
      -
 
-        .. TODO:: The hard-corded options for comparative deliverable generation
+        .. TODO:: The hard-corded options for comparative product generation
                   below will eventually be replaced by a proper plugin.
 
         - Different agent control algorithms which have all been run in the same

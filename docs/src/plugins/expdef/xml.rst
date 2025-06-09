@@ -9,6 +9,10 @@ This expdef plugin can be selected via ``--expdef=expdef.xml``.
 This is the default expdef type which SIERRA will use to read input files. This
 plugin does not currently support flattening/nested configuration files.
 
+.. IMPORTANT:: If multiple matches for a given xpath string are found, only the
+               first one is modified. This may be changed in a future version of
+               the plugin.
+
 See the section on XML in :ref:`req/expdef` for restrictions on the contents of
 XML input files.
 

@@ -23,7 +23,7 @@ from sierra.core.variables import population_size
 
 @implements.implements(bc.IConcreteBatchCriteria)
 @implements.implements(bc.IQueryableBatchCriteria)
-class PopulationSize(population_size.BasePopulationSize):
+class PopulationSize(population_size.PopulationSize):
     """A univariate range of swarm sizes used to define batch experiments.
 
     This class is a base class which should (almost) never be used on its
@@ -39,21 +39,26 @@ class PopulationSize(population_size.BasePopulationSize):
     """
 
     @staticmethod
-    def gen_attr_changelist_from_list(sizes: tp.List[int]) -> tp.List[definition.AttrChangeSet]:
-        return [definition.AttrChangeSet(definition.AttrChange(".//arena/distribute/entity",
-                                                               "quantity",
-                                                               str(s)))
-                for s in sizes]
+    def gen_attr_changelist_from_list(
+        sizes: tp.List[int],
+    ) -> tp.List[definition.AttrChangeSet]:
+        return [
+            definition.AttrChangeSet(
+                definition.AttrChange(".//arena/distribute/entity", "quantity", str(s))
+            )
+            for s in sizes
+        ]
 
-    def __init__(self,
-                 cli_arg: str,
-                 main_config: types.YAMLDict,
-                 batch_input_root: pathlib.Path,
-                 size_list: tp.List[int]) -> None:
-        population_size.BasePopulationSize.__init__(self,
-                                                    cli_arg,
-                                                    main_config,
-                                                    batch_input_root)
+    def __init__(
+        self,
+        cli_arg: str,
+        main_config: types.YAMLDict,
+        batch_input_root: pathlib.Path,
+        size_list: tp.List[int],
+    ) -> None:
+        population_size.PopulationSize.__init__(
+            self, cli_arg, main_config, batch_input_root
+        )
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
@@ -63,40 +68,32 @@ class PopulationSize(population_size.BasePopulationSize):
         """
         if not self.attr_changes:
             self.attr_changes = PopulationSize.gen_attr_changelist_from_list(
-                self.size_list)
+                self.size_list
+            )
         return self.attr_changes
 
     def gen_exp_names(self) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        return ['exp' + str(x) for x in range(0, len(changes))]
+        return ["exp" + str(x) for x in range(0, len(changes))]
 
     def n_agents(self, exp_num: int) -> int:
         return self.size_list[exp_num]
 
 
-def factory(cli_arg: str,
-            main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts,
-            batch_input_root: pathlib.Path,
-            **kwargs) -> PopulationSize:
-    """Create a :class:`PopulationSize` derived class from the cmdline definition.
-
-    """
-    parser = population_size.Parser()
-    max_sizes = parser.to_sizes(parser(cli_arg))
+def factory(
+    cli_arg: str,
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    batch_input_root: pathlib.Path,
+    **kwargs,
+) -> PopulationSize:
+    """Create a :class:`PopulationSize` derived class from the cmdline definition."""
+    max_sizes = population_size.parse(cli_arg)
 
     def __init__(self) -> None:
-        PopulationSize.__init__(self,
-                                cli_arg,
-                                main_config,
-                                batch_input_root,
-                                max_sizes)
+        PopulationSize.__init__(self, cli_arg, main_config, batch_input_root, max_sizes)
 
-    return type(cli_arg,  # type: ignore
-                (PopulationSize,),
-                {"__init__": __init__})
+    return type(cli_arg, (PopulationSize,), {"__init__": __init__})  # type: ignore
 
 
-__all__ = [
-    'PopulationSize'
-]
+__all__ = ["PopulationSize"]

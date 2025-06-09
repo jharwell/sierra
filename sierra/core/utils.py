@@ -23,7 +23,7 @@ from retry import retry
 from sierra.core.vector import Vector3D
 from sierra.core.experiment import definition
 from sierra.core import types, config
-from sierra.core import plugin_manager as pm
+from sierra.core import plugin as pm
 
 
 class ArenaExtent():

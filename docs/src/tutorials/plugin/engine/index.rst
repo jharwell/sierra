@@ -66,7 +66,7 @@ Creating The Cmdline Interface
 
            This example extends :class:`~sierra.core.cmdline.BaseCmdline` with:
 
-           - :class:`~sierra.core.hpc.cmdline.HPCCmdline` (HPC common)
+           - :class:`~sierra.plugins.execenv.hpc.cmdline.HPCCmdline` (HPC common)
            - :class:`~cmd.EngineCmdline` (engine specifics)
 
            assuming this engine can run on HPC environments.
@@ -385,8 +385,10 @@ In ``generators/engine.py``, you may define the following functions:
                                    run_num: int) -> tp.List[types.ShellCmdSpec]:
                      return []
 
-             def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
-                 return []
+             def post_run_cmds(
+                        self, host: str, run_output_root: pathlib.Path
+                        ) -> tp.List[types.ShellCmdSpec]:
+                        return []
 
 
 

@@ -14,22 +14,21 @@ These requirements apply to any :term:`Engine` which uses :term:`ROS1` (e.g.,
    SIERRA can be present in other ``.launch`` or ``.world`` files, and using the
    usual ``<include>`` mechanism. See also :ref:`philosophy`.
 
-#. Within the template ``.launch`` file (``--expdef-template``), the root
-   XML tag must be ``<ros-configuration>`` . The
-   ``<ros-configuration>`` tag is stripped out by SIERRA during
-   generation, and exists solely for the purposes of conformance with the XML
-   standard, which states that there can be only a single root element (i.e.,
-   you can't have a ``<params>`` element and a ``<launch>`` element both at the
-   root level--see options below). See
-   :ref:`tutorials/project/expdef-template` for details of required
-   structure of passed ``--expdef-template``, and what changes are applied
-   to them by SIERRA to use with ROS.
+#. Within the template ``.launch`` file (``--expdef-template``), the root XML
+   tag must be ``<ros-configuration>`` . The ``<ros-configuration>`` tag is
+   stripped out by SIERRA during generation, and exists solely for the purposes
+   of conformance with the XML standard, which states that there can be only a
+   single root element (i.e., you can't have a ``<params>`` element and a
+   ``<launch>`` element both at the root level--see options below). See
+   :ref:`plugins/expdef` for details of required structure of passed
+   ``--expdef-template``, and what changes are applied to them by SIERRA to use
+   with ROS.
 
    :term:`Projects <Project>` can choose either of the following options for
-   specifying controller parameters. See
-   :ref:`tutorials/project/expdef-template` for further details of
-   required structure of passed ``--expdef-template``, and what changes are
-   applied to them by SIERRA to use with ROS, depending on the option chosen.
+   specifying controller parameters. See :ref:`plugins/expdef` for further
+   details of required structure of passed ``--expdef-template``, and what
+   changes are applied to them by SIERRA to use with ROS, depending on the
+   option chosen.
 
       - Use the ROS Parameter Server
 
@@ -55,8 +54,7 @@ These requirements apply to any :term:`Engine` which uses :term:`ROS1` (e.g.,
         ``.launch`` file.
 
         All SIERRA configuration exposed via XML parameters use the ROS
-        parameter server. See :ref:`tutorials/project/expdef-template`
-        for specifics.
+        parameter server. See :ref:`plugins/expdef` for specifics.
 
 #. ROS does not currently provide a way to shut down after a given # of
    iterations/timesteps, so SIERRA provides a ROS package with a node tracking

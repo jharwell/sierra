@@ -62,75 +62,12 @@ follows:
 #. Create ``pipeline/stage4/graphs/loader.py``.
 
 #. Extend/override the
-   :func:`sierra.core.pipeline.stage4.graphs.loader.load_config()` function:
+   :func:`sierra.core.pipeline.yaml.load_config()` function:
 
    .. code-block:: python
 
-      import sierra.core.pipeline.stage4 import loader
+      import sierra.core.pipeline import yaml
       from sierra.core import types
 
-      def load_config(cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
-          ...
-
-Intra-Experiment Graph Generation
----------------------------------
-
-You way want to extend the set of graphs which is generated for each experiment
-in the batch, based on what batch criteria is selected, or for some other
-reason. To do so:
-
-#. Create ``pipeline/stage4/graphs/intra/generate.py``.
-
-#. Override the
-   :func:`sierra.core.pipeline.stage4.graphs.intra.generate.generate()`
-   function:
-
-   .. code-block:: python
-
-      # Core packages
-      import typing as tp
-
-      # 3rd party packages
-
-      # Project packages
-      from sierra.core.variables import batch_criteria as bc
-      from sierra.core import types
-
-      def generate(main_config: types.YAMLDict,
-                   cmdopts: types.Cmdopts,
-                   controller_config: types.YAMLDict,
-                   LN_targets: tp.List[types.YAMLDict],
-                   HM_targets: tp.List[types.YAMLDict],
-                   criteria: bc.IConcreteBatchCriteria) -> None:
-          ...
-
-Inter-Experiment Graph Generation
----------------------------------
-
-You way want to extend the set of graphs which is generated across each each
-experiment in the batch (e.g., to create graphs of summary performance
-measures). To do so:
-
-#. Create ``pipeline/stage4/graphs/inter/generate.py``.
-
-#. Override the
-   :func:`sierra.core.pipeline.stage4.graphs.inter.generate.generate()`
-   function:
-
-   .. code-block:: python
-
-      # Core packages
-      import typing as tp
-
-      # 3rd party packages
-
-      # Project packages
-      from sierra.core.variables import batch_criteria as bc
-      from sierra.core import types
-
-      def generate(main_config: types.YAMLDict,
-                   cmdopts: types.Cmdopts,
-                   LN_targets: tp.List[types.YAMLDict],
-                   HM_targets: tp.List[types.YAMLDict],
-                   criteria: bc.IConcreteBatchCriteria) -> None:
+      def load_config(cmdopts: types.Cmdopts, name: str) -> tp.Optional[types.YAMLDict]:
           ...

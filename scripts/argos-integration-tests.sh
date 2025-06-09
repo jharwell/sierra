@@ -869,7 +869,7 @@ print(path)
     --controller=foraging.footbot_foraging \
     --batch-criteria population_size.Linear1.C1 \
     --pipeline 1 2 3 4 \
-    --project-imagizing \
+    --proc proc.statistics proc.collate proc.imagize \
     --project-rendering \
     --exp-setup=exp_setup.T100.K10"
 

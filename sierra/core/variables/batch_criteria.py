@@ -19,7 +19,7 @@ from sierra.core import utils
 from sierra.core.experiment import definition
 
 
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 from sierra.core import types, config
 
 

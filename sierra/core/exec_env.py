@@ -21,7 +21,7 @@ import implements
 # Project packages
 from sierra.core import utils, types, config
 from sierra.core.experiment import bindings
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 
 _logger = logging.getLogger(__name__)
 

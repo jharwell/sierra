@@ -14,7 +14,7 @@ import pathlib
 import pandas as pd
 
 # Project packages
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 
 
 def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:

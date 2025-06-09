@@ -18,7 +18,7 @@ import os
 import yaml
 
 # Project packages
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 from sierra.core import config, utils, batchroot
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
@@ -64,7 +64,6 @@ class Pipeline:
             "exec_env": args.exec_env,
             "engine_vc": self.args.engine_vc,
             "n_runs": args.n_runs,
-            "project_imagizing": self.args.project_imagizing,
             "exp_overwrite": self.args.exp_overwrite,
             "exp_range": self.args.exp_range,
             "dist_stats": self.args.dist_stats,
@@ -79,12 +78,16 @@ class Pipeline:
             "plot_large_text": self.args.plot_large_text,
             "plot_transpose_graphs": self.args.plot_transpose_graphs,
             "expdef": self.args.expdef,
+            "proc": self.args.proc,
+            "prod": self.args.prod,
             # stage 1
             "preserve_seeds": self.args.preserve_seeds,
             # stage 2
             "nodefile": self.args.nodefile,
             # stage 3
             "df_verify": self.args.df_verify,
+            "compress_remove_after": self.args.compress_remove_after,
+            "imagize_no_stats": self.args.imagize_no_stats,
             "df_homogenize": self.args.df_homogenize,
             "render_cmd_opts": self.args.render_cmd_opts,
             "processing_mem_limit": self.args.processing_mem_limit,
@@ -108,7 +111,7 @@ class Pipeline:
 
         # Load additional cmdline options from engine
         self.logger.debug(
-            "Updating cmdopts with extensions from '%s'", self.cmdopts["engine"]
+            "Updating cmdopts with extensions from %s", self.cmdopts["engine"]
         )
         module = pm.module_load_tiered("cmdline", engine=self.cmdopts["engine"])
         self.cmdopts |= module.to_cmdopts(self.args)
@@ -118,7 +121,7 @@ class Pipeline:
             # because all projects have to define --controller and --scenario
             # at a minimum.
             self.logger.debug(
-                "Updating cmdopts with extensions from '%s'", self.cmdopts["project"]
+                "Updating cmdopts with extensions from %s", self.cmdopts["project"]
             )
             path = "{0}.cmdline".format(self.cmdopts["project"])
             module = pm.module_load(path)

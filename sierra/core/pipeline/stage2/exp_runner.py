@@ -18,7 +18,7 @@ import typing as tp  # noqa: F401
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core import types, config, engine, utils, batchroot, exec_env
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 
 
 class ExpShell:

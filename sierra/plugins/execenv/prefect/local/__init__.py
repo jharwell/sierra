@@ -12,3 +12,7 @@ See :ref:`plugins/exec-env/prefect/local`.
 # 3rd party packages
 
 # Project packages
+
+
+def sierra_plugin_type() -> str:
+    return "pipeline"

@@ -120,7 +120,9 @@ class ExpRunShellCmdsGenerator:
 
         return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 
-    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(
+        self, host: str, run_output_root: pathlib.Path
+    ) -> tp.List[types.ShellCmdSpec]:
         return []
 
 
@@ -188,7 +190,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
 
     Extends the built-in cmdline parser with:
 
-        - :class:`~sierra.core.hpc.cmdline.HPCCmdline` (HPC common)
+        - :class:`~sierra.plugins.execenv.hpc.cmdline.HPCCmdline` (HPC common)
 
         - :class:`~sierra.core.ros1.cmdline.ROSCmdline` (ROS1 common)
 

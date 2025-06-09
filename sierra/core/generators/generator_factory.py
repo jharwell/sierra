@@ -19,7 +19,7 @@ import yaml
 # Project packages
 from sierra.core.experiment import definition
 from sierra.core.experiment import spec as expspec
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 from sierra.core import types, config, utils
 
 

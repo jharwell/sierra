@@ -55,26 +55,33 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                     if path == ".//arena" and attr == "size":
                         x, y, z = [int(float(_)) for _ in value.split(",")]
-                        extent = utils.ArenaExtent(
-                            Vector3D(x, y, z))
+                        extent = utils.ArenaExtent(Vector3D(x, y, z))
                         # ARGoS won't start if there are 0 robots, so you always
                         # need to put at least 1.
-                        n_agents = int(extent.area() *
-                                       (self.target_density / 100.0))
+                        n_agents = int(extent.area() * (self.target_density / 100.0))
                         if n_agents == 0:
                             n_agents = 1
-                            self.logger.warning(("n_agents set to 1 even though "
-                                                 "calculated as 0 for area=%s,"
-                                                 "density=%s"),
-                                                str(extent.area()),
-                                                self.target_density / 100.0)
+                            self.logger.warning(
+                                (
+                                    "n_agents set to 1 even though "
+                                    "calculated as 0 for area=%s,"
+                                    "density=%s"
+                                ),
+                                str(extent.area()),
+                                self.target_density / 100.0,
+                            )
 
-                        changeset.add(definition.AttrChange(".//arena/distribute/entity",
-                                                            "quantity",
-                                                            str(n_agents)))
-                        self.logger.debug("Calculated population size=%d for extent=%s,density=%s",
-                                          n_agents,
-                                          str(extent), self.target_density)
+                        changeset.add(
+                            definition.AttrChange(
+                                ".//arena/distribute/entity", "quantity", str(n_agents)
+                            )
+                        )
+                        self.logger.debug(
+                            "Calculated population size=%d for extent=%s,density=%s",
+                            n_agents,
+                            str(extent),
+                            self.target_density,
+                        )
                         break
 
             self.already_added = True
@@ -83,29 +90,33 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def gen_exp_names(self) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        return ['exp' + str(x) for x in range(0, len(changes))]
+        return ["exp" + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self,
-                     cmdopts: types.Cmdopts,
-                     batch_output_root: pathlib.Path,
-                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+    def graph_xticks(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: pathlib.Path,
+        exp_names: tp.Optional[tp.List[str]] = None,
+    ) -> tp.List[float]:
 
         if exp_names is None:
             exp_names = self.gen_exp_names()
 
         ret = list(map(float, self.populations(cmdopts, exp_names)))
 
-        if cmdopts['plot_log_xscale']:
+        if cmdopts["plot_log_xscale"]:
             return [int(math.log2(x)) for x in ret]
-        elif cmdopts['plot_enumerated_xscale']:
+        elif cmdopts["plot_enumerated_xscale"]:
             return list(range(0, len(ret)))
         else:
             return ret
 
-    def graph_xticklabels(self,
-                          cmdopts: types.Cmdopts,
-                          batch_output_root: pathlib.Path,
-                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+    def graph_xticklabels(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: pathlib.Path,
+        exp_names: tp.Optional[tp.List[str]] = None,
+    ) -> tp.List[str]:
         if exp_names is None:
             exp_names = self.gen_exp_names()
 
@@ -114,7 +125,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         return list(map(lambda x: str(int(round(x, 4))), ret))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        if cmdopts['plot_log_xscale']:
+        if cmdopts["plot_log_xscale"]:
             return r"$\log_{2}$(Population Size)"
 
         return r"Population Size"
@@ -123,57 +134,64 @@ class PopulationConstantDensity(cd.ConstantDensity):
         return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
 
 
-def calc_dims(cmdopts: types.Cmdopts,
-              attr: types.CLIArgSpec,
-              **kwargs) -> tp.List[utils.ArenaExtent]:
+def calc_dims(
+    cmdopts: types.Cmdopts, attr: types.CLIArgSpec, **kwargs
+) -> tp.List[utils.ArenaExtent]:
 
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-    is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
-    is_1x1 = kw['arena_x'] == kw['arena_y']
+    is_2x1 = kw["arena_x"] == 2 * kw["arena_y"]
+    is_1x1 = kw["arena_x"] == kw["arena_y"]
 
     if is_2x1:
-        r = range(kw['arena_x'],
-                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
-                  attr['arena_size_inc'])
-        return list(utils.ArenaExtent(Vector3D(x, int(x / 2), kw['arena_z'])) for x in r)
+        r = range(
+            kw["arena_x"],
+            kw["arena_x"] + attr["cardinality"] * attr["arena_size_inc"],
+            attr["arena_size_inc"],
+        )
+        return list(
+            utils.ArenaExtent(Vector3D(x, int(x / 2), kw["arena_z"])) for x in r
+        )
     elif is_1x1:
-        r = range(kw['arena_x'],
-                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
-                  attr['arena_size_inc'])
+        r = range(
+            kw["arena_x"],
+            kw["arena_x"] + attr["cardinality"] * attr["arena_size_inc"],
+            attr["arena_size_inc"],
+        )
 
-        return list(utils.ArenaExtent(Vector3D(x, x, kw['arena_z'])) for x in r)
+        return list(utils.ArenaExtent(Vector3D(x, x, kw["arena_z"])) for x in r)
     else:
         raise NotImplementedError(
-            "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
+            "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]"
+        )
 
 
-def factory(cli_arg: str,
-            main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts,
-            batch_input_root: pathlib.Path,
-            **kwargs) -> PopulationConstantDensity:
-    """Create a :class:`PopulationConstantDensity` derived class.
-
-    """
-    attr = cd.Parser()(cli_arg)
+def factory(
+    cli_arg: str,
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    batch_input_root: pathlib.Path,
+    **kwargs,
+) -> PopulationConstantDensity:
+    """Create a :class:`PopulationConstantDensity` derived class."""
+    attr = cd.parse(cli_arg)
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)
     dims = calc_dims(cmdopts, attr, **kwargs)
 
     def __init__(self) -> None:
-        PopulationConstantDensity.__init__(self,
-                                           cli_arg,
-                                           main_config,
-                                           batch_input_root,
-                                           attr["target_density"],
-                                           dims,
-                                           kw['scenario_tag'])
+        PopulationConstantDensity.__init__(
+            self,
+            cli_arg,
+            main_config,
+            batch_input_root,
+            attr["target_density"],
+            dims,
+            kw["scenario_tag"],
+        )
 
-    return type(cli_arg,  # type: ignore
-                (PopulationConstantDensity,),
-                {"__init__": __init__})
+    return type(
+        cli_arg, (PopulationConstantDensity,), {"__init__": __init__}  # type: ignore
+    )
 
 
-__all__ = [
-    'PopulationConstantDensity'
-]
+__all__ = ["PopulationConstantDensity"]

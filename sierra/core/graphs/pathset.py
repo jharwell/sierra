@@ -16,6 +16,8 @@ import typing as tp
 
 @dataclass
 class PathSet:
+    """The set of paths relevant/needed when creating graphs."""
+
     input_root: pathlib.Path
     output_root: pathlib.Path
     batchroot: pathlib.Path

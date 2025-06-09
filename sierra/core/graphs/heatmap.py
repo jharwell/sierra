@@ -57,7 +57,7 @@ def generate(
        0,1,4
        ...
 
-    The ``x``,``y`` columns are the indices, and the ``z`` column is the value
+    The ``x``, ``y`` columns are the indices, and the ``z`` column is the value
     in that cell. The names of these columns are configurable.
 
     """

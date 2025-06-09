@@ -4,11 +4,16 @@
 """
 Builtin batch criteria which can be used with any :term:`Engine`/:term:`Project`.
 
+Batch criteria in this file are the ONLY ones which come with SIERRA which can
+be used as-is. Other stuff in ``sierra.core.variables`` are base classes which
+require specialization to use as batch criteria, or are just experimental
+variables.
 """
 # Core packages
 import typing as tp
 import re
 import pathlib
+import numpy as np
 
 # 3rd party packages
 
@@ -86,11 +91,7 @@ class MonteCarlo(bc.UnivarBatchCriteria):
         return "Experiment"
 
 
-def _parse(arg: str) -> types.CLIArgSpec:
-    ret = {
-        "cardinality": None,
-    }  # type: tp.Dict[str, tp.Optional[int]]
-
+def _mc_parse(arg: str) -> int:
     sections = arg.split(".")
 
     # This is the one builtin batch criteria which exists for now
@@ -106,9 +107,32 @@ def _parse(arg: str) -> types.CLIArgSpec:
 
     res = re.search("C[0-9]+", sections[1])
     assert res is not None, "Bad cardinality in criteria section '{sections[1]}'"
-    ret["cardinality"] = int(res.group(0)[1:])
+    return int(res.group(0)[1:])
 
-    return ret
+
+def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> tp.List[float]:
+    """
+    Generate an array from a linspace spec of the form ``<min>.<max>.C<cardinality>``.
+
+    Args:
+        arg: The CLI string.
+
+        scale_factor: A linear factor applied to the min/max to shift the
+                      range. This can be used to, e.g., generate ranges like
+                      0.4-0.8 from specs like ``4.8.C8`` instead of having to do
+                      contortions around parsing decimal values out of CLI
+                      strings directly.
+    """
+    regex = r"(\d+)\.(\d+)\s*\.C\s*(\d+)\s*"
+    res = re.match(regex, arg)
+    assert len(res.groups()) == 3, f"Spec must match {regex}, have {arg}"
+
+    # groups(0) is always the full matched string; subsequent groups are the
+    # captured groups from the () expressions.
+    _min = float(res.group(1)) * scale_factor
+    _max = float(res.group(2)) * scale_factor
+    cardinality = int(res.group(3))
+    return [x for x in np.linspace(_min, _max, cardinality)]
 
 
 def factory(
@@ -119,16 +143,12 @@ def factory(
     **kwargs,
 ) -> MonteCarlo:
     """Create a :class:`MonteCarlo` derived class from the cmdline definition."""
-    config = _parse(cli_arg)
+    cardinality = _mc_parse(cli_arg)
 
     def __init__(self) -> None:
-        MonteCarlo.__init__(
-            self, cli_arg, main_config, batch_input_root, config["cardinality"]
-        )
+        MonteCarlo.__init__(self, cli_arg, main_config, batch_input_root, cardinality)
 
     return type(cli_arg, (MonteCarlo,), {"__init__": __init__})  # type: ignore
 
 
-__all__ = [
-    "MonteCarlo",
-]
+__all__ = ["MonteCarlo", "linspace_parse"]

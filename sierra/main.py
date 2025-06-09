@@ -21,7 +21,7 @@ import sierra.core.cmdline as cmd
 from sierra import version
 from sierra.core import engine, plugin, startup, batchroot, exec_env, utils
 from sierra.core.pipeline.pipeline import Pipeline
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 import sierra.core.logging  # type: ignore
 
 kIssuesURL = "https://github.com/jharwell/sierra/issues"
@@ -34,7 +34,7 @@ class SIERRA:
         bootstrap_args, other_args = self._bootstrap(bootstrap)
         manager = self._load_plugins(bootstrap_args)
         self._load_cmdline(bootstrap_args, other_args)
-        self._verify_plugins(manager, bootstrap_args)
+        self._verify_plugins(manager, bootstrap_args, self.args)
 
     def __call__(self) -> None:
         # If only 1 pipeline stage is passed, then the list of stages to run is
@@ -86,7 +86,7 @@ class SIERRA:
     ) -> None:
         # Load additional project cmdline extensions
         self.logger.info(
-            "Loading cmdline extensions from project '%s'", bootstrap_args.project
+            "Loading cmdline extensions from project %s", bootstrap_args.project
         )
         path = f"{bootstrap_args.project}.cmdline"
         module = pm.module_load(path)
@@ -133,12 +133,20 @@ class SIERRA:
         manager = pm.pipeline
         manager.initialize(bootstrap_args.project, plugin_search_path)
 
+        # 2025-06-14 [JRH]: All found plugins are loaded/executed as python
+        # modules, even if they are not currently selected. I don't know if this
+        # is a good idea or not.
         for p in manager.available_plugins():
             manager.load_plugin(p)
 
         return manager
 
-    def _verify_plugins(self, manager, bootstrap_args: argparse.Namespace) -> None:
+    def _verify_plugins(
+        self,
+        manager,
+        bootstrap_args: argparse.Namespace,
+        other_args: argparse.Namespace,
+    ) -> None:
         # Verify engine plugin
         module = manager.get_plugin_module(bootstrap_args.engine)
         plugin.engine_sanity_checks(bootstrap_args.engine, module)
@@ -146,6 +154,15 @@ class SIERRA:
         # Verify execution environment plugin
         module = manager.get_plugin_module(bootstrap_args.exec_env)
         plugin.exec_env_sanity_checks(bootstrap_args.exec_env, module)
+
+        # Verify processing environment plugins
+        for p in other_args.proc:
+            module = manager.get_plugin_module(p)
+            plugin.proc_sanity_checks(p, module)
+
+        # Verify expdef environment plugin
+        module = manager.get_plugin_module(other_args.expdef)
+        plugin.expdef_sanity_checks(other_args.expdef, module)
 
         # Verify storage plugin (declared as part of core cmdline arguments
         # rather than bootstrap, so we have to wait until after all arguments

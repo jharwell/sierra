@@ -117,7 +117,7 @@ SIERRA! The steps to do so are:
        processing configuration from.
 
    - What template input file to use: ``--expdef-template``. See
-     :ref:`tutorials/project/expdef-template` for requirements.
+     :ref:`plugins/expdef` for requirements.
 
    - How many variations of the main settings for each experiment to run:
      ``--n-runs``.

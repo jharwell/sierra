@@ -22,7 +22,7 @@ import pandas as pd
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 from sierra.core import types, utils, config, storage, batchroot, graphs
 from sierra.core.pipeline.stage5 import outputroot
 

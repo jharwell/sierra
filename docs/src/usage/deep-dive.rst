@@ -24,8 +24,8 @@ To begin, take note of the following terminology:
 - The "Generator Factory" abstractly refers to the various parts of the code
   that map cmdline arguments from strings into *Generators*. Generators are
   objects which can make modications to expdef files: removing elements, adding
-  elements, and modifying element attributes. See
-  :ref:`tutorials/project/expdef-template/semantics` for for details.
+  elements, and modifying element attributes. See :ref:`plugins/expdef` for for
+  details.
 
 Below is the execution flow of the first phase of stage 1: scaffolding the
 batch experiment. The outputs of this phase include:

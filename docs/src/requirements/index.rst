@@ -54,9 +54,10 @@ Experimental Design Requirements
 Arena Size
 ----------
 
-These requires only apply if you want to execute :term:`Experiments` which have
-different arena sizes (e.g., you want to put the same # of agents in
-increasingly large/small areas to figure out how their behavior changes).
+These requires only apply if you want to execute :term:`Experiments
+<Experiment>` which have different arena sizes (e.g., you want to put the same #
+of agents in increasingly large/small areas to figure out how their behavior
+changes).
 
 #. The experimental arena size for each :term:`Experiment` in all :term:`Batch
    Experiments <Batch Experiment>` is defined. For experiments which will run in
@@ -71,10 +72,9 @@ increasingly large/small areas to figure out how their behavior changes).
    communicated to SIERRA, which SIERRA tries in the following order:
 
    #. Through :term:`Batch Criteria` defining the ``arena_dims()`` function. See
-      :ref:`tutorials/project/new-bc` to see how to implement this method. This
-      method also requires additional hooks to be defined in the
-      :term:`Engine`--see :ref:`tutorials/plugin/engine/generate` for
-      specifics.
+   :ref:`tutorials/project/new-bc` to see how to implement this method. This
+   method also requires additional hooks to be defined in the
+   :term:`Engine`--see :ref:`plugins/engine` for specifics.
 
    #. Through the cmdline, by encoding it as part of what is passed to
       ``--scenario``. See :ref:`tutorials/project/generators/scenario` to see
@@ -104,15 +104,15 @@ General
    If your experiments use/require/support multiple input files, never fear!
    You can still use SIERRA. you just have to "flatten" your configuration
    hierarchy into a single file; this is typically done at the :term:`Engine`
-   level via a simple expdef plugin hook; see :ref:`tutorials/plugin/engine`.
+   level via a simple expdef plugin hook; see :ref:`plugins/engine`.
 
    See also :ref:`philosophy`.
 
 #. The post-processing pipeline for experimental data generally conforms to
    SIERRA's :ref:`datamodel <datamodel>`. If your code isn't conformant, never
    fear! You can still use SIERRA--you will just have to define your own plugins
-   for :ref:`data processing <tutorials/plugin/proc>` and :ref:`deliverable
-   generation <tutorials/plugin/deliverable>`.
+   for :ref:`data processing <plugins/proc>` and :ref:`product generation
+   <plugins/product>`.
 
 #. All experiments from which you want to generate statistics/graphs are:
 
@@ -232,18 +232,18 @@ your code does not meet these assumptions, then you will need to make some
    :ref:`plugins/exec-env/realrobot`), this can be more difficult to meet.
 
 #. All experimental run outputs are in a format that SIERRA understands within
-   the output directory for the run. See :ref:`plugins/storage` for which
-   output formats are currently understood by SIERRA. If your output format is
-   not in the list, never fear! It's easy to create a new storage plugin, see
-   :ref:`tutorials/plugin/storage`.
+   the output directory for the run. See :ref:`plugins/storage` for which output
+   formats are currently understood by SIERRA. If your output format is not in
+   the list, never fear! It's easy to create a new storage plugin, see
+   :ref:`plugins/storage`.
 
 .. _req/models:
 
 Model Framework Requirements
 ============================
 
-When running models during stage 4 (see
-:ref:`tutorials/project/models`) SIERRA requires that:
+When running models during stage 4 (see :ref:`tutorials/project/models`) SIERRA
+requires that:
 
 - All models return :class:`pandas.DataFrame` (if they don't do this natively,
   then their python bindings will have to do it). This is enforced by the

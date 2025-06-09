@@ -150,11 +150,11 @@ cmdline_opts_test() {
 
     rm -rf $SIERRA_ROOT
 
-    $SIERRA_CMD --pipeline 1 2 3 --processing-serial
+    $SIERRA_CMD --pipeline 1 2 3 --processing-parallelism=1
 
     $SIERRA_CMD --pipeline 4 --plot-log-xscale
     $SIERRA_CMD --pipeline 4 --plot-enumerated-xscale
-    $SIERRA_CMD --pipeline 4 --plot-log-yscale --processing-serial
+    $SIERRA_CMD --pipeline 4 --plot-log-yscale --processing-parallelism=1
     $SIERRA_CMD --pipeline 4 --plot-large-text
 
     rm -rf $SIERRA_ROOT

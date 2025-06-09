@@ -21,7 +21,7 @@ from sierra.core.utils import ArenaExtent
 from sierra.core.experiment import definition
 from sierra.core.experiment import spec as expspec
 from sierra.core import types, config, utils
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 
 from sierra.plugins.engine.argos.variables import arena_shape
 from sierra.plugins.engine.argos.variables import population_size

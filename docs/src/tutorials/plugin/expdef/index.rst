@@ -8,9 +8,8 @@ For the purposes of this tutorial, I will assume you are creating a new
 :term:`Plugin` ``fizzbuzz`` for reading in and creating experiment definitions
 from an imaginary "fizzbuzz" file type.
 
-Before we begin, see :ref:`tutorials/project/expdef-template/semantics` to get a
-brief overview of the different components of ``--expdef-template`` files,
-independent of format.
+Before we begin, see :ref:`plugins/expdef` to get a brief overview of the
+different components of ``--expdef-template`` files, independent of format.
 
 Node Identification
 -------------------

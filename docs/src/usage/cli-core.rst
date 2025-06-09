@@ -27,8 +27,8 @@ Stage3: Processing Experiment Results
    :prog: SIERRA
 
 
-Stage4: Deliverable Generation
-------------------------------
+Stage4: Product Generation
+--------------------------
 
 .. argparse::
    :filename: ../sierra/core/cmdline.py

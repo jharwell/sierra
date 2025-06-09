@@ -170,7 +170,7 @@ works/is designed the way it is, and to help you find your way around.
       - Taking one column per :term:`Experimental Run` in an :term:`Experiment`.
 
 
-      For use in deliverable generation. See
+      For use in product generation. See
       :ref:`plugins/proc/collate` for more information.
 
    Collated Output Data
@@ -191,16 +191,16 @@ works/is designed the way it is, and to help you find your way around.
 
       These flavor of measures are usually what you are after. However, if you
       want something different you can specify it in a per-graph manner; see
-      :ref:`tutorials/project/graphs-config` for more info. You can also capture
+      :ref:`plugins/product/graphs` for more info. You can also capture
       transient behaviors by creating :term:`Collated Output Data` files and
       thus :term:`Batch Summary Data` files from captured :term:`Experimental
       Run` outputs over short stretches of time--SIERRA does not know the
       difference.
 
-   Inter-Batch .csv
+   Inter-Batch Data
 
-      A CSV file created by SIERRA during stage 5. An inter-batch CSV
-      is created by "collating" columns from a :term:`Summary .csv` present in
+      A CSV file created by SIERRA during stage 5. An inter-batch CSV is created
+      by "collating" columns from a :term:`Batch Summary Data` present in
       multiple :term:`Batch Experiments <Batch Experiment>` into a single
       CSV. Used during stage 5.
 
@@ -226,8 +226,8 @@ works/is designed the way it is, and to help you find your way around.
       example, if you want to generate graphs about the different ways that
       robots allocate tasks, you might create a ``LN_task_alloc`` label, so that
       you can enable/disable all task allocation related graphs for one or more
-      controllers easily when :doc:`configuring
-      </src/tutorials/project/graphs-config>` your project.
+      controllers easily when :ref:`configuring <plugins/product/graphs>`
+      your project.
 
    Controller Category
 
@@ -269,6 +269,9 @@ works/is designed the way it is, and to help you find your way around.
       - Experiment definition plugins - Plugins which correspond to different
         file input formats which are used by SIERRA to create runnable
         experiments from a template input file.
+
+      - Data processing plugins - Plugins which correspond to different ways to
+        process :term:`Raw Output Data` files.
 
       - Project  plugins - Plugins which correspond to different
         :term:`Projects <Project>`.

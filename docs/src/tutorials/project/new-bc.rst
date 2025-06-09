@@ -77,22 +77,9 @@ Required Steps
       tag when creating the tag itself.
 
 #. Define the parser for your variable in order to parse the command line string
-   defining your batch criteria into a dictionary of attributes that can then be
-   used by the ``factory()``. The parser can be defined anywhere, though it must
-   be able to be used in the ``factory()`` function. The parse class must
-   conform to the following interface:
-
-   .. code-block:: python
-
-      class MyVarParser():
-          ...
-      def __call__(self, cli_arg: str) -> dict:
-          ...
-
-   It must be callable with a single argument which is whatever was passed to
-   ``--batch-criteria``. See
-   :class:`sierra.core.variables.population_size.Parser` for a simple example of
-   this.
+   defining your batch criteria into something that be used by the ``factory()``
+   function to create instances of your variable. You *could* parse things
+   inline in the ``factory()`` function but this isn't recommended.
 
    .. IMPORTANT:: While the mini "language" that your batch criteria is
                   configured with on the cmdline and parsed with a parser can be

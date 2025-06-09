@@ -18,11 +18,11 @@ import implements
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.experiment import definition
 from sierra.core import config
-from sierra.core.variables.exp_setup import Parser
+from sierra.core.variables import exp_setup
 
 
 @implements.implements(IBaseVariable)
-class ExpSetup():
+class ExpSetup:
     """
     Defines the experimental setup for ROS experiments.
 
@@ -38,12 +38,14 @@ class ExpSetup():
 
     """
 
-    def __init__(self,
-                 n_secs_per_run: int,
-                 n_datapoints: int,
-                 n_ticks_per_sec: int,
-                 barrier_start: bool,
-                 robots_need_timekeeper: bool) -> None:
+    def __init__(
+        self,
+        n_secs_per_run: int,
+        n_datapoints: int,
+        n_ticks_per_sec: int,
+        barrier_start: bool,
+        robots_need_timekeeper: bool,
+    ) -> None:
         self.n_secs_per_run = n_secs_per_run
         self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
@@ -61,60 +63,73 @@ class ExpSetup():
     def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
         if not self.element_adds:
             adds = definition.ElementAddList(
-                definition.ElementAdd("./master/group/[@ns='sierra']",
-                                      "param",
-                                      {
-                                          "name": "experiment/length",
-                                          "value": str(self.n_secs_per_run),
-                                      },
-                                      True),
-                definition.ElementAdd("./master/group/[@ns='sierra']",
-                                      "param",
-                                      {
-                                          "name": "experiment/ticks_per_sec",
-                                          "value": str(self.n_ticks_per_sec),
-                                      },
-                                      True),
-                definition.ElementAdd("./master/group/[@ns='sierra']",
-                                      "param",
-                                      {
-                                          "name": "experiment/barrier_start",
-                                          "value": str(self.barrier_start).lower(),
-                                      },
-                                      True),
-                definition.ElementAdd("./master/group/[@ns='sierra']",
-                                      "node",
-                                      {
-                                          "name": "sierra_timekeeper",
-                                          "pkg": "sierra_rosbridge",
-                                          "type": "sierra_timekeeper.py",
-                                          "required": "true",
-                                          # Otherwise rospy prints nothing
-                                          "output": "screen"
-                                      },
-                                      True),
-
-                definition.ElementAdd("./robot/group/[@ns='sierra']",
-                                      "param",
-                                      {
-                                          "name": "experiment/length",
-                                          "value": str(self.n_secs_per_run),
-                                      },
-                                      True),
-                definition.ElementAdd("./robot/group/[@ns='sierra']",
-                                      "param",
-                                      {
-                                          "name": "experiment/ticks_per_sec",
-                                          "value": str(self.n_ticks_per_sec),
-                                      },
-                                      True),
-                definition.ElementAdd("./robot/group/[@ns='sierra']",
-                                      "param",
-                                      {
-                                          "name": "experiment/barrier_start",
-                                          "value": str(self.barrier_start).lower()
-                                      },
-                                      True)
+                definition.ElementAdd(
+                    "./master/group/[@ns='sierra']",
+                    "param",
+                    {
+                        "name": "experiment/length",
+                        "value": str(self.n_secs_per_run),
+                    },
+                    True,
+                ),
+                definition.ElementAdd(
+                    "./master/group/[@ns='sierra']",
+                    "param",
+                    {
+                        "name": "experiment/ticks_per_sec",
+                        "value": str(self.n_ticks_per_sec),
+                    },
+                    True,
+                ),
+                definition.ElementAdd(
+                    "./master/group/[@ns='sierra']",
+                    "param",
+                    {
+                        "name": "experiment/barrier_start",
+                        "value": str(self.barrier_start).lower(),
+                    },
+                    True,
+                ),
+                definition.ElementAdd(
+                    "./master/group/[@ns='sierra']",
+                    "node",
+                    {
+                        "name": "sierra_timekeeper",
+                        "pkg": "sierra_rosbridge",
+                        "type": "sierra_timekeeper.py",
+                        "required": "true",
+                        # Otherwise rospy prints nothing
+                        "output": "screen",
+                    },
+                    True,
+                ),
+                definition.ElementAdd(
+                    "./robot/group/[@ns='sierra']",
+                    "param",
+                    {
+                        "name": "experiment/length",
+                        "value": str(self.n_secs_per_run),
+                    },
+                    True,
+                ),
+                definition.ElementAdd(
+                    "./robot/group/[@ns='sierra']",
+                    "param",
+                    {
+                        "name": "experiment/ticks_per_sec",
+                        "value": str(self.n_ticks_per_sec),
+                    },
+                    True,
+                ),
+                definition.ElementAdd(
+                    "./robot/group/[@ns='sierra']",
+                    "param",
+                    {
+                        "name": "experiment/barrier_start",
+                        "value": str(self.barrier_start).lower(),
+                    },
+                    True,
+                ),
             )
             if self.robots_need_timekeeper:
                 # Robots also need the timekeeper when they are real and not
@@ -132,18 +147,21 @@ class ExpSetup():
                 # most 1 dependent node will be active at a given time. Plus,
                 # it's just sloppy to leave that sort of thing hanging around
                 # after a run exits.
-                adds.append(definition.ElementAdd("./robot/group/[@ns='sierra']",
-                                                  "node",
-                                                  {
-                                                      "name": "sierra_timekeeper",
-                                                      "pkg": "sierra_rosbridge",
-                                                      "type": "sierra_timekeeper.py",
-                                                      "required": "true",
-                                                      # Otherwise rospy prints nothing
-                                                      "output": "screen"
-                                                  },
-                                                  True)
-                            )
+                adds.append(
+                    definition.ElementAdd(
+                        "./robot/group/[@ns='sierra']",
+                        "node",
+                        {
+                            "name": "sierra_timekeeper",
+                            "pkg": "sierra_rosbridge",
+                            "type": "sierra_timekeeper.py",
+                            "required": "true",
+                            # Otherwise rospy prints nothing
+                            "output": "screen",
+                        },
+                        True,
+                    )
+                )
             self.element_adds = adds
 
         return [self.element_adds]
@@ -152,9 +170,7 @@ class ExpSetup():
         pass
 
 
-def factory(arg: str,
-            barrier_start: bool,
-            robots_need_timekeeper: bool) -> ExpSetup:
+def factory(arg: str, barrier_start: bool, robots_need_timekeeper: bool) -> ExpSetup:
     """Create an :class:`ExpSetup` derived class from the command line definition.
 
     Arguments:
@@ -162,26 +178,30 @@ def factory(arg: str,
        arg: The value of ``--exp-setup``.
 
     """
-    parser = Parser({'n_secs_per_run': config.kROS['n_secs_per_run'],
-                     'n_ticks_per_sec': config.kROS['n_ticks_per_sec'],
-                     'n_datapoints': config.kExperimentalRunData['n_datapoints_1D']})
-    attr = parser(arg)
+    attr = exp_setup.parse(
+        arg,
+        {
+            "n_secs_per_run": config.kROS["n_secs_per_run"],
+            "n_ticks_per_sec": config.kROS["n_ticks_per_sec"],
+            "n_datapoints": config.kExperimentalRunData["n_datapoints_1D"],
+        },
+    )
 
     def __init__(self: ExpSetup) -> None:
-        ExpSetup.__init__(self,
-                          attr["n_secs_per_run"],
-                          attr['n_datapoints'],
-                          attr['n_ticks_per_sec'],
-                          barrier_start,
-                          robots_need_timekeeper)
+        ExpSetup.__init__(
+            self,
+            attr["n_secs_per_run"],
+            attr["n_datapoints"],
+            attr["n_ticks_per_sec"],
+            barrier_start,
+            robots_need_timekeeper,
+        )
 
-    return type(attr['pretty_name'],
-                (ExpSetup,),
-                {"__init__": __init__})  # type: ignore
+    return type(
+        attr["pretty_name"], (ExpSetup,), {"__init__": __init__}
+    )  # type: ignore
 
 
 __all__ = [
-    'ExpSetup',
-
-
+    "ExpSetup",
 ]

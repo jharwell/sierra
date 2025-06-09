@@ -70,17 +70,17 @@ class ExpRoot:
 
         The directory path depends on all of the input arguments to this
         class, and if ANY of the arguments change, so will the generated
-        path. Root is:
-        <sierra_root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
+        path. Root is::
+
+          <sierra_root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
 
         Arguments:
+           root: The path to the root directory where SIERRA should store
+                 everything.
 
-        root: The path to the root directory where SIERRA should store
-        everything.
+           project: The name of the project plugin used.
 
-        project: The name of the project plugin used.
-
-        controller: The name of the controller used.
+           controller: The name of the controller used.
         """
         self.leaf = leaf
 
@@ -161,7 +161,6 @@ def from_cmdline(args: argparse.Namespace) -> PathSet:
     # Remove all '-' from the template input file stem so we know the only '-'
     # that are in it are ones that we put there.
     template_stem = template.stem.replace("-", "")
-
     batch_leaf = ExpRootLeaf(args.batch_criteria, str(template_stem), args.scenario)
 
     return from_exp(args.sierra_root, args.project, batch_leaf, args.controller)

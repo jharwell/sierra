@@ -34,7 +34,7 @@ import sierra.core.generators.generator_factory as gf
 from sierra.core.experiment import spec, definition, bindings
 from sierra.core import types, batchroot, utils, config, engine
 import sierra.core.variables.batch_criteria as bc
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 
 
 class BatchExpDefGenerator:
@@ -287,8 +287,8 @@ class ExpCreator:
 
         ext = config.kGNUParallel["cmdfile_ext"]
         if configurer.parallelism_paradigm() == "per-exp":
-            # Update GNU Parallel commands file with the command for the
-            # configured experimental run.
+            # Update commands file with the command for the configured
+            # experimental run.
             fpath = f"{self.commands_fpath}{ext}"
             with utils.utf8open(fpath, "a") as cmds_file:
                 self._update_cmds_file(
@@ -296,6 +296,7 @@ class ExpCreator:
                     cmds_generator,
                     "per-exp",
                     run_num,
+                    run_output_root,
                     self._get_launch_file_stempath(run_num),
                     "slave",
                 )
@@ -312,6 +313,7 @@ class ExpCreator:
                     cmds_generator,
                     "per-run",
                     run_num,
+                    run_output_root,
                     self._get_launch_file_stempath(run_num),
                     "slave",
                 )
@@ -325,6 +327,7 @@ class ExpCreator:
                     cmds_generator,
                     "per-run",
                     run_num,
+                    run_output_root,
                     self._get_launch_file_stempath(run_num),
                     "master",
                 )
@@ -340,6 +343,7 @@ class ExpCreator:
         cmds_generator: bindings.IExpRunShellCmdsGenerator,
         paradigm: str,
         run_num: int,
+        run_output_root: pathlib.Path,
         launch_stem_path: pathlib.Path,
         for_host: str,
     ) -> None:
@@ -358,7 +362,7 @@ class ExpCreator:
         exec_cmds = [spec.cmd for spec in exec_specs]
         self.logger.trace("Exec-experiment cmds: %s", exec_cmds)  # type: ignore
 
-        post_specs = cmds_generator.post_run_cmds(for_host)
+        post_specs = cmds_generator.post_run_cmds(for_host, run_output_root)
         assert all(
             spec.shell for spec in post_specs
         ), "All post-exp commands are run in a shell"

@@ -54,18 +54,24 @@ class PopulationVariableDensity(vd.VariableDensity):
                 n_agents = int(self.extent.area() * (density / 100.0))
                 if n_agents == 0:
                     n_agents = 1
-                    self.logger.warning("n_agents set to 1 even though \
+                    self.logger.warning(
+                        "n_agents set to 1 even though \
                     calculated as 0 for area=%d,density=%s",
-                                        self.extent.area(),
-                                        density)
-                changeset = definition.AttrChangeSet(definition.AttrChange(".//arena/distribute/entity",
-                                                                           "quantity",
-                                                                           str(n_agents)))
+                        self.extent.area(),
+                        density,
+                    )
+                changeset = definition.AttrChangeSet(
+                    definition.AttrChange(
+                        ".//arena/distribute/entity", "quantity", str(n_agents)
+                    )
+                )
                 self.attr_changes.append(changeset)
-                self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
-                                  n_agents,
-                                  str(self.extent),
-                                  density)
+                self.logger.debug(
+                    "Calculated swarm size=%d for extent=%s,density=%s",
+                    n_agents,
+                    str(self.extent),
+                    density,
+                )
 
             self.already_added = True
 
@@ -73,24 +79,32 @@ class PopulationVariableDensity(vd.VariableDensity):
 
     def gen_exp_names(self) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        return ['exp' + str(x) for x in range(0, len(changes))]
+        return ["exp" + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self,
-                     cmdopts: types.Cmdopts,
-                     batch_output_root: pathlib.Path,
-                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+    def graph_xticks(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: pathlib.Path,
+        exp_names: tp.Optional[tp.List[str]] = None,
+    ) -> tp.List[float]:
 
         if exp_names is None:
             exp_names = self.gen_exp_names()
 
         return [p / self.extent.area() for p in self.populations(cmdopts, exp_names)]
 
-    def graph_xticklabels(self,
-                          cmdopts: types.Cmdopts,
-                          batch_output_root: pathlib.Path,
-                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        return list(map(lambda x: str(round(x, 4)),
-                        self.graph_xticks(cmdopts, batch_output_root, exp_names)))
+    def graph_xticklabels(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: pathlib.Path,
+        exp_names: tp.Optional[tp.List[str]] = None,
+    ) -> tp.List[str]:
+        return list(
+            map(
+                lambda x: str(round(x, 4)),
+                self.graph_xticks(cmdopts, batch_output_root, exp_names),
+            )
+        )
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Population Density"
@@ -99,38 +113,29 @@ class PopulationVariableDensity(vd.VariableDensity):
         return int(self.extent.area() * self.densities[exp_num] / 100.0)
 
 
-def factory(cli_arg: str,
-            main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts,
-            batch_input_root: pathlib.Path,
-            **kwargs) -> PopulationVariableDensity:
+def factory(
+    cli_arg: str,
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    batch_input_root: pathlib.Path,
+    **kwargs,
+) -> PopulationVariableDensity:
     """
     Create a :class:`PopulationVariableDensity` derived class.
     """
-    attr = vd.Parser()(cli_arg)
+    densities = vd.parse(cli_arg)
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-    extent = utils.ArenaExtent(Vector3D(kw['arena_x'],
-                                        kw['arena_y'],
-                                        kw['arena_z']))
-
-    densities = list(x for x in np.linspace(attr['density_min'],
-                                            attr['density_max'],
-                                            num=attr['cardinality']))
+    extent = utils.ArenaExtent(Vector3D(kw["arena_x"], kw["arena_y"], kw["arena_z"]))
 
     def __init__(self) -> None:
-        PopulationVariableDensity.__init__(self,
-                                           cli_arg,
-                                           main_config,
-                                           batch_input_root,
-                                           densities,
-                                           extent)
+        PopulationVariableDensity.__init__(
+            self, cli_arg, main_config, batch_input_root, densities, extent
+        )
 
-    return type(cli_arg,  # type: ignore
-                (PopulationVariableDensity,),
-                {"__init__": __init__})
+    return type(
+        cli_arg, (PopulationVariableDensity,), {"__init__": __init__}  # type: ignore
+    )
 
 
-__all__ = [
-    'PopulationVariableDensity'
-]
+__all__ = ["PopulationVariableDensity"]

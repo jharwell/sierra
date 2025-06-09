@@ -9,6 +9,7 @@ import typing as tp
 import pathlib
 
 # 3rd party packages
+import numpy as np
 
 # Project packages
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
@@ -23,89 +24,63 @@ class VariableDensity(UnivarBatchCriteria):
     # THINGS is varied as arena size is held constant. This class is a base
     class which should NEVER be used on its own.
 
-    Attributes:
-        densities: List of densities to use.
-
-        dist_type: The type of block distribution to use.
-
-        changes: List of sets of changes to apply to generate the specified
-                 arena sizes.
-
     """
 
-    def __init__(self,
-                 cli_arg: str,
-                 main_config: types.YAMLDict,
-                 batch_input_root: pathlib.Path,
-                 densities: tp.List[float],
-                 extent: ArenaExtent) -> None:
-        UnivarBatchCriteria.__init__(
-            self, cli_arg, main_config, batch_input_root)
+    def __init__(
+        self,
+        cli_arg: str,
+        main_config: types.YAMLDict,
+        batch_input_root: pathlib.Path,
+        densities: tp.List[float],
+        extent: ArenaExtent,
+    ) -> None:
+        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.densities = densities
         self.extent = extent
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
 
-class Parser():
-    """Enforces specification of a :class:`VariableDensity` derived batch criteria.
+def parse(arg: str) -> tp.List[float]:
+    """Enforces specification of a :class:`VariableDensity` derived batch criteria."""
+    spec = {}  # type: tp.Dict[str, tp.Union[float, int]]
+    sections = arg.split(".")
 
-    """
+    # remove batch criteria variable name, leaving only the spec
+    sections = sections[1:]
+    assert len(sections) == 3, (
+        "Spec must have 3 sections separated by '.'; "
+        f"have {len(sections)} from '{arg}'"
+    )
 
-    def __call__(self, arg: str) -> types.CLIArgSpec:
-        """
-        Parse the cmdline argument.
+    # Parse density min
+    spec["min"] = _parse_density(sections[0], "minimum")
 
-        Returns:
+    # Parse density pmax
+    spec["max"] = _parse_density(sections[1], "maximum")
 
-            dict:
-                density_min: Floating point value of target minimum density.
-                density_max: Floating point value of target maximum density.
-                cardinality: # densities in [min,max] that should be created.
+    # Parse cardinality
+    res = re.search("C[0-9]+", sections[2])
+    assert res is not None, "Bad cardinality specification in '{sections[2]}'"
 
-        """
-        ret = {}
-        sections = arg.split('.')
+    spec["cardinality"] = int(res.group(0)[1:])
 
-        # remove batch criteria variable name, leaving only the spec
-        sections = sections[1:]
-        assert len(sections) == 3, \
-            ("Spec must have 3 sections separated by '.'; "
-             f"have {len(sections)} from '{arg}'")
-
-        # Parse density min
-        ret['density_min'] = self._parse_density(sections[0], 'minimum')
-
-        # Parse density pmax
-        ret['density_max'] = self._parse_density(sections[1], 'maximum')
-
-        # Parse cardinality
-        res = re.search('C[0-9]+', sections[2])
-        assert res is not None, \
-            "Bad cardinality specification in '{sections[2]}'"
-
-        ret['cardinality'] = int(res.group(0)[1:])
-
-        return ret
-
-    @staticmethod
-    def _parse_density(chunk: str, which: str) -> float:
-        res = re.search('[0-9]+', chunk)
-        assert res is not None, \
-            f"Bad {which} density characteristic specification in '{chunk}'"
-
-        characteristic = float(res.group(0))
-
-        res = re.search('p[0-9]+', chunk)
-        assert res is not None, \
-            f"Bad {which} density mantissa specification in '{chunk}'"
-
-        mantissa = float("0." + res.group(0)[1:])
-
-        return characteristic + mantissa
+    return [x for x in np.linspace(spec["min"], spec["max"], num=spec["cardinality"])]
 
 
-__all__ = [
-    'VariableDensity',
-    'Parser'
+def _parse_density(chunk: str, which: str) -> float:
+    res = re.search("[0-9]+", chunk)
+    assert (
+        res is not None
+    ), f"Bad {which} density characteristic specification in '{chunk}'"
 
-]
+    characteristic = float(res.group(0))
+
+    res = re.search("p[0-9]+", chunk)
+    assert res is not None, f"Bad {which} density mantissa specification in '{chunk}'"
+
+    mantissa = float("0." + res.group(0)[1:])
+
+    return characteristic + mantissa
+
+
+__all__ = ["VariableDensity", "parse"]

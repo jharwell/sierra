@@ -21,7 +21,7 @@ import implements
 import netifaces
 
 # Project packages
-import sierra.core.plugin_manager as pm
+import sierra.core.plugin as pm
 from sierra.core import types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
@@ -143,11 +143,13 @@ class ExpRunShellCmdsGenerator:
 
         return cmds
 
-    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(
+        self, host: str, run_output_root: pathlib.Path
+    ) -> tp.List[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
-            cmds.extend(self.engine.post_run_cmds(host))
+            cmds.extend(self.engine.post_run_cmds(host, run_output_root))
 
         return cmds
 
@@ -219,9 +221,9 @@ class ExpConfigurer:
         self.engine = module.ExpConfigurer(self.cmdopts)
 
     def for_exp_run(
-        self, exp_input_root: pathlib.Path, run_output_dir: pathlib.Path
+        self, exp_input_root: pathlib.Path, run_output_root: pathlib.Path
     ) -> None:
-        self.engine.for_exp_run(exp_input_root, run_output_dir)
+        self.engine.for_exp_run(exp_input_root, run_output_root)
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
         self.engine.for_exp(exp_input_root)

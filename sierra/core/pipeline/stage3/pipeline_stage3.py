@@ -8,15 +8,13 @@
 import time
 import datetime
 import logging
-import pathlib
 
 # 3rd party packages
-import yaml
 
 # Project packages
-from sierra.core.pipeline.stage3 import imagize, collate, statistics, gather
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, utils, batchroot
+from sierra.core import types, batchroot
+import sierra.core.plugin as pm
 
 
 class PipelineStage3:
@@ -38,7 +36,10 @@ class PipelineStage3:
     """
 
     def __init__(
-        self, main_config: dict, cmdopts: types.Cmdopts, pathset: batchroot.PathSet
+        self,
+        main_config: types.YAMLDict,
+        cmdopts: types.Cmdopts,
+        pathset: batchroot.PathSet,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.main_config = main_config
@@ -46,90 +47,25 @@ class PipelineStage3:
         self.pathset = pathset
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self._run_statistics(criteria)
-        self._run_run_collation(criteria)
-
-        if self.cmdopts["project_imagizing"]:
-            intra_HM_path = pathlib.Path(
-                self.cmdopts["project_config_root"]
-            ) / pathlib.Path("graphs.yaml")
-
-            if utils.path_exists(intra_HM_path):
-                self.logger.info(
-                    ("Loading intra-experiment graph config for project=%s"),
-                    self.cmdopts["project"],
-                )
-                intra_HM_config = yaml.load(
-                    utils.utf8open(intra_HM_path), yaml.FullLoader
-                )["intra-exp"]
-                self._run_imagizing(
-                    self.main_config, intra_HM_config, self.cmdopts, criteria
-                )
-
-            else:
-                self.logger.warning("%s does not exist--cannot imagize", intra_HM_path)
-
-    # Private functions
-
-    def _run_statistics(self, criteria: bc.IConcreteBatchCriteria):
+        spec = self.cmdopts["proc"]
         self.logger.info(
-            (
-                "Generating statistics from experiment outputs in "
-                "<batch_root>/%s -> <batch_root>/%s"
-            ),
-            self.pathset.output_root.relative_to(self.pathset.root),
-            self.pathset.stat_root.relative_to(self.pathset.root),
+            "Processing data with %s processing plugins: %s", len(spec), spec
         )
-        start = time.time()
-        statistics.proc_batch_exp(
-            self.main_config, self.cmdopts, self.pathset, criteria, gather.DataGatherer
-        )
-        if self.cmdopts["project_imagizing"]:
-            statistics.proc_batch_exp(
-                self.main_config,
-                self.cmdopts,
-                self.pathset,
-                criteria,
-                gather.ImagizeInputGatherer,
-            )
-
-        elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Statistics generation complete in %s", str(sec))
-
-    def _run_run_collation(self, criteria: bc.IConcreteBatchCriteria):
-        if not self.cmdopts["skip_collate"]:
+        for s in spec:
+            module = pm.pipeline.get_plugin_module(s)
             self.logger.info(
-                "Collating experiment run outputs into %s...",
-                self.pathset.stat_collate_root,
+                "Running %s in <batchroot>/%s",
+                s,
+                self.pathset.output_root.relative_to(self.pathset.root),
             )
+
             start = time.time()
-            collate.proc_batch_exp(
+            module.proc_batch_exp(
                 self.main_config, self.cmdopts, self.pathset, criteria
             )
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
-            self.logger.info(
-                "Experimental run output collation complete in %s", str(sec)
-            )
-
-    def _run_imagizing(
-        self,
-        main_config: dict,
-        intra_HM_config: dict,
-        cmdopts: types.Cmdopts,
-        criteria: bc.IConcreteBatchCriteria,
-    ):
-        self.logger.info(
-            "Imagizing experiment outputs in %s...", self.pathset.output_root
-        )
-        start = time.time()
-        imagize.proc_batch_exp(
-            main_config, cmdopts, self.pathset, intra_HM_config, criteria
-        )
-        elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Imagizing complete: %s", str(sec))
+            self.logger.info("Processing with %s complete in %s", s, str(sec))
 
 
 __all__ = ["PipelineStage3"]
