@@ -25,7 +25,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """
     Uncomcompress data for each :term:`Experiment` in the :term:`Batch Experiment`.
@@ -36,7 +36,7 @@ def proc_batch_exp(
     """
 
     exp_to_proc = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, criteria
+        cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     parallelism = cmdopts["processing_parallelism"]

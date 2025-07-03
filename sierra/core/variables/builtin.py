@@ -16,13 +16,16 @@ import pathlib
 import numpy as np
 
 # 3rd party packages
+import implements
 
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import definition
 from sierra.core.variables import batch_criteria as bc
+from sierra.core.graphs import bcbridge
 
 
+@implements.implements(bcbridge.IGraphable)
 class MonteCarlo(bc.UnivarBatchCriteria):
     """
     Criteria which does nothing put provide a set of experiments via cardinality.
@@ -63,32 +66,22 @@ class MonteCarlo(bc.UnivarBatchCriteria):
     def n_agents(self, exp_num: int) -> int:
         return self.size_list[exp_num]
 
-    def graph_xticks(
+    def graph_info(
         self,
         cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
+        batch_output_root: tp.Optional[pathlib.Path] = None,
         exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[float]:
+    ) -> bcbridge.GraphInfo:
+        info = bcbridge.GraphInfo(
+            cmdopts,
+            batch_output_root,
+            exp_names if exp_names else self.gen_exp_names(),
+        )
 
-        if exp_names is None:
-            exp_names = self.gen_exp_names()
-
-        return list(range(0, len(exp_names)))
-
-    def graph_xticklabels(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[str]:
-
-        if exp_names is None:
-            exp_names = self.gen_exp_names()
-
-        return exp_names
-
-    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        return "Experiment"
+        info.xticks = list(range(0, len(info.exp_names)))
+        info.xticklabels = info.exp_names
+        info.xlabel = "Experiment"
+        return info
 
 
 def _mc_parse(arg: str) -> int:

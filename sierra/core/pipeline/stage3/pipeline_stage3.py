@@ -46,7 +46,7 @@ class PipelineStage3:
         self.cmdopts = cmdopts
         self.pathset = pathset
 
-    def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
+    def run(self, criteria: bc.BatchCriteria) -> None:
         spec = self.cmdopts["proc"]
         self.logger.info(
             "Processing data with %s processing plugins: %s", len(spec), spec

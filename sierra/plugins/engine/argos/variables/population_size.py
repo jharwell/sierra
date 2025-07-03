@@ -19,9 +19,10 @@ from sierra.core.variables import batch_criteria as bc
 from sierra.core.experiment import definition
 from sierra.core import types
 from sierra.core.variables import population_size
+from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bc.IConcreteBatchCriteria)
+@implements.implements(bcbridge.IGraphable)
 @implements.implements(bc.IQueryableBatchCriteria)
 class PopulationSize(population_size.PopulationSize):
     """A univariate range of swarm sizes used to define batch experiments.
@@ -78,6 +79,26 @@ class PopulationSize(population_size.PopulationSize):
 
     def n_agents(self, exp_num: int) -> int:
         return self.size_list[exp_num]
+
+    def graph_info(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: tp.Optional[pathlib.Path] = None,
+        exp_names: tp.Optional[tp.List[str]] = None,
+    ) -> bcbridge.GraphInfo:
+        info = bcbridge.GraphInfo(
+            cmdopts,
+            batch_output_root,
+            exp_names if exp_names else self.gen_exp_names(),
+        )
+        info.xlabel = super().graph_xlabel(info.cmdopts)
+        info.xticklabels = super().graph_xticklabels(
+            info.cmdopts, info.batch_output_root, info.exp_names
+        )
+        info.xticks = super().graph_xticks(
+            info.cmdopts, info.batch_output_root, info.exp_names
+        )
+        return info
 
 
 def factory(

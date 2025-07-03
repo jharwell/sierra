@@ -18,6 +18,7 @@ import pandas as pd
 from sierra.core import utils, config, types, storage, batchroot
 import sierra.core.variables.batch_criteria as bc
 from sierra.plugins.prod.graphs import targets
+from sierra.core.graphs import bcbridge
 from sierra.core import plugin as pm
 
 _logger = logging.getLogger(__name__)
@@ -90,7 +91,9 @@ class UnivarGraphCollator:
         self.logger.trace(json.dumps(target, indent=4))  # type: ignore
 
         exp_dirs = utils.exp_range_calc(
-            self.cmdopts["exp_range"], self.pathset.output_root, criteria
+            self.cmdopts["exp_range"],
+            self.pathset.output_root,
+            criteria.gen_exp_names(),
         )
 
         # Always do the mean, even if stats are disabled
@@ -190,7 +193,7 @@ class BivarGraphCollator:
         self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria, target: dict) -> None:
+    def __call__(self, criteria, target: dict) -> None:
         self.logger.info(
             "Bivariate files from batch in %s for graph '%s'...",
             self.pathset.output_root,
@@ -292,7 +295,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """
     Generate :term:`Collated Output Data` files from :term:`Batch Summary Data` files.

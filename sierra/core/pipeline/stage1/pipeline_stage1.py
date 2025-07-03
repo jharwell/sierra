@@ -30,7 +30,7 @@ class PipelineStage1:
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
         controller: str,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
     ) -> None:
         self.generator = BatchExpDefGenerator(
             controller_name=controller,

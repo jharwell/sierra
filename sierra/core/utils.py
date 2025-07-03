@@ -2,9 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 
-"""Miscellaneous bits used in mutiple places but that don't fit anywhere else.
-
-"""
+"""Miscellaneous bits used in mutiple places but that don't fit anywhere else."""
 
 # Core packages
 import typing as tp
@@ -26,10 +24,11 @@ from sierra.core import types, config
 from sierra.core import plugin as pm
 
 
-class ArenaExtent():
+class ArenaExtent:
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
+
     @staticmethod
-    def from_corners(ll: Vector3D, ur: Vector3D) -> 'ArenaExtent':
+    def from_corners(ll: Vector3D, ur: Vector3D) -> "ArenaExtent":
         """Initialize an extent via LL and UR corners.
 
         As opposed to an origin and a set of dimensions.
@@ -64,10 +63,10 @@ class ArenaExtent():
         return self._origin
 
     def __str__(self) -> str:
-        return str(self.dims) + '@' + str(self._origin)
+        return str(self.dims) + "@" + str(self._origin)
 
 
-class Sigmoid():
+class Sigmoid:
     r"""
     Sigmoid activation function.
 
@@ -89,7 +88,7 @@ class Sigmoid():
             return 1.0 / (1 + np.exp(-self.x))  # type: ignore
 
 
-class ReLu():
+class ReLu:
     r"""
     Rectified Linear Unit (ReLU) activation function.
 
@@ -118,8 +117,7 @@ def scale_minmax(minval: float, maxval: float, val: float) -> float:
     return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
 
-def dir_create_checked(path: tp.Union[pathlib.Path, str],
-                       exist_ok: bool) -> None:
+def dir_create_checked(path: tp.Union[pathlib.Path, str], exist_ok: bool) -> None:
     """Create a directory idempotently.
 
     If the directory exists and it shouldn't, raise an error.
@@ -158,19 +156,17 @@ def path_exists(path: tp.Union[pathlib.Path, str]) -> bool:
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria,
-                     primary_axis_bc: tp.List,
-                     cmdopts: types.Cmdopts) -> int:
+def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts) -> int:
     """
     Determine axis in a bivariate batch criteria is the primary axis.
 
     This is obtained on a per-query basis depending on the query context, or can
     be overriden on the cmdline.
     """
-    if cmdopts['plot_primary_axis'] == 0:
+    if cmdopts["plot_primary_axis"] == 0:
         return 0
 
-    if cmdopts['plot_primary_axis'] == 1:
+    if cmdopts["plot_primary_axis"] == 1:
         return 1
 
     if any(isinstance(criteria.criteria1, elt) for elt in primary_axis_bc):
@@ -179,28 +175,27 @@ def get_primary_axis(criteria,
     return 1
 
 
-def exp_range_calc(exp_range: str,
-                   root_dir: pathlib.Path,
-                   criteria) -> types.PathList:
+def exp_range_calc(
+    exp_range: str, root_dir: pathlib.Path, dirnames: tp.List[str]
+) -> types.PathList:
     """
     Get the range of experiments to run/do stuff with. SUPER USEFUL.
     """
-    exp_all = [root_dir / d for d in criteria.gen_exp_names()]
+    exp_all = [root_dir / d for d in dirnames]
 
     if exp_range is not None:
-        min_exp = int(exp_range.split(':')[0])
-        max_exp = int(exp_range.split(':')[1])
-        assert min_exp <= max_exp, \
-            f"Min batch exp >= max batch exp({min_exp} vs. {max_exp})"
+        min_exp = int(exp_range.split(":")[0])
+        max_exp = int(exp_range.split(":")[1])
+        assert (
+            min_exp <= max_exp
+        ), f"Min batch exp >= max batch exp({min_exp} vs. {max_exp})"
 
-        return exp_all[min_exp: max_exp + 1]
+        return exp_all[min_exp : max_exp + 1]
 
     return exp_all
 
 
-def exp_include_filter(inc_spec: tp.Optional[str],
-                       target: tp.List,
-                       n_exps: int):
+def exp_include_filter(inc_spec: tp.Optional[str], target: tp.List, n_exps: int):
     """Calculate which experiments to include in a calculation for something.
 
     Take a input list of experiment numbers to include, and returns the sublist
@@ -214,9 +209,9 @@ def exp_include_filter(inc_spec: tp.Optional[str],
         start = None
         end = None
     else:
-        r = inc_spec.split(':')
+        r = inc_spec.split(":")
         start = int(r[0])
-        if r[1] == '':
+        if r[1] == "":
             end = len(target)
         else:
             end = int(r[1])
@@ -227,8 +222,9 @@ def exp_include_filter(inc_spec: tp.Optional[str],
     return target[slice(start, end, None)]
 
 
-def bivar_exp_labels_calc(exp_dirs: types.PathList) -> tp.Tuple[tp.List[str],
-                                                                tp.List[str]]:
+def bivar_exp_labels_calc(
+    exp_dirs: types.PathList,
+) -> tp.Tuple[tp.List[str], tp.List[str]]:
     """
     Calculate the labels for bivariant experiment graphs.
     """
@@ -239,7 +235,7 @@ def bivar_exp_labels_calc(exp_dirs: types.PathList) -> tp.Tuple[tp.List[str],
     xlabels_set = set()
     ylabels_set = set()
     for e in exp_dirs:
-        pair = e.name.split('+')
+        pair = e.name.split("+")
         xlabels_set.add(pair[0])
         ylabels_set.add(pair[1])
 
@@ -249,10 +245,11 @@ def bivar_exp_labels_calc(exp_dirs: types.PathList) -> tp.Tuple[tp.List[str],
     return (xlabels, ylabels)
 
 
-def apply_to_expdef(var,
-                    exp_def: definition.BaseExpDef) -> tp.Tuple[tp.Optional[definition.ElementRmList],
-                                                                tp.Optional[definition.ElementAddList],
-                                                                tp.Optional[definition.AttrChangeSet]]:
+def apply_to_expdef(var, exp_def: definition.BaseExpDef) -> tp.Tuple[
+    tp.Optional[definition.ElementRmList],
+    tp.Optional[definition.ElementAddList],
+    tp.Optional[definition.AttrChangeSet],
+]:
     """
     Apply a generated expdef modifictions to an experiment definition.
 
@@ -291,9 +288,11 @@ def apply_to_expdef(var,
     return rms, adds, chgs
 
 
-def pickle_modifications(adds: tp.Optional[definition.ElementAddList],
-                         chgs: tp.Optional[definition.AttrChangeSet],
-                         path: pathlib.Path) -> None:
+def pickle_modifications(
+    adds: tp.Optional[definition.ElementAddList],
+    chgs: tp.Optional[definition.AttrChangeSet],
+    path: pathlib.Path,
+) -> None:
     """
     After applying expdef modifications, pickle changes for later retrieval.
     """
@@ -304,27 +303,29 @@ def pickle_modifications(adds: tp.Optional[definition.ElementAddList],
         chgs.pickle(path)
 
 
-def exp_template_path(cmdopts: types.Cmdopts,
-                      batch_input_root: pathlib.Path,
-                      dirname: str) -> pathlib.Path:
+def exp_template_path(
+    cmdopts: types.Cmdopts, batch_input_root: pathlib.Path, dirname: str
+) -> pathlib.Path:
     """Calculate the path to the template input file in the batch experiment root.
 
-     The file at this path will be Used as the de-facto template for generating
-     per-run input files.
+    The file at this path will be Used as the de-facto template for generating
+    per-run input files.
 
     """
-    template = pathlib.Path(cmdopts['expdef_template'])
+    template = pathlib.Path(cmdopts["expdef_template"])
     return batch_input_root / dirname / template.stem
 
 
-def get_n_agents(main_config: types.YAMLDict,
-                 cmdopts: types.Cmdopts,
-                 exp_input_root: pathlib.Path,
-                 exp_def: definition.BaseExpDef) -> int:
+def get_n_agents(
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    exp_input_root: pathlib.Path,
+    exp_def: definition.BaseExpDef,
+) -> int:
     """
     Get the # agents used for a specific :term:`Experiment`.
     """
-    module1 = pm.pipeline.get_plugin_module(cmdopts['engine'])
+    module1 = pm.pipeline.get_plugin_module(cmdopts["engine"])
 
     # Get # agents to send to shell cmds generator. We try:
     #
@@ -334,17 +335,13 @@ def get_n_agents(main_config: types.YAMLDict,
     #
     # 2. Getting it from the pickled experiment definition (i.e., from the
     #    batch criteria which was used for this experiment).
-    n_agents = module1.population_size_from_def(exp_def,
-                                                main_config,
-                                                cmdopts)
+    n_agents = module1.population_size_from_def(exp_def, main_config, cmdopts)
 
-    module2 = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+    module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
 
     if n_agents <= 0:
         pkl_def = module2.unpickle(exp_input_root / config.kPickleLeaf)
-        n_agents = module1.population_size_from_pickle(pkl_def,
-                                                       main_config,
-                                                       cmdopts)
+        n_agents = module1.population_size_from_pickle(pkl_def, main_config, cmdopts)
 
     assert n_agents > 0, "n_agents must be > 0"
 
@@ -355,11 +352,11 @@ def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     """
     Fill missing cells in a dataframe according to the specified fill policy.
     """
-    if policy == 'none':
+    if policy == "none":
         return df
-    elif policy == 'pad':
-        return df.fillna(method='pad')
-    elif policy == 'zero':
+    elif policy == "pad":
+        return df.fillna(method="pad")
+    elif policy == "zero":
         return df.fillna(value=0)
     else:
         raise RuntimeError(f"Bad fill policy {policy}")
@@ -373,10 +370,11 @@ def pickle_dump(obj: object, f) -> None:
 def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
     # scenario is passed in kwargs during stage 5 (can't be passed via
     # --scenario in general )
-    scenario = kwargs.get('scenario', cmdopts['scenario'])
+    scenario = kwargs.get("scenario", cmdopts["scenario"])
 
-    module = pm.module_load_tiered(project=cmdopts['project'],
-                                   path='generators.scenario')
+    module = pm.module_load_tiered(
+        project=cmdopts["project"], path="generators.scenario"
+    )
     return module.to_dict(scenario)
 
 
@@ -384,7 +382,7 @@ def sphinx_ref(ref: str) -> str:
     try:
         # This is kind of a hack...
         if __sphinx_build_man__:  # type: ignore
-            parts = ref.split('.')
+            parts = ref.split(".")
             stripped = parts[-1]
             return stripped[:-1]
 
@@ -394,25 +392,25 @@ def sphinx_ref(ref: str) -> str:
     return ref
 
 
-utf8open = functools.partial(open, encoding='UTF-8')
+utf8open = functools.partial(open, encoding="UTF-8")
 """
 Explictly specify that the type of file being opened is UTF-8, which is should
 be for almost everything in SIERRA.
 """
 
 __all__ = [
-    'ArenaExtent',
-    'Sigmoid',
-    'ReLu',
-    'dir_create_checked',
-    'path_exists',
-    'get_primary_axis',
-    'exp_range_calc',
-    'exp_include_filter',
-    'apply_to_expdef',
-    'pickle_modifications',
-    'exp_template_path',
-    'get_n_agents',
-    'df_fill',
-    'utf8open',
+    "ArenaExtent",
+    "Sigmoid",
+    "ReLu",
+    "dir_create_checked",
+    "path_exists",
+    "get_primary_axis",
+    "exp_range_calc",
+    "exp_include_filter",
+    "apply_to_expdef",
+    "pickle_modifications",
+    "exp_template_path",
+    "get_n_agents",
+    "df_fill",
+    "utf8open",
 ]

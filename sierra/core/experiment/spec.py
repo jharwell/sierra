@@ -135,7 +135,7 @@ class ExperimentSpec:
 
     def __init__(
         self,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         batch_input_root: pathlib.Path,
         exp_num: int,
         cmdopts: types.Cmdopts,

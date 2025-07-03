@@ -14,13 +14,13 @@ import pathlib
 # 3rd party packages
 import implements
 
+# Project packages
 from sierra.core.variables import base_variable
 from sierra.core import utils
 from sierra.core.experiment import definition
-
-
 import sierra.core.plugin as pm
 from sierra.core import types, config
+from sierra.core.graphs import bcbridge
 
 
 class IQueryableBatchCriteria(implements.Interface):
@@ -34,143 +34,6 @@ class IQueryableBatchCriteria(implements.Interface):
     def n_agents(self, exp_num: int) -> int:
         """
         Return the # of agents used for a given :term:`Experiment`.
-        """
-        raise NotImplementedError
-
-
-class IConcreteBatchCriteria(implements.Interface):
-    """
-    'Final' interface for user-visible batch criteria.
-    """
-
-    def graph_xticks(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[float]:
-        """Calculate X axis ticks for graph generation.
-
-        Arguments:
-
-            cmdopts: Dictionary of parsed command line options. Most batch
-                     criteria will not need this, BUT it is available.
-
-            batch_output_root: Root directory for all experimental output in the
-                               batch. Needed in calculating graphs for batch
-                               criteria when ``--exp-range`` is used.
-
-            exp_names: If not None, then this list of directories will be used
-                       to calculate the ticks, rather than the results of
-                       :py:func:`BatchCriteria.gen_exp_names`. This argument will be non-None
-                       when calling this function from within a bivariate batch
-                       criteria.
-
-        """
-
-        raise NotImplementedError
-
-    def graph_xticklabels(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[str]:
-        """Calculate X axis tick labels for graph generation.
-
-        Arguments:
-
-            cmdopts: Dictionary of parsed command line options. Most batch
-                     criteria will not need this, BUT it is available.
-
-            batch_output_root: Root directory for all experimental output in the
-                               batch. Needed in calculating graphs for batch
-                               criteria when ``--exp-range`` is used.
-                               batch.
-
-            exp_names: If not None, then these directories will be used to
-                       calculate the labels, rather than the results of
-                       ``gen_exp_names()``. This argument will be non-None
-                       when calling this function from within a bivariate batch
-                       criteria.
-
-        """
-        raise NotImplementedError
-
-    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        """Get the X-label for a graph.
-
-        Returns:
-
-            The X-label that should be used for the graphs of various
-            performance measures across batch criteria.
-
-        """
-        raise NotImplementedError
-
-
-class IBivarBatchCriteria(implements.Interface):
-    """
-    Interface for bivariate batch criteria(those with two univariate axes).
-    """
-
-    def graph_yticks(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[float]:
-        """
-        Calculate Y axis ticks for graph generation.
-
-        Arguments:
-
-            cmdopts: Dictionary of parsed command line options. Most batch
-                     criteria will not need this, BUT it is available.
-
-            batch_output_root: Root directory for all experimental output in the
-                               batch. Needed in calculating graphs for batch
-                               criteria when ``--exp-range`` is used.
-
-            exp_names: If not None, then these directories will be used to
-                       calculate the labels, rather than the results of
-                       ``gen_exp_names()``.
-        """
-        raise NotImplementedError
-
-    def graph_yticklabels(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[str]:
-        """
-        Calculate X axis ticks for graph generation.
-
-        Arguments:
-
-            cmdopts: Dictionary of parsed command line options. Most batch
-                     criteria will not need this, BUT it is available.
-
-            batch_output_root: Root directory for all experimental output in the
-                               batch. Needed in calculating graphs for batch
-                               criteria when ``--exp-range`` is used.
-
-            exp_names: If not None, then these directories will be used to
-                       calculate the labels, rather than the results of
-                       ``gen_exp_names()``.
-        """
-        raise NotImplementedError
-
-    def graph_ylabel(self, cmdopts: types.Cmdopts) -> str:
-        """
-        Get the Y-label for a graph.
-
-        Returns:
-
-            The Y-label that should be used for the graphs of various
-            performance measures across batch criteria. Only needed by bivar
-            batch criteria.
         """
         raise NotImplementedError
 
@@ -414,7 +277,6 @@ class UnivarBatchCriteria(BatchCriteria):
     #
     # IBatchCriteriaType overrides
     #
-
     def is_bivar(self) -> bool:
         return False
 
@@ -454,8 +316,8 @@ class UnivarBatchCriteria(BatchCriteria):
         return sizes
 
 
-@implements.implements(IBivarBatchCriteria)
 @implements.implements(IBatchCriteriaType)
+@implements.implements(bcbridge.IGraphable)
 @implements.implements(IQueryableBatchCriteria)
 class BivarBatchCriteria(BatchCriteria):
     """
@@ -468,9 +330,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     """
 
-    def __init__(
-        self, criteria1: IConcreteBatchCriteria, criteria2: IConcreteBatchCriteria
-    ) -> None:
+    def __init__(self, criteria1: BatchCriteria, criteria2: BatchCriteria) -> None:
         BatchCriteria.__init__(
             self,
             "+".join([criteria1.cli_arg, criteria2.cli_arg]),
@@ -605,104 +465,48 @@ class BivarBatchCriteria(BatchCriteria):
                 "Bivariate batch criteria does not contain constant density"
             )
 
-    def graph_xticks(
+    def graph_info(
         self,
         cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
+        batch_output_root: tp.Optional[pathlib.Path] = None,
         exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[float]:
-        names = []
-        all_dirs = utils.exp_range_calc(cmdopts["exp_range"], batch_output_root, self)
+    ) -> bcbridge.GraphInfo:
+        info = bcbridge.GraphInfo(
+            cmdopts,
+            batch_output_root,
+            self.gen_exp_names(),
+        )
 
-        ynames = exp_names if exp_names else self.criteria1.gen_exp_names()
+        all_dirs = utils.exp_range_calc(
+            info.cmdopts["exp_range"], info.batch_output_root, self.gen_exp_names()
+        )
 
-        for c1 in ynames:
-            for x in all_dirs:
-                leaf = x.name
-                if c1 in leaf.split("+")[0]:
-                    names.append(leaf)
-                    break
+        c2_names = self.criteria2.gen_exp_names()
+        c1_names = self.criteria1.gen_exp_names()
 
-        return self.criteria1.graph_xticks(cmdopts, batch_output_root, names)
+        ynames = []
+        xnames = []
+        for d in all_dirs:
+            leaf = d.name
+            if any(c2 in leaf.split("+")[1] for c2 in c2_names):
+                xnames.append(leaf)
 
-    def graph_yticks(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[float]:
-        names = []
-        all_dirs = utils.exp_range_calc(cmdopts["exp_range"], batch_output_root, self)
-        xnames = exp_names if exp_names else self.criteria2.gen_exp_names()
+            if any(c1 in leaf.split("+")[0] for c1 in c1_names):
+                ynames.append(leaf)
+                break
 
-        for c2 in xnames:
-            for y in all_dirs:
-                leaf = y.name
-                if c2 in leaf.split("+")[1]:
-                    names.append(leaf)
-                    break
+        info1 = self.criteria1.graph_info(
+            cmdopts, exp_names=xnames, batch_output_root=batch_output_root
+        )
+        info2 = self.criteria2.graph_info(
+            cmdopts, exp_names=ynames, batch_output_root=batch_output_root
+        )
+        info.xticks = info1.xticks
+        info.yticks = info2.xticks
+        info.xlabel = info1.xlabel
+        info.ylabel = info2.xlabel
 
-        return self.criteria2.graph_xticks(cmdopts, batch_output_root, names)
-
-    def graph_xticklabels(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[str]:
-        """Generate x-axis labels.
-
-        This bivariate function is one of the reasons the ``exp_names`` argument
-        is needed as an optional: when calculating xticks using say criteria1,
-        if the criteria uses :py:func:`populations()` in the process, the
-        criteria's OWN ``gen_exp_names()`` will be used, which will result in
-        bad directory name calculations.  This can be overcome by passing the
-        list of exp names to use at THIS level.
-        """
-        names = []
-        all_dirs = utils.exp_range_calc(cmdopts["exp_range"], batch_output_root, self)
-
-        for c1 in self.criteria1.gen_exp_names():
-            for x in all_dirs:
-                leaf = x.name
-                if c1 in leaf.split("+")[0]:
-                    names.append(leaf)
-                    break
-
-        return self.criteria1.graph_xticklabels(cmdopts, batch_output_root, names)
-
-    def graph_yticklabels(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[str]:
-        """Generate y-axis labels.
-
-        This bivariate function is one of the reasons the ``exp_names`` argument
-        is needed as an optional: when calculating yticks using criteria2, if
-        the criteria uses :py:func:`populations()` in the process, the
-        criteria's OWN ``gen_exp_names()`` will be used, which will result in
-        bad directory name calculations.  This can be overcome by passing the
-        list of exp names to use at THIS level.
-        """
-        names = []
-        all_dirs = utils.exp_range_calc(cmdopts["exp_range"], batch_output_root, self)
-
-        for c2 in self.criteria2.gen_exp_names():
-            for x in all_dirs:
-                leaf = x.name
-                if c2 in leaf.split("+")[0]:
-                    names.append(leaf)
-                    break
-
-        return self.criteria2.graph_xticklabels(cmdopts, batch_output_root, names)
-
-    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        return self.criteria1.graph_xlabel(cmdopts)
-
-    def graph_ylabel(self, cmdopts: types.Cmdopts) -> str:
-        return self.criteria2.graph_xlabel(cmdopts)
+        return info
 
     def set_batch_input_root(self, root: pathlib.Path) -> None:
         self.batch_input_root = root
@@ -729,7 +533,7 @@ def factory(
     batch_input_root: pathlib.Path,
     args: argparse.Namespace,
     scenario: tp.Optional[str] = None,
-) -> IConcreteBatchCriteria:
+) -> BatchCriteria:
     if scenario is None:
         scenario = args.scenario
 
@@ -754,7 +558,7 @@ def __univar_factory(
     batch_input_root: pathlib.Path,
     cli_arg: str,
     scenario,
-) -> IConcreteBatchCriteria:
+) -> BatchCriteria:
     """
     Construct a batch criteria object from a single cmdline argument.
     """
@@ -783,7 +587,7 @@ def __bivar_factory(
     batch_input_root: pathlib.Path,
     cli_arg: tp.List[str],
     scenario: str,
-) -> IConcreteBatchCriteria:
+) -> BatchCriteria:
     criteria1 = __univar_factory(
         main_config, cmdopts, batch_input_root, cli_arg[0], scenario
     )
@@ -809,7 +613,6 @@ def __bivar_factory(
 
 __all__ = [
     "BatchCriteria",
-    "IConcreteBatchCriteria",
     "UnivarBatchCriteria",
     "BivarBatchCriteria",
 ]

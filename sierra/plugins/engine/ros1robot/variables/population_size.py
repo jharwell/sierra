@@ -21,9 +21,10 @@ from sierra.core.variables import batch_criteria as bc
 from sierra.core import types
 from sierra.core.variables import population_size
 from sierra.core.experiment import definition
+from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bc.IConcreteBatchCriteria)
+@implements.implements(bcbridge.IGraphable)
 @implements.implements(bc.IQueryableBatchCriteria)
 class PopulationSize(population_size.PopulationSize):
     """A univariate range of system sizes used to define batch experiments.

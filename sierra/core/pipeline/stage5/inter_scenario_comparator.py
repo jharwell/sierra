@@ -191,7 +191,7 @@ class UnivarInterScenarioComparator:
 
     def _gen_graph(
         self,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
@@ -204,14 +204,13 @@ class UnivarInterScenarioComparator:
         istem = dest_stem + "-" + self.controller
         img_ostem = dest_stem + "-" + self.controller
 
-        xticks = criteria.graph_xticks(cmdopts, batch_output_root)
-        xtick_labels = criteria.graph_xticklabels(cmdopts, batch_output_root)
+        info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
         if inc_exps is not None:
             xtick_labels = utils.exp_include_filter(
-                inc_exps, xtick_labels, criteria.n_exp()
+                inc_exps, info.xticklabels, criteria.n_exp()
             )
-            xticks = utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
+            xticks = utils.exp_include_filter(inc_exps, info.xticks, criteria.n_exp())
 
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
@@ -229,7 +228,7 @@ class UnivarInterScenarioComparator:
             medium=cmdopts["storage"],
             output_stem=img_ostem,
             title=title,
-            xlabel=criteria.graph_xlabel(cmdopts),
+            xlabel=info.xlabel(cmdopts),
             ylabel=label,
             xticks=xticks,
             xticklabels=xtick_labels,

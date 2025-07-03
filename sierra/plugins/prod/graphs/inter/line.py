@@ -14,7 +14,7 @@ import json
 
 # Project packages
 from sierra.core import types, batchroot, graphs
-from sierra.core.variables import batch_criteria as bc
+from sierra.core.graphs import bcbridge
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def generate(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     targets: tp.List[types.YAMLDict],
-    criteria: bc.IConcreteBatchCriteria,
+    info: bcbridge.GraphInfo,
 ) -> None:
     """Generate linegraphs from :term:`Collated Output Data` files.
 
@@ -47,16 +47,16 @@ def generate(
             _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
 
             if graph["type"] == "summary_line":
-                _gen_summary_linegraph(graph, pathset, cmdopts, criteria)
+                _gen_summary_linegraph(graph, pathset, cmdopts, info)
             elif graph["type"] == "stacked_line":
-                _gen_stacked_linegraph(graph, pathset, cmdopts, criteria)
+                _gen_stacked_linegraph(graph, pathset, cmdopts, info)
 
 
 def _gen_summary_linegraph(
     graph: types.YAMLDict,
     pathset: batchroot.PathSet,
     cmdopts: types.Cmdopts,
-    criteria: bc.IConcreteBatchCriteria,
+    info: bcbridge.GraphInfo,
 ) -> None:
     legend = "{0}+{1}".format(cmdopts["controller"], cmdopts["scenario"])
 
@@ -78,10 +78,10 @@ def _gen_summary_linegraph(
         legend=[legend],
         stats=cmdopts["dist_stats"],
         title=graph["title"],
-        xlabel=criteria.graph_xlabel(cmdopts),
+        xlabel=info.xlabel,
         ylabel=graph.get("ylabel", None),
-        xticks=criteria.graph_xticks(cmdopts, pathset.output_root),
-        xticklabels=criteria.graph_xticklabels(cmdopts, pathset.output_root),
+        xticks=info.xticks,
+        xticklabels=info.xticklabels,
         logyscale=cmdopts["plot_log_yscale"],
         large_text=cmdopts["plot_large_text"],
     )
@@ -91,7 +91,7 @@ def _gen_stacked_linegraph(
     graph: types.YAMLDict,
     pathset: batchroot.PathSet,
     cmdopts: types.Cmdopts,
-    criteria: bc.IConcreteBatchCriteria,
+    info: bcbridge.GraphInfo,
 ) -> None:
 
     paths = graphs.PathSet(
@@ -111,7 +111,7 @@ def _gen_stacked_linegraph(
         ylabel=graph.get("ylabel", None),
         logyscale=cmdopts["plot_log_yscale"],
         large_text=cmdopts["plot_large_text"],
-        legend=graph.get("legend", [f"exp{i}" for i in range(0, criteria.n_exp())]),
+        legend=graph.get("legend", [f"exp{i}" for i in range(0, len(info.exp_names))]),
     )
 
 

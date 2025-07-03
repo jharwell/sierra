@@ -176,7 +176,9 @@ class BatchExpRunner:
         exp_all = [self.pathset.input_root / d for d in self.criteria.gen_exp_names()]
 
         exp_to_run = utils.exp_range_calc(
-            self.cmdopts["exp_range"], self.pathset.input_root, self.criteria
+            self.cmdopts["exp_range"],
+            self.pathset.input_root,
+            self.criteria.gen_exp_names(),
         )
 
         # Verify environment is OK before running anything

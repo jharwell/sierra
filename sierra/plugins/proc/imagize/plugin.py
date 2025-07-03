@@ -32,7 +32,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """
     Generate images for each :term:`Experiment` in the :term:`Batch Experiment`.
@@ -59,7 +59,7 @@ def proc_batch_exp(
         )
 
     exp_to_imagize = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, criteria
+        cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     parallelism = cmdopts["processing_parallelism"]
@@ -140,7 +140,6 @@ def _build_tasklist_for_exp(
 
 def _worker(imagize_opts: dict, imagize_config: types.YAMLDict) -> None:
     _proc_single_exp(imagize_config, imagize_opts)
-    _logger.trace(f"Worker {os.getpid()} exit")
 
 
 def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None:

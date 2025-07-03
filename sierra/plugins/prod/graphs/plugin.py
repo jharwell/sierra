@@ -27,7 +27,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """
     Intra-experiment graph generation: if intra-experiment graphs should be

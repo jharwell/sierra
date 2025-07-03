@@ -34,7 +34,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
 
     def run(
         self,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         exp_num: int,
         cmdopts: types.Cmdopts,
         pathset: exproot.PathSet,
@@ -51,7 +51,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
         raise NotImplementedError
 
     def run_for_exp(
-        self, criteria: bc.IConcreteBatchCriteria, cmdopts: types.Cmdopts, exp_num: int
+        self, criteria: bc.BatchCriteria, cmdopts: types.Cmdopts, exp_num: int
     ) -> bool:
         """
         Determine if the model should be run for the specified experiment.
@@ -102,7 +102,7 @@ class IConcreteIntraExpModel2D(implements.Interface):
 
     def run(
         self,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         exp_num: int,
         cmdopts: types.Cmdopts,
         pathset: exproot.PathSet,
@@ -119,7 +119,7 @@ class IConcreteIntraExpModel2D(implements.Interface):
         raise NotImplementedError
 
     def run_for_exp(
-        self, criteria: bc.IConcreteBatchCriteria, cmdopts: types.Cmdopts, exp_num: int
+        self, criteria: bc.BatchCriteria, cmdopts: types.Cmdopts, exp_num: int
     ) -> bool:
         """Determine if a model should be run for the specified experiment.
 
@@ -157,7 +157,7 @@ class IConcreteInterExpModel1D(implements.Interface):
 
     def run(
         self,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
     ) -> tp.List[pd.DataFrame]:
@@ -170,9 +170,7 @@ class IConcreteInterExpModel1D(implements.Interface):
         """
         raise NotImplementedError
 
-    def run_for_batch(
-        self, criteria: bc.IConcreteBatchCriteria, cmdopts: types.Cmdopts
-    ) -> bool:
+    def run_for_batch(self, criteria: bc.BatchCriteria, cmdopts: types.Cmdopts) -> bool:
         """
         Determine if the model should be run for the specified batch criteria.
 

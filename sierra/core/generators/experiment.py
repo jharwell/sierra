@@ -45,7 +45,7 @@ class BatchExpDefGenerator:
 
     def __init__(
         self,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         pathset: batchroot.PathSet,
         controller_name: str,
         scenario_basename: str,

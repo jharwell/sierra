@@ -188,7 +188,7 @@ class UnivarIntraScenarioComparator:
     def _gen_csv(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         pathset: batchroot.PathSet,
         controller: str,
         src_stem: str,
@@ -225,7 +225,7 @@ class UnivarIntraScenarioComparator:
     def _gen_graph(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.IConcreteBatchCriteria,
+        criteria: bc.BatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
@@ -237,14 +237,13 @@ class UnivarIntraScenarioComparator:
         """Generate a graph comparing the specified controllers within a scenario."""
         opath_leaf = namecalc.for_output(batch_leaf, dest_stem, None)
 
-        xticks = criteria.graph_xticks(cmdopts, batch_output_root)
-        xtick_labels = criteria.graph_xticklabels(cmdopts, batch_output_root)
+        info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
         if inc_exps is not None:
             xtick_labels = utils.exp_include_filter(
-                inc_exps, xtick_labels, criteria.n_exp()
+                inc_exps, info.xticklabels, criteria.n_exp()
             )
-            xticks = utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
+            xticks = utils.exp_include_filter(inc_exps, info.xticks, criteria.n_exp())
 
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
@@ -262,7 +261,7 @@ class UnivarIntraScenarioComparator:
             stats=cmdopts["dist_stats"],
             medium="storage.csv",
             title=title,
-            xlabel=criteria.graph_xlabel(cmdopts),
+            xlabel=info.xlabel(cmdopts),
             ylabel=label,
             xticklabels=xtick_labels,
             xticks=xticks,
@@ -608,22 +607,23 @@ class BivarIntraScenarioComparator:
         for i in range(0, len(paths)):
             opath_leaf = namecalc.for_output(batch_leaf, dest_stem, [i])
 
+            info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
             if primary_axis == 0:
                 n_exp = criteria.criteria1.n_exp()
-                yticks = criteria.graph_yticks(cmdopts, pathset.output_root)
+                yticks = info.yticks
                 xticks = utils.exp_include_filter(inc_exps, yticks, n_exp)
 
-                ytick_labels = criteria.graph_yticklabels(cmdopts, pathset.output_root)
+                ytick_labels = info.yticklabels
                 xtick_labels = utils.exp_include_filter(inc_exps, ytick_labels, n_exp)
-                xlabel = criteria.graph_ylabel(cmdopts)
+                xlabel = info.ylabel
             else:
                 n_exp = criteria.criteria2.n_exp()
-                yticks = criteria.graph_xticks(cmdopts, pathset.output_root)
+                yticks = info.xticks
                 xticks = utils.exp_include_filter(inc_exps, yticks, n_exp)
 
-                ytick_labels = criteria.graph_xticklabels(cmdopts, pathset.output_root)
+                ytick_labels = info.xticklabels
                 xtick_labels = utils.exp_include_filter(inc_exps, ytick_labels, n_exp)
-                xlabel = criteria.graph_xlabel(cmdopts)
+                xlabel = info.xlabel
 
             # TODO: Fix no statistics support for these graphs
             paths = graphs.PathSet(
@@ -760,6 +760,7 @@ class BivarIntraScenarioComparator:
                 model_root=None,
             )
 
+            info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
             graphs.heatmap(
                 paths=graph_pathset,
                 input_stem=leaf,
@@ -768,10 +769,10 @@ class BivarIntraScenarioComparator:
                 medium="storage.csv",
                 transpose=self.cmdopts["plot_transpose_graphs"],
                 zlabel=self._gen_zaxis_label(label, comp_type),
-                xlabel=criteria.graph_xlabel(cmdopts),
-                ylabel=criteria.graph_ylabel(cmdopts),
-                xticklabels=criteria.graph_xticklabels(cmdopts, batch_output_root),
-                yticklabels=criteria.graph_yticklabels(cmdopts, batch_output_root),
+                xlabel=info.xlabel(cmdopts),
+                ylabel=info.ylabel(cmdopts),
+                xticklabels=info.xticklabels,
+                yticklabels=info.yticklabels,
             )
 
     def _gen_dual_heatmaps(
@@ -812,17 +813,18 @@ class BivarIntraScenarioComparator:
             [str(f.relative_to(self.stage5_roots.csv_root)) for f in paths],
         )
 
+        info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
         DualHeatmap(
             ipaths=paths,
             output_fpath=opath,
             title=title,
             large_text=cmdopts["plot_large_text"],
             zlabel=self._gen_zaxis_label(label, comp_type),
-            xlabel=criteria.graph_xlabel(cmdopts),
-            ylabel=criteria.graph_ylabel(cmdopts),
+            xlabel=info.xlabel,
+            ylabel=info.ylabel,
             legend=legend,
-            xtick_labels=criteria.graph_xticklabels(cmdopts, batch_output_root),
-            ytick_labels=criteria.graph_yticklabels(cmdopts, batch_output_root),
+            xtick_labels=info.xticklabels,
+            ytick_labels=info.yticklabels,
         ).generate()
 
     def _gen_zaxis_label(self, label: str, comp_type: str) -> str:

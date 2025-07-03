@@ -40,7 +40,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """
     Render videos.
@@ -117,7 +117,7 @@ def _from_engine(
     render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """Render frames (images) captured in by a engine into videos.
 
@@ -138,7 +138,7 @@ def _from_engine(
     .. note:: This currently only works with PNG images.
     """
     exp_to_render = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, criteria
+        cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     inputs = []
@@ -164,7 +164,7 @@ def _from_project_imagized(
     render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
@@ -185,7 +185,7 @@ def _from_project_imagized(
     .. note:: This currently only works with PNG images.
     """
     exp_to_render = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, criteria
+        cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     inputs = []
@@ -229,7 +229,7 @@ def _from_bivar_heatmaps(
     render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """Render inter-experiment heatmaps into videos.
 

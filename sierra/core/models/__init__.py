@@ -11,7 +11,6 @@ import typing as tp
 import holoviews as hv
 
 # Project packages
-from . import interface as interface
 
 
 @dataclasses.dataclass

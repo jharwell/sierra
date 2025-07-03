@@ -38,7 +38,7 @@ def proc_batch_exp(
     main_config: dict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """Generate :term:`Collated Output Data` files for each experiment.
 
@@ -62,7 +62,7 @@ def proc_batch_exp(
     }
 
     exp_to_proc = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, criteria
+        cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     with mp.Pool(processes=pool_opts["parallelism"]) as pool:

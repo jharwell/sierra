@@ -29,11 +29,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.List[str],
     ) -> tp.List[float]:
-
-        if exp_names is None:
-            exp_names = self.gen_exp_names()
 
         ret = list(map(float, self.populations(cmdopts, exp_names)))
 
@@ -48,7 +45,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.List[str],
     ) -> tp.List[str]:
 
         if exp_names is None:

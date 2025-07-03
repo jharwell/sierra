@@ -13,12 +13,12 @@ import logging
 # 3rd party packages
 
 # Project packages
-from sierra.core.variables import batch_criteria as bc
 from sierra.core import types, utils, batchroot, config
-
 from . import line
 from sierra.plugins.prod.graphs import targets
 from sierra.core import plugin as pm
+from sierra.core.graphs import bcbridge
+from sierra.core.variables import batch_criteria as bc
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """Generate graphs from :term:`Collated Output Data` files.
 
@@ -73,7 +73,7 @@ def proc_batch_exp(
             graph_targets = targets.inter_exp_calc(
                 graphs_config["inter-exp"], controller_config, cmdopts
             )
-            line.generate(cmdopts, pathset, graph_targets, criteria)
+            line.generate(cmdopts, pathset, graph_targets, criteria.graph_info(cmdopts))
 
 
 __all__ = [

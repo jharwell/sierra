@@ -16,17 +16,16 @@ import pathlib
 
 # 3rd party packages
 import implements
-import numpy as np
 
 # Project packages
 from sierra.core.variables import variable_density as vd
-import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.experiment import definition
 from sierra.core import types, utils
+from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bc.IConcreteBatchCriteria)
+@implements.implements(bcbridge.IGraphable)
 class PopulationVariableDensity(vd.VariableDensity):
     """Defines XML changes for variable population density within a single arena.
 
@@ -81,33 +80,25 @@ class PopulationVariableDensity(vd.VariableDensity):
         changes = self.gen_attr_changelist()
         return ["exp" + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(
+    def graph_info(
         self,
         cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
+        batch_output_root: tp.Optional[pathlib.Path] = None,
         exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[float]:
-
-        if exp_names is None:
-            exp_names = self.gen_exp_names()
-
-        return [p / self.extent.area() for p in self.populations(cmdopts, exp_names)]
-
-    def graph_xticklabels(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> tp.List[str]:
-        return list(
-            map(
-                lambda x: str(round(x, 4)),
-                self.graph_xticks(cmdopts, batch_output_root, exp_names),
-            )
+    ) -> bcbridge.GraphInfo:
+        info = bcbridge.GraphInfo(
+            cmdopts,
+            batch_output_root,
+            exp_names if exp_names else self.gen_exp_names(),
         )
 
-    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        return r"Population Density"
+        info.xticks = [
+            p / self.extent.area()
+            for p in self.populations(info.cmdopts, info.exp_names)
+        ]
+        info.xticklabels = list(map(lambda x: str(round(x, 4)), info.xticks))
+        info.xlabel = "Population Density"
+        return info
 
     def n_agents(self, exp_num: int) -> int:
         return int(self.extent.area() * self.densities[exp_num] / 100.0)

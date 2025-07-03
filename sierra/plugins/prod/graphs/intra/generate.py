@@ -18,10 +18,12 @@ import yaml
 
 # Project packages
 
-import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin as pm
 from sierra.core import types, utils, batchroot, exproot, config
 from sierra.plugins.prod.graphs import intra
+from sierra.core.graphs import bcbridge
+from sierra.core.variables import batch_criteria as bc
+
 
 _logger = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.IConcreteBatchCriteria,
+    criteria: bc.BatchCriteria,
 ) -> None:
     """
     Generate intra-experiment graphs for a :term:`Batch Experiment`.
@@ -42,8 +44,9 @@ def proc_batch_exp(
         criteria:  The :term:`Batch Criteria` used for the batch
                    experiment.
     """
+    info = criteria.graph_info(cmdopts)
     exp_to_gen = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, criteria
+        cmdopts["exp_range"], pathset.output_root, info.exp_names
     )
 
     if not exp_to_gen:
@@ -75,7 +78,7 @@ def proc_batch_exp(
         exproots = exproot.PathSet(pathset, exp.name)
 
         if os.path.isdir(exproots.stat_root):
-            generator(exproots, criteria)
+            generator(exproots)
         else:
             _logger.warning(
                 "Skipping experiment '%s': %s does not exist, or " "isn't a directory",
@@ -104,9 +107,6 @@ class IntraExpGraphGenerator:
         graphs_config: Parsed dictionary of intra-experiment graph
                        configuration.
 
-        criteria:  The :term:`Batch Criteria` used for the batch
-                   experiment.
-
         logger: The handle to the logger for this class. If you extend this
                class, you should save/restore this variable in tandem with
                overriding it in order to get logging messages have unique logger
@@ -130,9 +130,7 @@ class IntraExpGraphGenerator:
         self.controller_config = controller_config
         self.logger = logging.getLogger(__name__)
 
-    def __call__(
-        self, pathset: exproot.PathSet, criteria: bc.IConcreteBatchCriteria
-    ) -> None:
+    def __call__(self, pathset: exproot.PathSet) -> None:
         """
         Generate graphs.
 

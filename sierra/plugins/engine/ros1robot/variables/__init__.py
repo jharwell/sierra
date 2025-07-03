@@ -12,4 +12,3 @@ See :ref:`plugins/engine/ros1robot`.
 # 3rd party packages
 
 # Project packages
-from sierra.core.ros1.variables import exp_setup as exp_setup
