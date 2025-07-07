@@ -24,6 +24,10 @@ mycategory:
   # The Y axis label to use. Optional. Defaults to '' if omitted.
   - ylabel: 'My Y-axis label'
 
+  # The index in the time series to use as the source for heatmap data. -1=last
+  # index.
+  - index: 14
+
   # The name of the column containing the X axis values. Defaults to x if
   # omitted.
   - x: 'x'

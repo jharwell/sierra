@@ -144,7 +144,7 @@ class BatchExpRunner:
         self,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
     ) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria

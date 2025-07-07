@@ -116,25 +116,33 @@ runs:
     - name: Install SIERRA
       shell: bash
       run: |
-        # Install without generating manpages. Sphinx 7.4.0 needs an upgraded
-        # version of astroid+autoapi without crashing, so we install them. I
-        # don't know why the separate upgrade step is necessary: I don't pin
-        # those packages to specific versions/passing --upgrade to 'uv sync'
-        # doesn't work.
+        # Install without generating manpages. This WILL succeed, and just not
+        # include the manpages because we used shared-data instead of
+        # force-include (which would fail here).
+        #
+        # Sphinx 7.4.0 needs an upgraded version of astroid+autoapi without
+        # crashing, so we install them. I don't know why the separate upgrade
+        # step is necessary: I don't pin those packages to specific
+        # versions/passing --upgrade to 'uv sync' doesn't work.
         uv sync -p ${{ inputs.python-version }} --extra docs
         uv pip install -p ${{ inputs.python-version }} --upgrade .[docs]
         source .venv/bin/activate
 
-        # Build manpages
-        cd docs
-        sphinx-build -b man . _build/man
-        cd ..
+        # Hatch will only pickup manpages with shared-data if they are INSIDE
+        # a package directory. Since we don't want to commit this to source
+        # control, we copy in in CI here.
+        mkdir sierra/data/man
+        cp docs/_build/man/man* sierra/data/man/
 
-        # Very gross, but necessary for now. See pyproject.toml for more info.
-        # cat docs/pyproject-man.txt >> pyproject.toml
+        # Build manpages
+        cd docs && sphinx-build -b man . docs/_build/man
+        cd ..
 
         # Install a second time to get the manpages included
         uv sync -p ${{ inputs.python-version }} --extra devel
+
+        # Verify the installation actually happened
+        python3 -m zipfile -l dist/sierra_research-*.whl |grep man
 
         which python3
         which sierra-cli

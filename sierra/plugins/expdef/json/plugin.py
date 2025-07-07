@@ -89,6 +89,9 @@ class ExpDef:
 
         self.logger = logging.getLogger(__name__)
 
+    def n_mods(self) -> tp.Tuple[int, int]:
+        return len(self.element_adds), len(self.attr_chgs)
+
     def write_config_set(self, config: definition.WriterConfig) -> None:
         """Set the write config for the object.
 

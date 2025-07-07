@@ -33,7 +33,7 @@ class ExpRunShellCmdsGenerator:
     def __init__(
         self,
         cmdopts: types.Cmdopts,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         n_agents: int,
         exp_num: int,
     ) -> None:

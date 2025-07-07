@@ -43,7 +43,6 @@ setup_env() {
        --exp-setup=exp_setup.T10 \
        --expdef-template=$SAMPLE_ROOT/exp/jsonsim/template.json \
        --scenario=scenario1.10x10x10 \
-       --controller=default.default \
        --jsonsim-path=$SAMPLE_ROOT/plugins/jsonsim/jsonsim.py \
        --log-level=TRACE"
 
@@ -67,6 +66,7 @@ print(path)
     rm -rf $SIERRA_ROOT
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
+    --controller=default.default \
     --batch-criteria max_speed.1.9.C5 \
     --pipeline 1 "
 
@@ -110,6 +110,7 @@ print(path)
     rm -rf $SIERRA_ROOT
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
+    --controller=default.default \
     --batch-criteria max_speed.1.9.C5 \
     --pipeline 1 2"
 
@@ -158,6 +159,7 @@ print(path)
     rm -rf $SIERRA_ROOT
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
+    --controller=default.default \
     --batch-criteria max_speed.1.9.C5 \
     --pipeline 1 2 3"
 
@@ -222,7 +224,7 @@ print(path)
 ################################################################################
 # Check that stage 4 outputs what it is supposed to
 ################################################################################
-stage4_test() {
+stage4_univar_test() {
     batch_root_cmd="from sierra.core import batchroot;
 bc=[\"max_speed.1.9.C5\"];
 template_stem=\"template\";
@@ -238,6 +240,7 @@ print(path)
     rm -rf $SIERRA_ROOT
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
+    --controller=default.default \
     --batch-criteria max_speed.1.9.C5 \
     --pipeline 1 2 3 4"
 
@@ -245,10 +248,74 @@ print(path)
 
     # Check stage4 generated stuff
     [ -d "$graph_root/collated" ] || false
+    [ -f "$graph_root/collated/SLN-random-noise-col1.png" ] || false
+    [ -f "$graph_root/collated/SLN-random-noise2-col2.png" ] || false
+    [ -f "$graph_root/collated/SM-random-noise3-col2.png" ] || false
     for exp in {0..4}; do
-        [ -f "$graph_root/collated/SLN-random-noise-col1.png" ] || false
-        [ -f "$graph_root/collated/SLN-random-noise2-col2.png" ] || false
-        [ -f "$graph_root/collated/SM-random-noise3-col2.png" ] || false
+        [ -f "$graph_root/exp${exp}/SLN-random-noise.png" ] || false
+        [ -f "$graph_root/exp${exp}/SLN-random-noise2.png" ] || false
+        [ -f "$graph_root/exp${exp}/SLN-random-noise3.png" ] || false
+        [ -f "$graph_root/exp${exp}/HM-output2D-1.png" ] || false
+        [ -f "$graph_root/exp${exp}/HM-output2D-2.png" ] || false
+    done
+
+    rm -rf $SIERRA_ROOT
+}
+
+stage4_bivar_test() {
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"max_speed.1.9.C5\", \"fuel.10.100.C4\"];
+template_stem=\"template\";
+scenario=\"scenario1.10x10x10\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_jsonsim\",controller=\"default.default2\",leaf=leaf).to_path();
+print(path)
+"
+
+    batch_root=$(python3 -c"${batch_root_cmd}")
+
+    graph_root=$batch_root/graphs/
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --controller=default.default2 \
+    --batch-criteria max_speed.1.9.C5 fuel.10.100.C4 \
+    --pipeline 1 2 3 4"
+
+    $SIERRA_CMD
+
+    # Check SIERRA directory structure
+    for i in {0..4}; do
+        for j in {0..3}; do
+            [ -d "$graph_root/c1-exp${i}+c2-exp${j}" ] || false
+        done
+    done
+    [ -d "$graph_root/collated" ] || false
+
+    # Check stage4 collated .csvs
+    for stat in "${to_check[@]}"; do
+        [ -f "$stat_root/collated/random-noise-col1.${stat}" ] || false
+        [ -f "$stat_root/collated/random-noise2-col2.${stat}" ] || false
+        [ -f "$stat_root/collated/random-noise3-col2.${stat}" ] || false
+    done
+
+    # Check stage4 intra graphs
+    for i in {0..4}; do
+        for j in {0..3}; do
+            [ -f "$graph_root/c1-exp${i}+c2-exp${j}/SLN-random-noise.png" ] || false
+            [ -f "$graph_root/c1-exp${i}+c2-exp${j}/SLN-random-noise2.png" ] || false
+            [ -f "$graph_root/c1-exp${i}+c2-exp${j}/SLN-random-noise3.png" ] || false
+            [ -f "$graph_root/c1-exp${i}+c2-exp${j}/HM-output2D-1.png" ] || false
+            [ -f "$graph_root/c1-exp${i}+c2-exp${j}/HM-output2D-2.png" ] || false
+        done
+    done
+
+    # Check stage4 generated stuff
+    [ -d "$graph_root/collated" ] || false
+    for i in {0..4}; do
+        [ -f "$graph_root/collated/HM-bivar-random-noise-col1.png" ] || false
+        [ -f "$graph_root/collated/HM-bivar-random-noise2-col2.png" ] || false
+        [ -f "$graph_root/collated/HM-bivar-random-noise3-col2.png" ] || false
     done
 
     rm -rf $SIERRA_ROOT

@@ -22,8 +22,6 @@ import matplotlib.pyplot as plt
 from sierra.core import config, utils, storage, models
 from . import pathset
 
-kMarkStyles = ["o", "^", "s", "x", "o", "^", "s", "x"]
-
 _logger = logging.getLogger(__name__)
 
 
@@ -97,8 +95,8 @@ def generate(
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
-            output_fpath.relative_to(paths.batchroot.resolve()),
-            input_fpath.relative_to(paths.batchroot.resolve()),
+            output_fpath.relative_to(paths.batchroot),
+            input_fpath.relative_to(paths.batchroot),
         )
         return False
 

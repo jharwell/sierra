@@ -10,8 +10,7 @@ whatever computational resources a researcher has access to.  SIERRA makes the
 following assumptions about the HPC environments corresponding to the plugins
 listed on this page:
 
-.. list-table:: HPC Environment Assumptions
-   :widths: 25,75
+.. -table:: HPC Environment Assumptions
    :header-rows: 1
 
    * - Assumption
@@ -68,7 +67,6 @@ SIERRA to configure experiments during stage 1,2 (see TOQUE-PBS docs for
 meaning); if they are not defined SIERRA will throw an error.
 
 .. list-table:: PBS-SIERRA interface
-   :widths: 25,75
    :header-rows: 1
 
    * - PBS environment variable
@@ -98,7 +96,6 @@ meaning); if they are not defined SIERRA will throw an error.
 The following environmental variables are used in the PBS HPC environment:
 
 .. list-table::
-   :widths: 25,75
    :header-rows: 1
 
    * - Environment variable
@@ -133,7 +130,6 @@ configure experiments during stage 1,2 (see SLURM docs for meaning); if they are
 not defined SIERRA will throw an error.
 
 .. list-table:: SLURM-SIERRA interface
-   :widths: 25,25,50
    :header-rows: 1
 
    * - SLURM environment variable
@@ -173,7 +169,6 @@ not defined SIERRA will throw an error.
 The following environmental variables are used in the SLURM HPC environment:
 
 .. list-table::
-   :widths: 25,75
    :header-rows: 1
 
    * - Environment variable
@@ -208,7 +203,6 @@ compute nodes it is allocated each invocation:
 The following environmental variables are used in the Adhoc HPC environment:
 
 .. list-table::
-   :widths: 25,25,25,25
    :header-rows: 1
 
    * - Environment variable

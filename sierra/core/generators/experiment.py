@@ -45,7 +45,7 @@ class BatchExpDefGenerator:
 
     def __init__(
         self,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         controller_name: str,
         scenario_basename: str,
@@ -149,7 +149,7 @@ class ExpCreator:
     def __init__(
         self,
         cmdopts: types.Cmdopts,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         template_ipath: pathlib.Path,
         exp_input_root: pathlib.Path,
         exp_output_root: pathlib.Path,
@@ -184,23 +184,28 @@ class ExpCreator:
 
             if self.random_seeds is not None:
                 if len(self.random_seeds) == self.cmdopts["n_runs"]:
-                    self.logger.debug("Using existing random seeds for experiment")
+                    self.logger.trace(
+                        "Using existing random seeds for experiment%s", self.exp_num
+                    )
                 elif len(self.random_seeds) != self.cmdopts["n_runs"]:
                     # OK to overwrite the saved random seeds--they changed the
                     # experiment definition.
                     self.logger.warning(
                         (
-                            "Experiment definition changed: # random "
-                            "seeds (% s) != --n-runs (%s): create new "
+                            "Experiment%s definition changed: # random "
+                            "seeds (%s) != --n-runs (%s): create new "
                             "seeds"
                         ),
+                        self.exp_num,
                         len(self.random_seeds),
                         self.cmdopts["n_runs"],
                     )
                     self.preserve_seeds = False
 
         if not self.preserve_seeds or self.random_seeds is None:
-            self.logger.debug("Generating new random seeds for experiment")
+            self.logger.trace(
+                "Generating new random seeds for experiment%s", self.exp_num
+            )
             self.random_seeds = random.sample(
                 range(0, int(time.time())), self.cmdopts["n_runs"]
             )
@@ -237,6 +242,9 @@ class ExpCreator:
         )
 
         # Create all experimental runs
+        self.logger.debug(
+            "Creating %s runs in exp%s", self.cmdopts["n_runs"], self.exp_num
+        )
         for run_num in range(self.cmdopts["n_runs"]):
             per_run = copy.deepcopy(exp_def)
             self._create_exp_run(per_run, generator, run_num)
@@ -398,7 +406,7 @@ class BatchExpCreator:
 
     def __init__(
         self,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
     ) -> None:
@@ -458,9 +466,15 @@ class BatchExpCreator:
 
         assert len(defs) > 0, "No expdef modifications generated?"
 
+        self.logger.info(
+            "Applying generated scenario+controller changes/mods to all experiments"
+        )
         for i, defi in enumerate(defs):
-            self.logger.debug(
-                "Applying generated scenario+controller changes to exp%s", i
+            self.logger.trace(
+                "Applying %s/%s generated scenario+controller changes/mods to exp%s",
+                defi.n_mods()[0],
+                defi.n_mods()[1],
+                i,
             )
             expi = self.criteria.gen_exp_names()[i]
             exp_output_root = self.batch_output_root / expi

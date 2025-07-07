@@ -19,6 +19,7 @@ SIERRA.
    subprograms.rst
    environment.rst
    variables.rst
+   bc.rst
 
 .. toctree::
    :maxdepth: 1

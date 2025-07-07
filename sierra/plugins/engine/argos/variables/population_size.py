@@ -67,6 +67,7 @@ class PopulationSize(population_size.PopulationSize):
         """
         Generate list of sets of changes for swarm sizes to define a batch experiment.
         """
+
         if not self.attr_changes:
             self.attr_changes = PopulationSize.gen_attr_changelist_from_list(
                 self.size_list

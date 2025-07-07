@@ -37,7 +37,7 @@ class PipelineStage2:
         self.cmdopts = cmdopts
         self.pathset = pathset
 
-    def run(self, criteria: bc.BatchCriteria) -> None:
+    def run(self, criteria: bc.XVarBatchCriteria) -> None:
         start = time.time()
         BatchExpRunner(self.cmdopts, self.pathset, criteria)()
         elapsed = int(time.time() - start)

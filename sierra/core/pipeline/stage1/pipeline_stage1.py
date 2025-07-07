@@ -6,6 +6,8 @@
 
 # Core packges
 import logging
+import time
+import datetime
 
 # 3rd party packages
 
@@ -30,7 +32,7 @@ class PipelineStage1:
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
         controller: str,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
     ) -> None:
         self.generator = BatchExpDefGenerator(
             controller_name=controller,
@@ -39,6 +41,7 @@ class PipelineStage1:
             pathset=pathset,
             cmdopts=cmdopts,
         )
+
         self.creator = BatchExpCreator(
             criteria=criteria, cmdopts=cmdopts, pathset=pathset
         )
@@ -74,16 +77,18 @@ class PipelineStage1:
 
         """
 
-        self.logger.info(
-            "Generating input files for batch experiment in %s...", self.pathset.root
-        )
-        self.creator.create(self.generator)
+        self.logger.info("Generating batch experiment in %s...", self.pathset.root)
 
+        start = time.time()
+        self.creator.create(self.generator)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
         n_exp_in_batch = len(self.criteria.gen_attr_changelist()) + len(
             self.criteria.gen_element_addlist()
         )
         self.logger.info(
-            "Generated batch experiment: %d experiments, %d runs per experiment, %d runs total",
+            "Generation complete in %s: %d experiments, %d runs per experiment, %d runs total",
+            str(sec),
             n_exp_in_batch,
             self.cmdopts["n_runs"],
             self.cmdopts["n_runs"] * n_exp_in_batch,

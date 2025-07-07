@@ -24,14 +24,10 @@ jobs:
           - 3.9
           - 3.12
 
+          # 2025-07-11 [JRH]: We only test univar things here because anything
+          # greater than that doesn't test anything new in the plugin, but only
+          # in the SIERRA core.
         function:
-          # 2025-04-25 [JRH]: These are redundant with other tests which also
-          # check the outputs that each stage generates. Useful as smoke tests
-          # though, so maybe they will eventually be added back into the
-          # pipeline.
-          # - sanity_bivar_test
-          # - sanity_univar_test
-
           - physics_engines_test
           - vc_test
           - imagize_test
@@ -41,9 +37,6 @@ jobs:
           - stage3_univar_test
           - stage4_univar_test
           # - stage5_univar_test
-          - stage1_bivar_test
-          - stage2_bivar_test
-          - stage3_bivar_test
           # - stage5_bivar_test
 
         # We only run a few OSX tests, because most of the ARGoS tests don't

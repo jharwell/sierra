@@ -33,7 +33,7 @@ the AI elements themselves*:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25,25,25
+   :widths: 25 25 25
 
    * - Algorithm
 
@@ -84,7 +84,7 @@ the AI elements themselves*:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25,25,25
+   :widths: 25 25 25
 
    * - Algorithm
 
@@ -119,8 +119,8 @@ algorithm based on his ecological knowledge, and rely on Alice to perform the
 experiments. For this project, Alice does not have access to HPC resources, but
 does have a handful of servers in her lab which she can use.
 
-Use Case #3: Steve The Industry Modeling & Sim Developer
-========================================================
+Use Case #3: Bob The Industry Modeling & Sim Developer
+======================================================
 
 Bob works at an industry company extending a custom in-house multi-agent
 simulator. This simulator takes JSON as input, but the plan eventually is to

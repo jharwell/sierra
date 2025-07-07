@@ -40,7 +40,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """
     Render videos.
@@ -52,14 +52,8 @@ def proc_batch_exp(
            if ``proc.imagize`` was run previously to generate frames, and
            ``--project-rendering`` is passed.
 
-        #. :func:`~sierra.core.pipeline.stage4.render.from_bivar_heatmaps()`, if
-           the batch criteria was bivariate and ``--HM-rendering`` was passed.
     """
-    if (
-        (not cmdopts["engine_vc"])
-        and (not cmdopts["project_rendering"])
-        and (not (criteria.is_bivar() and cmdopts["bc_rendering"]))
-    ):
+    if (not cmdopts["engine_vc"]) and (not cmdopts["project_rendering"]):
         return
 
     _logger.info("Rendering videos...")
@@ -98,16 +92,6 @@ def proc_batch_exp(
             )
         )
 
-    if criteria.is_bivar() and cmdopts["bc_rendering"]:
-        _from_bivar_heatmaps(render_config["intra-exp"], cmdopts, pathset, criteria)
-    else:
-        _logger.debug(
-            (
-                "--bc-rendering not passed or univariate batch "
-                "criteria--skipping rendering generated graphs"
-            )
-        )
-
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
     _logger.info("Rendering complete in %s", str(sec))
@@ -117,7 +101,7 @@ def _from_engine(
     render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """Render frames (images) captured in by a engine into videos.
 
@@ -164,7 +148,7 @@ def _from_project_imagized(
     render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
@@ -221,47 +205,6 @@ def _from_project_imagized(
                         "ffmpeg_opts": cmdopts["render_cmd_opts"],
                     }
                 )
-
-    _parallel(render_config, cmdopts, inputs)
-
-
-def _from_bivar_heatmaps(
-    render_config: types.YAMLDict,
-    cmdopts: types.Cmdopts,
-    pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
-) -> None:
-    """Render inter-experiment heatmaps into videos.
-
-    Heatmap (images) are stitched together to make a video using
-    :program:`ffmpeg`.  Output format controlled via configuration.
-
-    Targets to render are found in::
-
-      <batchroot>/graphs/collated
-
-    Videos are output in::
-
-      <batch_root>/videos/<graph name>
-
-    For more details, see :ref:`plugins/product/render`.
-
-    versionadded:: 1.2.20
-    """
-
-    inputs = []
-
-    for candidate in pathset.graph_collate_root.iterdir():
-        if "HM-" in candidate.name and candidate.is_dir():
-            output_dir = pathset.video_root / candidate.name
-
-            opts = {
-                "input_dir": str(candidate),
-                "exp_root": pathset.imagize_root / pathset.candidate.name,
-                "output_path": output_dir / (candidate.name + config.kRenderFormat),
-                "ffmpeg_opts": cmdopts["render_cmd_opts"],
-            }
-            inputs.append(copy.deepcopy(opts))
 
     _parallel(render_config, cmdopts, inputs)
 

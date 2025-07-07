@@ -68,7 +68,7 @@ class PipelineStage4:
 
         # Load YAML config
 
-    def run(self, criteria: bc.BatchCriteria) -> None:
+    def run(self, criteria: bc.XVarBatchCriteria) -> None:
         """Run the pipeline stage."""
         spec = self.cmdopts["prod"]
         self.logger.info("Generating products %s product plugins: %s", len(spec), spec)

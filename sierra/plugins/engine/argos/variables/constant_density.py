@@ -54,6 +54,9 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         self.scenario_tag = scenario_tag
         self.attr_changes = ArenaShape(dimensions).gen_attr_changelist()
 
+    def computable_exp_scenario_name(self) -> bool:
+        return True
+
     def exp_scenario_name(self, exp_num: int) -> str:
         """Given the exp number in the batch, compute a parsable scenario name.
 

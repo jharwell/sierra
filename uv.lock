@@ -4155,7 +4155,7 @@ wheels = [
 
 [[package]]
 name = "sierra-research"
-version = "1.4.6"
+version = "1.4.8"
 source = { editable = "." }
 dependencies = [
     { name = "coloredlogs" },
@@ -4260,7 +4260,7 @@ requires-dist = [
     { name = "coverage", marker = "extra == 'ci'" },
     { name = "coveralls", marker = "extra == 'ci'" },
     { name = "distro" },
-    { name = "docutils", marker = "extra == 'docs'", specifier = "==0.20" },
+    { name = "docutils", marker = "extra == 'docs'", specifier = "<=0.20" },
     { name = "flake8", marker = "extra == 'analysis'" },
     { name = "graphviz", marker = "extra == 'docs'" },
     { name = "haggis" },
@@ -4292,7 +4292,7 @@ requires-dist = [
     { name = "retry" },
     { name = "ruff", marker = "extra == 'analysis'" },
     { name = "sierra-research", extras = ["docs", "analysis", "ci"], marker = "extra == 'devel'" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = "==7.4.0" },
+    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.4.0" },
     { name = "sphinx-argparse", marker = "extra == 'docs'" },
     { name = "sphinx-autoapi", marker = "extra == 'docs'" },
     { name = "sphinx-autobuild", marker = "extra == 'docs'" },

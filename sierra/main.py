@@ -64,7 +64,6 @@ class SIERRA:
     ) -> tp.Tuple[argparse.Namespace, tp.List[str]]:
         # Bootstrap the cmdline
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
-
         if bootstrap_args.rcfile:
             bootstrap_args.rcfile = os.path.expanduser(bootstrap_args.rcfile)
 

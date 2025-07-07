@@ -35,7 +35,7 @@ class ExpRunShellCmdsGenerator:
     def __init__(
         self,
         cmdopts: types.Cmdopts,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         n_agents: int,
         exp_num: int,
     ) -> None:
@@ -72,6 +72,7 @@ class ExpRunShellCmdsGenerator:
         # ARGoS is pretty good about not printing stuff if we pass these
         # arguments. We don't want to pass > /dev/null so that we get the
         # text of any exceptions that cause ARGoS to crash.
+
         if self.cmdopts["exec_devnull"]:
             cmd += " --log-file /dev/null --logerr-file /dev/null"
 
@@ -346,7 +347,9 @@ def population_size_from_pickle(
     return -1
 
 
-def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
+def arena_dims_from_criteria(
+    criteria: bc.XVarBatchCriteria,
+) -> tp.List[utils.ArenaExtent]:
     dims = []
     for exp in criteria.gen_attr_changelist():
         for c in exp:

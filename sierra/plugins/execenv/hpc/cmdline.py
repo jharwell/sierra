@@ -17,16 +17,17 @@ from sierra.core import types, cmdline
 
 class HPCCmdline(cmdline.BaseCmdline):
     def __init__(self, stages: tp.List[int]) -> None:
-        self.parser = argparse.ArgumentParser(add_help=False,
-                                              allow_abbrev=False)
+        self.parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
 
         self.scaffold_cli()
         self.init_cli(stages)
 
     def scaffold_cli(self) -> None:
-        desc = ("For engines which are simulators (and can "
-                "therefore be run in HPC environments).")
-        self.hpc = self.parser.add_argument_group('HPC options', desc)
+        desc = (
+            "For engines which are simulators (and can "
+            "therefore be run in HPC environments)."
+        )
+        self.hpc = self.parser.add_argument_group("HPC options", desc)
 
     def init_cli(self, stages: tp.List[int]) -> None:
         if 2 in stages:
@@ -47,8 +48,9 @@ class HPCCmdline(cmdline.BaseCmdline):
         - ``--exec-strict``
 
         """
-        self.hpc.add_argument("--exec-jobs-per-node",
-                              help="""
+        self.hpc.add_argument(
+            "--exec-jobs-per-node",
+            help="""
 
                               Specify the maximum number of parallel jobs to run
                               per allocated node. By default this is computed
@@ -58,12 +60,15 @@ class HPCCmdline(cmdline.BaseCmdline):
                               being able to override the computed default can be
                               useful.
 
-                              """ + self.stage_usage_doc([2]),
-                              type=int,
-                              default=None)
+                              """
+            + self.stage_usage_doc([2]),
+            type=int,
+            default=None,
+        )
 
-        self.hpc.add_argument("--exec-devnull",
-                              help="""
+        self.hpc.add_argument(
+            "--exec-devnull",
+            help="""
 
                               Redirect ALL output from simulations to
                               /dev/null. Useful for engine where you can't
@@ -72,13 +77,16 @@ class HPCCmdline(cmdline.BaseCmdline):
                               redundant stdout files to see if there were any
                               errors.
 
-                              """ + self.stage_usage_doc([1, 2]),
-                              action='store_true',
-                              dest='exec_devnull',
-                              default=True)
+                              """
+            + self.stage_usage_doc([1, 2]),
+            action="store_true",
+            dest="exec_devnull",
+            default=True,
+        )
 
-        self.hpc.add_argument("--exec-no-devnull",
-                              help="""
+        self.hpc.add_argument(
+            "--exec-no-devnull",
+            help="""
 
                               Don't redirect ALL output from simulations to
                               /dev/null. Useful for engine where you can't
@@ -87,22 +95,28 @@ class HPCCmdline(cmdline.BaseCmdline):
                               redundant stdout files to see if there were any
                               errors.
 
-                              """ + self.stage_usage_doc([1, 2]),
-                              action='store_false',
-                              dest='exec_devnull')
+                              """
+            + self.stage_usage_doc([1, 2]),
+            action="store_false",
+            dest="exec_devnull",
+        )
 
-        self.hpc.add_argument("--exec-resume",
-                              help="""
+        self.hpc.add_argument(
+            "--exec-resume",
+            help="""
 
                               Resume a batch experiment that was
                               killed/stopped/etc last time SIERRA was run.
 
-                              """ + self.stage_usage_doc([2]),
-                              action='store_true',
-                              default=False)
+                              """
+            + self.stage_usage_doc([2]),
+            action="store_true",
+            default=False,
+        )
 
-        self.hpc.add_argument("--exec-strict",
-                              help="""
+        self.hpc.add_argument(
+            "--exec-strict",
+            help="""
 
                               If passed, then if any experimental commands fail
                               during stage 2 SIERRA will exit, rather than try
@@ -119,22 +133,21 @@ class HPCCmdline(cmdline.BaseCmdline):
                               - CI pipelines
 
                               """,
-                              action='store_true')
+            action="store_true",
+        )
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    """Update cmdopts dictionary with the HPC-specific cmdline options.
-
-    """
+    """Update cmdopts dictionary with the HPC-specific cmdline options."""
     return {
         # Multistage
-        'exec_devnull': args.exec_devnull,
-        'exec_jobs_per_node': args.exec_jobs_per_node,
-        'exec_resume': args.exec_resume,
-        'exec_strict': args.exec_strict
+        "exec_devnull": args.exec_devnull,
+        "exec_jobs_per_node": args.exec_jobs_per_node,
+        "exec_resume": args.exec_resume,
+        "exec_strict": args.exec_strict,
     }
 
 
 __all__ = [
-    'HPCCmdline',
+    "HPCCmdline",
 ]

@@ -22,7 +22,7 @@ from sierra.core.experiment import definition
 
 
 class SimpleBatchScaffoldSpec:
-    def __init__(self, criteria: bc.BatchCriteria, log: bool = False) -> None:
+    def __init__(self, criteria: bc.XVarBatchCriteria, log: bool = False) -> None:
         self.criteria = criteria
         self.chgs = criteria.gen_attr_changelist()
         self.adds = criteria.gen_element_addlist()
@@ -42,7 +42,7 @@ class SimpleBatchScaffoldSpec:
             if log:
                 self.logger.info(
                     (
-                        "Calculating scaffold: cli=%s: Modify %s "
+                        "Executing scaffold: cli=%s: modify %s "
                         "expdef elements per experiment"
                     ),
                     self.criteria.cli_arg,
@@ -54,7 +54,7 @@ class SimpleBatchScaffoldSpec:
             if log:
                 self.logger.info(
                     (
-                        "Calculating scaffold: cli=%s: Add %s expdef "
+                        "Executing scaffold: cli=%s: Add %s expdef "
                         "elements per experiment"
                     ),
                     self.criteria.cli_arg,
@@ -73,7 +73,7 @@ class SimpleBatchScaffoldSpec:
 
 
 class CompoundBatchScaffoldSpec:
-    def __init__(self, criteria: bc.BatchCriteria, log: bool = False) -> None:
+    def __init__(self, criteria: bc.XVarBatchCriteria, log: bool = False) -> None:
         self.criteria = criteria
         self.chgs = criteria.gen_attr_changelist()
         self.adds = criteria.gen_element_addlist()
@@ -97,7 +97,7 @@ class CompoundBatchScaffoldSpec:
             if log:
                 self.logger.info(
                     (
-                        "Calculating scaffold: cli=%s: Add  "
+                        "Executing scaffold: cli=%s: Add  "
                         "%s expdef elements AND modify %s expdef  "
                         "elements per experiment"
                     ),
@@ -135,7 +135,7 @@ class ExperimentSpec:
 
     def __init__(
         self,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         batch_input_root: pathlib.Path,
         exp_num: int,
         cmdopts: types.Cmdopts,
@@ -149,33 +149,15 @@ class ExperimentSpec:
         self.logger = logging.getLogger(__name__)
         self.criteria = criteria
 
-        from_bivar_bc1 = False
-        from_bivar_bc2 = False
-        from_univar_bc = False
-
-        if criteria.is_bivar():
-            bivar = tp.cast(bc.BivarBatchCriteria, criteria)
-            from_bivar_bc1 = hasattr(bivar.criteria1, "exp_scenario_name")
-            from_bivar_bc2 = hasattr(bivar.criteria2, "exp_scenario_name")
-        else:
-            from_univar_bc = hasattr(criteria, "exp_scenario_name")
-
         # Need to get per-experiment arena dimensions from batch criteria, as
         # they might be different for each experiment
-        if from_univar_bc:
-            self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
-            self.scenario_name = criteria.exp_scenario_name(exp_num)
+        if self.criteria.computable_exp_scenario_name():
+            self.arena_dim = self.criteria.arena_dims(cmdopts)[exp_num]
+            self.scenario_name = self.criteria.exp_scenario_name(exp_num)
             self.logger.debug(
-                "Read scenario dimensions '%s' from univariate batch criteria",
+                "Read scenario dimensions '%s' from batch criteria",
                 self.arena_dim,
             )
-        elif from_bivar_bc1 or from_bivar_bc2:
-            self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
-            self.logger.debug(
-                "Read scenario dimensions '%s' bivariate batch criteria", self.arena_dim
-            )
-            self.scenario_name = criteria.exp_scenario_name(exp_num)
-
         else:  # Default case: scenario dimensions read from cmdline
             module = pm.module_load_tiered(
                 project=cmdopts["project"], path="generators.scenario"
@@ -192,7 +174,7 @@ class ExperimentSpec:
 
 
 def scaffold_spec_factory(
-    criteria: bc.BatchCriteria, **kwargs
+    criteria: bc.XVarBatchCriteria, **kwargs
 ) -> tp.Union[SimpleBatchScaffoldSpec, CompoundBatchScaffoldSpec]:
     chgs = criteria.gen_attr_changelist()
     adds = criteria.gen_element_addlist()

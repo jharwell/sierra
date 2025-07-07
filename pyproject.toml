@@ -82,8 +82,12 @@ ci = [
 ]
 
 docs = [
+     # This matching results in badly formatted tables in some
+     # manpages, so will need to be updated with a later version that
+     # has a fix.
     "sphinx==7.4.0",
     "docutils==0.20",
+
     "sphinx-rtd-theme",
     "sphinx-argparse",
     "sphinx-tabs",
@@ -101,13 +105,13 @@ devel = ["sierra-research[docs,analysis,ci]"]
 [project.scripts]
 sierra-cli = "sierra.main:main"
 
-# Want to use hatchling, but doesn't work on OSX yet in 3.12.
 [build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["sierra"]
+include = ["sierra"]
+
 
 # There should be a way to do this an the directory level with
 # excludes, but there doesn't seem to be, so listing out each man page
@@ -118,14 +122,14 @@ packages = ["sierra"]
 # you can't install SIERRA without building the docs, and you can't do
 # that with uv until you install SIERRA. So we punt for now, and
 # modify this file in CI to generate the man pages as needed.
-# [tool.hatch.build.targets.wheel.force-include]
-# "docs/_build/man/sierra.7" = "share/man/sierra.7"
-# "docs/_build/man/sierra-cli.1" = "share/man/sierra-cli.1"
-# "docs/_build/man/sierra-examples.7" = "share/man/sierra-examples.7"
-# "docs/_build/man/sierra-exec-envs.7" = "share/man/sierra-exec-envs.7"
-# "docs/_build/man/sierra-glossary.7" = "share/man/sierra-glossary.7"
-# "docs/_build/man/sierra-engines.7" = "share/man/sierra-engines.7"
-# "docs/_build/man/sierra-usage.7" = "share/man/sierra-usage.7"
+[tool.hatch.build.targets.wheel.shared-data]
+"sierra/data/man/sierra.7" = "share/man/man7/sierra.7"
+"sierra/data/man/sierra-cli.1" = "share/man/man1/sierra-cli.1"
+"sierra/data/man/sierra-examples.7" = "share/man/man7/sierra-examples.7"
+"sierra/data/man/sierra-exec-envs.7" = "share/man/man7/sierra-exec-envs.7"
+"sierra/data/man/sierra-glossary.7" = "share/man/man7/sierra-glossary.7"
+"sierra/data/man/sierra-engines.7" = "share/man/man7/sierra-engines.7"
+"sierra/data/man/sierra-usage.7" = "share/man/man7/sierra-usage.7"
 
 [[tool.uv.index]]
 name = "testpypi"

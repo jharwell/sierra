@@ -32,7 +32,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """
     Generate intra-experiment graphs for a :term:`Batch Experiment`.
@@ -44,7 +44,7 @@ def proc_batch_exp(
         criteria:  The :term:`Batch Criteria` used for the batch
                    experiment.
     """
-    info = criteria.graph_info(cmdopts)
+    info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
     exp_to_gen = utils.exp_range_calc(
         cmdopts["exp_range"], pathset.output_root, info.exp_names
     )

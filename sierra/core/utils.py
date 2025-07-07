@@ -169,7 +169,7 @@ def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts)
     if cmdopts["plot_primary_axis"] == 1:
         return 1
 
-    if any(isinstance(criteria.criteria1, elt) for elt in primary_axis_bc):
+    if any(isinstance(criteria.criterias[1], elt) for elt in primary_axis_bc):
         return 0
 
     return 1

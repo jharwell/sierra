@@ -1247,11 +1247,9 @@ class CoreCmdline(BaseCmdline):
         assert args.sierra_root is not None, "--sierra-root is required for all stages"
 
     def _validate_check_bc(self, args: argparse.Namespace) -> None:
-        assert len(args.batch_criteria) <= 2, "Too many batch criteria passed"
-
-        if len(args.batch_criteria) == 2:
-            assert (
-                args.batch_criteria[0] != args.batch_criteria[1]
+        if len(args.batch_criteria) >= 1:
+            assert len(args.batch_criteria) == len(
+                set(args.batch_criteria)
             ), "Duplicate batch criteria passed"
 
             assert isinstance(

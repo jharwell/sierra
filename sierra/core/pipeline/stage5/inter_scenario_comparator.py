@@ -191,7 +191,7 @@ class UnivarInterScenarioComparator:
 
     def _gen_graph(
         self,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,

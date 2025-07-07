@@ -38,7 +38,7 @@ def proc_batch_exp(
     main_config: dict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """Generate :term:`Collated Output Data` files for each experiment.
 
@@ -226,7 +226,7 @@ def _proc_single_exp(
 
     :term:`Raw Output Data` files gathered from N :term:`Experimental Runs
     <Experimental Run>` are combined together into a single :term:`Batch Summary
-    Data` per :term:`Experiment` with 1 column per run.
+    Data` file per :term:`Experiment` with 1 column per run.
     """
     utils.dir_create_checked(batch_stat_collate_root, exist_ok=True)
 

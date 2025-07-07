@@ -26,6 +26,7 @@ This plugin supports two types of graphs, and therefore two types of analyses:
 
 .. list-table::
    :header-rows: 1
+   :align: left
 
    * - Graph Type
 
@@ -57,7 +58,9 @@ This plugin supports two types of graphs, and therefore two types of analyses:
        - The data you want to graph is two dimensional (e.g. a spatial
          representation of the arena is some way).
 
-       - You don't need/aren't interested in statistics.
+       - You don't need/aren't interested in statistics (statistically
+         significant differences between cells in a heatmap cannot be determined
+         just from the graph itself).
 
 Configuration
 =============
@@ -117,6 +120,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: heatmap.yaml
 
+
 Inter-Experiment Graphs
 -----------------------
 
@@ -140,7 +144,16 @@ this plugin is below. Unless stated otherwise, all keys are required.
       took the *last* point of some measure of interest, that might summarize
       steady-state behavior.
 
-      .. literalinclude:: linegraph.yaml
+      .. literalinclude:: summary.yaml
 
-.. TODO:: Add inter-experiment heatmaps for bivariate criteria once support for
-          it is put back into SIERRA.
+   .. tab:: heatmap
+
+      A 2D heatmap of data, drawn from a specified per-experiment time series
+      (e.g., if you took the *last* point of some measure of interest, that
+      might summarize steady-state behavior).
+
+      .. literalinclude:: heatmap.yaml
+
+.. NOTE:: If the batch criteria has dimension > 1, inter-experiment linegraphs
+          are disabled/ignored currently. This will hopefully be fixed in a
+          future version of SIERRA. (SIERRA#357).

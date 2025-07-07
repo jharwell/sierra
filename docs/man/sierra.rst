@@ -19,11 +19,14 @@ The following manpages are available:
 - :manpage:`sierra-usage` - How to use SIERRA (everything BUT the command line
   interface).
 
-- :manpage:`sierra-engines` - The target engines that SIERRA currently
-  supports (e.g., ARGoS).
+- :manpage:`sierra-plugins` - All of SIERRA's builtin plugins for:
 
-- :manpage:`sierra-exec-envs` - The target execution environments that SIERRA
-  currently supports (e.g., the local machine).
+  - ``--engine``
+  - ``--exec-env``
+  - ``--expdef``
+  - ``--prod``
+  - ``--proc``
+  - ``--storage``
 
 - :manpage:`sierra-examples` - Examples of SIERRA usage via command line
   invocations demonstrating various features.

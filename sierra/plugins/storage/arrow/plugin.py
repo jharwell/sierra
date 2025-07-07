@@ -35,4 +35,4 @@ def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
     """
     Write a pandas dataframe to a apache .arrow file.
     """
-    raise NotImplementedError
+    df.to_feather(path, **kwargs)

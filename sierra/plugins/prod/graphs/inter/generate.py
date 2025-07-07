@@ -14,7 +14,7 @@ import logging
 
 # Project packages
 from sierra.core import types, utils, batchroot, config
-from . import line
+from . import line, heatmap
 from sierra.plugins.prod.graphs import targets
 from sierra.core import plugin as pm
 from sierra.core.graphs import bcbridge
@@ -27,7 +27,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """Generate graphs from :term:`Collated Output Data` files.
 
@@ -68,12 +68,19 @@ def proc_batch_exp(
 
     controller_config = loader.load_config(cmdopts, config.kYAML.controllers)
 
-    if criteria.is_univar():
+    info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
+
+    if criteria.cardinality() == 1:
         if not cmdopts["project_no_LN"]:
             graph_targets = targets.inter_exp_calc(
                 graphs_config["inter-exp"], controller_config, cmdopts
             )
-            line.generate(cmdopts, pathset, graph_targets, criteria.graph_info(cmdopts))
+            line.generate(cmdopts, pathset, graph_targets, info)
+    else:
+        graph_targets = targets.inter_exp_calc(
+            graphs_config["inter-exp"], controller_config, cmdopts
+        )
+        heatmap.generate(cmdopts, pathset, graph_targets, info)
 
 
 __all__ = [

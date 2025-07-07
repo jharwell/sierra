@@ -21,8 +21,8 @@ mycategory:
   # matplotlib after all). Optional. Defaults to '' if omitted.
   - title: 'My Title'
 
-  # The type of graph. Must be  'stacked_line'.
-  - graph_type: 'stacked_line'
+  # The type of graph. Must be 'summary_line'.
+  - graph_type: 'summary_line'
 
   # List of names of the plotted lines within the graph. Matched pairwise with
   # the selected columns. Defaults to name of each plotted column if omitted.
@@ -31,6 +31,10 @@ mycategory:
       - 'Column 2'
       - 'Column 3'
       - '...'
+
+  # The index in the time series to use as the source for linegraph data. -1=last
+  # index.
+  - index: 14
 
   # The label of the X-axis of the graph. Optional. Defaults to '' if omitted.
   - xlabel: 'X'

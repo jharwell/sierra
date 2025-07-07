@@ -103,6 +103,12 @@ class BaseExpDef(implements.Interface):
         """Write the definition stored in the object to the filesystem."""
         raise NotImplementedError
 
+    def n_mods(self) -> tp.Tuple[int, int]:
+        """
+        Get the # (adds, changes) as a tuple
+        """
+        raise NotImplementedError
+
     def flatten(self, keys: tp.List[str]) -> None:
         """
         Replace the specified filepath attributes with their contents.

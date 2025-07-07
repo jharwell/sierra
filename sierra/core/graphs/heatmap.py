@@ -33,9 +33,9 @@ def generate(
     medium: str,
     title: str,
     colnames: tp.Tuple[str, str, str] = ("x", "y", "z"),
-    xlabel: tp.Optional[str] = None,
-    ylabel: tp.Optional[str] = None,
-    zlabel: tp.Optional[str] = None,
+    xlabel: tp.Optional[str] = "",
+    ylabel: tp.Optional[str] = "",
+    zlabel: tp.Optional[str] = "",
     large_text: bool = False,
     xticklabels: tp.Optional[tp.List[str]] = None,
     yticklabels: tp.Optional[tp.List[str]] = None,
@@ -107,10 +107,8 @@ def generate(
         plot.opts(yformatter=lambda y: yticklabels[yticks.index(y)])
 
     # Add labels
-    if xlabel:
-        plot.opts(xlabel=xlabel)
-    if ylabel:
-        plot.opts(ylabel=ylabel)
+    plot.opts(xlabel=xlabel)
+    plot.opts(ylabel=ylabel)
 
     # Set fontsizes
     plot.opts(
@@ -125,10 +123,10 @@ def generate(
     # Add title
     plot.opts(title=title)
 
-    # Add colorbar
-    plot.opts(colorbar=True)
-    if zlabel:
-        plot.opts(colorbar_opts={"label": zlabel})
+    # Add colorbar.
+    # 2025-07-08 [JRH]: backend_opts is a mpl-specific Workaround; doing
+    # colorbar_opts={"label": ...} doesn't work for unknown reasons.
+    plot.opts(colorbar=True, backend_opts={"colorbar.label": zlabel})
 
     plot.opts(fig_inches=config.kGraphBaseSize)
 

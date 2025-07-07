@@ -219,8 +219,13 @@ class Pipeline:
             # 3. -Xarg foo
             for p in passed:
                 if len(p) == 1 and "=" not in p[0]:  # boolean
-                    key = "{0}_{1}".format(shortform_map[k], p[0].replace("-", "_"))
-                    setattr(args, key, True)
+                    # Boolean shortfrom flags should store False if they contain
+                    # "no", as a user would expect.
+                    key = "{0}_{1}".format(
+                        shortform_map[k], p[0].replace("-", "_").replace("no_", "")
+                    )
+                    setattr(args, key, False if "no" in p[0] else True)
+
                 elif len(p) == 1 and "=" in p[0]:
                     arg, value = p[0].split("=")
                     key = "{0}_{1}".format(shortform_map[k], arg.replace("-", "_"))

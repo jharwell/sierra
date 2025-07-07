@@ -106,58 +106,6 @@ physics_engines_test() {
 }
 
 ################################################################################
-# Check that the batch criteria that come with SIERRA for ARGoS work.
-################################################################################
-sanity_univar_test() {
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --batch-criteria population_size.Linear3.C3"
-
-    sanity_check_pipeline $SIERRA_CMD
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --batch-criteria population_size.Log8"
-
-    sanity_check_pipeline $SIERRA_CMD
-
-    # Can't check constant/variable density beyond stage 1--requires
-    # changing arena size and also the positions of lights in the
-    # sample project :-(.
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --batch-criteria population_constant_density.CD1p0.I4.C4 \
-    --pipeline 1"
-
-    $SIERRA_CMD
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --batch-criteria population_variable_density.1p0.4p0.C4 \
-    --pipeline 1"
-}
-
-sanity_bivar_test() {
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5"
-
-    sanity_check_pipeline $SIERRA_CMD
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3"
-
-    sanity_check_pipeline $SIERRA_CMD
-}
-
-################################################################################
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
 stage1_univar_test() {
@@ -195,97 +143,6 @@ print(path)
 
         for run in {0..3}; do
             [ -f "$input_root/exp${exp}/template_run${run}.argos" ] ||false
-        done
-    done
-
-    rm -rf $SIERRA_ROOT
-}
-
-stage1_bivar_test() {
-    batch_root_cmd1="from sierra.core import batchroot;
-bc=[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"];
-template_stem=\"template\";
-scenario=\"LowBlockCount.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
-print(path)
-"
-    batch_root_cmd2="from sierra.core import batchroot;
-bc=[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"];
-template_stem=\"template\";
-scenario=\"LowBlockCount.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
-print(path)
-"
-
-    batch_root1=$(python3 -c "${batch_root_cmd1}")
-
-    input_root1=$batch_root1/exp-inputs/
-
-    batch_root2=$(python3 -c"${batch_root_cmd2}")
-
-    input_root2=$batch_root2/exp-inputs/
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --pipeline 1"
-
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD
-
-    # Check SIERRA directory structure
-    for i in {0..2}; do
-        for j in {0..4}; do
-            [ -d "$input_root1/c1-exp${i}+c2-exp${j}" ] || false
-        done
-    done
-
-    # Check stage1 generated stuff
-    for i in {0..2}; do
-        [ $(grep -r "max_speed=\"1.0\"" $input_root1/c1-exp${i}+* | wc -l) -eq "5" ]
-        for j in {0..4}; do
-            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/commands.txt" ] || false
-            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/exp_def.pkl" ] || false
-            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/seeds.pkl" ] || false
-            for run in {0..3}; do
-                [ -f "$input_root1/c1-exp${i}+c2-exp${j}/template_run${run}.argos" ] ||false
-            done
-        done
-    done
-
-    rm -rf $SIERRA_ROOT
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3\
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --pipeline 1"
-
-    $SIERRA_CMD
-
-    # Check SIERRA directory structure
-    for i in {0..4}; do
-        for j in {0..2}; do
-            [ -d "$input_root2/c1-exp${i}+c2-exp${j}" ] || false
-        done
-    done
-
-    # Check stage1 generated stuff
-    for i in {0..4}; do
-        for j in {0..2}; do
-            [ $(grep -r "max_speed=\"1.0\"" $input_root2/*+c2-exp${j} | wc -l) -eq "5" ]
-
-            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/commands.txt" ] || false
-            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/exp_def.pkl" ] || false
-            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/seeds.pkl" ] || false
-
-            for run in {0..3}; do
-                [ -f "$input_root2/c1-exp${i}+c2-exp${j}/template_run${run}.argos" ] ||false
-            done
         done
     done
 
@@ -383,45 +240,6 @@ stage2_univar_check_outputs() {
     done
 }
 
-stage2_bivar_test() {
-    batch_root_cmd1="from sierra.core import batchroot;
-bc=[\"population_size.Linear2.C2\", \"max_speed.1.9.C3\"];
-template_stem=\"template\";
-scenario=\"LowBlockCount.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
-print(path)
-"
-    batch_root1=$(python3 -c"${batch_root_cmd1}")
-
-    output_root1=$batch_root1/exp-outputs/
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --controller=foraging.footbot_foraging \
-    --batch-criteria population_size.Linear2.C2 max_speed.1.9.C3\
-    --physics-n-engines=1 \
-    --pipeline 1 2"
-
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD
-
-    # Check SIERRA directory structure
-    for i in {0..1}; do
-        for j in {0..2}; do
-            [ -d "$output_root1/c1-exp${i}+c2-exp${j}" ] || false
-        done
-    done
-
-    # Check stage2 generated stuff
-    for i in {0..1}; do
-        for j in {0..2}; do
-            for run in {0..3}; do
-                [ -f "$output_root1/c1-exp${i}+c2-exp${j}/template_run${run}_output/output/collected-data.csv" ] ||false
-            done
-        done
-    done
-}
 
 ################################################################################
 # Check that stage 3 outputs what it is supposed to
@@ -484,70 +302,6 @@ stage3_univar_check_outputs() {
     done
 }
 
-stage3_bivar_test() {
-    batch_root_cmd1="from sierra.core import batchroot;
-bc=[\"population_size.Linear2.C2\", \"max_speed.1.9.C3\"];
-template_stem=\"template\";
-scenario=\"LowBlockCount.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
-print(path)
-"
-
-    batch_root=$(python3 -c"${batch_root_cmd1}")
-
-    output_root=$batch_root1/exp-outputs/
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Linear2.C2 max_speed.1.9.C3\
-    --controller=foraging.footbot_foraging \
-    --physics-n-engines=1 \
-    --pipeline 1 2 3"
-
-    NONE=(mean)
-    CONF95=(mean stddev)
-    BW=(mean median whishi whislo q1 q3 cilo cihi)
-
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD --dist-stats=none
-    stage3_bivar_check_outputs $batch_root "${NONE[@]}"
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD --dist-stats=conf95
-    stage3_bivar_check_outputs $batch_root "${CONF95[@]}"
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD --dist-stats=bw
-    stage3_bivar_check_outputs $batch_root "${BW[@]}"
-    rm -rf $SIERRA_ROOT
-}
-
-stage3_bivar_check_outputs() {
-    batch_root="$1"
-    stat_root=$batch_root/statistics
-    shift
-    to_check=("$@")
-
-    # Check SIERRA directory structure
-    for i in {0..1}; do
-        for j in {0..2}; do
-            [ -d "$stat_root/c1-exp${i}+c2-exp${j}" ] || false
-        done
-    done
-    [ -d "$stat_root/collated" ] || false
-
-    # Check stage3 generated statistics
-    for stat in "${to_check[@]}"; do
-        for i in {0..1}; do
-            for j in {0..2}; do
-                [ -f "$stat_root/c1-exp${i}+c2-exp${j}/collected-data.${stat}" ] || false
-                [ -f "$stat_root/collated/c1-exp${i}+c2-exp${j}/collected-data-collected_food.csv" ] || false
-
-            done
-        done
-    done
-}
 
 ################################################################################
 # Check that stage 4 outputs what it is supposed to
@@ -630,6 +384,7 @@ stage4_univar_check_outputs() {
     [ -f "$graph_root/collated/SLN-robot-counts-resting.png" ] || false
     [ -f "$graph_root/collated/SLN-swarm-energy.png" ] || false
 }
+
 
 ################################################################################
 # Check that stage 5 outputs what it is supposed to

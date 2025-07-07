@@ -27,7 +27,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     intra = _load_models(main_config, cmdopts, "intra")
 
@@ -141,7 +141,7 @@ class IntraExpModelRunner:
         self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, criteria: bc.BatchCriteria) -> None:
+    def __call__(self, criteria: bc.XVarBatchCriteria) -> None:
         exp_dirnames = criteria.gen_exp_names()
         exp_to_run = utils.exp_range_calc(
             self.cmdopts["exp_range"], self.pathset.output_root, exp_dirnames
@@ -152,7 +152,7 @@ class IntraExpModelRunner:
 
     def _run_models_in_exp(
         self,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         exp_dirnames: tp.List[pathlib.Path],
         exp: pathlib.Path,
     ) -> None:
@@ -167,7 +167,7 @@ class IntraExpModelRunner:
 
     def _run_model_in_exp(
         self,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         pathset: exproot.PathSet,
         exp_index: int,
@@ -227,7 +227,7 @@ class InterExpModelRunner:
         self.cmdopts = cmdopts
         self.models = to_run
 
-    def __call__(self, criteria: bc.BatchCriteria) -> None:
+    def __call__(self, criteria: bc.XVarBatchCriteria) -> None:
 
         cmdopts = copy.deepcopy(self.cmdopts)
 

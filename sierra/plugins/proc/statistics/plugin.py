@@ -153,7 +153,7 @@ def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
     gatherer_type=DataGatherer,
 ) -> None:
     """Process :term:`Raw Output Data` files for each :term:`Experiment`.

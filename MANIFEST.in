@@ -1,0 +1,2 @@
+include docs/_build/man/*.1
+include docs/_build/man/*.7

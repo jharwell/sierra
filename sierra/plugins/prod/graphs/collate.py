@@ -10,6 +10,7 @@ import typing as tp
 import logging
 import pathlib
 import json
+import re
 
 # 3rd party packages
 import pandas as pd
@@ -18,54 +19,55 @@ import pandas as pd
 from sierra.core import utils, config, types, storage, batchroot
 import sierra.core.variables.batch_criteria as bc
 from sierra.plugins.prod.graphs import targets
-from sierra.core.graphs import bcbridge
 from sierra.core import plugin as pm
 
 _logger = logging.getLogger(__name__)
 
 
-class UnivarGraphCollationInfo:
-    """Data class of the :term:`Collated Output Data` files for a particular graph."""
+class GraphCollationInfo:
+    """Data class of the :term:`Collated Output Data` files for a particular
+    graph.
+
+    This is one of the focal points for the magic of SIERRA: here is where time
+    series data is transformed into different dataframe formats so as to make
+    generation of different types of graphs seamless when you want to look at
+    some data *across* the batch.  The for dataframes by graph type is as
+    follows:
+
+        - :func:`~sierra.core.graphs.stacked_line` : Columns are the raw time
+          series data.  Column names are the names of the experiments.
+
+        - :func:`~sierra.core.graphs.summary_line`: Columns are a single time
+          slice of time series data.  Column names are the names of the
+          experiments.  Indexed by (exp name, summary column).
+
+        - :func:`~sierra.core.graphs.heatmap`: X,Y columns are the indices in
+          the multidimensional array defining the experiment space, parsed out
+          from the exp dirnames for the batch.  Z values are a single time slice
+          of time series data for the specified column in each experiment in the
+          batch.
+    """
 
     def __init__(
-        self, df_ext: str, exp_names: tp.List[str], summary: bool, summary_col: str
+        self, df_ext: str, exp_names: tp.List[str], graph_type: str, summary_col: str
     ) -> None:
         self.df_ext = df_ext
 
-        # When collating for summary line graphs, the dataframe is indexed by
-        # the name of the experiment, and the datapoint per experiment is in a
-        # column.
-        #
-        # When collating for stacked line graphs, the columns are the names of
-        # the experiments, and the columns are the time series data.
-        if summary:
+        if graph_type == "summary_line":
             self.df = pd.DataFrame(index=exp_names, columns=[summary_col])
             self.df.index.name = "Experiment ID"
-        else:
+        elif graph_type == "stacked_line":
             self.df = pd.DataFrame(columns=exp_names)
+        elif graph_type == "heatmap":
+            self.df = pd.DataFrame(columns=["x", "y", "z"])
 
-        self.summary = summary
+        self.graph_type = graph_type
         self.summary_col = summary_col
         self.all_srcs_exist = True
         self.some_srcs_exist = False
 
 
-class BivarGraphCollationInfo:
-    """Data class of the :term:`Collated Output Data` files for a particular graph."""
-
-    def __init__(
-        self, df_ext: str, xlabels: tp.List[str], ylabels: tp.List[str]
-    ) -> None:
-        self.df_ext = df_ext
-        self.ylabels = ylabels
-        self.xlabels = xlabels
-        self.df_seq = {}  # type: tp.Dict[int, pd.DataFrame]
-        self.df_all = pd.DataFrame(columns=ylabels, index=xlabels)
-        self.all_srcs_exist = True
-        self.some_srcs_exist = False
-
-
-class UnivarGraphCollator:
+class GraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
     Results are put into a single :term:`Collated Output Data` file.
@@ -105,15 +107,14 @@ class UnivarGraphCollator:
         if self.cmdopts["dist_stats"] in ["bw", "all"]:
             stat_config.update(config.kStats["bw"].exts)
 
-        is_summary = target["type"] == "summary_line"
         stats = [
-            UnivarGraphCollationInfo(
+            GraphCollationInfo(
                 df_ext=suffix,
                 exp_names=[e.name for e in exp_dirs],
                 summary_col="{0}+{1}".format(
                     self.cmdopts["controller"], self.cmdopts["scenario"]
                 ),
-                summary=is_summary,
+                graph_type=target["type"],
             )
             for suffix in stat_config.values()
         ]
@@ -128,7 +129,7 @@ class UnivarGraphCollator:
                     self.pathset.stat_collate_root
                     / (target["dest_stem"] + stat.df_ext),
                     "storage.csv",
-                    index=stat.summary,
+                    index=stat.graph_type == "summary_line",
                 )
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
@@ -147,7 +148,7 @@ class UnivarGraphCollator:
                 )
 
     def _collate_exp(
-        self, target: dict, exp_dir: str, stats: tp.List[UnivarGraphCollationInfo]
+        self, target: dict, exp_dir: str, stats: tp.List[GraphCollationInfo]
     ) -> None:
         exp_stat_root = self.pathset.stat_root / exp_dir
 
@@ -167,135 +168,43 @@ class UnivarGraphCollator:
                 target["col"], target["src_stem"] + stat.df_ext
             )
 
+            # 2025-07-08 [JRH]: This is the ONE place in all the graph
+            # generation code which is a procedural switch on graph type.
             if target["type"] == "summary_line":
                 idx = target.get("index", -1)
                 datapoint = data_df.loc[data_df.index[idx], target["col"]]
                 stat.df.loc[exp_dir, stat.summary_col] = datapoint
-            else:
+            elif target["type"] == "stacked_line":
                 stat.df[exp_dir] = data_df[target["col"]]
+            elif target["type"] == "heatmap":
+                idx = target.get("index", -1)
 
+                regex = r"c1-exp(\d+)\+c2-exp(\d+)"
+                res = re.match(regex, exp_dir)
 
-class BivarGraphCollator:
-    """For a single graph gather needed data from experiments in a batch.
+                assert (
+                    len(res.groups()) == 2
+                ), f"Unexpected directory name '{exp_dir}': does not match regex {regex}"
 
-    Results are put into a single :term:`Collated Output Data` file.
-
-    """
-
-    def __init__(
-        self,
-        main_config: types.YAMLDict,
-        cmdopts: types.Cmdopts,
-        pathset: batchroot.PathSet,
-    ) -> None:
-        self.main_config = main_config
-        self.cmdopts = cmdopts
-        self.pathset = pathset
-        self.logger = logging.getLogger(__name__)
-
-    def __call__(self, criteria, target: dict) -> None:
-        self.logger.info(
-            "Bivariate files from batch in %s for graph '%s'...",
-            self.pathset.output_root,
-            target["src_stem"],
-        )
-        self.logger.trace(json.dumps(target, indent=4))  # type: ignore
-
-        exp_dirs = utils.exp_range_calc(
-            self.cmdopts["exp_range"], self.pathset.output_root, criteria
-        )
-
-        xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
-
-        # Always do the mean, even if stats are disabled
-        stat_config = config.kStats["mean"].exts
-
-        if self.cmdopts["dist_stats"] in ["conf95", "all"]:
-            stat_config.update(config.kStats["conf95"].exts)
-
-        if self.cmdopts["dist_stats"] in ["bw", "all"]:
-            stat_config.update(config.kStats["bw"].exts)
-
-        stats = [
-            BivarGraphCollationInfo(df_ext=suffix, xlabels=xlabels, ylabels=ylabels)
-            for suffix in stat_config.values()
-        ]
-
-        for diri in exp_dirs:
-            self._collate_exp(target, diri.name, stats)
-
-        for stat in stats:
-            if stat.all_srcs_exist:
-                for row, df in stat.df_seq.items():
-                    name = "{0}_{1}{2}".format(target["dest_stem"], row, stat.df_ext)
-                    storage.df_write(
-                        df,
-                        self.pathset.stat_collate_root / name,
-                        "storage.csv",
-                        index=False,
-                    )
-
-                # TODO: Don't write this for now, until I find a better way of
-                # doing 3D data in CSV files.
-                # writer(stat.df_all,
-                #        stat_collate_root / (target['dest_stem'] + stat.df_ext),
-                #        index=False)
-
-            elif stat.some_srcs_exist:
-                self.logger.warning(
-                    "Not all experiments in '%s' produced '%s%s'",
-                    self.pathset.output_root,
-                    target["src_stem"],
-                    stat.df_ext,
+                row = pd.DataFrame(
+                    [
+                        {
+                            # group 0 is always the whole matched string
+                            "x": int(res.group(1)),
+                            "y": int(res.group(2)),
+                            "z": data_df.loc[data_df.index[idx], target["col"]],
+                        }
+                    ]
                 )
 
-    def _collate_exp(
-        self, target: dict, exp_dir: str, stats: tp.List[BivarGraphCollationInfo]
-    ) -> None:
-        exp_stat_root = self.pathset.stat_root / exp_dir
-        for stat in stats:
-            csv_ipath = pathlib.Path(exp_stat_root, target["src_stem"] + stat.df_ext)
-
-            if not utils.path_exists(csv_ipath):
-                stat.all_srcs_exist = False
-                continue
-
-            stat.some_srcs_exist = True
-
-            data_df = storage.df_read(csv_ipath, "storage.csv")
-
-            assert (
-                target["col"] in data_df.columns.values
-            ), "{0} not in columns of {1}, which has {2}".format(
-                target["col"], csv_ipath, data_df.columns
-            )
-            xlabel, ylabel = exp_dir.split("+")
-
-            # TODO: Don't capture this for now, until I figure out a better way
-            # to do 3D data.
-            # stat.df_all.loc[xlabel][ylabel] = data_df[target['col']].to_numpy()
-
-            # We want a 2D dataframe after collation, with one iloc of SOMETHING
-            # per experiment. If we just join the columns from each experiment
-            # together into a dataframe like we did for univar criteria, we will
-            # get a 3D dataframe. Instead, we take the ith row from each column
-            # in sequence, to generate a SEQUENCE of 2D dataframes.
-            for row in data_df[target["col"]].index:
-                if row in stat.df_seq.keys():
-                    stat.df_seq[row].loc[xlabel, ylabel] = data_df.loc[
-                        row, target["col"]
-                    ]
-                else:
-                    df = pd.DataFrame(columns=stat.ylabels, index=stat.xlabels)
-                    df.loc[xlabel, ylabel] = data_df.loc[row, target["col"]]
-                    stat.df_seq[row] = df
+                stat.df = pd.concat([stat.df, row])
 
 
 def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    criteria: bc.BatchCriteria,
+    criteria: bc.XVarBatchCriteria,
 ) -> None:
     """
     Generate :term:`Collated Output Data` files from :term:`Batch Summary Data` files.
@@ -345,12 +254,7 @@ def _thread_worker(
     criteria,
 ) -> None:
 
-    collator: tp.Union[UnivarGraphCollator, BivarGraphCollator]
-
-    if criteria.is_univar():
-        collator = UnivarGraphCollator(main_config, cmdopts, pathset)
-    else:
-        collator = BivarGraphCollator(main_config, cmdopts, pathset)
+    collator = GraphCollator(main_config, cmdopts, pathset)
 
     while True:
         # Wait for 3 seconds after the queue is empty before bailing
@@ -363,9 +267,7 @@ def _thread_worker(
 
 
 __all__ = [
-    "UnivarGraphCollator",
-    "BivarGraphCollator",
-    "UnivarGraphCollationInfo",
-    "BivarGraphCollationInfo",
+    "GraphCollator",
+    "GraphCollationInfo",
     "proc_batch_exp",
 ]

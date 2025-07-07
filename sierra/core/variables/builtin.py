@@ -30,12 +30,7 @@ class MonteCarlo(bc.UnivarBatchCriteria):
     """
     Criteria which does nothing put provide a set of experiments via cardinality.
 
-    Useful in debugging/when all you care about varying is the random seed. Used
-    as::
-
-       builtin.MonteCarlo.C<X>
-
-    where <X> is the # of experiments you want in the :term:`Batch Experiment`.
+    See :ref:`usage/bc/montecarlo` for documentation.
 
     """
 

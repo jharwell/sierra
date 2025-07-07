@@ -10,7 +10,7 @@ locally. SIERRA makes the following assumptions about the prefect environments
 corresponding to the plugins listed on this page:
 
 .. list-table:: HPC Environment Assumptions
-   :widths: 25,75
+   :widths: 25 75
    :header-rows: 1
 
    * - Assumption
@@ -62,7 +62,7 @@ In this environment, SIERRA will:
   defined SIERRA will throw an error.
 
 .. list-table:: Prefect-SIERRA interface
-   :widths: 25,25,50
+   :widths: 25 25 50
    :header-rows: 1
 
    * - Prefect environment variable

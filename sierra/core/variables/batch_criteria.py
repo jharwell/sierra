@@ -10,6 +10,7 @@ import logging
 import argparse
 import copy
 import pathlib
+import itertools
 
 # 3rd party packages
 import implements
@@ -38,34 +39,8 @@ class IQueryableBatchCriteria(implements.Interface):
         raise NotImplementedError
 
 
-class IBatchCriteriaType(implements.Interface):
-    """Mixin interface for criteria for querying univariate/bivariate."""
-
-    def is_bivar(self) -> bool:
-        """
-        Determine if the batch criteria is bivariate.
-
-        Returns:
-
-            `True` if this class is a bivariate batch criteria instance, and
-            `False` otherwise.
-        """
-        raise NotImplementedError
-
-    def is_univar(self) -> bool:
-        """
-        Determine if the batch criteria is univariate.
-
-        Returns:
-
-            `True` if this class is a univar batch criteria instance, and
-            `False` otherwise.
-        """
-        raise NotImplementedError
-
-
 @implements.implements(base_variable.IBaseVariable)
-class BatchCriteria:
+class BaseBatchCriteria:
     """Defines experiments via  lists of sets of changes to make to an expdef.
 
     Attributes:
@@ -102,6 +77,12 @@ class BatchCriteria:
 
     def gen_files(self) -> None:
         pass
+
+    def cardinality(self) -> int:
+        return -1
+
+    def computable_exp_scenario_name(self) -> bool:
+        return False
 
     def gen_exp_names(self) -> tp.List[str]:
         """
@@ -217,7 +198,7 @@ class BatchCriteria:
 
         if not is_compound:
             self.logger.debug(
-                ("Applying %s expdef modifications from '%s' for " "exp%s in %s"),
+                ("Applying %s expdef mods from '%s' for exp%s in %s"),
                 len(modsi),
                 self.cli_arg,
                 i,
@@ -268,20 +249,13 @@ class BatchCriteria:
         expi_def.write(opath)
 
 
-@implements.implements(IBatchCriteriaType)
-class UnivarBatchCriteria(BatchCriteria):
+class UnivarBatchCriteria(BaseBatchCriteria):
     """
     Base class for a univariate batch criteria.
     """
 
-    #
-    # IBatchCriteriaType overrides
-    #
-    def is_bivar(self) -> bool:
-        return False
-
-    def is_univar(self) -> bool:
-        return True
+    def cardinality(self) -> int:
+        return 1
 
     def populations(
         self, cmdopts: types.Cmdopts, exp_names: tp.Optional[tp.List[str]] = None
@@ -313,137 +287,187 @@ class UnivarBatchCriteria(BatchCriteria):
             sizes.append(
                 module1.population_size_from_pickle(exp_def, self.main_config, cmdopts)
             )
+
         return sizes
 
 
-@implements.implements(IBatchCriteriaType)
 @implements.implements(bcbridge.IGraphable)
 @implements.implements(IQueryableBatchCriteria)
-class BivarBatchCriteria(BatchCriteria):
+class XVarBatchCriteria(BaseBatchCriteria):
     """
-    Combination of the definition of two separate batch criteria.
+    Combination of the definition of multiple
+    :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria`.
 
     .. versionchanged:: 1.2.20
 
-       Bivariate batch criteria can be compound: one criteria can create and
-       the other modify expdef elements to create an experiment definition.
-
+       Batch criteria can be compound: one criteria can create and the other
+       modify expdef elements to create an experiment definition.
     """
 
-    def __init__(self, criteria1: BatchCriteria, criteria2: BatchCriteria) -> None:
-        BatchCriteria.__init__(
+    def __init__(self, criterias: tp.List[BaseBatchCriteria]) -> None:
+        BaseBatchCriteria.__init__(
             self,
-            "+".join([criteria1.cli_arg, criteria2.cli_arg]),
-            criteria1.main_config,
-            criteria1.batch_input_root,
+            "+".join([c.cli_arg for c in criterias]),
+            criterias[0].main_config,
+            criterias[0].batch_input_root,
         )
-        self.criteria1 = criteria1
-        self.criteria2 = criteria2
+        self.criterias = criterias
 
-    #
-    # IBatchCriteriaType overrides
-    #
+    def cardinality(self) -> int:
+        return len(self.criterias)
 
-    def is_bivar(self) -> bool:
-        return True
-
-    def is_univar(self) -> bool:
-        return False
+    def computable_exp_scenario_name(self) -> bool:
+        return any(c.computable_exp_scenario_name() for c in self.criterias)
 
     def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
-        list1 = self.criteria1.gen_attr_changelist()
-        list2 = self.criteria2.gen_attr_changelist()
-        ret = []
+        changes = [c.gen_attr_changelist() for c in self.criterias]
 
-        if list1 and list2:
-            for l1 in list1:
-                for l2 in list2:
-                    ret.append(l1 | l2)
+        # Flatten each list of sets into a single list of items
+        flattened_lists = []
 
-        elif list1:
-            ret = list1
+        for list_of_sets in changes:
+            flattened_list = []
+            for s in list_of_sets:
+                flattened_list.extend(s)
 
-        elif list2:
-            ret = list2
+            flattened_lists.append(flattened_list)
 
-        return ret
+        # Use itertools.product to get all combinations
+        result = []
+        for combination in itertools.product(*flattened_lists):
+            result.append(definition.AttrChangeSet(*combination))
+
+        return result
 
     def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
-        list1 = self.criteria1.gen_element_addlist()
-        list2 = self.criteria2.gen_element_addlist()
-        ret = []
+        changes = [c.gen_element_addlist() for c in self.criterias]
 
-        if list1 and list2:
-            for l1 in list1:
-                for l2 in list2:
-                    l1.extend(l2)
-                    ret.append(l1)
-        elif list1:
-            ret = list1
+        # Flatten each list of sets into a single list of items
+        flattened_lists = []
 
-        elif list2:
-            ret = list2
+        for list_of_sets in changes:
+            flattened_list = []
+            for s in list_of_sets:
+                flattened_list.extend(s)
+            flattened_lists.append(flattened_list)
 
-        return ret
+        # Use itertools.product to get all combinations
+        result = []
+        for combination in itertools.product(*flattened_lists):
+            result.append(definition.ElementAddList(*combination))
+
+        return result
 
     def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
-        ret = self.criteria1.gen_tag_rmlist()
-        ret.extend(self.criteria2.gen_tag_rmlist())
-        return ret
+        changes = [c.gen_tag_rmlist() for c in self.criterias]
+
+        # Flatten each list of sets into a single list of items
+        flattened_lists = []
+
+        for list_of_sets in changes:
+            flattened_list = []
+            for s in list_of_sets:
+                flattened_list.extend(s)
+            flattened_lists.append(flattened_list)
+
+        # Use itertools.product to get all combinations
+        result = []
+        for combination in itertools.product(*flattened_lists):
+            result.append(definition.ElementRmList(*combination))
+
+        return result
 
     def gen_exp_names(self) -> tp.List[str]:
         """
         Generate a SORTED list of strings for all experiment names.
 
-        These will be used as directory LEAF names--and don't include the
-        parents.
+        These will be used as directory LEAF names, and don't include the
+        parents. Basically, this is a flattened list of permutations of all
+        ``gen_exp_names()`` for each batch criteria.
 
         """
-        list1 = self.criteria1.gen_exp_names()
-        list2 = self.criteria2.gen_exp_names()
+
+        # Collect all criteria lists with their prefixes
+        criteria_lists = []
+        for i, criteria in enumerate(self.criterias, 1):
+            exp_names = criteria.gen_exp_names()
+            prefixed_names = [f"c{i}-{name}" for name in exp_names]
+            criteria_lists.append(prefixed_names)
+
+        # Generate all combinations using itertools.product
         ret = []
-
-        for l1 in list1:
-            for l2 in list2:
-                ret.append("+".join(["c1-" + l1, "c2-" + l2]))
-
+        for combination in itertools.product(*criteria_lists):
+            ret.append("+".join(combination))
         return ret
 
     def populations(self, cmdopts: types.Cmdopts) -> tp.List[tp.List[int]]:
         """Generate a 2D array of system sizes used the batch experiment.
 
         Sizes are in the same order as the directories returned from
-        `gen_exp_names()` for each criteria along each axis.
+        ``gen_exp_names()`` for each criteria along each axis.
 
         """
         names = self.gen_exp_names()
+        criteria_dims = []
+        criteria_counts = []
 
-        sizes = [
-            [0 for col in self.criteria2.gen_exp_names()]
-            for row in self.criteria1.gen_exp_names()
-        ]
+        for criteria in self.criterias:
+            exp_names = criteria.gen_exp_names()
+            n_chgs = len(criteria.gen_attr_changelist())
+            n_adds = len(criteria.gen_element_addlist())
 
-        n_chgs2 = len(self.criteria2.gen_attr_changelist())
-        n_adds2 = len(self.criteria2.gen_element_addlist())
+            criteria_dims.append(len(exp_names))
+            criteria_counts.append(n_chgs + n_adds)
 
+        # Create multi-dimensional nested list initialized with zeros
+        def create_nested_list(dimensions):
+            if len(dimensions) == 1:
+                return [0] * dimensions[0]
+            return [create_nested_list(dimensions[1:]) for _ in range(dimensions[0])]
+
+        sizes = create_nested_list(criteria_dims)
+
+        # Get plugin modules
         module1 = pm.pipeline.get_plugin_module(cmdopts["engine"])
         module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
+
+        # Calculate total combinations for index conversion
+        total_combinations = 1
+        for count in criteria_counts:
+            total_combinations *= count
 
         for d in names:
             pkl_path = self.batch_input_root / d / config.kPickleLeaf
             exp_def = module2.unpickle(pkl_path)
 
+            # Convert linear index to multi-dimensional indices
             index = names.index(d)
-            i = int(index / (n_chgs2 + n_adds2))
-            j = index % (n_chgs2 + n_adds2)
-            sizes[i][j] = module1.population_size_from_pickle(
+            indices = []
+            remaining_index = index
+
+            for i in range(len(criteria_counts)):
+                # Calculate stride for this dimension
+                stride = 1
+                for j in range(i + 1, len(criteria_counts)):
+                    stride *= criteria_counts[j]
+
+                # Calculate index for this dimension
+                dim_index = remaining_index // stride
+                indices.append(dim_index)
+                remaining_index = remaining_index % stride
+
+            # Set the population size at the calculated indices
+            current_level = sizes
+            for i, idx in enumerate(indices[:-1]):
+                current_level = current_level[idx]
+            current_level[indices[-1]] = module1.population_size_from_pickle(
                 exp_def, self.main_config, cmdopts
             )
 
         return sizes
 
     def exp_scenario_name(self, exp_num: int) -> str:
-        """Given the expeperiment number, compute a parsable scenario name.
+        """Given the experiment number, compute a parsable scenario name.
 
         It is necessary to query this function after generating the changelist
         in order to create generator classes for each experiment in the batch
@@ -452,18 +476,14 @@ class BivarBatchCriteria(BatchCriteria):
         Can only be called if constant density is one of the sub-criteria.
 
         """
-        if hasattr(self.criteria1, "exp_scenario_name"):
-            return self.criteria1.exp_scenario_name(
-                int(exp_num / len(self.criteria2.gen_attr_changelist()))
-            )
-        if hasattr(self.criteria2, "exp_scenario_name"):
-            return self.criteria2.exp_scenario_name(
-                int(exp_num % len(self.criteria2.gen_attr_changelist()))
-            )
-        else:
-            raise RuntimeError(
-                "Bivariate batch criteria does not contain constant density"
-            )
+        for criteria in self.criterias:
+            if hasattr(criteria, "exp_scenario_name"):
+                return criteria.exp_scenario_name(
+                    int(exp_num / len(criteria.gen_attr_changelist()))
+                )
+        raise RuntimeError(
+            "Batch criteria does not define 'exp_scenario_name()' required for constant density scenarios"
+        )
 
     def graph_info(
         self,
@@ -481,8 +501,15 @@ class BivarBatchCriteria(BatchCriteria):
             info.cmdopts["exp_range"], info.batch_output_root, self.gen_exp_names()
         )
 
-        c2_names = self.criteria2.gen_exp_names()
-        c1_names = self.criteria1.gen_exp_names()
+        # 2025-07-08 [JRH]: Eventually, this will be replaced with axes
+        # selection, but for now, limiting to bivariate is the simpler way to
+        # go.
+        assert (
+            len(self.criterias) <= 2
+        ), "Only {univar,bivar} batch criteria graph generation currently supported"
+
+        c2_names = self.criterias[1].gen_exp_names()
+        c1_names = self.criterias[0].gen_exp_names()
 
         ynames = []
         xnames = []
@@ -495,10 +522,10 @@ class BivarBatchCriteria(BatchCriteria):
                 ynames.append(leaf)
                 break
 
-        info1 = self.criteria1.graph_info(
+        info1 = self.criterias[0].graph_info(
             cmdopts, exp_names=xnames, batch_output_root=batch_output_root
         )
-        info2 = self.criteria2.graph_info(
+        info2 = self.criterias[1].graph_info(
             cmdopts, exp_names=ynames, batch_output_root=batch_output_root
         )
         info.xticks = info1.xticks
@@ -510,57 +537,50 @@ class BivarBatchCriteria(BatchCriteria):
 
     def set_batch_input_root(self, root: pathlib.Path) -> None:
         self.batch_input_root = root
-        self.criteria1.batch_input_root = root
-        self.criteria2.batch_input_root = root
+        for criteria in self.criterias:
+            criteria.batch_input_root = root
 
     def n_agents(self, exp_num: int) -> int:
-        n_chgs2 = len(self.criteria2.gen_attr_changelist())
-        n_adds2 = len(self.criteria2.gen_element_addlist())
-        i = int(exp_num / (n_chgs2 + n_adds2))
-        j = exp_num % (n_chgs2 + n_adds2)
+        # Calculate dimensions and counts for each criteria
+        criteria_counts = []
+        for criteria in self.criterias:
+            n_chgs = len(criteria.gen_attr_changelist())
+            n_adds = len(criteria.gen_element_addlist())
+            criteria_counts.append(n_chgs + n_adds)
 
-        if hasattr(self.criteria1, "n_agents"):
-            return self.criteria1.n_agents(i)
-        elif hasattr(self.criteria2, "n_agents"):
-            return self.criteria2.n_agents(j)
+        # Convert linear experiment number to multi-dimensional indices
+        indices = []
+        remaining_exp_num = exp_num
 
-        raise NotImplementedError
+        for i in range(len(criteria_counts)):
+            # Calculate stride for this dimension
+            stride = 1
+            for j in range(i + 1, len(criteria_counts)):
+                stride *= criteria_counts[j]
 
+            # Calculate index for this dimension
+            dim_index = remaining_exp_num // stride
+            indices.append(dim_index)
+            remaining_exp_num = remaining_exp_num % stride
 
-def factory(
-    main_config: types.YAMLDict,
-    cmdopts: types.Cmdopts,
-    batch_input_root: pathlib.Path,
-    args: argparse.Namespace,
-    scenario: tp.Optional[str] = None,
-) -> BatchCriteria:
-    if scenario is None:
-        scenario = args.scenario
+        # Find the first criteria that has an n_agents method and use it
+        for i, criteria in enumerate(self.criteria):
+            if hasattr(criteria, "n_agents"):
+                return criteria.n_agents(indices[i])
 
-    if len(args.batch_criteria) == 1:
-        return __univar_factory(
-            main_config, cmdopts, batch_input_root, args.batch_criteria[0], scenario
-        )
-    elif len(args.batch_criteria) == 2:
-        assert (
-            args.batch_criteria[0] != args.batch_criteria[1]
-        ), "Duplicate batch criteria passed"
-        return __bivar_factory(
-            main_config, cmdopts, batch_input_root, args.batch_criteria, scenario
-        )
-    else:
-        raise RuntimeError("1 or 2 batch criterias must be specified on the cmdline")
+        # If no criteria has n_agents method, raise an error
+        raise AttributeError("No criteria has an 'n_agents' method")
 
 
-def __univar_factory(
+def univar_factory(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     batch_input_root: pathlib.Path,
     cli_arg: str,
     scenario,
-) -> BatchCriteria:
+) -> BaseBatchCriteria:
     """
-    Construct a batch criteria object from a single cmdline argument.
+    Construct a univariate batch criteria object from a single cmdline argument.
     """
     category = cli_arg.split(".")[0]
     path = f"variables.{category}"
@@ -576,43 +596,43 @@ def __univar_factory(
         ret = bcfactory(cli_arg, main_config, cmdopts, batch_input_root)()
 
     logging.info(
-        "Create univariate batch criteria '%s' from '%s'", ret.__class__.__name__, path
+        "Create univariate batch criteria %s from %s", ret.__class__.__name__, path
     )
     return ret  # type: ignore
 
 
-def __bivar_factory(
+def factory(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     batch_input_root: pathlib.Path,
-    cli_arg: tp.List[str],
-    scenario: str,
-) -> BatchCriteria:
-    criteria1 = __univar_factory(
-        main_config, cmdopts, batch_input_root, cli_arg[0], scenario
-    )
-
-    criteria2 = __univar_factory(
-        main_config, cmdopts, batch_input_root, cli_arg[1], scenario
-    )
+    args: argparse.Namespace,
+    scenario: tp.Optional[str] = None,
+) -> BaseBatchCriteria:
+    """
+    Construct a multivariate batch criteria object from cmdline input.
+    """
+    criterias = [
+        univar_factory(main_config, cmdopts, batch_input_root, arg, scenario)
+        for arg in args.batch_criteria
+    ]
 
     # Project hook
     bc = pm.module_load_tiered(
         project=cmdopts["project"], path="variables.batch_criteria"
     )
-    ret = bc.BivarBatchCriteria(criteria1, criteria2)
+    ret = bc.XVarBatchCriteria(criterias)
 
     logging.info(
-        "Created bivariate batch criteria from %s,%s",
-        ret.criteria1.__class__.__name__,
-        ret.criteria2.__class__.__name__,
+        "Created %s-D batch criteria from %s",
+        len(criterias),
+        ",".join([c.__class__.__name__ for c in criterias]),
     )
 
     return ret  # type: ignore
 
 
 __all__ = [
-    "BatchCriteria",
+    "BaseBatchCriteria",
     "UnivarBatchCriteria",
-    "BivarBatchCriteria",
+    "XVarBatchCriteria",
 ]

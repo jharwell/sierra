@@ -26,7 +26,7 @@ multiple turtlebots using GNU parallel.
 The following environmental variables are used in the turtlebot3 environment:
 
 .. list-table::
-   :widths: 25,25,25,25
+   :widths: 25 25 25 25
    :header-rows: 1
 
    * - Environment variable

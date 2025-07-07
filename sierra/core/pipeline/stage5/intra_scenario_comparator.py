@@ -188,7 +188,7 @@ class UnivarIntraScenarioComparator:
     def _gen_csv(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         controller: str,
         src_stem: str,
@@ -225,7 +225,7 @@ class UnivarIntraScenarioComparator:
     def _gen_graph(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.BatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
@@ -507,7 +507,7 @@ class BivarIntraScenarioComparator:
         self,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
-        criteria: bc.BivarBatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         batch_leaf: batchroot.ExpRootLeaf,
         controller: str,
         src_stem: str,
@@ -589,7 +589,7 @@ class BivarIntraScenarioComparator:
     def _gen_graphs1D(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.BivarBatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         cmdopts: types.Cmdopts,
         dest_stem: str,
@@ -654,7 +654,7 @@ class BivarIntraScenarioComparator:
     def _gen_graphs2D(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.BivarBatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
@@ -690,7 +690,7 @@ class BivarIntraScenarioComparator:
     def _gen_paired_heatmaps(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.BivarBatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
@@ -778,7 +778,7 @@ class BivarIntraScenarioComparator:
     def _gen_dual_heatmaps(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
-        criteria: bc.BivarBatchCriteria,
+        criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
