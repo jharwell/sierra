@@ -480,8 +480,8 @@ stage5_univar_check_sc_outputs() {
 stage5_bivar_test() {
     rm -rf $SIERRA_ROOT
 
-    controllers=(foraging.footbot_foraging
-                 foraging.footbot_foraging_slow)
+    controllers=(foraging.footbot_foraging2
+                 foraging.footbot_foraging_slow2)
 
     # Run experiments with both controllers
     for c in "${controllers[@]}"; do
@@ -504,17 +504,11 @@ stage5_bivar_test() {
        --bc-bivar \
        --log-level=TRACE"
 
-    # 6 -> 2 controllers, 3 values for bc on primary axis
-    # 2 -> 2 configured graphs
-    # 2 -> 2 configured graphs
-    # 2 -> 2 configured graphs
-    # 24 -> 2 configured graphs, 12 viewing angles on each
-    # 24 -> 2 configured graphs, 12 viewing angles on each
-    # 24 -> 2 configured graphs, 12 viewing angles on each
-    N_FILES=(6 2 2 2 24 24 24)
-    COMPS=(LNraw HMraw HMdiff HMscale SUraw SUscale SUdiff)
+    # 2 -> 1 graph per controller, 2 performance variables
+    N_FILES=(2)
+    COMPS=(LNraw)
 
-    for i in {0..6}; do
+    for i in {0..0}; do
         SIERRA_STAGE5_CMD="$SIERRA_STAGE5_BASE_CMD \
         --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
         --controller-comparison \
@@ -523,10 +517,10 @@ stage5_bivar_test() {
         --plot-log-yscale \
         --plot-large-text \
         --plot-transpose-graphs \
-        --controllers-list=foraging.footbot_foraging,foraging.footbot_foraging_slow"
+        --controllers-list=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
 
-        cc_csv_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs
-        cc_graph_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs
+        cc_csv_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-csvs
+        cc_graph_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-graphs
 
         rm -rf $cc_csv_root
         rm -rf $cc_graph_root

@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.4.8"
+version = "1.4.10"
 
 description = "Automation framework for the scientific method in AI research"
 authors = [
@@ -41,13 +41,16 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
 

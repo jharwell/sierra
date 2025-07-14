@@ -89,10 +89,6 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.attr_changes
 
-    def gen_exp_names(self) -> tp.List[str]:
-        changes = self.gen_attr_changelist()
-        return ["exp" + str(x) for x in range(0, len(changes))]
-
     def graph_info(
         self,
         cmdopts: types.Cmdopts,

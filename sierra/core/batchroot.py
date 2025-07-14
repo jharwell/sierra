@@ -48,10 +48,15 @@ class ExpRootLeaf:
         self.template_stem = template_stem
         self.scenario = scenario
 
-    def to_path(self) -> pathlib.Path:
-        root = pathlib.Path(
-            "{0}-{1}+{2}".format(self.template_stem, self.scenario, "+".join(self.bc))
-        )
+    def to_path(self, scenario: bool = True) -> pathlib.Path:
+        if scenario:
+            root = pathlib.Path(
+                "{0}-{1}+{2}".format(
+                    self.template_stem, self.scenario, "+".join(self.bc)
+                )
+            )
+        else:
+            root = pathlib.Path("{0}-{1}".format(self.template_stem, "+".join(self.bc)))
         return root
 
     def to_str(self) -> str:

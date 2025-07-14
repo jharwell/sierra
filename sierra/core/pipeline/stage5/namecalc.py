@@ -14,17 +14,42 @@ import typing as tp
 from sierra.core import batchroot
 
 
-def for_output(leaf: batchroot.ExpRootLeaf,
-               new_stem: str,
-               indices: tp.Union[tp.List[int], None]) -> str:
+def for_cc(
+    leaf: batchroot.ExpRootLeaf, new_stem: str, indices: tp.Union[tp.List[int], None]
+) -> str:
     """
-    Create a new name given an existing leaf and a new component.
+    Calculates a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
 
-    "Name" here is in pathlib terminology.
+    "Name" here is in pathlib terminology. Targets controller comparisons. Since
+    controller name is part of the default batchroot path, AND each batchroot
+    path is unique, this case is easy.
     """
-    name = new_stem + "-" + leaf.to_path().name
+    name = "{0}-{1}".format(new_stem, leaf.to_path().name)
 
     if indices is not None:
-        name += '_' + ''.join([str(i) for i in indices])
+        name += "_" + "".join([str(i) for i in indices])
+
+    return name
+
+
+def for_sc(
+    leaf: batchroot.ExpRootLeaf,
+    scenarios: tp.List[str],
+    new_stem: str,
+    indices: tp.Union[tp.List[int], None],
+) -> str:
+    """
+    Calculates a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
+
+    "Name" here is in pathlib terminology. Targets scenario comparisons, so we
+    need a list of all scenarios in the path to eliminate path collisions in all
+    cases.
+    """
+    name = "{0}-{1}+{2}".format(
+        new_stem, "+".join(scenarios), leaf.to_path(scenario=False)
+    )
+
+    if indices is not None:
+        name += "_" + "".join([str(i) for i in indices])
 
     return name

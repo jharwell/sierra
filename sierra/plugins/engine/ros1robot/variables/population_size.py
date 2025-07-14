@@ -103,10 +103,6 @@ class PopulationSize(population_size.PopulationSize):
 
         return self.element_adds
 
-    def gen_exp_names(self) -> tp.List[str]:
-        adds = self.gen_element_addlist()
-        return ["exp" + str(x) for x in range(0, len(adds))]
-
     def n_agents(self, exp_num: int) -> int:
         return self.sizes[exp_num]
 

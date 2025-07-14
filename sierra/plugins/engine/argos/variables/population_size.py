@@ -74,10 +74,6 @@ class PopulationSize(population_size.PopulationSize):
             )
         return self.attr_changes
 
-    def gen_exp_names(self) -> tp.List[str]:
-        changes = self.gen_attr_changelist()
-        return ["exp" + str(x) for x in range(0, len(changes))]
-
     def n_agents(self, exp_num: int) -> int:
         return self.size_list[exp_num]
 
@@ -92,6 +88,7 @@ class PopulationSize(population_size.PopulationSize):
             batch_output_root,
             exp_names if exp_names else self.gen_exp_names(),
         )
+
         info.xlabel = super().graph_xlabel(info.cmdopts)
         info.xticklabels = super().graph_xticklabels(
             info.cmdopts, info.batch_output_root, info.exp_names

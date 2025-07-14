@@ -81,22 +81,11 @@ class BaseBatchCriteria:
     def cardinality(self) -> int:
         return -1
 
+    def gen_exp_names(self) -> tp.List[str]:
+        raise NotImplementedError
+
     def computable_exp_scenario_name(self) -> bool:
         return False
-
-    def gen_exp_names(self) -> tp.List[str]:
-        """
-        Generate list of experiment names from the criteria.
-
-        Used for creating unique directory names for each experiment in the
-        batch.
-
-        Returns:
-
-            List of experiments names for current experiment.
-
-        """
-        return []
 
     def arena_dims(self, cmdopts: types.Cmdopts) -> tp.List[utils.ArenaExtent]:
         """Get the arena dimensions used for each experiment in the batch.
@@ -257,6 +246,9 @@ class UnivarBatchCriteria(BaseBatchCriteria):
     def cardinality(self) -> int:
         return 1
 
+    def gen_exp_names(self) -> tp.List[str]:
+        return [f"c1-exp{i}" for i in range(0, self.n_exp())]
+
     def populations(
         self, cmdopts: types.Cmdopts, exp_names: tp.Optional[tp.List[str]] = None
     ) -> tp.List[int]:
@@ -390,14 +382,14 @@ class XVarBatchCriteria(BaseBatchCriteria):
         # Collect all criteria lists with their prefixes
         criteria_lists = []
         for i, criteria in enumerate(self.criterias, 1):
-            exp_names = criteria.gen_exp_names()
-            prefixed_names = [f"c{i}-{name}" for name in exp_names]
+            prefixed_names = [f"c{i}-exp{j}" for j in range(0, criteria.n_exp())]
             criteria_lists.append(prefixed_names)
 
         # Generate all combinations using itertools.product
         ret = []
         for combination in itertools.product(*criteria_lists):
             ret.append("+".join(combination))
+
         return ret
 
     def populations(self, cmdopts: types.Cmdopts) -> tp.List[tp.List[int]]:
@@ -508,30 +500,34 @@ class XVarBatchCriteria(BaseBatchCriteria):
             len(self.criterias) <= 2
         ), "Only {univar,bivar} batch criteria graph generation currently supported"
 
-        c2_names = self.criterias[1].gen_exp_names()
-        c1_names = self.criterias[0].gen_exp_names()
+        exp_names = self.gen_exp_names()
+        if self.cardinality() == 1:
+            info1 = self.criterias[0].graph_info(
+                cmdopts, exp_names=exp_names, batch_output_root=batch_output_root
+            )
 
-        ynames = []
-        xnames = []
-        for d in all_dirs:
-            leaf = d.name
-            if any(c2 in leaf.split("+")[1] for c2 in c2_names):
-                xnames.append(leaf)
+            info.xticks = info1.xticks
+            info.xlabel = info1.xlabel
+            info.xticklabels = [str(x) for x in info.xticks]
 
-            if any(c1 in leaf.split("+")[0] for c1 in c1_names):
-                ynames.append(leaf)
-                break
+        elif self.cardinality() == 2:
+            c1_xnames = [f"c1-exp{i}" for i in range(0, self.criterias[0].n_exp())]
+            xnames = [d for d in self.gen_exp_names() if any(x in d for x in c1_xnames)]
+            c2_ynames = [f"c1-exp{i}" for i in range(0, self.criterias[1].n_exp())]
+            ynames = [d for d in self.gen_exp_names() if any(y in d for y in c2_ynames)]
 
-        info1 = self.criterias[0].graph_info(
-            cmdopts, exp_names=xnames, batch_output_root=batch_output_root
-        )
-        info2 = self.criterias[1].graph_info(
-            cmdopts, exp_names=ynames, batch_output_root=batch_output_root
-        )
-        info.xticks = info1.xticks
-        info.yticks = info2.xticks
-        info.xlabel = info1.xlabel
-        info.ylabel = info2.xlabel
+            info1 = self.criterias[0].graph_info(
+                cmdopts, exp_names=xnames, batch_output_root=batch_output_root
+            )
+            info2 = self.criterias[1].graph_info(
+                cmdopts, exp_names=ynames, batch_output_root=batch_output_root
+            )
+            info.xticks = info1.xticks
+            info.xticklabels = [str(x) for x in info.xticks]
+            info.yticks = info2.xticks
+            info.xlabel = info1.xlabel
+            info.ylabel = info2.xlabel
+            info.yticklabels = [str(x) for x in info.yticks]
 
         return info
 

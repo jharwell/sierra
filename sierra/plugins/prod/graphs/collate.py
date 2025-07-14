@@ -183,7 +183,7 @@ class GraphCollator:
                 res = re.match(regex, exp_dir)
 
                 assert (
-                    len(res.groups()) == 2
+                    res and len(res.groups()) == 2
                 ), f"Unexpected directory name '{exp_dir}': does not match regex {regex}"
 
                 row = pd.DataFrame(

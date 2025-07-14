@@ -24,7 +24,7 @@ import pandas as pd
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.plugin as pm
 from sierra.core import types, utils, config, storage, batchroot, graphs
-from sierra.core.pipeline.stage5 import outputroot
+from sierra.core.pipeline.stage5 import outputroot, preprocess, namecalc
 
 
 class UnivarInterScenarioComparator:
@@ -171,14 +171,17 @@ class UnivarInterScenarioComparator:
         )
 
         self._gen_csvs(
+            criteria=criteria,
             pathset=pathset,
             project=self.cli_args.project,
             batch_leaf=batch_leaf,
             src_stem=graph["src_stem"],
             dest_stem=graph["dest_stem"],
+            index=graph.get("index", -1),
         )
 
         self._gen_graph(
+            batch_leaf=batch_leaf,
             criteria=criteria,
             cmdopts=cmdopts,
             batch_output_root=pathset.output_root,
@@ -191,6 +194,7 @@ class UnivarInterScenarioComparator:
 
     def _gen_graph(
         self,
+        batch_leaf: batchroot.ExpRootLeaf,
         criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
@@ -201,13 +205,13 @@ class UnivarInterScenarioComparator:
         legend: tp.List[str],
     ) -> None:
         """Generate graph comparing the specified controller across scenarios."""
-        istem = dest_stem + "-" + self.controller
-        img_ostem = dest_stem + "-" + self.controller
-
+        opath_leaf = namecalc.for_sc(batch_leaf, self.scenarios, dest_stem, None)
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
+        xticklabels = info.xticklabels
+        xticks = info.xticks
         if inc_exps is not None:
-            xtick_labels = utils.exp_include_filter(
+            xticklabels = utils.exp_include_filter(
                 inc_exps, info.xticklabels, criteria.n_exp()
             )
             xticks = utils.exp_include_filter(inc_exps, info.xticks, criteria.n_exp())
@@ -223,15 +227,15 @@ class UnivarInterScenarioComparator:
 
         graphs.summary_line(
             paths=paths,
-            input_stem=istem,
+            input_stem=opath_leaf,
             stats=cmdopts["dist_stats"],
             medium=cmdopts["storage"],
-            output_stem=img_ostem,
+            output_stem=opath_leaf,
             title=title,
-            xlabel=info.xlabel(cmdopts),
+            xlabel=info.xlabel,
             ylabel=label,
             xticks=xticks,
-            xticklabels=xtick_labels,
+            xticklabels=xticklabels,
             logyscale=cmdopts["plot_log_yscale"],
             large_text=cmdopts["plot_large_text"],
             legend=legend,
@@ -239,9 +243,11 @@ class UnivarInterScenarioComparator:
 
     def _gen_csvs(
         self,
+        criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         project: str,
         batch_leaf: batchroot.ExpRootLeaf,
+        index: int,
         src_stem: str,
         dest_stem: str,
     ) -> None:
@@ -276,24 +282,20 @@ class UnivarInterScenarioComparator:
             )
             return
 
-        opath_stem = pathlib.Path(
-            self.stage5_roots.csv_root, dest_stem + "-" + self.controller
+        preparer = preprocess.IntraExpPreparer(
+            ipath_stem=pathset.stat_collate_root,
+            ipath_leaf=src_stem,
+            opath_stem=self.stage5_roots.csv_root,
+            criteria=criteria,
         )
+        opath_leaf = namecalc.for_sc(batch_leaf, self.scenarios, dest_stem, None)
 
-        # Collect performance measure results. Append to existing dataframe if
-        # it exists, otherwise start a new one.
-        exts = config.kStats["mean"].exts
-        exts.update(config.kStats["conf95"].exts)
-        exts.update(config.kStats["bw"].exts)
-
-        for k in exts:
-            # Can't use with_suffix() for opath, because that path contains the
-            # controller, which already has a '.' in it.
-            csv_opath = opath_stem.with_name(opath_stem.name + exts[k])
-            csv_ipath = csv_ipath_stem.with_suffix(exts[k])
-            df = self._accum_df(csv_ipath, csv_opath, src_stem)
-            if df is not None:
-                storage.df_write(df, csv_opath, "storage.csv", index=False)
+        preparer.for_sc(
+            scenario=batch_leaf.scenario,
+            opath_leaf=opath_leaf,
+            index=index,
+            inc_exps=None,
+        )
 
         # Collect performance results models and legends. Append to existing
         # dataframes if they exist, otherwise start new ones.
@@ -306,7 +308,8 @@ class UnivarInterScenarioComparator:
         model_opath = model_ostem.with_name(
             model_ostem.name + config.kModelsExt["model"]
         )
-        model_df = self._accum_df(model_ipath, model_opath, src_stem)
+        # model_df = self._accum_df(criteria, model_ipath, model_opath, src_stem)
+        model_df = None
         legend_opath = model_ostem.with_name(
             model_ostem.name + config.kModelsExt["legend"]
         )
@@ -318,39 +321,6 @@ class UnivarInterScenarioComparator:
                 sgp = pm.module_load_tiered(project=project, path="generators.scenario")
                 kw = sgp.to_dict(batch_leaf.scenario)
                 f.write("{0} Prediction\n".format(kw["scenario_tag"]))
-
-    def _accum_df(
-        self, ipath: pathlib.Path, opath: pathlib.Path, src_stem: str
-    ) -> pd.DataFrame:
-        if utils.path_exists(opath):
-            cum_df = storage.df_read(opath, "storage.csv")
-        else:
-            cum_df = None
-
-        if utils.path_exists(ipath):
-            t = storage.df_read(ipath, "storage.csv")
-            if cum_df is None:
-                cum_df = pd.DataFrame(columns=t.columns)
-
-            if len(t.index) != 1:
-                self.logger.warning(
-                    (
-                        "'%s.csv' is a collated inter-experiment "
-                        "not a summary inter-experiment csv: "
-                        "# rows %s != 1"
-                    ),
-                    src_stem,
-                    len(t.index),
-                )
-                self.logger.warning("Truncating '%s.csv' to last row", src_stem)
-
-            # Series are columns, so we have to transpose before concatenating
-            cum_df = pd.concat([cum_df, t.loc[t.index[-1], :].to_frame().T])
-
-            # cum_df = cum_df.append(t.loc[t.index[-1], t.columns.to_list()])
-            return cum_df
-
-        return None
 
 
 __all__ = ["UnivarInterScenarioComparator"]

@@ -763,7 +763,7 @@ class CoreCmdline(BaseCmdline):
 
                      - ``proc.decompress`` - Performs data decompression on all
                        :term:`Raw Output Data` files previously compresed with
-                       ``proc.compress``. 
+                       ``proc.compress``.
                  """
             + self.stage_usage_doc([3]),
             nargs="+",
@@ -1155,7 +1155,7 @@ class CoreCmdline(BaseCmdline):
 
         self.stage5.add_argument(
             "--comparison-type",
-            choices=["LNraw", "HMraw", "HMdiff", "HMscale"],
+            choices=["LNraw"],
             help=r"""
                  Specify how controller comparisons should be performed.
 
@@ -1173,23 +1173,12 @@ class CoreCmdline(BaseCmdline):
                        row/column for the 2D dataframe for the performance
                        results for all controllers.
 
-                 .. NOTE:: SIERRA cannot currently plot statistics on the
-                 linegraphs built from slices of the 2D CSVs/heatmaps generated
-                 during stage4, because statistics generation is limited to
-                 stage3.  This limitation may be removed in a future release.
-
-                     - ``HMraw`` - Output raw 2D performance measures as a set
-                       of dual heatmaps comparing all controllers against the
-                       controller of primary interest(one per pair).
-
-                     - ``HMdiff`` - Subtract the performance measure of the
-                       controller of primary interest against all other
-                       controllers, pairwise, outputting one 2D heatmap per
-                       comparison.
-
-                     - ``HMscale`` - Scale controller performance measures
-                       against those of the controller of primary interest by
-                       dividing, outputing one 2D heatmap per comparison.
+                       .. NOTE:: SIERRA cannot currently plot statistics on the
+                                 linegraphs built from slices of the 2D
+                                 CSVs/heatmaps generated during stage4, because
+                                 statistics generation is limited to stage3.
+                                 This limitation may be removed in a future
+                                 release.
 
                  For all comparison types, ``--controllers-legend`` is used if
                  passed for legend.

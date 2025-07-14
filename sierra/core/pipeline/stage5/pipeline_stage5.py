@@ -14,7 +14,7 @@ import argparse
 import yaml
 
 # Project packages
-from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
+from sierra.core.pipeline.stage5 import inter_controller_comparator as intercc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 from sierra.core.pipeline.stage5 import outputroot
 from sierra.core import types, utils, config, batchroot
@@ -25,10 +25,10 @@ class PipelineStage5:
 
     This can be either:
 
-    #. Compare a set of controllers within the same scenario using performance
+    #. Compare a set of controllers *within* the same scenario using performance
        measures specified in YAML configuration.
 
-    #. Compare a single controller across a set ofscenarios using performance
+    #. Compare a single controller *across* a set of scenarios using performance
        measures specified in YAML configuration.
 
     This stage is idempotent.
@@ -42,8 +42,8 @@ class PipelineStage5:
 
         stage5_config: Dictionary of parsed stage5 YAML configuration.
 
-        output_roots: Dictionary containing output directories for intra- and
-                      inter-scenario graph generation.
+        output_roots: Dictionary containing output directories for
+                      inter-{scenario,controller}  graph generation.
 
     """
 
@@ -87,9 +87,9 @@ class PipelineStage5:
 
         If ``--controller-comparison`` was passed:
 
-        #. :class:`~sierra.core.pipeline.stage5.intra_scenario_comparator.UnivarIntraScenarioComparator`
+        #. :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.UnivarInterControllerComparator`
             or
-            :class:`~sierra.core.pipeline.stage5.intra_scenario_comparator.BivarIntraScenarioComparator`
+            :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.BivarInterControllerComparator`
             as appropriate, depending on which type of
             :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
             selected on the cmdline.
@@ -124,7 +124,7 @@ class PipelineStage5:
         self.logger.info("Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
-            univar = intrasc.UnivarIntraScenarioComparator(
+            univar = intercc.UnivarInterControllerComparator(
                 self.controllers,
                 self.batch_roots,
                 self.stage5_roots,
@@ -138,7 +138,7 @@ class PipelineStage5:
                 comp_type=self.cmdopts["comparison_type"],
             )
         else:
-            bivar = intrasc.BivarIntraScenarioComparator(
+            bivar = intercc.BivarInterControllerComparator(
                 self.controllers,
                 self.stage5_roots,
                 self.cmdopts,
@@ -196,7 +196,7 @@ class PipelineStage5:
         """Check if the specified controllers can be compared.
 
         Comparable controllers have all been run on the same set of batch
-        experiments. If they have not, it is not `necessarily` an error, but
+        experiments. If they have not, it is not *necessarily* an error, but
         probably should be looked at, so it is only a warning, not fatal.
 
         """

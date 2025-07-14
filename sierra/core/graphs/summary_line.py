@@ -353,6 +353,7 @@ def _plot_ticks(
         plot.opts(logy=True)
 
     # For ordered, qualitative data
+
     if xticklabels is not None:
         plot.opts(xticks=[(i, j) for i, j in zip(xticks, xticklabels)], xrotation=90)
 
