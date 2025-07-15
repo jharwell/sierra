@@ -152,6 +152,27 @@ class PopulationSize(population_size.PopulationSize):
 
         return self.element_adds
 
+    def graph_info(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: tp.Optional[pathlib.Path] = None,
+        exp_names: tp.Optional[tp.List[str]] = None,
+    ) -> bcbridge.GraphInfo:
+        info = bcbridge.GraphInfo(
+            cmdopts,
+            batch_output_root,
+            exp_names if exp_names else self.gen_exp_names(),
+        )
+
+        info.xlabel = super().graph_xlabel(info.cmdopts)
+        info.xticklabels = super().graph_xticklabels(
+            info.cmdopts, info.batch_output_root, info.exp_names
+        )
+        info.xticks = super().graph_xticks(
+            info.cmdopts, info.batch_output_root, info.exp_names
+        )
+        return info
+
     def n_agents(self, exp_num: int) -> int:
         return int(len(self.element_adds[exp_num]) / len(self.element_adds[0]))
 

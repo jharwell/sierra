@@ -42,7 +42,8 @@ SIERRA supports.
    storage/index.rst
    expdef/index.rst
    proc/index.rst
-   deliverable/index.rst
+   prod/index.rst
+   compare/index.rst
 
 Other Plugin Resources
 ======================

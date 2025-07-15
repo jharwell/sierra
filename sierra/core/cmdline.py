@@ -1195,7 +1195,7 @@ class CoreCmdline(BaseCmdline):
             help="""
                  Specify that the batch criteria is univariate.  This cannot be
                  deduced from the command line ``--batch-criteria`` argument in
-                 all cases because we are comparing controllers `across`
+                 all cases because we are comparing controllers *across*
                  scenarios, and each scenario (potentially) has a different
                  batch criteria definition, which will result in (potentially)
                  erroneous comparisons if we don't re-generate the batch
@@ -1210,7 +1210,7 @@ class CoreCmdline(BaseCmdline):
             help="""
                  Specify that the batch criteria is bivariate.  This cannot be
                  deduced from the command line ``--batch-criteria`` argument in
-                 all cases because we are comparing controllers `across`
+                 all cases because we are comparing controllers *across*
                  scenarios, and each scenario(potentially) has a different batch
                  criteria definition, which will result in (potentially)
                  erroneous comparisons if we don't re-generate the batch

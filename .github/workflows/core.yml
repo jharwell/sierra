@@ -29,6 +29,8 @@ jobs:
           - stage2_bivar_test
           - stage3_bivar_test
           - stage4_bivar_test
+          - stage5_univar_test
+          - stage5_bivar_test
 
         exclude:
           - os: ubuntu-22.04

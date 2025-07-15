@@ -105,7 +105,7 @@ class BaseExpDef(implements.Interface):
 
     def n_mods(self) -> tp.Tuple[int, int]:
         """
-        Get the # (adds, changes) as a tuple
+        Get the # (adds, changes) as a tuple.
         """
         raise NotImplementedError
 

@@ -21,7 +21,6 @@ import implements
 # Project packages
 from sierra.plugins.engine.argos.variables import constant_density as cd
 from sierra.core import utils, types
-import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.experiment import definition
 from sierra.core.graphs import bcbridge

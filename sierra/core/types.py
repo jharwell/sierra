@@ -7,6 +7,7 @@ import typing as tp
 import sys
 from types import ModuleType  # noqa: F401 pylint: disable=unused-import
 from dataclasses import dataclass
+import pathlib
 
 # 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
 # can be replaced unilaterally with tp.TypeAlias.
@@ -16,7 +17,6 @@ else:
     from typing import TypeAlias
 
 # 3rd party packages
-import pathlib
 
 # Project packages
 

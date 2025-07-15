@@ -15,19 +15,17 @@ import pathlib
 # 3rd party packages
 import numpy as np
 import matplotlib.pyplot as plt
-import mpl_toolkits.axes_grid1
-import pandas as pd
 import holoviews as hv
 
 # Project packages
 from sierra.core import utils, config, storage, types
-from . import pathset
+from . import pathset as _pathset
 
 _logger = logging.getLogger(__name__)
 
 
 def generate(
-    pathset: pathset.PathSet,
+    pathset: _pathset.PathSet,
     input_stem: str,
     output_stem: str,
     medium: str,
@@ -145,7 +143,7 @@ def generate(
 
 
 def generate2(
-    pathset: pathset.PathSet,
+    pathset: _pathset.PathSet,
     ipaths: types.PathList,
     output_stem: pathlib.Path,
     medium: str,
@@ -157,7 +155,7 @@ def generate2(
     xticklabels: tp.Optional[tp.List[str]] = None,
     yticklabels: tp.Optional[tp.List[str]] = None,
 ) -> bool:
-    """Generates a side-by-side plot of two heataps from two CSV files.
+    """Generate a side-by-side plot of two heataps from two CSV files.
 
     ``.mean`` files must be named as ``<input_stem_fpath>_X.mean``, where `X` is
     non-negative integer. Input ``.mean`` files must be 2D grids of the same
@@ -201,7 +199,7 @@ def generate2(
         _logger.debug(
             ("Not generating dual heatmap: wrong # files %s (must be 2)"), len(dfs)
         )
-        return
+        return False
 
     # Scaffold graph. We can use either dataframe for setting the graph
     # size; we assume they have the same dimensions.
@@ -233,7 +231,6 @@ def generate2(
             "ticks": text_size["tick_label"],
         }
     )
-    print("HERE")
     # Add title
     plot.opts(title=title)
 

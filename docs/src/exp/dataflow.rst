@@ -3,7 +3,7 @@
 
    SPDX-License-Identifier:  MIT
 
-.. _dataflow:
+.. _exp/dataflow:
 
 ==================
 Dataflow in SIERRA
@@ -14,10 +14,9 @@ in :term:`Experimental Runs <Experimental Run>`. That is, once data is generated
 as a result of running things in stage 2, how it is processed and transformed
 into deliverables.
 
-Dataflow Architecture
-=====================
 
-
+.. include:: stage3-dataflow.rst
+.. include:: stage4-dataflow.rst
 
 
 Stage 5: TODO

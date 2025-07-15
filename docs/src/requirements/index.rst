@@ -114,49 +114,6 @@ General
    for :ref:`data processing <plugins/proc>` and :ref:`product generation
    <plugins/product>`.
 
-#. All experiments from which you want to generate statistics/graphs are:
-
-   - Nominally The same length
-
-   - Nominally capture the same number of datapoints
-
-   That is, experiments always obey ``--exp-setup``, regardless if early
-   stopping conditions are met. For :term:`ROS1` engines, the SIERRA
-   timekeeper ensures that all experiments are the same length; it is up to you
-   to make sure all experiments capture the same # of data points. For other
-   :term:`Engines <Engine>` (e.g., :term:`ARGoS`) it is up to you to ensure
-   both conditions.
-
-   This is a necessary restriction for deterministic and non-surprising
-   statistics generation during stage 3. Pandas (the underlying data processing
-   library) can of course handle averaging/calculating statistics from
-   dataframes of different sizes (corresponding to experiments which had
-   different lengths), but the generated statistics may not be as
-   reliable/meaningful. For example, if you are interested in the steady state
-   behavior of the system, then you might want to use the *last* datapoint in a
-   given column as a performance measure, averaged across all experiments. If
-   not all experiments have the same # of datapoints/same length, then the
-   resulting confidence intervals around the average value (for example) may be
-   larger.
-
-   If you need to "stop" an experiment early, simply tell all agents/robots to
-   stop moving/stop doing stuff once the stopping conditions have been met and
-   continue to collect data as you normally would until the end of the
-   experiment.
-
-   The use of "nominally" in this requirement is important. It is possible with
-   real robot/hardware-based experiments that only partial data is
-   recovered/transferred onto something stable for processing, due to network
-   issues, etc. SIERRA wouldn't be very useful in those situations if it
-   strictly enforced the above requirements; some cmdline options are provided
-   to mitigate. You should not abuse them in order to circumvent these
-   requirements. If you do, then the types of meaningful statistics that can be
-   nominally extracted from your results will be limited.
-
-   If you do **NOT** want to use SIERRA to generate statistics/graphs from
-   experimental data (e.g., you want to use it to capture videos only), then you
-   can ignore this requirement.
-
 .. _req/expef:
 
 Experiment Definition Format-based Restrictions

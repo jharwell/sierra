@@ -78,7 +78,7 @@ def _linux_pkg_checks() -> None:
         _apt_pkg_checks(dist)
     else:
         logging.warning(
-            ("Unknown Linux distro '%s' detected: skipping package " "check"), dist
+            "Unknown Linux distro '%s' detected: skipping package check", dist
         )
         logging.warning(
             (

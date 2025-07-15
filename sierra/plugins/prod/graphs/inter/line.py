@@ -82,7 +82,7 @@ def _gen_summary_linegraph(
         ylabel=graph.get("ylabel", None),
         xticks=info.xticks,
         xticklabels=info.xticklabels,
-        logyscale=cmdopts["plot_log_yscale"],
+        logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),
         large_text=cmdopts["plot_large_text"],
     )
 
@@ -109,7 +109,7 @@ def _gen_stacked_linegraph(
         title=graph["title"],
         xlabel=graph.get("xlabel", "Time"),
         ylabel=graph.get("ylabel", None),
-        logyscale=cmdopts["plot_log_yscale"],
+        logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),
         large_text=cmdopts["plot_large_text"],
         legend=graph.get("legend", [f"exp{i}" for i in range(0, len(info.exp_names))]),
     )

@@ -1,12 +1,12 @@
 .. _usage:
 
-====================================
-SIERRA Overview: A Practical Summary
-====================================
+=============================
+Using SIERRA: All The Details
+=============================
 
 This page contains more in-depth documentation on how SIERRA works beyond the
 minimum needed to get started, and assumes that you have either gotten SIERRA
-working via :ref:`trial` or :ref:`getting-started`. Once you've done that, the
+working via :ref:`trial` or :ref:`startup`. Once you've done that, the
 docs on this page provide a good way to understand how to get the most out of
 SIERRA.
 

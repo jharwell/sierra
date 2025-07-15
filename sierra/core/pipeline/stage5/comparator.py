@@ -1,0 +1,166 @@
+#
+# Copyright 2025 John Harwell, All rights reserved.
+#
+# SPDX-License Identifier: MIT
+#
+"""
+Base class functionality for comparing products/deliverables in stage 5.
+"""
+# Core packages
+import typing as tp
+import logging
+import pathlib
+import argparse
+
+# 3rd party packages
+
+# Project packages
+from sierra.core import types, batchroot
+from sierra.core.pipeline.stage5 import outputroot
+
+
+class BaseComparator:
+    """Compares a set of SOMETHING within SOME context.
+
+    Graph generation
+    is controlled via a config file parsed in
+    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`.
+
+    Attributes:
+        things: List of names of things to compare.
+
+        stage5_roots: Set of directory paths for stage 5 file generation.
+
+        cmdopts: Dictionary of parsed cmdline parameters.
+
+        cli_args: :class:`argparse` object containing the cmdline
+                  parameters. Needed for
+                  :class:`~sierra.core.variables.batch_criteria.XVarBatchCriteria`
+                  generation for each scenario controllers are compared within,
+                  as batch criteria is dependent on controller+scenario
+                  definition, and needs to be re-generated for each scenario in
+                  order to get graph labels/axis ticks to come out right in all
+                  cases.
+
+    """
+
+    def __init__(
+        self,
+        things: tp.List[str],
+        stage5_roots: outputroot.PathSet,
+        cmdopts: types.Cmdopts,
+        cli_args: argparse.Namespace,
+        main_config: types.YAMLDict,
+    ) -> None:
+        self.things = things
+        self.stage5_roots = stage5_roots
+
+        self.cmdopts = cmdopts
+        self.cli_args = cli_args
+        self.main_config = main_config
+        self.project_root = pathlib.Path(
+            self.cmdopts["sierra_root"], self.cmdopts["project"]
+        )
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug("csv_root=%s", str(self.stage5_roots.csv_root))
+        self.logger.debug("graph_root=%s", str(self.stage5_roots.graph_root))
+
+    def __call__(
+        self,
+        target_graphs: tp.List[types.YAMLDict],
+        legend: tp.List[str],
+    ) -> None:
+        self._check_comparability()
+
+        selected = self.exp_select()
+        if not selected:
+            self.logger.warning(
+                "No matching batch experiments to compare %s in for criteria %s",
+                self.things,
+                self.cli_args.batch_criteria,
+            )
+            return
+
+        self.logger.debug(
+            "Comparing %s: selected=%s",
+            self.things,
+            [r.to_str() for r in selected],
+        )
+
+        # For each comparison graph we are interested in, generate it using data
+        # from all matching batch roots
+        for graph in target_graphs:
+            self.compare(
+                cmdopts=self.cmdopts, graph=graph, roots=selected, legend=legend
+            )
+
+    def _check_comparability(self) -> None:
+        """Check if the specified THINGS can be compared.
+
+        Comparable THINGS have all been run on the same set of batch
+        experiments, scenarios or controllers (depending on the specified
+        comparison type).  If they have not, it is not *necessarily* an error,
+        but probably should be looked at, so it is only a warning, not fatal.
+        """
+        if self.cli_args.controller_comparison:
+            for c1 in self.things:
+
+                # Check all scenario+batch criteria experiments which have used
+                # this controller.
+                for item in (self.project_root / c1).iterdir():
+
+                    # Get the dirname of the batch experiment path
+                    leaf = batchroot.ExpRootLeaf.from_name(item.name)
+                    opts1 = batchroot.from_exp(
+                        sierra_root=self.cmdopts["sierra_root"],
+                        project=self.cmdopts["project"],
+                        batch_leaf=leaf,
+                        controller=c1,
+                    )
+                    collate_root1 = opts1.stat_collate_root
+
+                    # Stage 5 only operates on stage4 collated data, so if that
+                    # doesn't exist, we can't do anything.
+                    if not collate_root1.exists():
+                        self.logger.debug(
+                            "%s cannot be compared in/across for %s: %s does not exist",
+                            leaf.scenario,
+                            c1,
+                            collate_root1,
+                        )
+                        continue
+
+                    for c2 in self.things:
+                        if c1 == c2:
+                            continue
+
+                        for item2 in (self.project_root / c2).iterdir():
+                            # Get the dirname of the batch experiment path
+                            leaf2 = batchroot.ExpRootLeaf.from_name(item2.name)
+                            opts2 = batchroot.from_exp(
+                                sierra_root=self.cmdopts["sierra_root"],
+                                project=self.cmdopts["project"],
+                                batch_leaf=leaf2,
+                                controller=c2,
+                            )
+                            collate_root2 = opts2.stat_collate_root
+
+                            if not collate_root2.exists():
+                                self.logger.debug(
+                                    "%s cannot be compared in/across for %s: %s does not exist",
+                                    leaf.scenario,
+                                    c2,
+                                    collate_root2,
+                                )
+                                continue
+
+                        # Check that both controllers were run on the same set
+                        # of batch criteria
+                        if leaf.bc != leaf2.bc:
+                            self.logger.warning(
+                                "Cannot compare %s with %s: bc mismatch (%s != %s)",
+                                c1,
+                                c2,
+                                leaf.bc,
+                                leaf2.bc,
+                            )

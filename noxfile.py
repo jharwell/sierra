@@ -3,6 +3,8 @@
 #  SPDX-License-Identifier: MIT
 
 # Core packages
+import os
+import pathlib
 
 # 3rd party packages
 import nox
@@ -146,6 +148,12 @@ def docs(session):
 def unit_tests(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
+
+    if env := os.environ.get("GITHUB_WORKSPACE"):
+        session.env["SIERRA_PLUGIN_PATH"] = f"{env}/sierra-sample-project"
+    else:
+        path = pathlib.Path(os.environ.get("HOME"), "git/thesis/sierra-sample-project")
+        session.env["SIERRA_PLUGIN_PATH"] = str(path)
 
     session.run("pytest", "--cov")
 

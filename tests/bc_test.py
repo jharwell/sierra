@@ -17,14 +17,14 @@ from sierra.core import types, cmdline
 from sierra import main
 
 
-def test_univar():
+def test_univar_argos():
     args = [
         "sierra-cli",
         "--sierra-root=/tmp/sierra",
         "--engine=engine.argos",
         "--project=projects.sample_argos",
         "--exp-setup=exp_setup.T5.K5",
-        "--expdef-template=../sierra-sample-project/exp/argos/template.argos",
+        "--expdef-template=sierra-sample-project/exp/argos/template.argos",
         "--scenario=HighBlockCount.10x10x2",
         "--controller=foraging.footbot_foraging",
         "--batch-criteria=population_size.Log16",
@@ -56,8 +56,8 @@ def test_univar():
     assert len(criteria.gen_attr_changelist()) == 5
     dirnames = criteria.gen_exp_names()
     assert len(dirnames) == 5
-    assert dirnames[0] == "exp0"
-    assert dirnames[4] == "exp4"
+    assert dirnames[0] == "c1-exp0"
+    assert dirnames[4] == "c1-exp4"
 
     app()
 
@@ -68,14 +68,62 @@ def test_univar():
     assert criteria.n_exp() == 5
 
 
-def test_bivar():
+# 2025-07-22 [JRH]: Use jsonsim here in addition because it has batch criteria
+# which contain more than 1 thing in their attr change set.
+def test_univar_jsonsim():
+    args = [
+        "sierra-cli",
+        "--sierra-root=/tmp/sierra",
+        "--engine=plugins.jsonsim",
+        "--project=projects.sample_jsonsim",
+        "--exp-setup=exp_setup.T5.K5",
+        "--expdef-template=sierra-sample-project/exp/jsonsim/template.argos",
+        "--scenario=scenario1",
+        "--controller=default.default",
+        "--batch-criteria=fuel.1.10.C5",
+        "--jsonsim-path=sierra-sample-project/plugins/jsonsim/jsonsim.py",
+        "--pipeline",
+        "1",
+        "--exp-overwrite",
+    ]
+
+    cmdopts = {
+        "project": "projects.sample_jsonsim",
+        "engine": "plugins.jsonsim",
+        "pipeline": [1],
+        "expdef": "expdef.json",
+    }
+    sys.argv = args
+    app = main.SIERRA(cmdline.BootstrapCmdline())
+
+    criteria = bc.factory(
+        {},
+        cmdopts,
+        pathlib.Path(
+            "/tmp/sierra/projects.sample_jsonsim/default.default/template-scenario2+fuel.1.10.C5/exp-inputs/"
+        ),
+        app.args,
+        "scenario1",
+    )
+
+    assert len(criteria.gen_attr_changelist()) == 5
+    dirnames = criteria.gen_exp_names()
+    assert len(dirnames) == 5
+    assert dirnames[0] == "c1-exp0"
+    assert dirnames[4] == "c1-exp4"
+
+    assert len(criteria.gen_attr_changelist()[0]) == 2
+    assert len(criteria.gen_attr_changelist()[4]) == 2
+
+
+def test_bivar_argos():
     args = [
         "sierra-cli",
         "--sierra-root=/tmp/sierra",
         "--engine=engine.argos",
         "--project=projects.sample_argos",
         "--exp-setup=exp_setup.T5.K5",
-        "--expdef-template=../sierra-sample-project/exp/argos/template.argos",
+        "--expdef-template=sierra-sample-project/exp/argos/template.argos",
         "--scenario=HighBlockCount.100x100x2",
         "--controller=foraging.footbot_foraging",
         "--batch-criteria",

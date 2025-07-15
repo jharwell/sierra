@@ -271,7 +271,6 @@ class DirectoryPluginManager(BasePluginManager):
                     self.logger.warning(
                         "Malformed plugin in %s: not loading", f.relative_to(path)
                     )
-                    pass
 
             recursive_search(path)
 
@@ -454,7 +453,7 @@ def exec_env_sanity_checks(exec_env: str, module) -> None:
     for f in opt_functions:
         if not any(f in name for (name, _) in in_module):
             logging.debug(
-                ("Execution environment plugin %s does not define " "%s()."),
+                ("Execution environment plugin %s does not define %s()."),
                 exec_env,
                 f,
             )

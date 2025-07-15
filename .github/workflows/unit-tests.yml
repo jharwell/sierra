@@ -32,6 +32,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: jsonsim
+
       - name: Run nox
         run: |
           export PATH=$pythonLocation/bin:$PATH

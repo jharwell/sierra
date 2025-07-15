@@ -9,6 +9,7 @@ than you are used to. They are defined here to help demystify `why` SIERRA
 works/is designed the way it is, and to help you find your way around.
 
 .. glossary::
+   :sorted:
 
    ARGoS
 
@@ -73,27 +74,20 @@ works/is designed the way it is, and to help you find your way around.
       criteria such as one defining sensor and actuator noise to apply to the
       robots), in which case it is called `bivariate`.
 
-      Univariate batch criteria have one dimension, and so the graphs produced
+      Univariate batch criteria have cardinality=1, and so the graphs produced
       by them are (usually) linegraphs with a numerical representation of the
       range for the variable on the X axis, and some other quantity of interest
-      on the Y.
+      on the Y. Bivariate batch criteria have cardinality=2, and so the graphs
+      produced by them might be heatmaps with the first variable in the criteria
+      on the X axis, the second on the Y, and the quantity of interest on
+      the Z. Or they could be linegraphs, with a "slice" along the axis of
+      interest. You can imagine similar cases for higher cardinality criteria.
 
-      Bivariate batch criteria have two dimensions, and so the graphs produced
-      by them are (usually) heatmaps with the first variable in the criteria on
-      the X axis, the second on the Y, and the quantity of interest on
-      the Z. Bivariate batch criteria are always built using univariate batch
-      criteria as building blocks.
-
-      The axis/axes you select as part of the batch criteria you will use to
-      define for :term:`Batch Experiment` define the `search space` for your
-      experiment: either a 1D or 2D array of :term:`Experiments<Experiment>`.
-
-      Batch criteria define a `range` of sets changes for one or more elements
-      in a template ``.xml`` file (passed to SIERRA with
-      ``--expdef-template``). For each element in the range, the changes are
-      applied to the template ``.xml`` file to define
-      :term:`Experiments<Experiment>`. The set of defined experiments is called
-      a :term:`Batch Experiment`.
+      Batch criteria define a *range* of sets changes for one or more elements
+      in a template file (passed to SIERRA with ``--expdef-template``). For each
+      element in the range, the changes are applied to the template file to
+      define :term:`Experiments<Experiment>`. The set of defined experiments is
+      called a :term:`Batch Experiment`.
 
       The batch criteria you can use depends on:
 
@@ -102,8 +96,6 @@ works/is designed the way it is, and to help you find your way around.
 
          - The :term:`Engine` you have selected, as each engine defines some
            basic batch criteria that any project/experiment can use.
-
-      SIERRA itself does not define any batch criteria.
 
 
    Batch Experiment
@@ -129,12 +121,12 @@ works/is designed the way it is, and to help you find your way around.
 
       Meaning is :term:`Engine` dependent.
 
-      For ``--engine=engine.argos`` it is an :term:`ARGoS` simulation that
-      runs as part of an experiment. For ``--engine=engine.ros1gazebo`` it
-      is a :term:`Gazebo` simulation that runs as part of an experiment.
+      For simulator-based engines, such as :term:`ARGoS`, each run is a
+      simulation run. For real-world engines such as :term:`ROS1+Robot`, it is a
+      run with physical robots.
 
-      The number of simulations which will be run by SIERRA in stage 2 and
-      averaged together by SIERRA in stage 3 is controlled by ``--n-runs``.
+      The number of runs which will be run by SIERRA in stage 2 and averaged
+      together by SIERRA in stage 3 is controlled by ``--n-runs``.
 
       All runs in within an :term:`Experiment` are identical, with the exception
       of:
@@ -211,9 +203,8 @@ works/is designed the way it is, and to help you find your way around.
 
    Engine
 
-      The `context` in which experiments are run: either via a simulator of some
-      kind, or a run-time framework for deploying code to one or more real
-      robots.
+      The executor for experiments: either via a simulator of some kind, or a
+      run-time framework for deploying code to one or more real robots.
 
       .. IMPORTANT:: In SIERRA terminology, engine != OS. A given OS such has
                      linux might support multiple engines like ARGoS, ROS,

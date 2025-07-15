@@ -8,7 +8,7 @@ Why Use SIERRA?
 
 This page details some use cases for which SIERRA was designed; if aspects of
 any sound familiar, then there is a strong change SIERRA could help you! See
-:ref:`getting-started` to get going.
+:ref:`startup` to get going.
 
 Use Case #1: Alice The Robotics Researcher
 ==========================================

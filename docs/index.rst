@@ -21,22 +21,29 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 
 .. toctree::
    :hidden:
-   :caption: Contents:
+   :caption: Introduction
 
    src/use-cases.rst
    src/trial.rst
-   src/getting_started.rst
-
    src/requirements/index.rst
-   src/dataflow.rst
+   src/startup.rst
+
+.. toctree::
+   :hidden:
+   :caption: Using SIERRA
+
+   src/exp/index.rst
    src/plugins/index.rst
 
    src/usage/examples.rst
    src/usage/index.rst
-
    src/tutorials/index.rst
-   src/packages.rst
 
+.. toctree::
+   :hidden:
+   :caption: Other Resources
+
+   src/packages.rst
    src/philosophy.rst
    src/faq.rst
    src/contributing.rst

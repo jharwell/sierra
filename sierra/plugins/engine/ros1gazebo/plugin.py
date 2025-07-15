@@ -352,8 +352,12 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
     )
 
     # Check Gazebo version
-    res = re.search(r"[0-9]+.[0-9]+.[0-9]+", version.stdout.decode("utf-8"))
-    assert res is not None, "Gazebo version not in -v output"
+    stdout = version.stdout.decode("utf-8")
+    stderr = version.stderr.decode("utf-8")
+    res = re.search(r"[0-9]+.[0-9]+.[0-9]+", stdout)
+    assert (
+        res is not None
+    ), f"Gazebo version not in std: have stdout='{stdout}',stderr='{stderr}'"
 
     version = packaging.version.parse(res.group(0))
     min_version = packaging.version.parse(config.kGazebo["min_version"])

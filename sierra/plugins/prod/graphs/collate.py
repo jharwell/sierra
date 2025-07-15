@@ -25,8 +25,7 @@ _logger = logging.getLogger(__name__)
 
 
 class GraphCollationInfo:
-    """Data class of the :term:`Collated Output Data` files for a particular
-    graph.
+    """Container for :term:`Collated Output Data` files for a particular graph.
 
     This is one of the focal points for the magic of SIERRA: here is where time
     series data is transformed into different dataframe formats so as to make

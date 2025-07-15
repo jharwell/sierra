@@ -372,7 +372,7 @@ def unpickle(
     """
     try:
         return definition.AttrChangeSet.unpickle(fpath)
-    except EOFError:
+    except (EOFError, TypeError):
         pass
 
     try:

@@ -63,10 +63,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
 
 def parse(arg: str) -> tp.List[int]:
-    """Base parser for use in changing the # robots/agents.
-
-    Generates the system sizes for each experiment in a batch.
-    """
+    """Generate the system sizes for each experiment in a batch."""
     spec = {
         "max_size": int(),
         "model": str(),

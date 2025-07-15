@@ -22,7 +22,7 @@ Writing the code
 
 #. Install development packages for SIERRA (from the SIERRA repo root)::
 
-     pip3 install .[devel]
+     uv sync . --extra devel
 
 #. Do development!
 
@@ -31,7 +31,7 @@ Writing the code
    pylint), will still report errors, as cleaning up the code is always a work
    in progress::
 
-     nox
+     uv run nox
 
 
 SIERRA Source Code Directory Structure

@@ -1,4 +1,4 @@
-.. _getting-started:
+.. _startup:
 
 ===========================
 Getting Started With SIERRA

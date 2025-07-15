@@ -134,7 +134,7 @@ class BaseGatherer:
             to_process = self._gather_item_from_runs(exp_output_root, spec, runs)
             n_gathered_from = len(to_process.dfs)
             if n_gathered_from != len(runs):
-                self.logger.warn(
+                self.logger.warning(
                     (
                         "Data not gathered for %s from all experimental runs "
                         "in %s: %s runs != %s (--n-runs)"

@@ -25,17 +25,13 @@ manpages are:
 - ``sierra-usage`` - How to use SIERRA (everything BUT the command line
   interface).
 
-- ``sierra-engines`` - The target engines that SIERRA currently
-  supports (e.g., ARGoS).
+- ``sierra-plugins`` - The plugins which come with SIERRA.
 
 - ``sierra-examples`` - Examples of SIERRA usage via
   command line invocations demonstrating various features.
 
 - ``sierra-glossary`` - Glossary of SIERRA terminology to make things
   easier to understand.
-
-- ``sierra-exec-envs`` - The execution environments that SIERRA currently
-  supports (e.g., SLURM).
 
 Installing SIERRA
 -----------------

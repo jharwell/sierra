@@ -267,7 +267,7 @@ def _plot_bw_stats(
 
     if not all(k in stat_dfs.keys() for k in config.kStats["bw"].exts):
         _logger.warning(
-            ("Cannot plot box-and-whisker plots: " "missing some statistics: %s vs %s"),
+            ("Cannot plot box-and-whisker plots: missing some statistics: %s vs %s"),
             stat_dfs.keys(),
             config.kStats["bw"].exts,
         )

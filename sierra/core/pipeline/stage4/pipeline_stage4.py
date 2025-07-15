@@ -16,7 +16,7 @@ import pathlib
 import sierra.core.variables.batch_criteria as bc
 
 import sierra.core.plugin as pm
-from sierra.core import types, batchroot, config
+from sierra.core import types, batchroot
 
 
 class PipelineStage4:

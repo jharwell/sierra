@@ -43,7 +43,7 @@ class MonteCarlo(bc.UnivarBatchCriteria):
     ) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
-        self.cardinality = cardinality
+        self.cardinality = cardinality  # type: int
 
     def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         if not self.attr_changes:

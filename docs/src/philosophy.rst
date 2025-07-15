@@ -76,6 +76,11 @@ This manifests in some important ways:
 - Products in stage 4 are sourced from a single input file, rather than
   pulling data from multiple files.
 
+- Each pipeline stage is transactional at the file level; that is, it writes out
+  its results to one or more files which can be read by later stages (as opposed
+  to keeping things in memory, which makes running arbitrary sets of pipeline
+  stages more difficult).
+
 Maximum Reusability
 ===================
 

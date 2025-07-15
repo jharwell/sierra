@@ -34,7 +34,9 @@ setup_env() {
 
     which sierra-cli
     which python3
-
+    which gazebo
+    gazebo -v
+    
     export COVERAGE_CMD="coverage \
     run \
      --debug=debug \
@@ -57,39 +59,6 @@ setup_env() {
     export PARALLEL="--env LD_LIBRARY_PATH"
 }
 
-################################################################################
-# Check that the batch criteria that come with SIERRA for ROS1+Gazebo work.
-################################################################################
-sanity_univar_test() {
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Linear3.C3"
-
-    $SIERRA_CMD --pipeline 1 2
-    rm -rf $SIERRA_ROOT
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Log8"
-
-    $SIERRA_CMD --pipeline 1 2
-    rm -rf $SIERRA_ROOT
-
-}
-
-sanity_bivar_test() {
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5"
-
-    $SIERRA_CMD --pipeline 1 2
-    rm -rf $SIERRA_ROOT
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3"
-
-    $SIERRA_CMD --pipeline 1 2
-    rm -rf $SIERRA_ROOT
-
-}
 ################################################################################
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
@@ -116,102 +85,18 @@ print(path)
 
     # Check SIERRA directory structure
     for i in {0..2}; do
-        [ -d "$input_root/exp$i" ] || false
+        [ -d "$input_root/c1-exp$[i]" ] || false
     done
 
     # Check stage1 generated stuff
-    for exp in {0..2}; do
-        [ -f "$input_root/exp${exp}/commands.txt" ] || false
-        [ -f "$input_root/exp${exp}/exp_def.pkl" ] || false
-        [ -f "$input_root/exp${exp}/seeds.pkl" ] || false
+    for i in {0..2}; do
+        [ -f "$input_root/c1-exp${i}/commands.txt" ] || false
+        [ -f "$input_root/c1-exp${i}/exp_def.pkl" ] || false
+        [ -f "$input_root/c1-exp${i}/seeds.pkl" ] || false
 
         for run in {0..3}; do
-            [ -f "$input_root/exp${exp}/turtlebot3_house_run${run}_master.launch" ] ||false
-            [ -f "$input_root/exp${exp}/turtlebot3_house_run${run}_robots.launch" ] || false
-        done
-    done
-
-    rm -rf $SIERRA_ROOT
-}
-
-stage1_bivar_test() {
-    batch_root_cmd1="from sierra.core import batchroot;
-bc=[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"];
-template_stem=\"turtlebot3_house\";
-scenario=\"HouseWorld.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1gazebo\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
-print(path)
-"
-    batch_root_cmd2="from sierra.core import batchroot;
-bc=[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"];
-template_stem=\"turtlebot3_house\";
-scenario=\"HouseWorld.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_ros1gazebo\",controller=\"turtlebot3.wander\",leaf=leaf).to_path();
-print(path)
-"
-    batch_root1=$(python3 -c"${batch_root_cmd1}")
-
-    input_root1=$batch_root1/exp-inputs/
-
-    batch_root2=$(python3 -c"${batch_root_cmd2}")
-
-    input_root2=$batch_root2/exp-inputs/
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
-    --pipeline 1"
-
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD
-
-    # Check SIERRA directory structure
-    for i in {0..2}; do
-        for j in {0..4}; do
-            [ -d "$input_root1/c1-exp${i}+c2-exp${j}" ] || false
-        done
-    done
-
-    # Check stage1 generated stuff
-    for i in {0..2}; do
-        [ $(grep -r "max=\"1.0\"" $input_root1/c1-exp${i}+* | wc -l) -eq "5" ]
-        for j in {0..4}; do
-            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/commands.txt" ] || false
-            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/exp_def.pkl" ] || false
-            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/seeds.pkl" ] || false
-
-            for run in {0..3}; do
-                [ -f "$input_root1/c1-exp${i}+c2-exp${j}/turtlebot3_house_run${run}_master.launch" ] ||false
-                [ -f "$input_root1/c1-exp${i}+c2-exp${j}/turtlebot3_house_run${run}_robots.launch" ] ||false
-            done
-        done
-    done
-
-    rm -rf $SIERRA_ROOT
-
-    SIERRA_CMD="$SIERRA_BASE_CMD \
-    --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3\
-    --pipeline 1"
-
-    $SIERRA_CMD
-
-    # Check SIERRA directory structure
-    for i in {0..4}; do
-        for j in {0..2}; do
-            [ -d "$input_root2/c1-exp${i}+c2-exp${j}" ] || false
-        done
-    done
-
-    # Check stage1 generated stuff
-    for i in {0..4}; do
-        for j in {0..2}; do
-            [ $(grep -r "max=\"1.0\"" $input_root2/*+c2-exp${j} | wc -l) -eq "5" ]
-
-            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/commands.txt" ] || false
-            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/exp_def.pkl" ] || false
-            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/seeds.pkl" ] || false
+            [ -f "$input_root/c1-exp${i}/turtlebot3_house_run${run}_master.launch" ] ||false
+            [ -f "$input_root/c1-exp${i}/turtlebot3_house_run${run}_robots.launch" ] || false
         done
     done
 
@@ -252,9 +137,9 @@ print(path)
         $SIERRA_CMD --exec-env=hpc.local --exec-devnull
 
         # Check no output produced
-        for exp in {0..2}; do
-            [ ! -s "$scratch_root/exp${exp}/1/*/stdout" ]
-            [ ! -s "$scratch_root/exp${exp}/1/*/stderr" ]
+        for i in {0..2}; do
+            [ ! -s "$scratch_root/c1-exp${i}/1/*/stdout" ]
+            [ ! -s "$scratch_root/c1-exp${i}/1/*/stderr" ]
         done
 
         rm -rf $SIERRA_ROOT

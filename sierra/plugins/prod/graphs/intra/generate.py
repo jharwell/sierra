@@ -21,7 +21,6 @@ import yaml
 import sierra.core.plugin as pm
 from sierra.core import types, utils, batchroot, exproot, config
 from sierra.plugins.prod.graphs import intra
-from sierra.core.graphs import bcbridge
 from sierra.core.variables import batch_criteria as bc
 
 
@@ -81,7 +80,7 @@ def proc_batch_exp(
             generator(exproots)
         else:
             _logger.warning(
-                "Skipping experiment '%s': %s does not exist, or " "isn't a directory",
+                "Skipping experiment '%s': %s does not exist, or isn't a directory",
                 exp,
                 exproots.stat_root,
             )
@@ -179,7 +178,7 @@ class IntraExpGraphGenerator:
                             keys.extend(inherit)  # optional
 
         else:
-            keys = [k for k in self.graphs_config]
+            keys = list(k for k in self.graphs_config)
             self.logger.warning(
                 "Missing controller graph config--generating all enabled "
                 "intra-experiment graphs for all controllers: %s",

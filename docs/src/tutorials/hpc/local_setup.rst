@@ -5,4 +5,4 @@ HPC Local Setup
 ===============
 
 To set up SIERRA for HPC on your local machine, follow
-:ref:`getting-started`.
+:ref:`startup`.

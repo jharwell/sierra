@@ -14,11 +14,10 @@ import logging
 
 # Project packages
 from sierra.core import types, utils, batchroot, config
-from . import line, heatmap
 from sierra.plugins.prod.graphs import targets
 from sierra.core import plugin as pm
-from sierra.core.graphs import bcbridge
 from sierra.core.variables import batch_criteria as bc
+from . import line, heatmap
 
 _logger = logging.getLogger(__name__)
 

@@ -48,16 +48,28 @@ runs:
       shell: bash
       run: |
         export DEBIAN_FRONTEND=noninteractive;
-
-        # 2025-04-22 [JRH]: In ubuntu 24.04, the libblas and liblapack used by
-        # ffmpeg aren't on the  default loader search path, and so the ARGoS
-        # vc_test doesn't work. Manually linking the libs into one of the
-        # default locations works, but is icky. Hopefully this gets fixed in the
-        # next github runner ubuntu version.
-        #
-        # This isn't an issue on 22.04
         if command -v "sudo" &> /dev/null; then
-           sudo apt update && sudo apt-get install -y texlive-fonts-recommended texlive-latex-extra
+           sudo apt update && sudo apt-get install -y texlive-fonts-recommended texlive-latex-extra || true
+           sudo apt --fix-broken install -y
+           sudo dpkg --configure -a
+        else
+           apt update && sudo apt-get install -y texlive-fonts-recommended texlive-latex-extra || true
+           apt --fix-broken install -y
+           dpkg --configure -a
+        fi
+
+    # 2025-04-22 [JRH]: In ubuntu 24.04, the libblas and liblapack used by
+    # ffmpeg aren't on the default loader search path, and so the ARGoS vc_test
+    # doesn't work. Manually linking the libs into one of the default locations
+    # works, but is icky. Hopefully this gets fixed in the next github runner
+    # ubuntu version.
+    #
+    # This isn't an issue on 22.04
+    - name: Fix libblas/liblapack
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        if command -v "sudo" &> /dev/null; then
            if [[ ! -f /usr/lib/x86_64-linux-gnu/libblas.so.3 ]]; then
               sudo ln -s /usr/lib/x86_64-linux-gnu/blas/libblas.so.3 /usr/lib/x86_64-linux-gnu/
            fi
@@ -65,7 +77,6 @@ runs:
               sudo ln -s /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3 /usr/lib/x86_64-linux-gnu/
            fi
         else
-           apt update && apt-get install -y texlive-fonts-recommended texlive-latex-extra
            ln -s /usr/lib/x86_64-linux-gnu/blas/libblas.so.3 /usr/lib/x86_64-linux-gnu/
            ln -s /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3 /usr/lib/x86_64-linux-gnu/
         fi
@@ -131,18 +142,19 @@ runs:
         # Hatch will only pickup manpages with shared-data if they are INSIDE
         # a package directory. Since we don't want to commit this to source
         # control, we copy in in CI here.
-        mkdir sierra/data/man
-        cp docs/_build/man/man* sierra/data/man/
+        mkdir -p sierra/data/man
 
         # Build manpages
-        cd docs && sphinx-build -b man . docs/_build/man
+        cd docs && uv run sphinx-build -b man . _build/man
         cd ..
+        cp docs/_build/man/*.1 sierra/data/man/
+        cp docs/_build/man/*.7 sierra/data/man/
 
         # Install a second time to get the manpages included
         uv sync -p ${{ inputs.python-version }} --extra devel
 
-        # Verify the installation actually happened
-        python3 -m zipfile -l dist/sierra_research-*.whl |grep man
+        # Build the package and verify manpages were included
+        uv build && python3 -m zipfile -l dist/sierra_research-*.whl |grep man
 
         which python3
         which sierra-cli

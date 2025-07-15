@@ -27,6 +27,10 @@ class ExpRootLeaf:
 
     @staticmethod
     def from_name(leaf: str) -> "ExpRootLeaf":
+        """Parse the <controller>+<bc1>[+bc2+...] part of the directory name.
+
+        "Name" here is pathlib parlance.
+        """
         template_stem = "".join(leaf.split("-")[0])
         scenario_and_bc = leaf.split("-")[1].split("+")
         scenario = scenario_and_bc[0]
@@ -92,9 +96,8 @@ class ExpRoot:
         self.project = project
         self.controller = controller
 
-        # Don't reslove() the path--that makes symlinked dirs under $HOME
-        # through errors which are fatal from pathlib's POV, but actually
-        # harmless.
+        # Don't reslove() the path--that makes symlinked dirs under $HOME throw
+        # errors which are fatal from pathlib's POV, but actually harmless.
         self.sierra_root = pathlib.Path(sierra_root)
 
     def to_path(self) -> pathlib.Path:

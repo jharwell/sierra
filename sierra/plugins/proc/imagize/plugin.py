@@ -13,7 +13,6 @@ import multiprocessing as mp
 import logging
 import pathlib
 import typing as tp
-import os
 
 # 3rd party packages
 import yaml
@@ -175,7 +174,7 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
         #
         # Input paths are of the form <dir>/<dir>_<NUMBER>.{extension}
         graphs.heatmap(
-            paths=graph_pathset,
+            pathset=graph_pathset,
             input_stem=imagize_opts["input_path"].stem,
             output_stem=imagize_opts["input_path"].stem,
             title=dict(match)["title"],
@@ -183,9 +182,9 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
             xlabel="X",
             ylabel="Y",
             colnames=(
-                graph.get("x", "x"),
-                graph.get("y", "y"),
-                graph.get("z", "z"),
+                match.get("x", "x"),
+                match.get("y", "y"),
+                match.get("z", "z"),
             ),
         )
 
@@ -249,7 +248,7 @@ class ImagizeInputGatherer(gather.BaseGatherer):
                     continue
 
                 if not any(
-                    [g["src_stem"] in str(imagizable) for g in self.imagize_config]
+                    g["src_stem"] in str(imagizable) for g in self.imagize_config
                 ):
                     continue
 

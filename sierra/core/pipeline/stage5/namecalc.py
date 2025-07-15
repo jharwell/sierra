@@ -18,7 +18,7 @@ def for_cc(
     leaf: batchroot.ExpRootLeaf, new_stem: str, indices: tp.Union[tp.List[int], None]
 ) -> str:
     """
-    Calculates a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
+    Calculate a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
 
     "Name" here is in pathlib terminology. Targets controller comparisons. Since
     controller name is part of the default batchroot path, AND each batchroot
@@ -39,7 +39,7 @@ def for_sc(
     indices: tp.Union[tp.List[int], None],
 ) -> str:
     """
-    Calculates a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
+    Calculate a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
 
     "Name" here is in pathlib terminology. Targets scenario comparisons, so we
     need a list of all scenarios in the path to eliminate path collisions in all

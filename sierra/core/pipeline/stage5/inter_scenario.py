@@ -18,7 +18,6 @@ import logging
 import pathlib
 
 # 3rd party packages
-import pandas as pd
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
@@ -63,7 +62,6 @@ class UnivarInterScenarioComparator:
         self,
         controller: str,
         scenarios: tp.List[str],
-        batch_roots: batchroot.PathSet,
         stage5_roots: outputroot.PathSet,
         cmdopts: types.Cmdopts,
         cli_args: argparse.Namespace,
@@ -72,7 +70,6 @@ class UnivarInterScenarioComparator:
         self.controller = controller
         self.scenarios = scenarios
         self.stage5_roots = stage5_roots
-        self.batch_roots = batch_roots
 
         self.cmdopts = cmdopts
         self.cli_args = cli_args
@@ -301,10 +298,10 @@ class UnivarInterScenarioComparator:
         # dataframes if they exist, otherwise start new ones.
         # Can't use with_suffix() for opath, because that path contains the
         # controller, which already has a '.' in it.
-        model_istem = pathlib.Path(pathset.model_root, src_stem)
+        # model_istem = pathlib.Path(pathset.model_root, src_stem)
         model_ostem = self.stage5_roots.model_root / (dest_stem + "-" + self.controller)
 
-        model_ipath = model_istem.with_suffix(config.kModelsExt["model"])
+        # model_ipath = model_istem.with_suffix(config.kModelsExt["model"])
         model_opath = model_ostem.with_name(
             model_ostem.name + config.kModelsExt["model"]
         )

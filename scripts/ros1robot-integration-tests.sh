@@ -94,18 +94,18 @@ print(path)
 
     # Check SIERRA directory structure
     for i in {0..2}; do
-        [ -d "$input_root/exp$i" ] || false
+        [ -d "$input_root/c1-exp${i}" ] || false
     done
 
     # Check stage1 generated stuff
-    for exp in {0..2}; do
+    for i in {0..2}; do
         for run in {0..3}; do
-            [ -f "$input_root/exp${exp}/commands_run${run}_master.txt" ] || false
-            [ -f "$input_root/exp${exp}/commands_run${run}_slave.txt" ] || false
-            [ -f "$input_root/exp${exp}/exp_def.pkl" ] || false
-            [ -f "$input_root/exp${exp}/seeds.pkl" ] || false
-            [ -f "$input_root/exp${exp}/turtlebot3_run${run}_master.launch" ] ||false
-            [ -f "$input_root/exp${exp}/turtlebot3_run${run}_robot${exp}.launch" ] || false
+            [ -f "$input_root/c1-exp${i}/commands_run${run}_master.txt" ] || false
+            [ -f "$input_root/c1-exp${i}/commands_run${run}_slave.txt" ] || false
+            [ -f "$input_root/c1-exp${i}/exp_def.pkl" ] || false
+            [ -f "$input_root/c1-exp${i}/seeds.pkl" ] || false
+            [ -f "$input_root/c1-exp${i}/turtlebot3_run${run}_master.launch" ] ||false
+            [ -f "$input_root/c1-exp${i}/turtlebot3_run${run}_robot${i}.launch" ] || false
         done
     done
 

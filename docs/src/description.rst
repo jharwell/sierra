@@ -22,4 +22,4 @@ by the user.
 
 
 A short overview of the research automation SIERRA provides is here:
-:ref:`usage/pipeline`. To get started, see :ref:`getting-started`.
+:ref:`usage/pipeline`. To get started, see :ref:`startup`.

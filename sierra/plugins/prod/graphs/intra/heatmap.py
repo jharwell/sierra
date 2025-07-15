@@ -53,7 +53,7 @@ def generate(
             # .csv because that is currently SIERRA's 'native' format; this may
             # change in the future.
             graphs.heatmap(
-                paths=graph_pathset,
+                pathset=graph_pathset,
                 input_stem=graph["src_stem"],
                 output_stem=graph["dest_stem"],
                 medium="storage.csv",

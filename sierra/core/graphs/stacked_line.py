@@ -90,10 +90,6 @@ def generate(
     if "conf95" in stats and "stddev" in stat_dfs:
         plot *= _plot_stats_stddev(dataset, stat_dfs["stddev"])
 
-    # Plot ticks
-    if logyscale:
-        plot.opts(logy=True)
-
     # Let the backend decide # of columns; can override with
     # legend_cols=N in the future if desired.
     plot.opts(legend_position="bottom")
@@ -117,6 +113,9 @@ def generate(
             "legend": text_size["legend_label"],
         },
     )
+
+    if logyscale:
+        plot.opts(logy=True)
 
     hv.save(
         plot.opts(fig_inches=config.kGraphBaseSize),

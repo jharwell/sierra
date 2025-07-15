@@ -147,49 +147,49 @@ it runs::
       |-- CATEGORY.my_controller
           |-- mytemplate-SS.12x6
               |-- exp-inputs
-                 |-- exp0
+                 |-- c1-exp0
                      commands.txt
                      my-template_run0.argos
                      my-template_run1.argos
                      my-template_run2.argos
                      my-template_run3.argos
-                 |-- exp1
+                 |-- c1-exp1
                      commands.txt
                      my-template_run0.argos
                      my-template_run1.argos
                      my-template_run2.argos
                      my-template_run3.argos
-                 |-- exp2
+                 |-- c1-exp2
                      ...
-                 |-- exp3
+                 |-- c1-exp3
                      ...
                  |-- statistics
-                     |-- exp0
-                     |-- exp1
-                     |-- exp2
-                     |-- exp3
+                     |-- c1-exp0
+                     |-- c1-exp1
+                     |-- c1-exp2
+                     |-- c1-exp3
                      |-- collated
                      |-- exec
                  |-- imagize
-                     |-- exp0
-                     |-- exp1
-                     |-- exp2
-                     |-- exp3
+                     |-- c1-exp0
+                     |-- c1-exp1
+                     |-- c1-exp2
+                     |-- c1-exp3
                  |-- videos
-                     |-- exp0
-                     |-- exp1
-                     |-- exp2
-                     |-- exp3
+                     |-- c1-exp0
+                     |-- c1-exp1
+                     |-- c1-exp2
+                     |-- c1-exp3
                  |-- models
-                     |-- exp0
-                     |-- exp1
-                     |-- exp2
-                     |-- exp3
+                     |-- c1-exp0
+                     |-- c1-exp1
+                     |-- c1-exp2
+                     |-- c1-exp3
                  |-- graphs
-                     |-- exp0
-                     |-- exp1
-                     |-- exp2
-                     |-- exp3
+                     |-- c1-exp0
+                     |-- c1-exp1
+                     |-- c1-exp2
+                     |-- c1-exp3
                      |-- collated
 
 
@@ -212,7 +212,7 @@ The meaning of each directory is discussed below.
 - ``exp-inputs`` - Root directory for :term:`Experimental<Experiment>` inputs;
   each experiment in the batch gets their own directory in here.
 
-  - ``exp0/`` - Within the input directory for each experiment in the batch
+  - ``c1-exp0/`` - Within the input directory for each experiment in the batch
     (there are 4 such directories in this example), there will be an input file
     for each :term:`Experimental Run` in the experiment, as well as a
     ``commands.txt`` used by GNU parallel to run them all in parallel. The leaf
@@ -230,7 +230,7 @@ The meaning of each directory is discussed below.
 
       - ``my-template_run3.argos``
 
-  - ``exp1/``
+  - ``c1-exp1/``
 
     - ``my-template_run0.argos``
 
@@ -240,14 +240,14 @@ The meaning of each directory is discussed below.
 
     - ``my-template_run3.argos``
 
-  - ``exp2/``
+  - ``c1-exp2/``
 
     - ``...``
 
 - ``exp-outputs/`` - Root directory for experimental outputs; each experiment
   gets their own directory in here (just like for experiment inputs).
 
-  - ``exp0/`` - Within the output directory for each experiment in the batch
+  - ``c1-exp0/`` - Within the output directory for each experiment in the batch
     (there are 3 such directories in this example), there will be a *directory*
     (rather than a file, as was the case for inputs) for each experimental run's
     output.
@@ -260,7 +260,7 @@ The meaning of each directory is discussed below.
 
     - ``my-template_run3_output``
 
-  - ``exp1/``
+  - ``c1-exp1/``
 
     - ``my-template_run0_output``
 
@@ -270,7 +270,7 @@ The meaning of each directory is discussed below.
 
     - ``my-template_run3_output``
 
-  - ``exp2/``
+  - ``c1-exp2/``
 
     - ``...``
 
@@ -278,12 +278,12 @@ The meaning of each directory is discussed below.
 - ``statistics/`` - Root directory for holding statistics calculated during
   stage3 for use during stage4.
 
-  - ``exp0/`` - Contains the results of statistics generation for exp0
+  - ``c1-exp0/`` - Contains the results of statistics generation for exp0
     (mean, stddev, etc., as configured).
 
-  - ``exp1/``
+  - ``c1-exp1/``
 
-  - ``exp2/``
+  - ``c1-exp2/``
 
   - ``...``
 
@@ -315,13 +315,13 @@ The meaning of each directory is discussed below.
   directory. Each experiment in the batch gets their own directory for
   `intra`\-experiment graphs.
 
-  - ``exp0/``
+  - ``c1-exp0/``
 
-  - ``exp1/``
+  - ``c1-exp1/``
 
-  - ``exp2/``
+  - ``c1-exp2/``
 
-  - ``exp3/``
+  - ``c1-exp3/``
 
   - ``collated/`` - Graphs which are generated across experiments in the batch
     from collated .csv data, rather than from the averaged results within each

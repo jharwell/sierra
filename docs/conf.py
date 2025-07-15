@@ -23,6 +23,7 @@ import pathlib
 import datetime
 import toml
 import os
+import requests
 
 builtins.__sphinx_build__ = True
 
@@ -233,14 +234,21 @@ sphinx_tabs_disable_tab_closing = True
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-plantuml = "java -jar /tmp/plantuml"
+plantuml = "java -jar /tmp/plantuml.jar"
+plantuml_url = "https://downloads.sourceforge.net/project/plantuml/plantuml.jar"
+
+
+if not os.path.exists("/tmp/plantuml.jar"):
+    print("DOCS: Downloading latest plantuml...")
+    response = requests.get(plantuml_url)
+    with open("/tmp/plantuml.jar", "wb") as file:
+        file.write(response.content)
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {"globaltoc_maxdepth": 2, "collapse_navigation": False}
-
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -316,13 +324,6 @@ man_pages = [
         "man/sierra-usage",
         "sierra-usage",
         "How to use SIERRA. This covers all non-command line interface aspects.",
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-engines",
-        "sierra-engines",
-        "The engines SIERRA supports, and engine-specific Batch Criteria.",
         [author],
         7,
     ),

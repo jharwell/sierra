@@ -31,8 +31,9 @@ runs:
         cd sierra-sample-project
         git pull
         fi
+        echo "Sample project cloned into $(pwd)"
 
-        # The maste rbranch of SIERRA/sample project are always kept in
+        # The master rbranch of SIERRA/sample project are always kept in
         # sync. Otherwise, all flowdown changes for whatever I'm doing in SIERRA
         # will end up on the devel branch in the sample project repo.
         if [ ${{ steps.extract_branch.outputs.branch}} == "master" ]; then
@@ -146,7 +147,7 @@ runs:
       if: inputs.platform == 'ros1gazebo'
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy python3-pip
+        packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy python3-pip libxv1
         version: ${{ runner.os }}
 
     - name: Install SIERRA ROSbridge python dependencies (Linux)
@@ -201,4 +202,4 @@ runs:
     # JSONSim setup
     ############################################################################
 
-    # None needed for the moment--stage 1 XML generation only.
+    # None needed for the moment

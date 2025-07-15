@@ -40,3 +40,8 @@ mycategory:
 
   # Should the data points be plotted? Defaults to false if omitted.
   - points: false
+
+  # Should the y axis scale by logarithmic? Defaults to --plot-log-yscale if
+  # omitted (i.e., this option can be overriden on a per-graph basis if
+  # desired).
+  - logy: false

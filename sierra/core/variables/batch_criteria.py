@@ -180,6 +180,7 @@ class BaseBatchCriteria:
         i: int,
         cmdopts: types.Cmdopts,
     ) -> None:
+
         exp_dirname = self.gen_exp_names()[i]
         exp_input_root = self.batch_input_root / exp_dirname
 
@@ -204,7 +205,7 @@ class BaseBatchCriteria:
                     expi_def.element_add(mod.path, mod.tag, mod.attr, mod.allow_dup)
         else:
             self.logger.debug(
-                ("Applying %s expdef modifications from '%s' for " "exp%s in %s"),
+                ("Applying %s expdef modifications from '%s' for exp%s in %s"),
                 len(modsi[0]) + len(modsi[1]),
                 self.cli_arg,
                 i,
@@ -287,8 +288,7 @@ class UnivarBatchCriteria(BaseBatchCriteria):
 @implements.implements(IQueryableBatchCriteria)
 class XVarBatchCriteria(BaseBatchCriteria):
     """
-    Combination of the definition of multiple
-    :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria`.
+    N-dimensional multiple :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria`.
 
     .. versionchanged:: 1.2.20
 
@@ -318,54 +318,55 @@ class XVarBatchCriteria(BaseBatchCriteria):
         flattened_lists = []
 
         for list_of_sets in changes:
-            flattened_list = []
+            flattened_list = []  # type: tp.List[definition.AttrChangeSet]
             for s in list_of_sets:
-                flattened_list.extend(s)
+                flattened_list.append(s)
 
             flattened_lists.append(flattened_list)
 
         # Use itertools.product to get all combinations
         result = []
         for combination in itertools.product(*flattened_lists):
-            result.append(definition.AttrChangeSet(*combination))
+            combined = definition.AttrChangeSet()
+            # Add all changes from each AttrChangeSet in the combination
+            for change_set in combination:
+                for change in change_set:
+                    combined.add(change)
+
+            result.append(combined)
 
         return result
 
     def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
-        changes = [c.gen_element_addlist() for c in self.criterias]
+        adds = [c.gen_element_addlist() for c in self.criterias]
 
-        # Flatten each list of sets into a single list of items
-        flattened_lists = []
-
-        for list_of_sets in changes:
-            flattened_list = []
-            for s in list_of_sets:
-                flattened_list.extend(s)
-            flattened_lists.append(flattened_list)
-
-        # Use itertools.product to get all combinations
+        # Create combinations and combine ElementAddList objects
         result = []
-        for combination in itertools.product(*flattened_lists):
-            result.append(definition.ElementAddList(*combination))
+        for combo in itertools.product(*adds):
+            combined = definition.ElementAddList()
+
+            # Add all ElementAdd objects from each ElementAddList in the combo
+            for elem_add_list in combo:
+                for elem_add in elem_add_list:
+                    combined.append(elem_add)
+
+            result.append(combined)
 
         return result
 
     def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
-        changes = [c.gen_tag_rmlist() for c in self.criterias]
+        rms = [c.gen_tag_rmlist() for c in self.criterias]
 
-        # Flatten each list of sets into a single list of items
-        flattened_lists = []
-
-        for list_of_sets in changes:
-            flattened_list = []
-            for s in list_of_sets:
-                flattened_list.extend(s)
-            flattened_lists.append(flattened_list)
-
-        # Use itertools.product to get all combinations
+        # Create combinations and combine ElementRmList objects
         result = []
-        for combination in itertools.product(*flattened_lists):
-            result.append(definition.ElementRmList(*combination))
+        for combo in itertools.product(*rms):
+            combined = definition.ElementRmList()
+
+            # Add all ElementRm objects from each ElementRmList in the combo
+            for elem_rm_list in combo:
+                for elem_rm in elem_rm_list:
+                    combined.append(elem_rm)
+            result.append(combined)
 
         return result
 
@@ -392,8 +393,8 @@ class XVarBatchCriteria(BaseBatchCriteria):
 
         return ret
 
-    def populations(self, cmdopts: types.Cmdopts) -> tp.List[tp.List[int]]:
-        """Generate a 2D array of system sizes used the batch experiment.
+    def populations(self, cmdopts: types.Cmdopts) -> list:
+        """Generate a N-D array of system sizes used the batch experiment.
 
         Sizes are in the same order as the directories returned from
         ``gen_exp_names()`` for each criteria along each axis.
@@ -412,7 +413,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
             criteria_counts.append(n_chgs + n_adds)
 
         # Create multi-dimensional nested list initialized with zeros
-        def create_nested_list(dimensions):
+        def create_nested_list(dimensions: tp.List[int]) -> list:
             if len(dimensions) == 1:
                 return [0] * dimensions[0]
             return [create_nested_list(dimensions[1:]) for _ in range(dimensions[0])]
@@ -487,10 +488,6 @@ class XVarBatchCriteria(BaseBatchCriteria):
             cmdopts,
             batch_output_root,
             self.gen_exp_names(),
-        )
-
-        all_dirs = utils.exp_range_calc(
-            info.cmdopts["exp_range"], info.batch_output_root, self.gen_exp_names()
         )
 
         # 2025-07-08 [JRH]: Eventually, this will be replaced with axes

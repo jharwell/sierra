@@ -16,7 +16,6 @@ import yaml
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types, config, utils, batchroot
-from sierra.core import plugin as pm
 
 from sierra.plugins.prod.graphs import inter, intra, collate
 
@@ -30,6 +29,8 @@ def proc_batch_exp(
     criteria: bc.XVarBatchCriteria,
 ) -> None:
     """
+    Generate graphs from the :term:`Batch Experiment`.
+
     Intra-experiment graph generation: if intra-experiment graphs should be
     generated, according to cmdline configuration, the following is run:
 
@@ -39,8 +40,7 @@ def proc_batch_exp(
     Inter-experiment graph generation: if inter-experiment graphs should be
     generated according to cmdline configuration, the following is run:
 
-        #.
-           :class:`~sierra.core.plugins.prod.graphs.collate.UnivarGraphCollator`
+        #. :class:`~sierra.core.plugins.prod.graphs.collate.UnivarGraphCollator`
            or
            :class:`~sierra.core.plugins.prod.graphs.collate.BivarGraphCollator`
            as appropriate (depending on which type of
@@ -49,8 +49,8 @@ def proc_batch_exp(
 
         #. Model generation for each enabled and loaded model.
 
-        #. :py:func:`~sierra.core.plugins.prod.graphs.inter.generate` to
-           perform graph generation from collated CSV files.
+        #. :py:func:`~sierra.core.plugins.prod.graphs.inter.generate` to perform
+           graph generation from collated CSV files.
     """
     graphs_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(
         config.kYAML.graphs

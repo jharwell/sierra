@@ -10,4 +10,6 @@
 # 3rd party packages
 
 # Project packages
-from . import generate, line, heatmap
+from . import generate as generate
+from . import line as line
+from . import heatmap as heatmap

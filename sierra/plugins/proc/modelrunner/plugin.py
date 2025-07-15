@@ -16,9 +16,10 @@ import copy
 import yaml
 
 # Project packages
-from sierra.core import config, utils, types, batchroot, storage, models, exproot
+from sierra.core import config, utils, types, batchroot, storage, exproot
 from sierra.core.variables import batch_criteria as bc
 from sierra.core import plugin as pm
+from sierra.core.models import interface
 
 _logger = logging.getLogger(__name__)
 
@@ -54,12 +55,12 @@ def _load_models(
     main_config: types.YAMLDict, cmdopts: types.Cmdopts, model_type: str
 ) -> tp.List[
     tp.Union[
-        models.interface.IConcreteInterExpModel1D,
-        models.interface.IConcreteIntraExpModel1D,
+        interface.IConcreteInterExpModel1D,
+        interface.IConcreteIntraExpModel1D,
     ]
 ]:
     project_models = cmdopts["project_config_root"] / config.kYAML.models
-    models = []
+    loaded = []
 
     if not utils.path_exists(project_models):
         _logger.debug(
@@ -105,19 +106,19 @@ def _load_models(
 
                 for avail in module.available_models(model_type):
                     model = getattr(module, avail)(main_config, conf)
-                    models.append(model)
+                    loaded.append(model)
 
             else:
                 _logger.debug("Model %s disabled by configuration", module_name)
 
-    if len(models) > 0:
+    if len(loaded) > 0:
         _logger.info(
             "Loaded %s models for project %s",
-            len(models),
+            len(loaded),
             cmdopts["project"],
         )
 
-    return models
+    return loaded
 
 
 class IntraExpModelRunner:
@@ -131,8 +132,8 @@ class IntraExpModelRunner:
         pathset: batchroot.PathSet,
         to_run: tp.List[
             tp.Union[
-                models.interface.IConcreteIntraExpModel1D,
-                models.interface.IConcreteIntraExpModel2D,
+                interface.IConcreteIntraExpModel1D,
+                interface.IConcreteIntraExpModel2D,
             ]
         ],
     ) -> None:
@@ -172,8 +173,8 @@ class IntraExpModelRunner:
         pathset: exproot.PathSet,
         exp_index: int,
         model: tp.Union[
-            models.interface.IConcreteIntraExpModel1D,
-            models.interface.IConcreteIntraExpModel2D,
+            interface.IConcreteIntraExpModel1D,
+            interface.IConcreteIntraExpModel2D,
         ],
     ) -> None:
         if not model.run_for_exp(criteria, cmdopts, exp_index):
@@ -221,7 +222,7 @@ class InterExpModelRunner:
         self,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
-        to_run: tp.List[models.interface.IConcreteInterExpModel1D],
+        to_run: tp.List[interface.IConcreteInterExpModel1D],
     ) -> None:
         self.pathset = pathset
         self.cmdopts = cmdopts
@@ -268,3 +269,6 @@ class InterExpModelRunner:
                                 legend = model.legend_names()[i]
                                 f.write(legend)
                                 break
+
+
+__all__ = ["InterExpModelRunner"]

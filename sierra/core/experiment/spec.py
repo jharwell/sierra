@@ -28,7 +28,6 @@ class SimpleBatchScaffoldSpec:
         self.adds = criteria.gen_element_addlist()
         self.rms = criteria.gen_tag_rmlist()
         self.logger = logging.getLogger(__name__)
-
         self.n_exps = 0
 
         self.mods = []
@@ -61,7 +60,7 @@ class SimpleBatchScaffoldSpec:
                     len(self.adds[0]),
                 )
         else:
-            raise RuntimeError(("This spec can't be used with compound " "scaffolding"))
+            raise RuntimeError(("This spec can't be used with compound scaffolding"))
 
     def __iter__(
         self,
@@ -107,9 +106,7 @@ class CompoundBatchScaffoldSpec:
                 )
 
         else:
-            raise RuntimeError(
-                ("This spec can only be used with compound " "scaffolding")
-            )
+            raise RuntimeError(("This spec can only be used with compound scaffolding"))
 
     def __len__(self) -> int:
         return self.n_exps

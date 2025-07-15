@@ -10,4 +10,4 @@
 # 3rd party packages
 
 # Project packages
-from . import generate
+from . import generate as generate

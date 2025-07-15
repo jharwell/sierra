@@ -52,7 +52,9 @@ class IntraExpPreparer:
         inc_exps: tp.Optional[str],
     ) -> None:
         """
-        Takes batch-level dataframes and creates a new dataframe with:
+        Take batch-level dataframes and creates a new dataframe.
+
+        Has:
 
         - Experiment names for the index.
 
@@ -87,7 +89,9 @@ class IntraExpPreparer:
         inc_exps: tp.Optional[str],
     ) -> None:
         """
-        Takes batch-level dataframes and creates a new dataframe with:
+        Take batch-level dataframes and creates a new dataframe.
+
+        Has:
 
         - Experiment names for the index.
 
@@ -132,10 +136,10 @@ class IntraExpPreparer:
         if utils.path_exists(ipath):
             df = storage.df_read(ipath, "storage.csv")
 
-            if inc_exps is not None:
-                cols = utils.exp_include_filter(
-                    inc_exps, list(df.columns), self.criteria.n_exp()
-                )
+            # if inc_exps is not None:
+            # cols = utils.exp_include_filter(
+            #     inc_exps, list(df.columns), self.criteria.n_exp()
+            # )
 
             cum_df[controller] = df.iloc[index]
             return cum_df
@@ -159,15 +163,13 @@ class IntraExpPreparer:
         if utils.path_exists(ipath):
             df = storage.df_read(ipath, "storage.csv")
 
-            if inc_exps is not None:
-                cols = utils.exp_include_filter(
-                    inc_exps, list(df.columns), self.criteria.n_exp()
-                )
+            # if inc_exps is not None:
+            #     cols = utils.exp_include_filter(
+            #         inc_exps, list(df.columns), self.criteria.n_exp()
+            #     )
 
             cum_df[scenario] = df.iloc[index]
-            print(ipath)
-            print(opath)
-            print(cum_df)
+
             return cum_df
 
         return None

@@ -7,17 +7,16 @@
 # Core packages
 import logging
 import pathlib
-import typing as tp
 import argparse
 
 # 3rd party packages
 import yaml
 
 # Project packages
-from sierra.core.pipeline.stage5 import inter_controller_comparator as intercc
-from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
+from sierra.core.pipeline.stage5 import inter_controller as intercc
+from sierra.core.pipeline.stage5 import inter_scenario as intersc
 from sierra.core.pipeline.stage5 import outputroot
-from sierra.core import types, utils, config, batchroot
+from sierra.core import types, utils, config
 
 
 class PipelineStage5:
@@ -51,11 +50,9 @@ class PipelineStage5:
         self,
         main_config: types.YAMLDict,
         cmdopts: types.Cmdopts,
-        batch_roots: batchroot.PathSet,
     ) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
-        self.batch_roots = batch_roots
 
         path = pathlib.Path(self.cmdopts["project_config_root"], config.kYAML.stage5)
 
@@ -119,23 +116,19 @@ class PipelineStage5:
         else:
             legend = self.controllers
 
-        self._verify_comparability(self.controllers, cli_args)
-
         self.logger.info("Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
             univar = intercc.UnivarInterControllerComparator(
                 self.controllers,
-                self.batch_roots,
                 self.stage5_roots,
                 self.cmdopts,
                 cli_args,
                 self.main_config,
             )
             univar(
-                target_graphs=self.stage5_config["intra_scenario"]["graphs"],
+                target_graphs=self.stage5_config["inter-controller"]["graphs"],
                 legend=legend,
-                comp_type=self.cmdopts["comparison_type"],
             )
         else:
             bivar = intercc.BivarInterControllerComparator(
@@ -146,9 +139,8 @@ class PipelineStage5:
                 self.main_config,
             )
             bivar(
-                target_graphs=self.stage5_config["intra_scenario"]["graphs"],
+                target_graphs=self.stage5_config["inter-controller"]["graphs"],
                 legend=legend,
-                comp_type=self.cmdopts["comparison_type"],
             )
 
         self.logger.info("Inter-batch controller comparison complete")
@@ -173,7 +165,6 @@ class PipelineStage5:
         comparator = intersc.UnivarInterScenarioComparator(
             controller,
             self.scenarios,
-            self.batch_roots,
             self.stage5_roots,
             self.cmdopts,
             cli_args,
@@ -181,7 +172,7 @@ class PipelineStage5:
         )
 
         comparator(
-            target_graphs=self.stage5_config["inter_scenario"]["graphs"], legend=legend
+            target_graphs=self.stage5_config["inter-scenario"]["graphs"], legend=legend
         )
 
         self.logger.info(
@@ -189,49 +180,6 @@ class PipelineStage5:
             controller,
             self.scenarios,
         )
-
-    def _verify_comparability(
-        self, controllers: tp.List[str], cli_args: argparse.Namespace
-    ) -> None:
-        """Check if the specified controllers can be compared.
-
-        Comparable controllers have all been run on the same set of batch
-        experiments. If they have not, it is not *necessarily* an error, but
-        probably should be looked at, so it is only a warning, not fatal.
-
-        """
-        for c1 in controllers:
-            for item in (self.project_root / c1).iterdir():
-                leaf = batchroot.ExpRootLeaf.from_name(item.name)
-
-                for c2 in controllers:
-                    opts1 = batchroot.from_exp(
-                        sierra_root=self.cmdopts["sierra_root"],
-                        project=self.cmdopts["project"],
-                        batch_leaf=leaf,
-                        controller=c1,
-                    )
-                    opts2 = batchroot.from_exp(
-                        sierra_root=self.cmdopts["sierra_root"],
-                        project=self.cmdopts["project"],
-                        batch_leaf=leaf,
-                        controller=c2,
-                    )
-                    collate_root1 = opts1.stat_collate_root
-                    collate_root2 = opts2.stat_collate_root
-
-                    if leaf.scenario in str(collate_root1) and leaf.scenario not in str(
-                        collate_root2
-                    ):
-                        self.logger.warning(
-                            "%s does not exist in %s", leaf.scenario, collate_root2
-                        )
-                    if leaf.scenario in str(collate_root2) and leaf.scenario not in str(
-                        collate_root1
-                    ):
-                        self.logger.warning(
-                            "%s does not exist in %s", leaf.scenario, collate_root1
-                        )
 
 
 __all__ = ["PipelineStage5"]

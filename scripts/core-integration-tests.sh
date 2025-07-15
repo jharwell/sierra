@@ -132,7 +132,7 @@ print(path)
 
     # Check SIERRA directory structure
     for i in {0..4}; do
-        [ -d "$input_root/exp$i" ] || false
+        [ -d "$input_root/c1-exp${i}" ] || false
     done
 
     $SIERRA_CMD --pipeline 2 3 4
@@ -191,6 +191,115 @@ cmdline_opts_test() {
 
     rm -rf $HOME/test3
 
+}
+
+stage5_univar_test() {
+    rm -rf $SIERRA_ROOT
+
+    criteria=(population_size.Linear3.C3)
+
+    controllers=(foraging.footbot_foraging
+                 foraging.footbot_foraging_slow)
+
+    STATS=(none conf95 bw)
+
+
+    # Add some extra plotting options to test--these should be pulled
+    # out of here and into a python class once everything is converted
+    # from bash -> python
+    export SIERRA_STAGE5_BASE_CMD="$COVERAGE_CMD \
+       --sierra-root=$SIERRA_ROOT \
+       --project=projects.sample_argos \
+       --pipeline 5 \
+       --n-runs=4 \
+       --bc-univar \
+       -plog-yscale \
+       -plarge-text \
+       -pprimary-axis=1 \
+       --log-level=TRACE"
+
+    # Run experiments with both controllers
+    for bc in "${criteria[@]}"; do
+        for c in "${controllers[@]}"; do
+            SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
+            --controller ${c}
+            --physics-n-engines=1 \
+            --batch-criteria ${bc}\
+            --pipeline 1 2 3 4 --dist-stats=all"
+
+            $SIERRA_CMD --scenario=HighBlockCount.10x10x2
+        done
+    done
+
+    # Compare the controllers within the same scenario
+    for stat in "${STATS[@]}"; do
+
+        SIERRA_STAGE5_CMD="$SIERRA_STAGE5_BASE_CMD \
+        --batch-criteria population_size.Linear3.C3 \
+        --controller-comparison \
+        --dist-stats=${stat} \
+        --controllers-list=foraging.footbot_foraging,foraging.footbot_foraging_slow"
+
+        $SIERRA_STAGE5_CMD
+
+        stage5_univar_check_cc_outputs ${criteria[0]}
+    done
+
+    # Run more experiments with both controllers for scenario
+    # comparison. This CANNOT be part of the block above, because for
+    # controller comparison, having the selected controllers be run on
+    # multiple scenarios results in ambiguity and errors.
+    for bc in "${criteria[@]}"; do
+        for c in "${controllers[@]}"; do
+            SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
+            --controller ${c}
+            --physics-n-engines=1 \
+            --batch-criteria ${bc}\
+            --pipeline 1 2 3 4 --dist-stats=all"
+
+            $SIERRA_CMD --scenario=LowBlockCount.10x10x2
+        done
+    done
+
+    # Compare the controller across scenarios
+    for stat in "${STATS[@]}"; do
+
+        SIERRA_STAGE5_CMD="$SIERRA_STAGE5_BASE_CMD \
+       --batch-criteria population_size.Linear3.C3 \
+       --scenario-comparison \
+       --controller=foraging.footbot_foraging\
+       --dist-stats=${stat} \
+       --scenarios-list=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
+
+        $SIERRA_STAGE5_CMD
+
+        stage5_univar_check_sc_outputs ${criteria[0]}
+    done
+
+    # rm -rf $SIERRA_ROOT
+}
+
+stage5_univar_check_cc_outputs() {
+    batch_criteria=$1
+
+    cc_csv_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs
+    cc_graph_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs
+
+    # The sample project should generate 18 csvs (1 mean + 1 stddev +
+    # 7 bw stats per controller ) and 2 graphs
+    [[ "$(ls $cc_csv_root | wc -l)" -eq "18" ]] || false
+    [[ "$(ls $cc_graph_root | wc -l)" -eq "2" ]] || false
+}
+
+stage5_univar_check_sc_outputs() {
+    batch_criteria=$1
+
+    sc_csv_root=$SIERRA_ROOT/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs
+    sc_graph_root=$SIERRA_ROOT/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs
+    # The sample project should generate 18 csvs (1 mean + 1 stddev +
+    # 7 bw stats per controller ) and 2 graphs
+    [[ "$(ls $sc_csv_root | wc -l)" -eq "18" ]] || false
+    [[ "$(ls $sc_graph_root | wc -l)" -eq "2" ]] || false
 }
 
 ################################################################################
@@ -254,7 +363,7 @@ print(path)
 
     rm -rf $SIERRA_ROOT
 
-    SIERRA_CMD="$SIERRA_BASE_CMD \
+    SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
     --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3\
     --controller=foraging.footbot_foraging \
     --physics-n-engines=1 \
@@ -401,7 +510,7 @@ stage4_bivar_test() {
     BW=(mean median whishi whislo q1 q3 cilo cihi)
 
     SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
-        --controller=foraging.footbot_foraging \
+        --controller=foraging.footbot_foraging2 \
         --physics-n-engines=1 \
         --batch-criteria population_size.Linear3.C3 max_speed.1.9.C3 \
         --pipeline 1 2 3 4"
@@ -409,8 +518,7 @@ stage4_bivar_test() {
 bc=[\"population_size.Linear3.C3\", \"max_speed.1.9.C3\"];
 template_stem=\"template\";
 scenario=\"LowBlockCount.10x10x2\";
-leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
-path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging2\",leaf=leaf).to_path();
 print(path)
 "
         batch_root=$(python3 -c"${batch_root_cmd}")
@@ -451,10 +559,10 @@ stage4_bivar_check_outputs() {
 
     # Check stage4 generated .csvs
     for stat in "${to_check[@]}"; do
-        [ -f "$stat_root/collated/food-counts2.${stat}" ] || false
-        [ -f "$stat_root/collated/robot-counts-resting2.${stat}" ] || false
-        [ -f "$stat_root/collated/robot-counts-walking2.${stat}" ] || false
-        [ -f "$stat_root/collated/swarm-energy2.${stat}" ] || false
+        [ -f "$stat_root/collated/food-counts.${stat}" ] || false
+        [ -f "$stat_root/collated/robot-counts-resting.${stat}" ] || false
+        [ -f "$stat_root/collated/robot-counts-walking.${stat}" ] || false
+        [ -f "$stat_root/collated/swarm-energy.${stat}" ] || false
     done
 
     # Check stage4 generated graphs
@@ -470,6 +578,72 @@ stage4_bivar_check_outputs() {
     [ -f "$graph_root/collated/HM-robot-counts-walking2.png" ] || false
     [ -f "$graph_root/collated/HM-robot-counts-resting2.png" ] || false
     [ -f "$graph_root/collated/HM-swarm-energy2.png" ] || false
+}
+
+stage5_bivar_test() {
+    rm -rf $SIERRA_ROOT
+
+    controllers=(foraging.footbot_foraging2
+                 foraging.footbot_foraging_slow2)
+
+    # Run experiments with both controllers
+    for c in "${controllers[@]}"; do
+        SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
+        --controller ${c} \
+        --bc-rendering \
+        --physics-n-engines=1 \
+        --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
+        --pipeline  1 2 3 4"
+
+        $SIERRA_CMD
+    done
+
+    # Compare the controllers
+    export SIERRA_STAGE5_BASE_CMD="$COVERAGE_CMD \
+       --sierra-root=$SIERRA_ROOT \
+       --project=projects.sample_argos \
+       --pipeline 5 \
+       --n-runs=4 \
+       --bc-bivar \
+       --log-level=TRACE"
+
+    # 2 -> 1 graph per controller, 2 performance variables
+    N_FILES=(2)
+    COMPS=(LNraw)
+
+    for i in {0..0}; do
+        SIERRA_STAGE5_CMD="$SIERRA_STAGE5_BASE_CMD \
+        --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
+        --controller-comparison \
+        --dist-stats=conf95 \
+        --comparison-type=${COMPS[${i}]} \
+        --plot-log-yscale \
+        --plot-large-text \
+        --plot-transpose-graphs \
+        --controllers-list=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
+
+        cc_csv_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-csvs
+        cc_graph_root=$SIERRA_ROOT/projects.sample_argos/foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-graphs
+
+        rm -rf $cc_csv_root
+        rm -rf $cc_graph_root
+
+        $SIERRA_STAGE5_CMD --plot-primary-axis=0
+        stage5_bivar_check_cc_outputs $cc_graph_root ${N_FILES[${i}]}
+
+        rm -rf $cc_csv_root
+        rm -rf $cc_graph_root
+
+        $SIERRA_STAGE5_CMD --plot-primary-axis=1
+        stage5_bivar_check_cc_outputs $cc_graph_root ${N_FILES[${i}]}
+    done
+}
+
+stage5_bivar_check_cc_outputs() {
+    cc_graph_root=$1
+    n_files=$2
+
+    [[ "$(ls $cc_graph_root | wc -l)" -eq "$n_files" ]] || false
 }
 
 

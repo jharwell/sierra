@@ -26,6 +26,8 @@ class GraphInfo:
         exp_names: tp.Optional[tp.List[str]] = None,
     ) -> None:
         """
+        Container of info for generating graphs from batch criteria.
+
         Arguments:
             cmdopts: Dictionary of parsed command line options. Most batch
                      criteria will not need this to compute things, BUT it is
@@ -54,8 +56,7 @@ class GraphInfo:
 
 class IGraphable(implements.Interface):
     """
-    Interface for batch criteria which can be used with the
-    :ref:`plugins/prod/graphs`.
+    Interface for batch criteria for usage with :ref:`plugins/prod/graphs`.
     """
 
     def graph_info(
@@ -65,19 +66,15 @@ class IGraphable(implements.Interface):
         exp_names: tp.Optional[tp.List[str]] = None,
     ) -> GraphInfo:
         """
-        Generate the necessary info for generating graphs from :term:`Batch
-        Criteria`.
+        Generate graph info for generating graphs from :term:`Batch Criteria`.
 
-
-        Arguments:
-            exp_names: Needed as an optional for bivariate batch criteria.  When
-                       calculating say yticks using criteria2, if criteria2 uses
-                       :py:func:`populations()` in the process, the criteria's
-                       OWN ``gen_exp_names()`` will be used, which will result
-                       in bad directory name calculations.  This can be overcome
-                       by passing the list of exp names to use at THIS level,
-                       which should override the value otherwise present in
-                       :class:`GraphInfo`.
+        Arguments: exp_names: Needed as an optional for bivariate batch
+        criteria.  When calculating say yticks using criteria2, if criteria2
+        uses :py:func:`populations()` in the process, the criteria's OWN
+        ``gen_exp_names()`` will be used, which will result in bad directory
+        name calculations.  This can be overcome by passing the list of exp
+        names to use at THIS level, which should override the value otherwise
+        present in :class:`GraphInfo`.
         """
         raise NotImplementedError
 

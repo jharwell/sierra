@@ -63,16 +63,16 @@ def generate(
                     xlabel=graph.get("xlabel", ""),
                     ylabel=graph.get("ylabel", ""),
                     points=graph.get("points", False),
-                    logyscale=cmdopts["plot_log_yscale"],
+                    logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),
                     large_text=cmdopts["plot_large_text"],
                 )
             except KeyError:
                 _logger.fatal(
-                    ("Could not generate linegraph. " "Possible reasons include: ")
+                    ("Could not generate linegraph. Possible reasons include: ")
                 )
 
                 _logger.fatal(
-                    ("1. The YAML configuration entry is " "missing required fields")
+                    ("1. The YAML configuration entry is missing required fields")
                 )
                 missing_cols = graph.get("cols", "MISSING_KEY")
                 missing_stem = graph.get("src_stem", "MISSING_KEY")

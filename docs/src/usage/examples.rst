@@ -6,9 +6,8 @@ SIERRA Usage By Example
 
 This page contains reference examples of SIERRA usage to help you craft your own
 SIERRA invocation.  These examples use the SIERRA project plugins from the
-SIERRA sample project repo: :xref:`SIERRA_SAMPLE_PROJECT`. See
-:ref:`trial` or :ref:`getting-started` for setting up the
-sample project repository.
+SIERRA sample project repo: :xref:`SIERRA_SAMPLE_PROJECT`. See :ref:`trial` or
+:ref:`startup` for setting up the sample project repository.
 
 In all examples:
 

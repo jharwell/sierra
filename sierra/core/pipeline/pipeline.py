@@ -176,7 +176,7 @@ class Pipeline:
 
         # not part of default pipeline
         if 5 in self.args.pipeline:
-            PipelineStage5(self.main_config, self.cmdopts, self.pathset).run(self.args)
+            PipelineStage5(self.main_config, self.cmdopts).run(self.args)
 
     def _handle_shortforms(self, args: argparse.Namespace) -> argparse.Namespace:
         """
@@ -224,7 +224,7 @@ class Pipeline:
                     key = "{0}_{1}".format(
                         shortform_map[k], p[0].replace("-", "_").replace("no_", "")
                     )
-                    setattr(args, key, False if "no" in p[0] else True)
+                    setattr(args, key, "no" not in p[0])
 
                 elif len(p) == 1 and "=" in p[0]:
                     arg, value = p[0].split("=")
