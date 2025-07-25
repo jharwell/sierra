@@ -124,7 +124,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
 
             if valid_configurations == 0:
                 self.logger.warning(
-                    "Skipping comparison for controller %s: not run on any selected batch roots",
+                    "Skipping comparison for controller %s: not run on any selected batch roots %s",
                     controller,
                     [r.to_str() for r in roots],
                 )
@@ -324,7 +324,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
 
             if valid_configurations == 0:
                 self.logger.warning(
-                    "Skipping comparison for controller %s: not run on any selected batch roots",
+                    "Skipping comparison for controller %s: not run on any selected batch roots %s",
                     controller,
                     [r.to_str() for r in roots],
                 )

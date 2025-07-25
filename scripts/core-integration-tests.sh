@@ -646,6 +646,75 @@ stage5_bivar_check_cc_outputs() {
     [[ "$(ls $cc_graph_root | wc -l)" -eq "$n_files" ]] || false
 }
 
+################################################################################
+# Parallelism Tests
+#
+# Test:
+#
+# - per-batch parallelism in stage {1,2} when it isn't explicitly
+#   supported by the selected engine.
+#
+################################################################################
+parallelism_test() {
+    batch_root_cmd="from sierra.core import batchroot;
+bc=[\"population_size.Linear3.C3\"];
+template_stem=\"template\";
+scenario=\"LowBlockCount.10x10x2\";
+leaf=batchroot.ExpRootLeaf(bc=bc,template_stem=template_stem,scenario=scenario);
+path=batchroot.ExpRoot(sierra_root=\"$SIERRA_ROOT\",project=\"projects.sample_argos\",controller=\"foraging.footbot_foraging\",leaf=leaf).to_path();
+print(path)
+"
+    batch_root=$(python3 -c "${batch_root_cmd}")
+
+    input_root=$batch_root/exp-inputs/
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD_ARGOS \
+    --batch-criteria population_size.Linear3.C3 \
+    --controller=foraging.footbot_foraging \
+    --physics-n-engines=1 \
+    --pipeline 1 \
+    --exec-parallelism-paradigm=per-batch"
+
+    $SIERRA_CMD
+
+    # Check SIERRA directory structure
+    for i in {0..2}; do
+        [ -d "$input_root/c1-exp${i}" ] || false
+        [ -f "$batch_root/commands.txt" ] || false
+    done
+
+    # Check stage1 generated stuff
+    for i in {0..2}; do
+        [ ! -f "$input_root/c1-exp${i}/commands.txt" ] || false
+        [ -f "$input_root/c1-exp${i}/exp_def.pkl" ] || false
+        [ -f "$input_root/c1-exp${i}/seeds.pkl" ] || false
+
+        for run in {0..3}; do
+            [ -f "$input_root/c1-exp${i}/template_run${run}.argos" ] ||false
+        done
+    done
+
+    $SIERRA_CMD --pipeline 2
+
+    output_root=$batch_root/exp-outputs
+
+    # Check SIERRA directory structure
+    for i in {0..2}; do
+        for run in {0..3}; do
+            [ -d "$output_root/c1-exp${i}/template_run${run}_output" ] || false
+        done
+    done
+
+    # Check stage2 generated data
+    for i in {0..2}; do
+        for run in {0..3}; do
+            [ -f "$output_root/c1-exp${i}/template_run${run}_output/output/collected-data.csv" ] || false
+        done
+    done
+
+    rm -rf $SIERRA_ROOT
+}
 
 ################################################################################
 # Run Tests

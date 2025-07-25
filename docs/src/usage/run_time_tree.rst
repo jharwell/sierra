@@ -1,4 +1,4 @@
-.. _usage/runtime-tree:
+.. _usage/run-time-tree:
 
 Runtime Directory Tree
 ======================
@@ -62,7 +62,7 @@ Basic Structure
      - All experiment input files will be generated under this root
        directory.
 
-     - No/named ``<batch experiment root>/exp-inputs``.
+     - No/named ``<batchroot>/exp-inputs``.
 
    * - Batch output root
 
@@ -70,47 +70,7 @@ Basic Structure
        directory. Each experiment will get their own subdirectory in this root
        for its outputs to accrue into.
 
-     - No/named ``<batch experiment root>/exp-outputs``.
-
-   * - Batch graph root
-
-     - All generated graphs will acrrue under this root directory. Each
-       experiment will get their own subdirectory in this root for their graphs
-       to accrue into.
-
-     - No/named ``<batch experiment root>/graphs``.
-
-   * - Batch model root
-
-     - All model outputs will accrue under this root directory. Each experiment
-       will get their own subdirectory in this root for their model outputs to
-       accrue into.
-
-     - No/named ``<batch experiment root>/models``.
-
-   * - Batch statistics root
-
-     - All statistics generated during stage 3 will accrue under this root
-       directory. Each experiment will get their own directory in this root for
-       their statistics.
-
-     - No/named ``<batch experiment root>/statistics``.
-
-   * - Batch imagizing root
-
-     - All images generated during stage 3 from CSV files accrue under this root
-       directory. Each experiment will get their own subdirectory in this root for
-       their images.
-
-     - No/named ``<batch experiment root>/images``.
-
-   * - Batch video root.
-
-     - All videos rendered during stage 4 will accrue under this root
-       directory. Each experiment will get their own subdirectory in this root
-       for their videos.
-
-     - No/named ``<batch experiment root>/videos``.
+     - No/named ``<batchroot>/exp-outputs``.
 
    * - Batch scratch root.
 
@@ -119,15 +79,18 @@ Basic Structure
        own scratch. This root is separate from experiment inputs to make
        checking for segfaults, tar-ing experiments, etc. easier.
 
-     - No/named ``<batch experiment root>/scratch``.
+     - No/named ``<batchroot>/scratch``.
 
 
-Default Pipeline Directory Tree (Stages 1-4)
---------------------------------------------
+Core Pipeline Directory Tree (Stages 1-2)
+-----------------------------------------
 
-When SIERRA runs stages 1-4, it creates a directory structure under whatever was
-passed as ``--sierra-root``. For the purposes of explanation, I will use the
-following partial SIERRA option set to explain the experiment tree::
+When SIERRA runs stages 1-2, it creates a directory structure under whatever was
+passed as ``--sierra-root``.  The specifics of what directories/files get
+created *may* depend on the specific set of active plugins; see the :ref:`plugin
+docs <plugins>` for details. However, the SIERRA core creates a consistent set
+of directories during stages 1-2. for the purposes of explanation, I will use
+the following partial SIERRA option set to explain the core experiment tree::
 
   --sierra-root=$HOME/exp\
   --controller=CATEGORY.my_controller\
@@ -137,7 +100,6 @@ following partial SIERRA option set to explain the experiment tree::
   --n-runs=4\
   --expdef-template=~/my-template.argos\
   --project=fordyca
-
 
 This invocation will cause SIERRA to create the following directory structure as
 it runs::
@@ -163,34 +125,22 @@ it runs::
                      ...
                  |-- c1-exp3
                      ...
-                 |-- statistics
-                     |-- c1-exp0
-                     |-- c1-exp1
-                     |-- c1-exp2
-                     |-- c1-exp3
-                     |-- collated
-                     |-- exec
-                 |-- imagize
-                     |-- c1-exp0
-                     |-- c1-exp1
-                     |-- c1-exp2
-                     |-- c1-exp3
-                 |-- videos
-                     |-- c1-exp0
-                     |-- c1-exp1
-                     |-- c1-exp2
-                     |-- c1-exp3
-                 |-- models
-                     |-- c1-exp0
-                     |-- c1-exp1
-                     |-- c1-exp2
-                     |-- c1-exp3
-                 |-- graphs
-                     |-- c1-exp0
-                     |-- c1-exp1
-                     |-- c1-exp2
-                     |-- c1-exp3
-                     |-- collated
+              |-- exp-outputs
+                 |-- c1-exp0
+                     my-template_run0_output/
+                     my-template_run1_output/
+                     my-template_run2_output/
+                     my-template_run3_output/
+                 |-- c1-exp1
+                     commands.txt
+                     my-template_run0_output/
+                     my-template_run1_output/
+                     my-template_run2_output/
+                     my-template_run3_output/
+                 |-- c1-exp2
+                     ...
+                 |-- c1-exp3
+                     ...
 
 
 The meaning of each directory is discussed below.
@@ -275,57 +225,8 @@ The meaning of each directory is discussed below.
     - ``...``
 
 
-- ``statistics/`` - Root directory for holding statistics calculated during
-  stage3 for use during stage4.
-
-  - ``c1-exp0/`` - Contains the results of statistics generation for exp0
-    (mean, stddev, etc., as configured).
-
-  - ``c1-exp1/``
-
-  - ``c1-exp2/``
-
-  - ``...``
-
-  - ``collated/`` - Contains :term:`Collated Run Output Data`
-    files. During stage4, SIERRA will draw specific columns from .csv files
-    under ``statistics`` according to configuration, and collate them under here
-    for graph generation of *inter*\-experiment graphs.
-
   - ``exec/`` - Statistics about SIERRA runtime. Useful for capturing runtime of
-    specific experiments to better plan/schedule time on HPC clusters.
-
-- ``imagize/`` - Root directory for holding imagized files (averaged run outputs
-  which have been converted to graphs) which can be patched together in stage 4
-  to generated videos. Each experiment will get its own directory under here,
-  with unique sub-directories for each different type of :term:`Experimental
-  Run` data captured for imagizing. See :ref:`plugins/product/render` for
-  more details.
-
-- ``videos/`` - Root directory for holding rendered videos generated during
-  stage 4 from either captured simulator frames for imagized project files. Each
-  experiment will get its own directory under here, with See
-  :ref:`plugins/product/render` for more details.
-
-- ``models/`` - During stage4, the dataframes generated by all executed models
-  are stored under this directory. Each experiment in the batch gets their own
-  directory for `intra`\-experiment models.
-
-- ``graphs/`` - During stage4, all generated graphs are output under this
-  directory. Each experiment in the batch gets their own directory for
-  `intra`\-experiment graphs.
-
-  - ``c1-exp0/``
-
-  - ``c1-exp1/``
-
-  - ``c1-exp2/``
-
-  - ``c1-exp3/``
-
-  - ``collated/`` - Graphs which are generated across experiments in the batch
-    from collated .csv data, rather than from the averaged results within each
-    experiment, are output here.
+    specific experiments to better plan/schedule time on HPC clusters, etc.
 
 Stage 5 Directory Tree
 ----------------------

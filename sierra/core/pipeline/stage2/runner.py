@@ -17,7 +17,7 @@ import typing as tp  # noqa: F401
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, config, engine, utils, batchroot, exec_env
+from sierra.core import types, config, engine, utils, batchroot, execenv
 import sierra.core.plugin as pm
 
 
@@ -60,7 +60,7 @@ class ExpShell:
             return True
 
         # We use communicate(), not wait() to avoid issues with IO buffers
-        # becoming full (i.e., you get deadlocks with wait() regularly).
+        # becoming full (e.g., you get deadlocks with wait() regularly).
         stdout_raw, stderr_raw = proc.communicate()
 
         # Update the environment for all commands
@@ -186,7 +186,7 @@ class BatchExpRunner:
         engine.exec_env_check(self.cmdopts)
 
         self.logger.debug("Checking --exec-env execution environment")
-        exec_env.exec_env_check(self.cmdopts)
+        execenv.exec_env_check(self.cmdopts)
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()
@@ -196,42 +196,63 @@ class BatchExpRunner:
         # an effect (if they set environment variables, etc.).
         shell = ExpShell(self.cmdopts["exec_strict"])
 
-        # Run the experiment!
-        for exp in exp_to_run:
-            exp_num = exp_all.index(exp)
-
-            # Run cmds for engine-specific things to setup the experiment
-            # (e.g., start daemons) if needed.
-            engine_generator = engine.ExpShellCmdsGenerator(self.cmdopts, exp_num)
-            execenv_generator = exec_env.ExpShellCmdsGenerator(self.cmdopts, exp_num)
-
-            for spec in execenv_generator.pre_exp_cmds():
-                shell.run_from_spec(spec)
-
-            for spec in engine_generator.pre_exp_cmds():
-                shell.run_from_spec(spec)
-
-            runner = ExpRunner(
-                self.pathset, self.cmdopts, exec_times_fpath, execenv_generator, shell
+        if self.cmdopts["exec_parallelism_paradigm"] is not None:
+            self.logger.warning(
+                "Overriding engine=%s parallelism paradigm with %s",
+                self.cmdopts["engine"],
+                self.cmdopts["exec_parallelism_paradigm"],
             )
-            runner(exp.name, exp_num)
+            parallelism_paradigm = self.cmdopts["exec_parallelism_paradigm"]
+        else:
+            configurer = engine.ExpConfigurer(self.cmdopts)
+            parallelism_paradigm = configurer.parallelism_paradigm()
 
-            # Run cmds to cleanup {execenv, engine}-specific things now that
-            # the experiment is done (if needed).
-            for spec in execenv_generator.post_exp_cmds():
-                shell.run_from_spec(spec)
+        if parallelism_paradigm == "per-batch":
+            ParallelRunner(
+                self.pathset, self.cmdopts, exec_times_fpath, exp_all, shell
+            )(exp_to_run)
 
-            for spec in engine_generator.post_exp_cmds():
-                shell.run_from_spec(spec)
+        else:
+            # Run the experiment!
+            for exp in exp_to_run:
+                exp_num = exp_all.index(exp)
+
+                # Run cmds for engine-specific things to setup the experiment
+                # (e.g., start daemons) if needed.
+                engine_generator = engine.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+                execenv_generator = execenv.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+
+                for spec in execenv_generator.pre_exp_cmds():
+                    shell.run_from_spec(spec)
+
+                for spec in engine_generator.pre_exp_cmds():
+                    shell.run_from_spec(spec)
+
+                runner = SequentialRunner(
+                    self.pathset,
+                    self.cmdopts,
+                    exec_times_fpath,
+                    execenv_generator,
+                    shell,
+                )
+                runner(exp.name, exp_num)
+
+                # Run cmds to cleanup {execenv, engine}-specific things now that
+                # the experiment is done (if needed).
+                for spec in execenv_generator.post_exp_cmds():
+                    shell.run_from_spec(spec)
+
+                for spec in engine_generator.post_exp_cmds():
+                    shell.run_from_spec(spec)
 
 
-class ExpRunner:
+class SequentialRunner:
     """
     Execute each :term:`Experimental Run` in an :term:`Experiment`.
 
-    In parallel if the selected execution environment supports it, otherwise
-    sequentially.
-
+    Runs are executed parallel if the selected execution environment supports
+    it, otherwise sequentially. This class is meant for executing experiments
+    within a batch sequentially.
     """
 
     def __init__(
@@ -239,7 +260,7 @@ class ExpRunner:
         pathset: batchroot.PathSet,
         cmdopts: types.Cmdopts,
         exec_times_fpath: pathlib.Path,
-        generator: exec_env.ExpShellCmdsGenerator,
+        generator: execenv.ExpShellCmdsGenerator,
         shell: ExpShell,
     ) -> None:
 
@@ -261,7 +282,6 @@ class ExpRunner:
         )
         sys.stdout.flush()
 
-        wd = exp_input_root.relative_to(pathlib.Path().home())
         start = time.time()
 
         utils.dir_create_checked(exp_scratch_root, exist_ok=True)
@@ -274,7 +294,7 @@ class ExpRunner:
 
         exec_opts = {
             "exp_input_root": str(exp_input_root),
-            "work_dir": str(wd),
+            "work_dir": exp_input_root,
             "exp_scratch_root": str(exp_scratch_root),
             "cmdfile_stem_path": str(
                 exp_input_root / config.kGNUParallel["cmdfile_stem"]
@@ -300,4 +320,83 @@ class ExpRunner:
             f.write("exp" + str(exp_num) + ": " + str(sec) + "\n")
 
 
-__all__ = ["BatchExpRunner", "ExpRunner", "ExpShell"]
+class ParallelRunner:
+    """
+    Execute all runs in all :term:`Experiments <Experiment>` in parallel.
+
+    This class is meant for executing experiments within a batch concurrently.
+    """
+
+    def __init__(
+        self,
+        pathset: batchroot.PathSet,
+        cmdopts: types.Cmdopts,
+        exec_times_fpath: pathlib.Path,
+        exp_all: tp.List[pathlib.Path],
+        shell: ExpShell,
+    ) -> None:
+
+        self.exec_times_fpath = exec_times_fpath
+        self.shell = shell
+        self.exp_all = exp_all
+        self.cmdopts = cmdopts
+        self.pathset = pathset
+        self.logger = logging.getLogger(__name__)
+
+    def __call__(self, exp_to_run: tp.List[pathlib.Path]) -> None:
+        """Execute all experimental runs for all experiments."""
+
+        self.logger.info("Kicking off all experiments in <batchroot>")
+        sys.stdout.flush()
+
+        start = time.time()
+
+        exp_scratch_root = self.pathset.scratch_root
+        utils.dir_create_checked(exp_scratch_root, exist_ok=True)
+        exec_opts = {
+            "batch_root": str(self.pathset.root),
+            "work_dir": str(self.pathset.root),
+            "batch_scratch_root": str(self.pathset.scratch_root),
+            "cmdfile_stem_path": str(
+                self.pathset.root / config.kGNUParallel["cmdfile_stem"]
+            ),
+            "cmdfile_ext": config.kGNUParallel["cmdfile_ext"],
+            "exec_resume": self.cmdopts["exec_resume"],
+            "n_jobs": self.cmdopts["exec_jobs_per_node"],
+        }
+
+        # Run cmds for engine-specific things to setup the experiment
+        # (e.g., start daemons) if needed.
+        engine_generator = engine.BatchShellCmdsGenerator(self.cmdopts)
+        execenv_generator = execenv.BatchShellCmdsGenerator(self.cmdopts)
+
+        for spec in execenv_generator.pre_batch_cmds():
+            self.shell.run_from_spec(spec)
+
+        for spec in engine_generator.pre_batch_cmds():
+            self.shell.run_from_spec(spec)
+
+        for spec in execenv_generator.exec_batch_cmds(exec_opts):
+            if not self.shell.run_from_spec(spec):
+                self.logger.error(
+                    "Check outputs in %s for full details",
+                    exec_opts["batch_scratch_root"],
+                )
+
+        # Run cmds to cleanup {execenv, engine}-specific things now that
+        # the experiment is done (if needed).
+        for spec in execenv_generator.post_batch_cmds():
+            self.shell.run_from_spec(spec)
+
+        for spec in engine_generator.post_batch_cmds():
+            self.shell.run_from_spec(spec)
+
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        self.logger.info("Elapsed time: %s", sec)
+
+        with utils.utf8open(self.exec_times_fpath, "a") as f:
+            f.write(": " + str(sec) + "\n")
+
+
+__all__ = ["BatchExpRunner", "SequentialRunner", "ParallelRunner", "ExpShell"]

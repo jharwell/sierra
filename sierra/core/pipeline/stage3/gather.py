@@ -162,7 +162,7 @@ class BaseGatherer:
     ) -> ProcessSpec:
         to_process = ProcessSpec(gather=spec)
 
-        for i, run in enumerate(runs):
+        for _, run in enumerate(runs):
             path = run / self.run_metrics_leaf / spec.item_stem_path
             if path.exists() and path.stat().st_size > 0:
                 df = storage.df_read(

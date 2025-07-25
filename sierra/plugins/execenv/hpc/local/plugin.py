@@ -23,7 +23,7 @@ from sierra.core.experiment import bindings
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator:
     """
-    Generate the command to invoke GNU parallel for local HPC.
+    Generate the commands for local HPC (experiment-level parallelism).
     """
 
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
@@ -74,4 +74,57 @@ class ExpShellCmdsGenerator:
         return [use_bash, parallel_spec]
 
 
-__all__ = ["ExpShellCmdsGenerator"]
+@implements.implements(bindings.IBatchShellCmdsGenerator)
+class BatchShellCmdsGenerator:
+    """
+    Generate the commands for local HPC (batch-level parallelism).
+    """
+
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        self.cmdopts = cmdopts
+
+    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+        resume = ""
+
+        # This can't be --resume, because then GNU parallel looks at the results
+        # directory, and if there is stuff in it, (apparently) assumes that the
+        # job finished...
+        if exec_opts["exec_resume"]:
+            resume = "--resume-failed"
+
+        # Make sure GNU parallel uses the right shell, because it seems to
+        # defaults to /bin/sh since all cmds are run in a python shell which
+        # does not have $SHELL set.
+        shell = shutil.which("bash")
+        use_bash = types.ShellCmdSpec(
+            cmd=f"export PARALLEL_SHELL={shell}", shell=True, wait=True, env=True
+        )
+
+        parallel = (
+            "parallel {1} "
+            "--jobs {2} "
+            "--results {0} "
+            "--joblog {3} "
+            '--no-notice < "{4}"'
+        )
+
+        log = pathlib.Path(exec_opts["batch_scratch_root"], "parallel.log")
+        parallel = parallel.format(
+            exec_opts["batch_scratch_root"],
+            resume,
+            exec_opts["n_jobs"],
+            log,
+            exec_opts["cmdfile_stem_path"] + exec_opts["cmdfile_ext"],
+        )
+        parallel_spec = types.ShellCmdSpec(cmd=parallel, shell=True, wait=True)
+
+        return [use_bash, parallel_spec]
+
+
+__all__ = ["ExpShellCmdsGenerator", "BatchShellCmdsGenerator"]

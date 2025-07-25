@@ -41,16 +41,22 @@ Local HPC Plugin
 
 This HPC environment can be selected via ``--exec-env=hpc.local``.
 
-This is the default HPC environment in which SIERRA will run all experiments on
-the same computer from which it was launched using GNU parallel.  The #
-simultaneous simulations will be determined by::
+This is the default HPC environment in which SIERRA will run all
+:term:`Experimental Runs <Experimental Run>` on the same computer from which it
+was launched using GNU parallel.  The # simultaneous simulations will be
+determined by a number of factors, including:
 
-  # cores on machine / # threads per experimental run
+- ``--exec-jobs-per-node``
 
-If more simulations are requested than can be run in parallel, SIERRA will start
-additional simulations as currently running simulations finish.
+- The selected :term:`Engine`'s parallelism paradigm and its specific
+  configuration.
 
-No additional configuration/environment variables are needed with this HPC
+- The # of cores on the machine.
+
+This HPC environment supports both ``per-batch`` and ``per-exp`` parallelism
+paradigms. If more simulations are requested than can be run in parallel, SIERRA
+will start additional simulations as currently running simulations finish. No
+additional configuration/environment variables are needed with this HPC
 environment for use with SIERRA.
 
 .. _plugins/exec-env/hpc/pbs:

@@ -181,5 +181,5 @@ Plugins
 
 .. envvar:: PREFECT_API_URL
 
-            The URL of the prefect server to use. Used by
-            :ref:`plugins/execenv/prefect/dockerremote`.
+            The URL of the :term:`Prefect` server to use. Used by prefect-based
+            execution environment plugins.

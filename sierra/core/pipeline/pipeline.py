@@ -70,6 +70,7 @@ class Pipeline:
             "skip_collate": self.args.skip_collate,
             "engine": self.args.engine,
             "processing_parallelism": self.args.processing_parallelism,
+            "exec_parallelism_paradigm": self.args.exec_parallelism_paradigm,
             "plot_log_xscale": self.args.plot_log_xscale,
             "plot_enumerated_xscale": self.args.plot_enumerated_xscale,
             "plot_log_yscale": self.args.plot_log_yscale,
@@ -198,7 +199,7 @@ class Pipeline:
             passed = getattr(args, k, None)
             if not passed:
                 self.logger.trace(
-                    ("No shortform args for -%s -> --%s " "passed to SIERRA"),
+                    ("No shortform args for -%s -> --%s passed to SIERRA"),
                     k,
                     shortform_map[k],
                 )

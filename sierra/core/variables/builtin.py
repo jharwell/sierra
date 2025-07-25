@@ -116,7 +116,7 @@ def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> tp.List[
     _min = float(res.group(1)) * scale_factor
     _max = float(res.group(2)) * scale_factor
     cardinality = int(res.group(3))
-    return [x for x in np.linspace(_min, _max, cardinality)]
+    return list(x for x in np.linspace(_min, _max, cardinality))
 
 
 def factory(

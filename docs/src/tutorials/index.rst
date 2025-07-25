@@ -15,7 +15,6 @@ needs.
 
    project/project.rst
    project/main-config/index.rst
-   project/stage5-config.rst
    project/generators.rst
    project/new-bc.rst
    project/hooks.rst

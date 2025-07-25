@@ -18,7 +18,7 @@ import pathlib
 import implements
 
 # Project packages
-from sierra.core import types, exec_env, utils
+from sierra.core import types, execenv, utils
 from sierra.core.experiment import bindings
 
 _logger = logging.getLogger("robot.turtlebot3")
@@ -45,9 +45,7 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     ), f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
     _logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
-    assert (
-        not args.engine_vc
-    ), "Engine visual capture not supported on robot.turtlebot3"
+    assert not args.engine_vc, "Engine visual capture not supported on robot.turtlebot3"
 
     return args
 
@@ -150,9 +148,7 @@ class ExpShellCmdsGenerator:
         ret.append(robots_spec)
 
         if not self.cmdopts["no_master_node"]:
-            ros_master = (
-                "parallel {3} " "--results {1} " "--joblog {0} " '--workdir {1} < "{2}"'
-            )
+            ros_master = "parallel {3} --results {1} --joblog {0} '--workdir {1} < {2}'"
 
             ros_master_ipath = (
                 exec_opts["cmdfile_stem_path"]
@@ -188,7 +184,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
     Checks that a valid list of IPs for robots is set/passed, and checks that
     they are reachable.
     """
-    nodes = exec_env.parse_nodefile(cmdopts["nodefile"])
+    nodes = execenv.parse_nodefile(cmdopts["nodefile"])
     for node in nodes:
         if int(node.n_cores) != 1:
             _logger.warning(
@@ -200,7 +196,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
                 node.hostname,
             )
         if not cmdopts["skip_online_check"]:
-            exec_env.check_connectivity(
+            execenv.check_connectivity(
                 cmdopts, node.login, node.hostname, node.port, "turtlebot3"
             )
 

@@ -19,7 +19,7 @@ import typing as tp
 # Project packages
 import sierra.core.cmdline as cmd
 from sierra import version
-from sierra.core import engine, plugin, startup, batchroot, exec_env, utils
+from sierra.core import engine, startup, batchroot, execenv, utils
 from sierra.core.pipeline.pipeline import Pipeline
 import sierra.core.plugin as pm
 import sierra.core.logging  # type: ignore
@@ -109,7 +109,7 @@ class SIERRA:
         # Configure cmdopts for engine + execution environment by modifying
         # arguments/adding new arguments as needed, and perform additional
         # validation.
-        self.args = exec_env.cmdline_postparse_configure(
+        self.args = execenv.cmdline_postparse_configure(
             bootstrap_args.exec_env, self.args
         )
         self.args = engine.cmdline_postparse_configure(
@@ -148,26 +148,26 @@ class SIERRA:
     ) -> None:
         # Verify engine plugin
         module = manager.get_plugin_module(bootstrap_args.engine)
-        plugin.engine_sanity_checks(bootstrap_args.engine, module)
+        pm.engine_sanity_checks(bootstrap_args.engine, module)
 
         # Verify execution environment plugin
         module = manager.get_plugin_module(bootstrap_args.exec_env)
-        plugin.exec_env_sanity_checks(bootstrap_args.exec_env, module)
+        pm.exec_env_sanity_checks(bootstrap_args.exec_env, module)
 
         # Verify processing environment plugins
         for p in other_args.proc:
             module = manager.get_plugin_module(p)
-            plugin.proc_sanity_checks(p, module)
+            pm.proc_sanity_checks(p, module)
 
         # Verify expdef environment plugin
         module = manager.get_plugin_module(other_args.expdef)
-        plugin.expdef_sanity_checks(other_args.expdef, module)
+        pm.expdef_sanity_checks(other_args.expdef, module)
 
         # Verify storage plugin (declared as part of core cmdline arguments
         # rather than bootstrap, so we have to wait until after all arguments
         # are parsed to verify it)
         module = manager.get_plugin_module(self.args.storage)
-        plugin.storage_sanity_checks(self.args.storage, module)
+        pm.storage_sanity_checks(self.args.storage, module)
 
     def _handle_rc(
         self, rcfile_path: tp.Optional[str], args: argparse.Namespace

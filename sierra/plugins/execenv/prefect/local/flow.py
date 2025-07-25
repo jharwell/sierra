@@ -29,8 +29,12 @@ def exec_exp_run(
 
         log_directory: where to write stdout/stderr to
     """
-    with open(scratch_stdout, "w") as stdout:
-        subprocess.run(cmd, stdout=stdout, stderr=subprocess.STDOUT)
+    flow_run_id = prefect.runtime.task_run.id
+
+    with open(str(scratch_stdout) + f"_{flow_run_id}", "w") as stdout:
+        subprocess.run(
+            cmd, stdout=stdout, stderr=subprocess.STDOUT, shell=True, check=True
+        )
 
 
 @prefect.flow
@@ -47,9 +51,12 @@ def sierra(
     """
     commands = []
     with open(input_root / "commands.txt") as f:
-        commands.append(f.readline().split())
+        commands = [line.strip() for line in f.readlines()]
+
+    logger = prefect.get_run_logger()
 
     scratch_stdouts = [scratch_root / f"stdout_run{i}" for i in range(0, len(commands))]
+    logger.info("%s %s", commands, scratch_stdouts)
     sim_results = exec_exp_run.map(commands, scratch_stdouts)
     sim_results.wait()
 

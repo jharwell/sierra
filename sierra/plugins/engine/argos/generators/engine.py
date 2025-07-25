@@ -279,7 +279,7 @@ def _generate_all_exp_time(
     _logger.debug("Using exp_setup=%s", cmdopts["exp_setup"])
 
     setup = exp.factory(cmdopts["exp_setup"])()
-    rms, adds, chgs = utils.apply_to_expdef(setup, exp_def)
+    _, adds, chgs = utils.apply_to_expdef(setup, exp_def)
 
     # Write time setup info to file for later retrieval
     utils.pickle_modifications(adds, chgs, spec.exp_def_fpath)

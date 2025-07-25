@@ -62,6 +62,23 @@ This plugin supports two types of graphs, and therefore two types of analyses:
          significant differences between cells in a heatmap cannot be determined
          just from the graph itself).
 
+This plugin can be selected by adding ``prod.graphs`` to the list passed to
+``--prod``. When active  will create ``<batchroot>/graphs``, and all
+graphs generated during stage 4 will accrue under this root directory. Each
+experiment will get their own directory in this root for their
+statistics. E.g.::
+
+  |-- <batchroot>
+      |-- graphs
+          |-- c1-exp0
+          |-- c1-exp1
+          |-- c1-exp2
+          |-- c1-exp3
+          |-- collated
+
+``collated/`` contains graphs which are generated across experiments in the
+batch from :term:`Batch Summary Data` files.
+
 Configuration
 =============
 

@@ -25,6 +25,7 @@ jobs:
           - cmdline_opts_test
           - env_vars_test
           - builtin_bc_test
+          - parallelism_test
           - stage1_bivar_test
           - stage2_bivar_test
           - stage3_bivar_test
