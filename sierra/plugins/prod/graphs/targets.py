@@ -45,7 +45,7 @@ def inter_exp_calc(
                         keys.extend(inherit)  # optional
         _logger.debug("Loaded %s inter-experiment categories: %s", len(keys), keys)
     else:
-        keys = [k for k in loaded_graphs]
+        keys = list(k for k in loaded_graphs)
         _logger.debug(
             "Missing controller graph config--generating all "
             "inter-experiment graphs for all controllers: %s",

@@ -2,9 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 
-"""Stage 2 of the experimental pipeline: running experiments.
-
-"""
+"""Stage 2 of the experimental pipeline: running experiments."""
 
 # Core packages
 import time
@@ -15,7 +13,7 @@ import logging
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.pipeline.stage2.exp_runner import BatchExpRunner
+from sierra.core.pipeline.stage2.runner import BatchExpRunner
 from sierra.core import types, batchroot
 
 
@@ -30,9 +28,7 @@ class PipelineStage2:
 
     """
 
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 pathset: batchroot.PathSet) -> None:
+    def __init__(self, cmdopts: types.Cmdopts, pathset: batchroot.PathSet) -> None:
         self.logger = logging.getLogger(__name__)
         self.cmdopts = cmdopts
         self.pathset = pathset
@@ -45,6 +41,4 @@ class PipelineStage2:
         self.logger.info("Execution complete in %s", str(sec))
 
 
-__all__ = [
-    'PipelineStage2'
-]
+__all__ = ["PipelineStage2"]

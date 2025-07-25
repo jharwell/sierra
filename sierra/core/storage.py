@@ -18,11 +18,17 @@ import sierra.core.plugin as pm
 
 
 def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
+    """
+    Dispatch "read from storage" request to active ``--storage`` plugin.
+    """
     storage = pm.pipeline.get_plugin_module(medium)
     return storage.df_read(path, **kwargs)  # type: ignore
 
 
 def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> None:
+    """
+    Dispatch "write to storage" request to active ``--storage`` plugin.
+    """
     storage = pm.pipeline.get_plugin_module(medium)
     return storage.df_write(df, path, **kwargs)  # type: ignore
 

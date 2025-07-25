@@ -19,6 +19,85 @@ from sierra.core import types
 import sierra.core.variables.batch_criteria as bc
 
 
+class IBatchShellCmdsGenerator(implements.Interface):
+    """
+    Interface for generating the shell cmds to run :term:`Batch Experiment`.
+
+    This includes:
+
+        - The cmds to run the prior to the batch experiment (before any
+          :term:`Experimental Runs <Experimental Run>` are kicked off).
+
+        - The cmds to run the experiment.
+
+        - Any post-experiment cleanup cmds after all :term:`Experiments
+          <Experiment>` finish.
+
+    Arguments:
+       cmdopts: Dictionary of parsed cmdline options.
+    """
+
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        raise NotImplementedError
+
+    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        """Generate shell commands to setup the environment for a :term:`Batch Experiment`.
+
+        These commands can include setting up things which are common to/should
+        be the same for all experiments within the batch, such as
+        launching daemons/background processes needed by the engine, setting
+        environment variables, etc.
+        Called during stage 1.
+
+        """
+        raise NotImplementedError
+
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+        """Generate shell commands to execute an :term:`Experiment`.
+
+        These commands are run in the *same* sub-shell as the pre- and
+        post-batch commands during stage 2.
+
+        Called during stage 2.
+
+        Arguments:
+            exec_opts: A dictionary containing:
+
+                       - ``jobroot_path`` - The root directory for the batch
+                         experiment.
+
+                       - ``exec_resume`` - Is this a resume of a previously run
+                         experiment?
+
+                       - ``joblog_path`` - The logfile for output for the
+                         experiment run cmd (different than the :term:`Project`
+                         code).
+
+                       - ``cmdfile_stem_path`` - Stem of the file containing the
+                         launch cmds to run (one per line), all the way up to
+                         but not including the extension.
+
+                       - ``cmdfile_ext`` - Extension of files containing the
+                         launch cmds to run.
+
+        """
+        raise NotImplementedError
+
+    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        """Generate cmds to run after the :term:`Batch Experiment` has finished.
+
+        Commands are run during stage 2 after all experiments have finished.
+        These commands are run in the *same* sub-shell as the pre- and exec-exp
+        commands.
+
+        These commands include things like cleaning up/stopping background
+        processes, visualization daemons, etc.
+
+        Called during stage 1.
+        """
+        raise NotImplementedError
+
+
 class IExpShellCmdsGenerator(implements.Interface):
     """
     Interface for generating the shell cmds to run for an :term:`Experiment`.
@@ -252,32 +331,29 @@ class IExpConfigurer(implements.Interface):
         raise NotImplementedError
 
     def parallelism_paradigm(self) -> str:
-        """Get the parallelism paradigm to use when generating experiments.
-
-        For most simulator-based engines, you generally want parallelism
-        *across* multiple :term:`experimental runs <Experimental Run>`; that is
-        all experimental runs in an :term:`Experiment` run in parallel, subject
-        to the limits of your selected execution environment, configuration,
-        etc.  This *also* means that experiments within a :term:`Batch
-        Experiment` are processed serially.  Experiments using this paradigm
-        should return ``per-exp``.
-
-        For most real hardware-based engines, such as robots, you generally
-        have to select parallelism *within* an experimental run; that is, each
-        experimental run requires multiple remote sub-processes to execute, one
-        per agent, since you can't have single physical agent/robot be part of
-        multiple experimental runs simultaneously. Experiments using this
-        paradigm should return ``per-run``.
+        """Get the paradigm to use when generating/running experiments.
 
         The returned value must be one of:
 
-            - ``per-exp`` - A single cmdfile per :term:`Experiment`.  When
-              executed, each line of the file contains all the {pre, exec, post}
-              cmds for each :term:`Experimental Run`.
+            - ``per-batch`` - A single cmdfile per :term:`Batch Experiment`,
+              which contains the {pre,exec, post} commands to run each
+              :term:`Experimental Run`, one per line.  This gives parallelism
+              across all runs in all experiments in the batch.
 
-            - ``per-run`` - Each cmdfile contains only the cmds for a single
-              :term:`Experimental Run`.  Multiple cmds files may be needed for a
-              single run (e.g., for ROS1 master + slaves).
+            - ``per-exp`` - A single cmdfile per :term:`Experiment`, which
+              contains the {pre, exec, post} cmds for each :term:`Experimental
+              Run`, one per line.  This gives parallelism across all runs in
+              each experiment; experiments are still run in sequenc.
+
+            - ``per-run`` - A single cmdfile per :term:`Experimental Run`, which
+              contains the {pre, exec, post} commands, one per line.  Multiple
+              cmdfiles may be needed for a single run (e.g., for ROS1 master +
+              slaves).  This gives parallelism *within* each run.
+
+        The parallelism paradigm is part of the :term:`Engine` definition, and
+        thus the "correct" paradigm to choose varies depending on the engine.
+        See :ref:`tutorials/plugins/engine/config` for complete details and
+        guidance.
         """
         raise NotImplementedError
 
@@ -285,5 +361,6 @@ class IExpConfigurer(implements.Interface):
 __all__ = [
     "IExpRunShellCmdsGenerator",
     "IExpShellCmdsGenerator",
+    "IBatchShellCmdsGenerator",
     "IExpConfigurer",
 ]

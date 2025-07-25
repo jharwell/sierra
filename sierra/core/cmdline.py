@@ -474,7 +474,7 @@ class CoreCmdline(BaseCmdline):
                  the captured data was frames, then SIERRA can render the
                  captured frames into videos during stage 4.  If the selected
                  ``--engine`` does not support visual capture, then this option
-                 has no effect.  See :ref:`plugins/proc/render` for more
+                 has no effect.  See :ref:`plugins/prod/render` for more
                  details.
                  """
             + self.stage_usage_doc([1, 4]),
@@ -494,6 +494,18 @@ class CoreCmdline(BaseCmdline):
                  """
             + self.stage_usage_doc([3, 4]),
             default=psutil.cpu_count(),
+        )
+        self.multistage.add_argument(
+            "--exec-parallelism-paradigm",
+            choices=["per-batch", "per-exp", "per-run", None],
+            default=None,
+            help="""
+                 The level of parallelism to use when executing experiments in
+            stage 2. This should generall be set by
+            :py:func:`~sierra.core.experiment.bindings.IExpConfigurer.parallelism_paradigm()`
+            in your selected :term:`Engine`; this option is provided as an override.
+                 """
+            + self.stage_usage_doc([1, 2]),
         )
 
         self.multistage.add_argument(

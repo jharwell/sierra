@@ -17,7 +17,7 @@ import yaml
 
 # Project packages
 from sierra.plugins.engine.ros1robot import cmdline
-from sierra.core import engine, config, ros1, types, utils, batchroot, exec_env
+from sierra.core import engine, config, ros1, types, utils, batchroot, execenv
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 
@@ -126,7 +126,7 @@ class ExpRunShellCmdsGenerator:
             "Generating exec cmds for run%s slaves: %d robots", run_num, self.n_agents
         )
 
-        nodes = exec_env.parse_nodefile(self.cmdopts["nodefile"])
+        nodes = execenv.parse_nodefile(self.cmdopts["nodefile"])
 
         if len(nodes) < self.n_agents:
             _logger.critical(
@@ -144,7 +144,7 @@ class ExpRunShellCmdsGenerator:
         for i in range(0, self.n_agents):
             # --wait tells roslaunch to wait for the configured master to
             # come up before launch the robot code.
-            cmd = "{0} --wait {1}_robot{2}{3} "
+            cmd = "{0} --wait {1}_robot{2}{3};"
             cmd = cmd.format(
                 config.kROS["launch_cmd"],
                 input_fpath,
@@ -236,7 +236,7 @@ class ExpConfigurer:
         else:
             _logger.info("Syncing experiment inputs  -> robots")
 
-        nodes = exec_env.parse_nodefile(self.cmdopts["nodefile"])
+        nodes = execenv.parse_nodefile(self.cmdopts["nodefile"])
 
         # Use {parallel ssh, rsync} to push each experiment to all robots in
         # parallel--takes O(M*N) operation and makes it O(N) more or less.
@@ -250,7 +250,7 @@ class ExpConfigurer:
             current_username = pwd.getpwuid(os.getuid())[0]
 
             if not self.cmdopts["skip_online_check"]:
-                exec_env.check_connectivity(
+                execenv.check_connectivity(
                     self.cmdopts,
                     remote_login,
                     remote_hostname,
@@ -322,7 +322,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
 
 
 def cmdline_postparse_configure(
-    execenv: str, args: argparse.Namespace
+    env: str, args: argparse.Namespace
 ) -> argparse.Namespace:
     """
     Configure cmdline args after parsing for the :term:`ROS1+Robot` engine.

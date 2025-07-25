@@ -206,6 +206,58 @@ class ExpShellCmdsGenerator:
         return cmds
 
 
+@implements.implements(bindings.IBatchShellCmdsGenerator)
+class BatchShellCmdsGenerator:
+    """Dispatcher for shell cmd generation for a :term:`Batch Experiment`.
+
+    Dispatches generation to the selected engine.  Called during stage 2 to run
+    shell commands immediately before running a given :term:`Batch Experiment`,
+    to run shell commands to actually run the experiment, and to run shell
+    commands immediately after the whole experiment finishes.
+    """
+
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        self.cmdopts = cmdopts
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts["engine"])
+        if hasattr(module, "BatchShellCmdsGenerator"):
+            self.engine = module.BatchShellCmdsGenerator(self.cmdopts)
+        else:
+            _logger.debug(
+                (
+                    "Skipping generating batch experiment shell commands "
+                    "for --engine=%s: does not define BatchShellCmdsGenerator"
+                ),
+                self.cmdopts["engine"],
+            )
+
+            self.engine = None
+
+    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.engine:
+            cmds.extend(self.engine.pre_batch_cmds())
+
+        return cmds
+
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.engine:
+            cmds.extend(self.engine.exec_batch_cmds(exec_opts))
+
+        return cmds
+
+    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.engine:
+            cmds.extend(self.engine.post_batch_cmds())
+
+        return cmds
+
+
 class ExpConfigurer:
     """Perform engine-specific configuration for an :term:`Experimental Run`.
 

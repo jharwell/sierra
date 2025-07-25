@@ -78,6 +78,59 @@ class ExpShellCmdsGenerator:
         return cmds
 
 
+@implements.implements(bindings.IBatchShellCmdsGenerator)
+class BatchShellCmdsGenerator:
+    """Dispatcher for shell cmd generation for a :term:`Batch Experiment`.
+
+    Dispatches generation to the selected execution environment.  Called during
+    stage 2 to run shell commands immediately before running a given
+    :term:`Batch Experiment`, to run shell commands to actually run the
+    experiment, and to run shell commands immediately after the whole experiment
+    finishes.
+    """
+
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        self.cmdopts = cmdopts
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts["exec_env"])
+        if hasattr(module, "BatchShellCmdsGenerator"):
+            self.env = module.BatchShellCmdsGenerator(self.cmdopts)
+        else:
+            _logger.debug(
+                (
+                    "Skipping generating batch experiment shell commands "
+                    "for --exec-env=%s: does not define BatchShellCmdsGenerator"
+                ),
+                self.cmdopts["exec_env"],
+            )
+
+            self.env = None
+
+    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.env:
+            cmds.extend(self.env.pre_batch_cmds())
+
+        return cmds
+
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.env:
+            cmds.extend(self.env.exec_batch_cmds(exec_opts))
+
+        return cmds
+
+    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = []
+
+        if self.env:
+            cmds.extend(self.env.post_batch_cmds())
+
+        return cmds
+
+
 def cmdline_postparse_configure(
     exec_env: str, args: argparse.Namespace
 ) -> argparse.Namespace:

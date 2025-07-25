@@ -85,7 +85,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
 
         cli_args: :class:`argparse` object containing the cmdline
                   parameters. Needed for
-                  :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+                  :class:`~sierra.core.variables.batch_criteria.XVarBatchCriteria`
                   generation for each scenario controllers are compared within,
                   as batch criteria is dependent on controller+scenario
                   definition, and needs to be re-generated for each scenario in
@@ -124,7 +124,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
 
             if valid_configurations == 0:
                 self.logger.warning(
-                    "Skipping comparison for controller %s: not run on any selected batch roots",
+                    "Skipping comparison for controller %s: not run on any selected batch roots %s",
                     controller,
                     [r.to_str() for r in roots],
                 )
@@ -286,7 +286,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
 
         cli_args: :class:`argparse` object containing the cmdline
                   parameters. Needed for
-                  :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+                  :class:`~sierra.core.variables.batch_criteria.XVarBatchCriteria`
                   generation for each scenario controllers are compared within,
                   as batch criteria is dependent on controller+scenario
                   definition, and needs to be re-generated for each scenario in
@@ -324,7 +324,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
 
             if valid_configurations == 0:
                 self.logger.warning(
-                    "Skipping comparison for controller %s: not run on any selected batch roots",
+                    "Skipping comparison for controller %s: not run on any selected batch roots %s",
                     controller,
                     [r.to_str() for r in roots],
                 )

@@ -25,8 +25,26 @@ Usage
 =====
 
 This plugin can be selected by adding ``proc.statistics`` to the list passed to
-``--proc``.
+``--proc``. When active it will create ``<batchroot>/statistics``, and all
+statistics generated during stage 3 will accrue under this root directory. Each
+experiment will get their own directory in this root for their
+statistics. E.g.::
 
+  |-- <batchroot>
+      |-- statistics
+          |-- c1-exp0
+          |-- c1-exp1
+          |-- c1-exp2
+          |-- c1-exp3
+          |-- collated
+          |-- exec
+
+
+``collated/`` contains :term:`Collated Output Data` files. During stage4,
+SIERRA will draw specific columns from :term:`Raw Output Data` files under and
+collate them under here for later processing. ``exec/`` contains statistics
+about SIERRA runtime. Useful for capturing runtime of specific experiments to
+better plan/schedule time on HPC clusters.
 
 Configuration
 =============

@@ -1,7 +1,7 @@
 .. SPDX-License-Identifier:  MIT
 
 The provided ``--expdef-template`` will look like this when populated within
-:ref:`usage/runtime-tree`:
+:ref:`usage/run-time-tree`:
 
 .. code-block:: XML
 

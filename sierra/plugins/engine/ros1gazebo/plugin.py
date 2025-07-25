@@ -20,7 +20,7 @@ import implements
 
 # Project packages
 from sierra.plugins.engine.ros1gazebo import cmdline
-from sierra.core import config, ros1, types, batchroot, exec_env
+from sierra.core import config, ros1, types, batchroot, execenv
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
 from sierra.plugins.execenv import hpc
@@ -205,7 +205,7 @@ def cmdline_parser() -> argparse.ArgumentParser:
 
 
 def cmdline_postparse_configure(
-    execenv: str, args: argparse.Namespace
+    env: str, args: argparse.Namespace
 ) -> argparse.Namespace:
     """
     Configure cmdline args after parsing for the :term:`ROS1+Gazebo` engine.
@@ -225,16 +225,16 @@ def cmdline_postparse_configure(
     if not any(stage in args.pipeline for stage in [1, 2]):
         return args
 
-    if execenv == "hpc.local":
+    if env == "hpc.local":
         return _configure_hpc_local(args)
-    elif execenv == "hpc.adhoc":
+    elif env == "hpc.adhoc":
         return _configure_hpc_adhoc(args)
-    elif execenv == "hpc.slurm":
+    elif env == "hpc.slurm":
         return _configure_hpc_slurm(args)
-    elif execenv == "hpc.pbs":
+    elif env == "hpc.pbs":
         return _configure_hpc_pbs(args)
 
-    raise RuntimeError(f"'{execenv}' unsupported on ROS1+Gazebo")
+    raise RuntimeError(f"'{env}' unsupported on ROS1+Gazebo")
 
 
 def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
@@ -269,7 +269,7 @@ def _configure_hpc_slurm(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
-    nodes = exec_env.parse_nodefile(args.nodefile)
+    nodes = execenv.parse_nodefile(args.nodefile)
     ppn = sys.maxsize
     for node in nodes:
         ppn = min(ppn, node.n_cores)
@@ -347,7 +347,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
     ), "Wrong ROS version: this plugin is for ROS1"
 
     # Check we can find Gazebo
-    version = exec_env.check_for_simulator(
+    version = execenv.check_for_simulator(
         cmdopts["engine"], cmdopts["exec_env"], config.kGazebo["launch_cmd"]
     )
 

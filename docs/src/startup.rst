@@ -153,7 +153,7 @@ SIERRA! The steps to do so are:
 
    Different engines may require additional environments to be set.
 
-#. Learn SIERRA's runtime :ref:`usage/runtime-tree`. When running,
+#. Learn SIERRA's runtime :ref:`usage/run-time-tree`. When running,
    SIERRA will create a (rather) large directory structure for you, so reading
    the docs is worthwhile to understand what the structure means, and to gain
    intuition into where to look for the inputs/outputs of different stages,

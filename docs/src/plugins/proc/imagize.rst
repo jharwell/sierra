@@ -54,8 +54,19 @@ SIERRA can turn them into images and render them:
 Usage
 =====
 
-This plugin can be selected by adding ``proc.imagize`` to the list passed to
-``--proc``.
+This plugin creates ``<batchroot>/imagize`` when active. All images generated
+during stage 3 accrue under this root directory. Each experiment will get their
+own subdirectory in this root for their images. E.g.::
+
+  | -- <batchroot>
+       |-- imagize
+           |-- c1-exp0
+           |-- c1-exp1
+           |-- c1-exp2
+           |-- c1-exp3
+           ...
+
+
 
 Configuration
 =============

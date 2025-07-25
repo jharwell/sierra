@@ -45,13 +45,10 @@ def proc_batch_exp(
     """
     Render videos.
 
-        #. :func:`~sierra.core.pipeline.stage4.render.from_engine()`, if
-           ``--engine-vc`` was passed
+        #. From :term:`Engine` if ``--engine-vc`` was passed.
 
-        #. :func:`~sierra.core.pipeline.stage4.render.from_project_imagized()`,
-           if ``proc.imagize`` was run previously to generate frames, and
-           ``--project-rendering`` is passed.
-
+        #. From imagized images if ``proc.imagize`` was run previously to
+           generate frames, and ``--project-rendering`` is passed.
     """
     if (not cmdopts["engine_vc"]) and (not cmdopts["project_rendering"]):
         return
@@ -152,7 +149,7 @@ def _from_project_imagized(
 ) -> None:
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
-    Frames (images) in the imagize root (see :ref:`usage/runtime-tree`) are
+    Frames (images) in the imagize root (see :ref:`usage/run-time-tree`) are
     stitched together to make a video using :program:`ffmpeg`.  Output format
     controlled via configuration.
 

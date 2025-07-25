@@ -1,8 +1,8 @@
 .. _plugins/exec-env/prefect:
 
-==========================================
-Prefect-base Execution Environment Plugins
-==========================================
+===========================================
+Prefect-based Execution Environment Plugins
+===========================================
 
 SIERRA is capable of adapting its runtime infrastructure to use :term:`Prefect`
 flows so that experiments can be submitted to configured prefect servers, or run
@@ -30,16 +30,44 @@ corresponding to the plugins listed on this page:
 Local Prefect Plugin
 ====================
 
-This prefect environment can be selected via ``--exec-env=prefect.local``.
+.. versionadded:: 1.4.15
 
-The # simultaneous simulations will be whatever the default for prefect is
-(usually the # of cores on the local machine). A local server will be spun up
-per-:term:`Experiment`. This introduces some unavoidable overhead when running
-Prefect locally; this execution environment is meant as a stepping
-stone to a remote Prefect-based execution environment, or as a debugging option.
+   Beta version. Works, but some minor rough edges bugs may be encountered.
 
-No additional configuration/environment variables are needed with this
-environment for use with SIERRA.
+This prefect environment can be selected via ``--exec-env=prefect.local``.  This
+plugin defines the following prefect artifacts:
+
+- ``sierra/local`` flow to execute all :term:`Experimental Runs <Experimental
+  Run>` in each :term:`Experiment` in parallel.
+
+- ``sierra-pool`` work pool which the prefect workers live in. The # workers is
+  determined by the selected :term:`Engine` and/or ``--exec-jobs-per-node``.
+
+- ``sierra-queue`` work queue which the SIERRA prefect workers pull tasks from.
+
+Obviously, if you use this execution environment, don't define artifacts with
+the same name in prefect or things will (probably) not work.
+
+A local prefect server is spun up for the :term:`Batch Experiment`. Currently,
+multiple SIERRA users using this plugin on the same server is not supported,
+though it could be easily if randomized ports are used.
+
+.. list-table:: Prefect-SIERRA interface
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - Prefect environment variable
+
+     - SIERRA context
+
+     - Command line override
+
+   * - :envvar:`PREFECT_API_URL`
+
+     - The URL the server is accessible at. Not currently configurable.
+
+     - N/A
+
 
 .. _plugins/exec-env/prefect/dockerremote:
 

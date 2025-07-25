@@ -32,7 +32,7 @@ import os
 # Project packages
 import sierra.core.generators.generator_factory as gf
 from sierra.core.experiment import spec, definition, bindings
-from sierra.core import types, batchroot, utils, config, engine
+from sierra.core import types, batchroot, exproot, utils, config, engine
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin as pm
 
@@ -136,6 +136,109 @@ class BatchExpDefGenerator:
         return generator
 
 
+class BatchExpCreator:
+    """Instantiate a :term:`Batch Experiment`.
+
+    Calls :class:`~sierra.core.generators.experiment.ExpCreator` on each
+    experimental definition in the batch
+    """
+
+    def __init__(
+        self,
+        criteria: bc.XVarBatchCriteria,
+        cmdopts: types.Cmdopts,
+        pathset: batchroot.PathSet,
+    ) -> None:
+
+        #: Absolute path to the root template expdef configuration file.
+        self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
+
+        self.pathset = pathset
+
+        #: :class:`~sierra.core.variables.batch_criteria.BatchCriteria` derived
+        # object instance created from cmdline definition.
+        self.criteria = criteria
+
+        self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
+
+    def create(self, generator: BatchExpDefGenerator) -> None:
+        utils.dir_create_checked(self.pathset.input_root, self.cmdopts["exp_overwrite"])
+
+        # Scaffold the batch experiment, creating experiment directories and
+        # writing template expdef input files for each experiment in the batch
+        # with changes from the batch criteria added.
+        module = pm.pipeline.get_plugin_module(self.cmdopts["expdef"])
+
+        exp_def = module.ExpDef(
+            input_fpath=self.batch_config_template, write_config=None
+        )
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts["engine"])
+
+        if hasattr(module, "expdef_flatten"):
+            self.logger.debug(
+                "Flattening --expdef-template definition before scaffolding"
+            )
+            # Flatten the expdef here if the engine defines the hook, so that
+            # the full flattened file contents are available for scaffolding.
+            exp_def = module.expdef_flatten(exp_def)
+
+        self.criteria.scaffold_exps(exp_def, self.cmdopts)
+
+        # Pickle experiment definitions in the actual batch experiment
+        # directory for later retrieval.
+        self.criteria.pickle_exp_defs(self.cmdopts)
+
+        # Run batch experiment generator (must be after scaffolding so the
+        # per-experiment template files are in place).
+        defs = generator.generate_defs()
+
+        assert len(defs) > 0, "No expdef modifications generated?"
+
+        self.logger.info(
+            "Applying generated scenario+controller changes/mods to all experiments"
+        )
+
+        if self.cmdopts["exec_parallelism_paradigm"] is not None:
+            self.logger.warning(
+                "Overriding engine=%s parallelism paradigm with %s",
+                self.cmdopts["engine"],
+                self.cmdopts["exec_parallelism_paradigm"],
+            )
+            parallelism_paradigm = self.cmdopts["exec_parallelism_paradigm"]
+        else:
+            configurer = engine.ExpConfigurer(self.cmdopts)
+            parallelism_paradigm = configurer.parallelism_paradigm()
+
+        self._init_cmdfile(parallelism_paradigm)
+
+        for i, defi in enumerate(defs):
+            self.logger.trace(
+                "Applying %s/%s generated scenario+controller changes/mods to exp%s",
+                defi.n_mods()[0],
+                defi.n_mods()[1],
+                i,
+            )
+            exp_pathset = exproot.PathSet(
+                self.pathset, self.criteria.gen_exp_names()[i]
+            )
+            ExpCreator(
+                self.cmdopts,
+                self.criteria,
+                self.batch_config_template,
+                exp_pathset,
+                i,
+            ).from_def(defi, parallelism_paradigm)
+
+    def _init_cmdfile(self, paradigm: str) -> None:
+        # Commands file stored in batch input root
+        if paradigm == "per-batch":
+            path = self.pathset.root / config.kGNUParallel["cmdfile_stem"]
+            if utils.path_exists(path.with_suffix(config.kGNUParallel["cmdfile_ext"])):
+                path.with_suffix(config.kGNUParallel["cmdfile_ext"]).unlink()
+
+
 class ExpCreator:
     """Instantiate a generated experiment from an experiment definition.
 
@@ -151,29 +254,22 @@ class ExpCreator:
         cmdopts: types.Cmdopts,
         criteria: bc.XVarBatchCriteria,
         template_ipath: pathlib.Path,
-        exp_input_root: pathlib.Path,
-        exp_output_root: pathlib.Path,
+        pathset: exproot.PathSet,
         exp_num: int,
     ) -> None:
 
         # filename of template file, sans extension and parent directory path
         self.template_stem = template_ipath.resolve().stem
 
-        #: exp_input_root: Absolute path to experiment directory where generated
-        # expdef input files for this experiment should be written.
-        self.exp_input_root = exp_input_root
-
-        #: Absolute path to root directory for run outputs for this experiment.
-        self.exp_output_root = exp_output_root
-
         #: Dictionary containing parsed cmdline options.
         self.cmdopts = cmdopts
         self.criteria = criteria
         self.exp_num = exp_num
+        self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
         # If random seeds where previously generated, use them if configured
-        self.seeds_fpath = self.exp_input_root / config.kRandomSeedsLeaf
+        self.seeds_fpath = self.pathset.input_root / config.kRandomSeedsLeaf
         self.preserve_seeds = self.cmdopts["preserve_seeds"]
         self.random_seeds = None
 
@@ -210,10 +306,9 @@ class ExpCreator:
                 range(0, int(time.time())), self.cmdopts["n_runs"]
             )
 
-        # where the commands file will be stored
-        self.commands_fpath = self.exp_input_root / config.kGNUParallel["cmdfile_stem"]
-
-    def from_def(self, exp_def: definition.BaseExpDef):
+    def from_def(
+        self, exp_def: definition.BaseExpDef, parallelism_paradigm: str
+    ) -> None:
         """Create all experimental runs by writing input files to filesystem.
 
         The passed :class:`~sierra.core.experiment.definition.BaseExpDef` object
@@ -223,19 +318,10 @@ class ExpCreator:
         are added.
 
         """
-        # Clear out commands file if it exists
-        configurer = engine.ExpConfigurer(self.cmdopts)
-        commands_fpath = self.commands_fpath.with_suffix(
-            config.kGNUParallel["cmdfile_ext"]
-        )
-
-        if configurer.parallelism_paradigm() == "per-exp" and utils.path_exists(
-            commands_fpath
-        ):
-            commands_fpath.unlink()
+        cmdfile_path = self._init_cmdfile(parallelism_paradigm)
 
         n_agents = utils.get_n_agents(
-            self.criteria.main_config, self.cmdopts, self.exp_input_root, exp_def
+            self.criteria.main_config, self.cmdopts, self.pathset.input_root, exp_def
         )
         generator = engine.ExpRunShellCmdsGenerator(
             self.cmdopts, self.criteria, n_agents, self.exp_num
@@ -247,12 +333,14 @@ class ExpCreator:
         )
         for run_num in range(self.cmdopts["n_runs"]):
             per_run = copy.deepcopy(exp_def)
-            self._create_exp_run(per_run, generator, run_num)
+            self._create_exp_run(
+                per_run, generator, run_num, cmdfile_path, parallelism_paradigm
+            )
 
         # Perform experiment level configuration AFTER all runs have been
         # generated in the experiment, in case the configuration depends on the
         # generated launch files.
-        engine.ExpConfigurer(self.cmdopts).for_exp(self.exp_input_root)
+        engine.ExpConfigurer(self.cmdopts).for_exp(self.pathset.input_root)
 
         # Save seeds
         if not utils.path_exists(self.seeds_fpath) or not self.preserve_seeds:
@@ -262,7 +350,12 @@ class ExpCreator:
                 utils.pickle_dump(self.random_seeds, f)
 
     def _create_exp_run(
-        self, run_exp_def: definition.BaseExpDef, cmds_generator, run_num: int
+        self,
+        run_exp_def: definition.BaseExpDef,
+        cmds_generator,
+        run_num: int,
+        cmdfile_path: pathlib.Path,
+        parallelism_paradigm: str,
     ) -> None:
         run_output_dir = f"{self.template_stem}_run{run_num}_output"
 
@@ -273,9 +366,10 @@ class ExpCreator:
             project=self.cmdopts["project"], path="generators.experiment"
         )
 
-        run_output_root = self.exp_output_root / run_output_dir
+        run_output_root = self.pathset.output_root / run_output_dir
         stem_path = self._get_launch_file_stempath(run_num)
 
+        # Generate per-run exp changes.
         per_run.for_single_exp_run(
             run_exp_def,
             run_num,
@@ -291,32 +385,31 @@ class ExpCreator:
         # Perform any necessary programmatic (i.e., stuff you can do in python
         # and don't need a shell for) per-run configuration.
         configurer = engine.ExpConfigurer(self.cmdopts)
-        configurer.for_exp_run(self.exp_input_root, run_output_root)
+        configurer.for_exp_run(self.pathset.input_root, run_output_root)
 
         ext = config.kGNUParallel["cmdfile_ext"]
-        if configurer.parallelism_paradigm() == "per-exp":
+        if parallelism_paradigm in ["per-exp", "per-batch"]:
             # Update commands file with the command for the configured
             # experimental run.
-            fpath = f"{self.commands_fpath}{ext}"
-            with utils.utf8open(fpath, "a") as cmds_file:
-                self._update_cmds_file(
-                    cmds_file,
+            with utils.utf8open(cmdfile_path.with_suffix(ext), "a") as cmdfile:
+                self._update_cmdfile(
+                    cmdfile,
                     cmds_generator,
-                    "per-exp",
+                    parallelism_paradigm,
                     run_num,
                     run_output_root,
                     self._get_launch_file_stempath(run_num),
                     "slave",
                 )
-        elif configurer.parallelism_paradigm() == "per-run":
-            # Write new GNU Parallel commands file with the commends for the
+        elif parallelism_paradigm == "per-run":
+            # Write new GNU Parallel commands file with the commands for the
             # experimental run.
-            master_fpath = f"{self.commands_fpath}_run{run_num}_master{ext}"
-            slave_fpath = f"{self.commands_fpath}_run{run_num}_slave{ext}"
+            master_fpath = f"{cmdfile_path}_run{run_num}_master{ext}"
+            slave_fpath = f"{cmdfile_path}_run{run_num}_slave{ext}"
 
             self.logger.trace("Updating slave cmdfile %s", slave_fpath)  # type: ignore
             with utils.utf8open(slave_fpath, "w") as cmds_file:
-                self._update_cmds_file(
+                self._update_cmdfile(
                     cmds_file,
                     cmds_generator,
                     "per-run",
@@ -329,9 +422,9 @@ class ExpCreator:
             self.logger.trace(
                 "Updating master cmdfile %s", master_fpath  # type: ignore
             )
-            with utils.utf8open(master_fpath, "w") as cmds_file:
-                self._update_cmds_file(
-                    cmds_file,
+            with utils.utf8open(master_fpath, "w") as cmdfile:
+                self._update_cmdfile(
+                    cmdfile,
                     cmds_generator,
                     "per-run",
                     run_num,
@@ -343,11 +436,32 @@ class ExpCreator:
     def _get_launch_file_stempath(self, run_num: int) -> pathlib.Path:
         """File is named as ``<template input file stem>_run<run_num>``."""
         leaf = f"{self.template_stem}_run{run_num}"
-        return self.exp_input_root / leaf
+        return self.pathset.input_root / leaf
 
-    def _update_cmds_file(
+    def _init_cmdfile(self, paradigm: str) -> pathlib.Path:
+        # Commands file stored in batch input root
+        if paradigm == "per-batch":
+            path = self.pathset.parent / config.kGNUParallel["cmdfile_stem"]
+        # Commands file stored in input root for each experiment.
+        elif paradigm == "per-exp":
+            path = self.pathset.input_root / config.kGNUParallel["cmdfile_stem"]
+        elif paradigm == "per-run":
+            path = self.pathset.input_root / config.kGNUParallel["cmdfile_stem"]
+
+        # Clear out commands file if it exists and is per-batch/per-exp, because
+        # those files are appended to as we generate each experiment. We
+        # don't need to do that for per-run parallelism, because those files are
+        # not.
+        if paradigm == "per-exp" and utils.path_exists(
+            path.with_suffix(config.kGNUParallel["cmdfile_ext"])
+        ):
+            path.with_suffix(config.kGNUParallel["cmdfile_ext"]).unlink()
+
+        return path
+
+    def _update_cmdfile(
         self,
-        cmds_file,
+        cmdfile,
         cmds_generator: bindings.IExpRunShellCmdsGenerator,
         paradigm: str,
         run_num: int,
@@ -381,113 +495,33 @@ class ExpCreator:
             self.logger.debug("Skipping writing %s cmds file: no cmds", for_host)
             return
 
+        #
+        # This is one of those crucial parts of SIERRA where the "magic"
+        # happens.
+        #
         # If there is 1 cmdfile per experiment, then the pre- and post-exec cmds
         # need to be prepended and appended to the exec cmds on a per-line
-        # basis. If there is 1 cmdfile per experimental run, then its the same
-        # thing, BUT we need to break the exec cmds over multiple lines in the
-        # cmdfile.
-        if paradigm == "per-exp":
+        # basis, because each line needs to contain the total set of commands to
+        # run each experimental run within the experiment. Each line needs to be
+        # capable of being executed independently of the others, so that e.g.,
+        # GNU parallel can process them concurrently if directed to do so. Same
+        # for 1 cmdfile per batch.
+        #
+        # If there is 1 cmdfile per experimental run, then its the same thing,
+        # BUT we need to break the exec cmds over multiple lines in the
+        # cmdfile. All commands in the command file WILL be run in parallel;
+        # this is the paradigm that maps to real hw, and obviously you want all
+        # of your configured agents doing things simultaneously in an
+        # experiment.
+        if paradigm in ["per-exp", "per-batch"]:
             line = " ".join(pre_cmds + exec_cmds + post_cmds) + "\n"
-            cmds_file.write(line)
+            cmdfile.write(line)
         elif paradigm == "per-run":
             for e in exec_cmds:
                 line = " ".join(pre_cmds + [e] + post_cmds) + "\n"
-                cmds_file.write(line)
+                cmdfile.write(line)
         else:
             raise ValueError(f"Bad paradigm {paradigm}")
-
-
-class BatchExpCreator:
-    """Instantiate a :term:`Batch Experiment`.
-
-    Calls :class:`~sierra.core.generators.experiment.ExpCreator` on each
-    experimental definition in the batch
-    """
-
-    def __init__(
-        self,
-        criteria: bc.XVarBatchCriteria,
-        cmdopts: types.Cmdopts,
-        pathset: batchroot.PathSet,
-    ) -> None:
-
-        #: Absolute path to the root template expdef configuration file.
-        self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
-
-        #: Root directory for all generated expdef input files
-        # all experiments should be stored (relative to current dir or
-        # absolute). Each experiment will get a directory within this root to
-        # store the xml input files for the experimental runs comprising an
-        # experiment; directory name determined by the batch criteria used.
-        self.batch_input_root = pathset.input_root
-
-        #: Root directory for all experiment outputs. Each experiment will get a
-        # directory 'exp<n>' in this directory for its outputs.
-        self.batch_output_root = pathset.output_root
-
-        #: :class:`~sierra.core.variables.batch_criteria.BatchCriteria` derived
-        # object instance created from cmdline definition.
-        self.criteria = criteria
-
-        self.cmdopts = cmdopts
-        self.logger = logging.getLogger(__name__)
-
-    def create(self, generator: BatchExpDefGenerator) -> None:
-        utils.dir_create_checked(self.batch_input_root, self.cmdopts["exp_overwrite"])
-
-        # Scaffold the batch experiment, creating experiment directories and
-        # writing template expdef input files for each experiment in the batch
-        # with changes from the batch criteria added.
-        module = pm.pipeline.get_plugin_module(self.cmdopts["expdef"])
-
-        exp_def = module.ExpDef(
-            input_fpath=self.batch_config_template, write_config=None
-        )
-
-        module = pm.pipeline.get_plugin_module(self.cmdopts["engine"])
-
-        if hasattr(module, "expdef_flatten"):
-            self.logger.debug(
-                "Flattening --expdef-template definition before scaffolding"
-            )
-            # Flatten the expdef here if the engine defines the hook, so that
-            # the full flattened file contents are available for scaffolding.
-            exp_def = module.expdef_flatten(exp_def)
-
-        self.criteria.scaffold_exps(exp_def, self.cmdopts)
-
-        # Pickle experiment definitions in the actual batch experiment
-        # directory for later retrieval.
-        self.criteria.pickle_exp_defs(self.cmdopts)
-
-        # Run batch experiment generator (must be after scaffolding so the
-        # per-experiment template files are in place).
-        defs = generator.generate_defs()
-
-        assert len(defs) > 0, "No expdef modifications generated?"
-
-        self.logger.info(
-            "Applying generated scenario+controller changes/mods to all experiments"
-        )
-        for i, defi in enumerate(defs):
-            self.logger.trace(
-                "Applying %s/%s generated scenario+controller changes/mods to exp%s",
-                defi.n_mods()[0],
-                defi.n_mods()[1],
-                i,
-            )
-            expi = self.criteria.gen_exp_names()[i]
-            exp_output_root = self.batch_output_root / expi
-            exp_input_root = self.batch_input_root / expi
-
-            ExpCreator(
-                self.cmdopts,
-                self.criteria,
-                self.batch_config_template,
-                exp_input_root,
-                exp_output_root,
-                i,
-            ).from_def(defi)
 
 
 __all__ = ["ExpCreator", "BatchExpCreator", "BatchExpDefGenerator"]

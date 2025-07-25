@@ -74,12 +74,14 @@ def generate(
         return False
 
     df = storage.df_read(input_fpath, medium)
+
     dataset = hv.Dataset(
         # Make index a column so we can use it as kdim
         data=df.reset_index(),
         kdims=["index"],
         vdims=cols if cols else df.columns.tolist(),
     )
+
     model = _read_models(paths.model_root, input_stem, medium)
     stat_dfs = _read_stats(stats, paths.input_root, input_stem, medium)
 
@@ -115,7 +117,16 @@ def generate(
     )
 
     if logyscale:
-        plot.opts(logy=True)
+        _min = min(dataset[vdim].min() for vdim in dataset.vdims)
+        _max = max(dataset[vdim].max() for vdim in dataset.vdims)
+
+        plot.opts(
+            logy=True,
+            ylim=(
+                _min * 0.9,
+                _max * 1.1,
+            ),
+        )
 
     hv.save(
         plot.opts(fig_inches=config.kGraphBaseSize),
@@ -203,6 +214,7 @@ def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOve
     # To plot area between lines, you need to add the stddev columns to the
     # dataset
     dataset.data = pd.concat([dataset.dframe(), stddevs], axis=1)
+
     return hv.Overlay(
         [
             hv.Area(

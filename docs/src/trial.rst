@@ -205,7 +205,7 @@ you clone things somewhere else.
          1 minute or so to run. After it finishes, you can go to
          ``$HOME/research/exp`` and find all the simulation outputs, including
          camera ready graphs! For an explanation of SIERRA's runtime directory
-         tree, see :ref:`usage/runtime-tree`. You can also run the same
+         tree, see :ref:`usage/run-time-tree`. You can also run the same
          experiment again, and it will overwrite the previous one because you
          passed ``--exp-overwrite``.
 

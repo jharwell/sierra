@@ -3,7 +3,7 @@
 
    SPDX-License-Identifier:  MIT
 
-.. _plugins/product:
+.. _plugins/prod:
 
 ==========================
 Product Generation Plugins

@@ -1,8 +1,8 @@
 .. _tutorials/plugin/engine:
 
-==============================
+============================
 Creating a New Engine Plugin
-==============================
+============================
 
 .. IMPORTANT:: There is an example of defining a engine plugin in the
                :xref:`sample project repo<SIERRA_SAMPLE_PROJECT` for a fictional
@@ -92,24 +92,72 @@ Creating The Cmdline Interface
           any modifications/additions.
           """
 
+.. _tutorials/plugin/engine/config:
+
 Configuring The Experimental Environment
 ========================================
 
-#. Define the ``ExpConfigurer`` class in ``plugin.py`` to configure
-   :term:`Experiments<Experiment>` in engine-specific ways.
-   This class is required. It should conform to
-   :class:`~sierra.core.experiment.bindings.IExpConfigurer`. It is used in
-   stage 1 *after* experiment generation, in case configuration depends on
-   the contents of the experiment.
+Define the ``ExpConfigurer`` class in ``plugin.py`` to configure
+:term:`Experiments<Experiment>` in engine-specific ways.  This class is
+required. It should conform to
+:class:`~sierra.core.experiment.bindings.IExpConfigurer`. It is used in stage 1
+*after* experiment generation, in case configuration depends on the contents of
+the experiment. E.g.:
 
-   Some example use cases:
+- Creating directories not created automatically by the simulator/project code.
 
-   - Creating directories not created automatically by the simulator/project
-     code.
+- Copying files which :term:`Project` or :term:`Engine` code expects to be found
+  next to the main input file for each :term:`Experiment` or :term:`Experimental
+  Run`.
 
-   - Copying files which :term:`Project` or :term:`Engine` code expects to be
-     found next to the main input file for each :term:`Experiment` or
-     :term:`Experimental Run`.
+It is also used in stage {1,2} to tell SIERRA the type of execution parallelism
+that your :term:`Engine` wants to use via the ``parallelism_paradigm()``
+function.
+
+.. IMPORTANT:: :py:func:`~sierra.core.experiment.bindings.IExpConfigurer.parallelism_paradigm()`
+               is one of the most important parts of your :term:`Engine`
+               definition, and will *dramatically* affect how experiments will
+               be executed during stage 2.  Engines can even select different
+               paradigms depending on other configuration if they wish.
+
+Some guidance on selecting parallelism.:
+
+``per-batch`` parallelism is appropriate if:
+
+    - Your engine is a simulator of some kind, and is single threaded.  In this
+      case, there is no advantage to restricting parallelism to the level of
+      :term:`Experiments <Experiment>`, and executing all runs in parallel (up
+      to the level supported by ``--exec-env`` and available computational
+      resources) is desirable for speed.
+
+    - You submit executable code directly in your ``--exec-env``.  That is,
+      instead of a "classic" HPC approach where you submit a job script which
+      when run will run your code, you submit e.g., executable python code to
+      the scheduler which it will directly run.
+
+    - You aren't concerned about hogging/using too many computational resources
+      w.r.t. whatever you are running on/in.
+
+``per-exp`` parallelism is appropriate if:
+
+    - Your ``--exec-env`` is a "classic" HPC environment, and the scheduler
+      gives you exclusive control over a set of resources dedicated to you when
+      requested, and then you have to run SIERRA within that job with the
+      allocated resources.
+
+    - You are worried about hogging/using too many computational resources
+      simultaneously.
+
+    - Your engine is a simulator of some kind, and is multi-threaded.  In this
+      case, using per-exp parallelism can allow you to maximize the number of
+      threads/simulation and thus handle larger workloads.
+
+``per-run`` parallelism is appropriate if:
+
+    - Your engine plugin targets real hardware such as robots.  In this case,
+      each experimental run requires multiple remote sub-processes to execute,
+      one per agent, since you can't have single physical agent/robot be part of
+      multiple experimental runs simultaneously.
 
 .. _tutorials/plugin/engine/generate:
 
@@ -289,6 +337,46 @@ In ``generators/engine.py``, you may define the following functions:
 
    .. tabs::
 
+      .. tab:: BatchShellCmdsGenerator
+
+         This class is optional. If it is defined, it should conform to
+         :class:`~sierra.core.experiment.bindings.IBatchShellCmdsGenerator`.
+
+         It is used in stage 2 to execute (not generate) shell commands
+         per-batch previously written to a text file using GNU parallel (or
+         some other engine of your choice). This includes sets of cmds for:
+
+         - Pre-batch cmds executed prior to any experiment being executed.
+
+         - Cmds to execute the batch experiment.
+
+         - Post-batch cleanup cmds run after all experiments have been executed.
+
+         This generator corresponds to ``per-batch`` parallelism; see
+         :ref:`tutorials/plugin/engine/config` for details.
+
+         .. code-block:: python
+
+            import typing as tp
+
+            import implements
+
+            from sierra.core.experiment import bindings
+            from sierra.core import types, utils
+
+            @implements.implements(bindings.IBatchRunShellCmdsGenerator)
+            class BatchShellCmdsGenerator():
+                def __init__(self,
+                             cmdopts: types.Cmdopts,
+                             exp_num: int) -> None:
+                    pass
+
+                def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+                    return []
+
+                def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+                    return []
+
       .. tab:: ExpShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
@@ -307,6 +395,9 @@ In ``generators/engine.py``, you may define the following functions:
                         is ignored, because it doesn't make sense: execution
                         environments execute experiments (DUH), so you don't
                         need to define it.
+
+         This generator corresponds to ``per-exp`` parallelism; see
+         :ref:`tutorials/plugin/engine/config` for details.
 
          .. code-block:: python
 
@@ -348,10 +439,8 @@ In ``generators/engine.py``, you may define the following functions:
            is started. The generated cmds are written to a text file that GNU
            parallel (or some other engine of your choice) will run in stage 2.
 
-         Pay special attention to
-         :py:func:`~sierra.core.experiment.bindings.IExpConfigurer.parallelism_paradigm`:
-         this is how you tell SIERRA the type of run-time parallelism for your
-         engine.
+         This generator corresponds to ``per-exp`` parallelism; see
+         :ref:`tutorials/plugin/engine/config` for details.
 
          .. code-block:: python
 

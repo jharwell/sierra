@@ -1,4 +1,4 @@
-.. _plugins/product/render:
+.. _plugins/prod/render:
 
 =========
 Rendering
@@ -23,10 +23,29 @@ section. SIERRA can render frames (images) into videos from 3 sources:
 This plugin uses :program:`ffmpeg` to do the actual rendering, and so it must be
 findable by the shell used to invoke SIERRA; an error will be thrown otherwise.
 
-.. _plugins/product/render/engine:
+.. _plugins/prod/render/usage:
+
+Usage
+=====
+
+This plugin creates ``<batchroot>/videos`` when active. Videos for each
+experiment will accrue in subdirectories under here. E.g.::
+
+  | -- <batchroot>
+       |-- videos
+           |-- c1-exp0
+           |-- c1-exp1
+           |-- c1-exp2
+           |-- c1-exp3
+           ...
+
+
+
+
+.. _plugins/prod/render/usage/engine:
 
 Execution Engine Visual Capture
-===============================
+-------------------------------
 
 SIERRA can direct execution engines to capture frames during experiments. The
 captured frames must:
@@ -37,10 +56,10 @@ captured frames must:
 
 To use, pass ``--engine-vc`` during stage 4.
 
-.. _plugins/product/render/project:
+.. _plugins/prod/render/project:
 
 Project Rendering
-=================
+-----------------
 
 If a project has generated images using the :ref:`imagize plugin
 <plugins/proc/imagize>` in stage 3 via ``--proc proc.imagize``, then they can be
@@ -63,10 +82,10 @@ To use:
    stage 3 with ``--proc proc.imagize``.
 
 
-.. _plugins/product/render/bc:
+.. _plugins/prod/render/bc:
 
 Batch Criteria Rendering
-========================
+------------------------
 
 For bivariate batch criteria, if inter-experiment heatmaps are generated, they
 can be stitched together to make videos of how the two variables of interest

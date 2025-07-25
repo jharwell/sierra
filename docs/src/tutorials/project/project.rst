@@ -80,7 +80,7 @@ Steps
 
            Configuration for stage5 controller comparisons. This file is
            required if stage 5 is run, and optional otherwise. See
-           :doc:`stage5-config` for documentation.
+           :doc:`plugins/compare` for documentation.
 
         .. tab:: ``models.yaml``
 

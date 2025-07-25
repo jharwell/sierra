@@ -40,6 +40,11 @@ works/is designed the way it is, and to help you find your way around.
       A :term:`Engine` supported by SIERRA using :term:`ROS1` and any robot
       which supports ROS.
 
+   Prefect
+
+      Python-based scheduling framework for defining and executing
+      workflows. The website is at `https://www.prefect.io`_.
+
    Project
 
       The SIERRA plugin allowing you to use your code on the engine of your

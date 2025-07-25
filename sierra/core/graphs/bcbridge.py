@@ -19,28 +19,30 @@ from sierra.core import types
 
 
 class GraphInfo:
+    """
+    Container of info for generating graphs from batch criteria.
+
+    Attributes:
+        cmdopts: Dictionary of parsed command line options. Most batch
+                 criteria will not need this to compute things, BUT it is
+                 available.
+
+        batch_output_root: Root directory for all experimental output in the
+                           batch. Needed in calculating graphs for batch
+                           criteria when ``--exp-range`` is used.
+
+        exp_names: The names of experiment directories to instantiate on the
+                   filesystem.
+
+
+    """
+
     def __init__(
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
         exp_names: tp.Optional[tp.List[str]] = None,
     ) -> None:
-        """
-        Container of info for generating graphs from batch criteria.
-
-        Arguments:
-            cmdopts: Dictionary of parsed command line options. Most batch
-                     criteria will not need this to compute things, BUT it is
-                     available.
-
-            batch_output_root: Root directory for all experimental output in the
-                               batch. Needed in calculating graphs for batch
-                               criteria when ``--exp-range`` is used.
-
-            exp_names: The names of experiment directories to instantiate on the
-                       filesystem.
-
-        """
         self.cmdopts = cmdopts
         self.batch_output_root = batch_output_root
         self.exp_names = exp_names

@@ -40,14 +40,7 @@ def proc_batch_exp(
     Inter-experiment graph generation: if inter-experiment graphs should be
     generated according to cmdline configuration, the following is run:
 
-        #. :class:`~sierra.core.plugins.prod.graphs.collate.UnivarGraphCollator`
-           or
-           :class:`~sierra.core.plugins.prod.graphs.collate.BivarGraphCollator`
-           as appropriate (depending on which type of
-           :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
-           specified on the cmdline).
-
-        #. Model generation for each enabled and loaded model.
+        #. :class:`~sierra.core.plugins.prod.graphs.collate.GraphCollator`.
 
         #. :py:func:`~sierra.core.plugins.prod.graphs.inter.generate` to perform
            graph generation from collated CSV files.
