@@ -146,6 +146,10 @@ you clone things somewhere else.
          ROSBridge into.
 
 
+      .. group-tab:: JSONSim
+
+         Nothing to do!
+
 #. Setup runtime environment:
 
    .. tabs::
@@ -174,6 +178,9 @@ you clone things somewhere else.
 
               . /path/to/setup.bash
 
+      .. group-tab:: JSONSim
+
+         Nothing to do!
 
 #. Run SIERRA (invocation inspired by :ref:`usage/examples`).
 
@@ -185,7 +192,7 @@ you clone things somewhere else.
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --expdef-template=$HOME/research/exp/argos/template.argos \
+            --expdef-template=$HOME/research/sierra-sample-project/exp/argos/template.argos \
             --n-runs=4 \
             --engine=engine.argos \
             --project=projects.sample_argos \
@@ -222,10 +229,10 @@ you clone things somewhere else.
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --expdef-template=$HOME/research/exp/ros1gazebo/turtlebot3_house.launch \
+            --expdef-template=$HOME/research/sierra-sample-project/exp/ros1gazebo/turtlebot3_house.launch \
             --n-runs=4 \
             --engine=engine.ros1gazebo \
-            --project=ros1gazebo_project \
+            --project=projects.sample_ros1gazebo \
             --controller=turtlebot3.wander \
             --scenario=HouseWorld.10x10x1 \
             --batch-criteria population_size.Log8 \
@@ -240,3 +247,24 @@ you clone things somewhere else.
          because this controller does not produce any output. You can also run
          the same experiment again, and it will overwrite the previous one
          because you passed ``--exp-overwrite``.
+
+      .. group-tab:: JSONSim
+
+         ::
+
+            sierra-cli \
+            --sierra-root=$HOME/research/exp \
+            --expdef-template=$HOME/research/sierra-sample-project/exp/jsonsim/template.json \
+            --n-runs=4 \
+            --engine=plugins.jsonsim \
+            --project=projects.sample_jsonsim \
+            --controller=default.default \
+            --scenario=scenario1 \
+            --batch-criteria max_speed.1.9.C3 \
+            --exp-overwrite
+
+         This will run a batch of 3 experiments. The max speed of agents will be
+         varied from 1..9. Within each experiment, 4 copies of each simulation
+         will be run (each with different random seeds), for a total of 16
+         imaginary simulations. you can run the same experiment again, and it
+         will overwrite the previous one because you passed ``--exp-overwrite``.
