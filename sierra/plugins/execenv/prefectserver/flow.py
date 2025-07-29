@@ -17,23 +17,30 @@ import prefect
 # Project packages
 
 
-@prefect.task()
+@prefect.task(tags=["sierra-exec-jobs-per-node"])
 def exec_exp_run(
     cmd: list[str],
-    scratch_stdout: pathlib.Path,
+    scratch_path: pathlib.Path,
 ) -> None:
     """Execute the given command.
 
     Arguments:
         cmd: Command to execute a single :term:`Experimental Run`.
 
-        log_directory: where to write stdout/stderr to
+        scratch_path: Where to write stdout/stderr to.
     """
     flow_run_id = prefect.runtime.task_run.id
 
-    with open(str(scratch_stdout) + f"_{flow_run_id}", "w") as stdout:
+    with (
+        open(str(scratch_path) + f"_{flow_run_id}_stdout", "w") as stdout,
+        open(str(scratch_path) + f"_{flow_run_id}_stderr", "w") as stderr,
+    ):
         subprocess.run(
-            cmd, stdout=stdout, stderr=subprocess.STDOUT, shell=True, check=True
+            cmd,
+            stdout=stdout,
+            stderr=stderr,
+            shell=True,
+            check=True,
         )
 
 
@@ -53,13 +60,7 @@ def sierra(
     with open(input_root / "commands.txt") as f:
         commands = [line.strip() for line in f.readlines()]
 
-    logger = prefect.get_run_logger()
+    scratch_stdouts = [scratch_root / f"_run{i}" for i in range(0, len(commands))]
 
-    scratch_stdouts = [scratch_root / f"stdout_run{i}" for i in range(0, len(commands))]
-    logger.info("%s %s", commands, scratch_stdouts)
     sim_results = exec_exp_run.map(commands, scratch_stdouts)
     sim_results.wait()
-
-
-if __name__ == "__main__":
-    sierra.deploy(name="exec_exp")

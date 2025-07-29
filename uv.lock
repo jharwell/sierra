@@ -3061,6 +3061,25 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/8d/bd/a684a40fa2fee0b6629d5437ee0f8c88b6bbdd7cbd2052c5444da89bba27/prefect-3.4.3-py3-none-any.whl", hash = "sha256:5a064334500521e7a25066d812688e2485f037e5934ef1a1f1209399e75895ef", size = 5992863, upload_time = "2025-05-22T22:01:41.517Z" },
 ]
 
+[package.optional-dependencies]
+docker = [
+    { name = "prefect-docker" },
+]
+
+[[package]]
+name = "prefect-docker"
+version = "0.6.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "docker" },
+    { name = "exceptiongroup" },
+    { name = "prefect" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f0/41/f763035762da3dcf641f6d89956e351d48f76bbf72392e4095a9181c1cc9/prefect_docker-0.6.6.tar.gz", hash = "sha256:fd9a927b36d4b86ccbfd810688b186be07a0b2c99afbae5864aaec89963fa078", size = 39079, upload_time = "2025-05-28T18:06:36.136Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/65/3e/d97e83cd1d0b5d9e40a5cc41838e2b79fc210ec7b533486c5461727cf513/prefect_docker-0.6.6-py3-none-any.whl", hash = "sha256:5b9ab447bfa563cf3304e66b32113727d40fd451144ea3a199e5b6406293eb0b", size = 27518, upload_time = "2025-05-28T18:06:34.773Z" },
+]
+
 [[package]]
 name = "prometheus-client"
 version = "0.22.0"
@@ -4155,7 +4174,7 @@ wheels = [
 
 [[package]]
 name = "sierra-research"
-version = "1.4.15"
+version = "1.4.16"
 source = { editable = "." }
 dependencies = [
     { name = "coloredlogs" },
@@ -4172,7 +4191,7 @@ dependencies = [
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pandas" },
-    { name = "prefect" },
+    { name = "prefect", extra = ["docker"] },
     { name = "psutil" },
     { name = "pyarrow" },
     { name = "pyyaml" },
@@ -4278,6 +4297,7 @@ requires-dist = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "prefect" },
+    { name = "prefect", extras = ["docker"] },
     { name = "psutil" },
     { name = "psutil", marker = "extra == 'ci'" },
     { name = "psutil", marker = "extra == 'docs'" },

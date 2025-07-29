@@ -218,17 +218,14 @@ jobs:
 
     strategy:
       matrix:
-        # You CANNOT use python 3.9 with ubuntu 20.04 with ROS, because 3.9 is
-        # the system python and things just don't work otherwise...
         python-version:
           - 3.9
 
-        platform:
-          - argos
-
-        exec-env:
-          - hpc.adhoc
-          - hpc.slurm
+        config:
+          - {platform: argos, exec-env: hpc.adhoc}
+          - {platform: argos, exec-env: hpc.slurm}
+          - {platform: jsonsim, exec-env: prefectserver.local}
+          - {platform: jsonsim, exec-env: prefectserver.dockerremote}
 
     steps:
       - uses: actions/checkout@v3
@@ -237,32 +234,31 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - uses: ./.github/actions/sample-project-setup
-        if: matrix.platform == 'argos'
+        if: matrix.config.platform == 'argos'
         with:
           platform: argos
 
       - uses: ./.github/actions/sample-project-setup
-        if: matrix.platform == 'ros1gazebo'
+        if: matrix.config.platform == 'jsonsim'
         with:
-          platform: ros1gazebo
-          rosdistro: noetic
+          platform: jsonsim
 
       - uses: ./.github/actions/slurm-setup
-        if: matrix.exec-env == 'hpc.slurm'
+        if: matrix.config.exec-env == 'hpc.slurm'
 
       - name: Integration Tests
-        if: matrix.platform != ''
+        if: matrix.config.platform != ''
         run: |
           uv sync -p ${{ matrix.python-version }} --extra devel &&
           nox \
-          -s plugin_${{ matrix.platform }}_integration \
+          -s plugin_${{ matrix.config.platform }}_integration \
           -p ${{ matrix.python-version }} \
           --default-venv-backend=uv \
-           -- -f stage2_univar_test -e ${{ matrix.exec-env }}
+           -- -f stage2_univar_test -e ${{ matrix.config.exec-env }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-platform-${{ matrix.platform }}-${{ matrix.exec-env }}-ubuntu-22.04-${{ matrix.python-version }}-coverage
+          name: ci-platform-${{ matrix.config.platform }}-${{ matrix.config.exec-env }}-ubuntu-22.04-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

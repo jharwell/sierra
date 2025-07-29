@@ -8,8 +8,12 @@ setup_env() {
 
     if [ "$GITHUB_ACTIONS" = true ]; then
         export SAMPLE_ROOT=$GITHUB_WORKSPACE/sierra-sample-project
+        export SIERRA_REPO=$GITHUB_WORKSPACE/sierra
     else
-        export SAMPLE_ROOT=$HOME/git/thesis/sierra-sample-project
+        # Have to resolve symlinks so can pass the correct paths
+        # through to docker for the prefect.dockerremote execenv
+        export SAMPLE_ROOT=$(realpath $HOME/git/thesis/sierra-sample-project)
+        export SIERRA_REPO=$(realpath $HOME/git/thesis/sierra)
     fi
     # Since this is CI, we want to avoid being surprised by deprecated
     # features, so treat them all as errors.
@@ -76,11 +80,11 @@ print(path)
     for i in {0..4}; do
         [ -d "$input_root/c1-exp${i}" ] || false
     done
+    [ -f "$batch_root/commands.txt" ] || false
 
     # Check stage1 generated stuff
     for i in {0..4}; do
         for run in {0..3}; do
-            [ -f "$input_root/c1-exp${i}/commands.txt" ] || false
             [ -f "$input_root/c1-exp${i}/exp_def.pkl" ] || false
             [ -f "$input_root/c1-exp${i}/seeds.pkl" ] || false
             [ -f "$input_root/c1-exp${i}/template_run${run}.json" ] ||false
@@ -114,7 +118,82 @@ print(path)
     --batch-criteria max_speed.1.9.C5 \
     --pipeline 1 2"
 
-    $SIERRA_CMD
+    env="$1"
+    if [ "$env" = "hpc.local" ]; then
+        $SIERRA_CMD --exec-env=hpc.local
+    elif [ "$env" = "prefectserver.local" ]; then
+        rm -rf ~/.prefect
+        $SIERRA_CMD --exec-env=prefectserver.local
+    elif [ "$env" = "prefectserver.dockerremote" ]; then
+        export PREFECT_API_URL=http://127.0.0.1:4200/api
+        docker build . \
+               -f tests/prefectserver.dockerremote.Dockerfile \
+               -t sierra-test:latest \
+               --build-arg USERNAME=$(whoami)
+
+        rm -rf ~/.prefect
+        prefect server start &
+        echo "Waiting for Prefect server to be ready..."
+        MAX_RETRIES=30
+        COUNT=0
+        while ! curl -s $PREFECT_API_URL/health > /dev/null; do
+            COUNT=$((COUNT+1))
+            if [ $COUNT -ge $MAX_RETRIES ]; then
+                echo "Error: Timed out waiting for Prefect server to start"
+                exit 1
+            fi
+            echo "Waiting for server to be ready... ($COUNT/$MAX_RETRIES)"
+            sleep 2
+        done
+        echo "Prefect server is ready!"
+
+        prefect work-pool create sierra-pool --type docker || echo "Pool already exists"
+        prefect work-queue create sierra-queue --pool sierra-pool || echo "Queue already exists"
+
+        prefect work-pool inspect sierra-pool
+        prefect work-queue inspect sierra-queue
+        prefect worker start \
+                --type docker \
+                --pool sierra-pool \
+                --work-queue sierra-queue &
+        WORKER_PID=$!
+
+        # Wait for worker to be ready
+        MAX_RETRIES=30
+        COUNT=0
+        while true; do
+            # Check if worker process is still running
+            if ! ps -p $WORKER_PID > /dev/null; then
+                echo "Error: Worker process exited unexpectedly"
+                exit 1
+            fi
+
+            # Check if worker is connected to the pool
+            prefect work-pool ls
+
+            if prefect work-pool ls 2>&1 | grep -q "sierra"; then
+                break
+            fi
+
+            COUNT=$((COUNT+1))
+            if [ $COUNT -ge $MAX_RETRIES ]; then
+                echo "Error: Timed out waiting for Prefect worker to start"
+                exit 1
+            fi
+            echo "Waiting for worker to be ready... ($COUNT/$MAX_RETRIES)"
+            sleep 2
+        done
+        echo "Prefect worker is ready!"
+
+        $SIERRA_CMD --exec-env=prefectserver.dockerremote \
+                    --docker-extra-mounts $SIERRA_REPO:$SIERRA_REPO $SAMPLE_ROOT:$SAMPLE_ROOT \
+                    --docker-image sierra-test:latest
+
+
+        pkill -f "prefect worker"
+        pkill -f "prefect server"
+    fi
+
 
     # Check stage2 generated stuff
     for i in {0..4}; do
@@ -136,7 +215,7 @@ print(path)
         done
     done
 
-    rm -rf $SIERRA_ROOT
+    # rm -rf $SIERRA_ROOT
 }
 
 

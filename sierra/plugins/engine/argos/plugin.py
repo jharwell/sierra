@@ -217,8 +217,9 @@ def cmdline_postparse_configure(
         return _configure_hpc_slurm(args)
     elif env == "hpc.pbs":
         return _configure_hpc_pbs(args)
-
-    raise RuntimeError(f"'{env}' unsupported on ARGoS")
+    else:
+        _logger.warning("Execution environment %s untested", env)
+        return args
 
 
 def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:

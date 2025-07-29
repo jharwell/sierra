@@ -198,6 +198,18 @@ class BootstrapCmdline(BaseCmdline):
                        :ref:`plugins/exec-env/hpc/adhoc` for a detailed
                        description.
 
+                     - ``prefectserver.local`` - This will direct SIERRA to run
+                       experiments locally using a spun-up :term:`Prefect` job
+                       scheduler/server.  See
+                       :ref:`plugins/exec-env/prefectserver/local` for a
+                       detailed description.
+
+                     - ``prefectserver.dockerremote`` - This will direct SIERRA
+                       to run experiments remote using a :term:`Prefect` job
+                       scheduler/server in docker containers.  See
+                       :ref:`plugins/exec-env/prefectserver/dockerremote` for a
+                       detailed description.
+
                      - ``robot.turtlebot3`` - This will direct SIERRA to run
                        experiments on real Turtlebots.
 
