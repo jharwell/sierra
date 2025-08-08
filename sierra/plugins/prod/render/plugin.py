@@ -242,7 +242,9 @@ def _worker(q: mp.Queue, render_config: types.YAMLDict) -> None:
 
             opts = render_opts["ffmpeg_opts"].split(" ")
 
-            ipaths = "'{0}/*.{1}'".format(render_opts["input_dir"], config.kImageType)
+            ipaths = "'{0}/*.{1}'".format(
+                render_opts["input_dir"], config.kStaticImageType
+            )
             cmd = ["ffmpeg", "-y", "-pattern_type", "glob", "-i", ipaths]
             cmd.extend(opts)
             cmd.extend([str(render_opts["output_path"])])

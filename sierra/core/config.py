@@ -68,7 +68,8 @@ hv.config.warning_level = 0
 ################################################################################
 
 
-kImageType = "png"
+kStaticImageType = "png"
+kInteractiveImageType = "html"
 
 kRenderFormat = ".mp4"
 
@@ -76,23 +77,23 @@ kPickleExt = ".pkl"
 kPickleLeaf = "exp_def" + kPickleExt
 kRandomSeedsLeaf = "seeds" + kPickleExt
 
-kGraphDPI = 100
-
-kGraphBaseSize = 10.0  # inches
-
-kGraphTextSizeSmall: types.IntDict = {
-    "title": 24,
-    "xyz_label": 18,
-    "tick_label": 12,
-    "legend_label": 18,
+kGraphs = {
+    "dpi": 100,
+    "base_size": 10.0,  # inches,
+    "text_size_small": {
+        "title": 24,
+        "xyz_label": 18,
+        "tick_label": 12,
+        "legend_label": 18,
+    },
+    "text_size_large": {
+        "title": 36,
+        "xyz_label": 24,
+        "tick_label": 24,
+        "legend_label": 32,
+    },
 }
 
-kGraphTextSizeLarge: types.IntDict = {
-    "title": 36,
-    "xyz_label": 24,
-    "tick_label": 24,
-    "legend_label": 32,
-}
 
 # These are the file extensions that files read/written by a given storage
 # plugin should have. Once processed by SIERRA they are written out as CSV files

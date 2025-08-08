@@ -4,9 +4,9 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.4.16"
+version = "1.4.17"
 
-description = "Automation framework for the scientific method in AI research"
+description = "Automation framework for the scientific method in R&D"
 authors = [
     {name= "John Harwell", email = "john.r.harwell@gmail.com"},
 ]

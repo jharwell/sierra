@@ -321,21 +321,33 @@ print(path)
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --controller=default.default \
     --batch-criteria max_speed.1.9.C5 \
-    --pipeline 1 2 3 4"
+    --pipeline 1 2 3"
 
     $SIERRA_CMD
+    $SIERRA_CMD --pipeline 4 --graphs-backend=matplotlib
+    $SIERRA_CMD --pipeline 4 --graphs-backend=bokeh
 
     # Check stage4 generated stuff
     [ -d "$graph_root/collated" ] || false
     [ -f "$graph_root/collated/SLN-random-noise-col1.png" ] || false
     [ -f "$graph_root/collated/SLN-random-noise2-col2.png" ] || false
     [ -f "$graph_root/collated/SM-random-noise3-col2.png" ] || false
+    [ -f "$graph_root/collated/SLN-random-noise-col1.html" ] || false
+    [ -f "$graph_root/collated/SLN-random-noise2-col2.html" ] || false
+    [ -f "$graph_root/collated/SM-random-noise3-col2.html" ] || false
+
     for i in {0..4}; do
         [ -f "$graph_root/c1-exp${i}/SLN-random-noise.png" ] || false
         [ -f "$graph_root/c1-exp${i}/SLN-random-noise2.png" ] || false
         [ -f "$graph_root/c1-exp${i}/SLN-random-noise3.png" ] || false
         [ -f "$graph_root/c1-exp${i}/HM-output2D-1.png" ] || false
         [ -f "$graph_root/c1-exp${i}/HM-output2D-2.png" ] || false
+
+        [ -f "$graph_root/c1-exp${i}/SLN-random-noise.html" ] || false
+        [ -f "$graph_root/c1-exp${i}/SLN-random-noise2.html" ] || false
+        [ -f "$graph_root/c1-exp${i}/SLN-random-noise3.html" ] || false
+        [ -f "$graph_root/c1-exp${i}/HM-output2D-1.html" ] || false
+        [ -f "$graph_root/c1-exp${i}/HM-output2D-2.html" ] || false
     done
 
     rm -rf $SIERRA_ROOT

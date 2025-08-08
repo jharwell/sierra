@@ -45,3 +45,7 @@ mycategory:
   # omitted (i.e., this option can be overriden on a per-graph basis if
   # desired).
   - logy: false
+
+  # Specify the backend to use to generate the graph. Defaults to
+  # --graphs-backend if omitted.
+  - backend: "matplotlib"

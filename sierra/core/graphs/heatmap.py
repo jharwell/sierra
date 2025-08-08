@@ -16,6 +16,7 @@ import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 import holoviews as hv
+import bokeh
 
 # Project packages
 from sierra.core import utils, config, storage, types
@@ -24,12 +25,20 @@ from . import pathset as _pathset
 _logger = logging.getLogger(__name__)
 
 
+def _ofile_ext(backend: str) -> str:
+    if backend == "matplotlib":
+        return config.kStaticImageType
+    elif backend == "bokeh":
+        return config.kInteractiveImageType
+
+
 def generate(
     pathset: _pathset.PathSet,
     input_stem: str,
     output_stem: str,
     medium: str,
     title: str,
+    backend: str,
     colnames: tp.Tuple[str, str, str] = ("x", "y", "z"),
     xlabel: tp.Optional[str] = "",
     ylabel: tp.Optional[str] = "",
@@ -59,11 +68,11 @@ def generate(
     in that cell. The names of these columns are configurable.
 
     """
-    hv.extension("matplotlib")
+    hv.extension(backend)
 
     input_fpath = pathset.input_root / (input_stem + ext)
     output_fpath = pathset.output_root / "HM-{0}.{1}".format(
-        output_stem, config.kImageType
+        output_stem, ofile_ext=_ofile_ext(backend)
     )
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -73,14 +82,12 @@ def generate(
         )
         return False
 
-    # Required arguments
     title = "\n".join(textwrap.wrap(title, 40))
 
-    # Optional arguments
     if large_text:
-        text_size = config.kGraphTextSizeLarge
+        text_size = config.kGraphs["text_size_large"]
     else:
-        text_size = config.kGraphTextSizeSmall
+        text_size = config.kGraphs["text_size_small"]
 
     # Read .csv and create raw heatmap from default configuration
     df = storage.df_read(input_fpath, medium)
@@ -90,10 +97,17 @@ def generate(
     if transpose:
         dataset.data = dataset.data.transpose()
 
-    # Plot heatmap, without showing the Z-value in each cell
-    plot = hv.HeatMap(
-        dataset, kdims=[colnames[0], colnames[1]], vdims=[colnames[2]]
-    ).opts(show_values=False)
+    # Plot heatmap, without showing the Z-value in each cell, which generally
+    # obscures things more than it helps. Plus, statistical significance isn't
+    # observable from a heatmap, so numerical values are kind of moot.
+    if backend == "matplotlib":
+        plot = hv.HeatMap(
+            dataset, kdims=[colnames[0], colnames[1]], vdims=[colnames[2]]
+        ).opts(show_values=False)
+    elif backend == "bokeh":
+        plot = hv.HeatMap(
+            dataset, kdims=[colnames[0], colnames[1]], vdims=[colnames[2]]
+        )
 
     xticks = dataset.data[colnames[0]]
     yticks = dataset.data[colnames[1]]
@@ -120,26 +134,38 @@ def generate(
     # Add title
     plot.opts(title=title)
 
-    # Add colorbar.
-    # 2025-07-08 [JRH]: backend_opts is a mpl-specific Workaround; doing
-    # colorbar_opts={"label": ...} doesn't work for unknown reasons.
-    plot.opts(colorbar=True, backend_opts={"colorbar.label": zlabel})
+    if backend == "matplotlib":
+        # Add colorbar.
+        # 2025-07-08 [JRH]: backend_opts is a mpl-specific Workaround; doing
+        # colorbar_opts={"label": ...} doesn't work for unknown reasons.
+        plot.opts(colorbar=True, backend_opts={"colorbar.label": zlabel})
 
-    plot.opts(fig_inches=config.kGraphBaseSize)
-
-    hv.save(
-        plot,
-        output_fpath,
-        fig=config.kImageType,
-        dpi=config.kGraphDPI,
-    )
-    plt.close("all")
+    _save(plot, output_fpath, backend)
 
     _logger.debug(
         "Graph written to <batchroot>/%s",
         output_fpath.relative_to(pathset.batchroot),
     )
     return True
+
+
+def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
+    if backend == "matplotlib":
+        hv.save(
+            plot.opts(fig_inches=config.kGraphs["base_size"]),
+            output_fpath,
+            fig=config.kStaticImageType,
+            dpi=config.kGraphs["dpi"],
+        )
+        plt.close("all")
+
+    elif backend == "bokeh":
+        fig = hv.render(plot)
+        fig.width = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        fig.height = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
+        with open(output_fpath, "w") as f:
+            f.write(html)
 
 
 def generate2(
@@ -169,7 +195,7 @@ def generate2(
     hv.extension("matplotlib")
 
     output_fpath = pathset.output_root / "HM-{0}.{1}".format(
-        output_stem, config.kImageType
+        output_stem, config.kStaticImageType
     )
     # @staticmethod
     # def set_graph_size(df: pd.DataFrame, fig) -> None:
@@ -250,7 +276,7 @@ def generate2(
     hv.save(
         plot,
         output_fpath,
-        fig=config.kImageType,
+        fig=config.kStaticImageType,
         dpi=config.kGraphDPI,
     )
     plt.close("all")

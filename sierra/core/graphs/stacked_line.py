@@ -15,6 +15,7 @@ import pathlib
 import pandas as pd
 import holoviews as hv
 import matplotlib.pyplot as plt
+import bokeh
 
 # Project packages
 from sierra.core import config, utils, storage, models
@@ -23,12 +24,20 @@ from . import pathset
 _logger = logging.getLogger(__name__)
 
 
+def _ofile_ext(backend: str) -> str:
+    if backend == "matplotlib":
+        return config.kStaticImageType
+    elif backend == "bokeh":
+        return config.kInteractiveImageType
+
+
 def generate(
     paths: pathset.PathSet,
     input_stem: str,
     output_stem: str,
     title: str,
     medium: str,
+    backend: str,
     stats: str = "none",
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
@@ -37,7 +46,7 @@ def generate(
     legend: tp.Optional[tp.List[str]] = None,
     cols: tp.Optional[tp.List[str]] = None,
     logyscale: bool = False,
-    ext=config.kStats["mean"].exts["mean"],
+    ext: str = config.kStats["mean"].exts["mean"],
 ) -> bool:
     """Generate a line graph from a set of columns in a file.
 
@@ -52,18 +61,17 @@ def generate(
     Ideally, model predictions/stddev calculations would be in derived classes,
     but I can't figure out a good way to easily pull that stuff out of here.
     """
-    hv.extension("matplotlib")
-
-    # Optional arguments
-    if large_text:
-        text_size = config.kGraphTextSizeLarge
-    else:
-        text_size = config.kGraphTextSizeSmall
+    hv.extension(backend)
 
     input_fpath = paths.input_root / (input_stem + ext)
     output_fpath = paths.output_root / "SLN-{0}.{1}".format(
-        output_stem, config.kImageType
+        output_stem, _ofile_ext(backend)
     )
+
+    if large_text:
+        text_size = config.kGraphs["text_size_large"]
+    else:
+        text_size = config.kGraphs["text_size_small"]
 
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -128,19 +136,30 @@ def generate(
             ),
         )
 
-    hv.save(
-        plot.opts(fig_inches=config.kGraphBaseSize),
-        output_fpath,
-        fig=config.kImageType,
-        dpi=config.kGraphDPI,
-    )
-    plt.close("all")
-
-    _logger.debug(
+    _save(plot, output_fpath, backend)
+    _logger.debu(
         "Graph written to <batchroot>/%s",
         output_fpath.relative_to(paths.batchroot),
     )
     return True
+
+
+def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
+    if backend == "matplotlib":
+        hv.save(
+            plot.opts(fig_inches=config.kGraphs["base_size"]),
+            output_fpath,
+            fig=config.kStaticImageType,
+            dpi=config.kGraphs["dpi"],
+        )
+        plt.close("all")
+    elif backend == "bokeh":
+        fig = hv.render(plot)
+        fig.width = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        fig.height = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
+        with open(output_fpath, "w") as f:
+            f.write(html)
 
 
 def _plot_selected_cols(

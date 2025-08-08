@@ -75,7 +75,7 @@ class ARGoSQTHeadlessRendering:
                         {
                             "directory": "frames",
                             "base_name": "frame_",
-                            "format": sierra.core.config.kImageType,
+                            "format": sierra.core.config.kStaticImageType,
                             "headless_grabbing": "true",
                             "headless_frame_size": "{0}".format(self.kFrameSize),
                             "headless_frame_rate": "{0}".format(self.kFRAME_RATE),

@@ -27,4 +27,5 @@ omit =
 
      */docs/*
 
+     noxfile.py
      */sierra-cli

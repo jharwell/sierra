@@ -56,6 +56,7 @@ def generate(
                     input_stem=graph["src_stem"],
                     output_stem=graph["dest_stem"],
                     medium="storage.csv",
+                    backend=graph.get("backend", cmdopts["graphs_backend"]),
                     stats=cmdopts["dist_stats"],
                     cols=graph.get("cols", None),
                     title=graph.get("title", ""),

@@ -17,6 +17,7 @@ import pathlib
 import pandas as pd
 import holoviews as hv
 import matplotlib.pyplot as plt
+import bokeh
 
 # Project packages
 from sierra.core import config, utils, storage, models
@@ -33,6 +34,7 @@ def generate(
     title: str,
     xlabel: str,
     ylabel: str,
+    backend: str,
     legend: tp.List[str],
     xticks: tp.List[float],
     xticklabels: tp.Optional[tp.List[str]] = None,
@@ -60,6 +62,8 @@ def generate(
 
         ylabel: Y-label for graph.
 
+        backend: The holoviews backend to use.
+
         xticks: The xticks for the graph.
 
         xticklabels: The xtick labels for the graph (can be different than the
@@ -80,17 +84,14 @@ def generate(
                      experiment.
 
     """
-    hv.extension("matplotlib")
-    # Optional arguments
-    if large_text:
-        text_size = config.kGraphTextSizeLarge
-    else:
-        text_size = config.kGraphTextSizeSmall
+    hv.extension(backend)
+    if backend == "matplotlib":
+        ofile_ext = config.kStaticImageType
+    elif backend == "bokeh":
+        ofile_ext = config.kInteractiveImageType
 
     input_fpath = paths.input_root / (input_stem + config.kStats["mean"].exts["mean"])
-    output_fpath = paths.output_root / (
-        "SM-{0}.{1}".format(output_stem, config.kImageType)
-    )
+    output_fpath = paths.output_root / ("SM-{0}.{1}".format(output_stem, ofile_ext))
 
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -99,6 +100,11 @@ def generate(
             input_fpath.relative_to(paths.batchroot),
         )
         return False
+
+    if large_text:
+        text_size = config.kGraphs["text_size_large"]
+    else:
+        text_size = config.kGraphs["text_size_small"]
 
     df = storage.df_read(input_fpath, medium, index_col="Experiment ID")
     # Column 0 is the 'Experiment ID' index, which we don't want included as
@@ -145,13 +151,21 @@ def generate(
     # Add title
     plot.opts(title=title)
 
-    hv.save(
-        plot.opts(fig_inches=config.kGraphBaseSize),
-        output_fpath,
-        fig=config.kImageType,
-        dpi=config.kGraphDPI,
-    )
-    plt.close("all")
+    if backend == "matplotlib":
+        hv.save(
+            plot.opts(fig_inches=config.kGraphs["base_size"]),
+            output_fpath,
+            fig=config.kStaticImageType,
+            dpi=config.kGraphs["dpi"],
+        )
+        plt.close("all")
+    elif backend == "bokeh":
+        fig = hv.render(plot)
+        fig.width = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        fig.height = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
+        with open(output_fpath, "w") as f:
+            f.write(html)
 
     _logger.debug(
         "Graph written to <batchroot>/%s", output_fpath.relative_to(paths.batchroot)

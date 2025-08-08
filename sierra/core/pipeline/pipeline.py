@@ -79,13 +79,12 @@ class Pipeline:
             "plot_large_text": self.args.plot_large_text,
             "plot_transpose_graphs": self.args.plot_transpose_graphs,
             "expdef": self.args.expdef,
-            "proc": self.args.proc,
-            "prod": self.args.prod,
             # stage 1
             "preserve_seeds": self.args.preserve_seeds,
             # stage 2
             "nodefile": self.args.nodefile,
             # stage 3
+            "proc": self.args.proc,
             "df_verify": self.args.df_verify,
             "compress_remove_after": self.args.compress_remove_after,
             "imagize_no_stats": self.args.imagize_no_stats,
@@ -94,6 +93,8 @@ class Pipeline:
             "processing_mem_limit": self.args.processing_mem_limit,
             "storage": self.args.storage,
             # stage 4
+            "prod": self.args.prod,
+            "graphs_backend": self.args.graphs_backend,
             "exp_graphs": self.args.exp_graphs,
             "project_no_LN": self.args.project_no_LN,
             "project_no_HM": self.args.project_no_HM,

@@ -39,3 +39,7 @@ mycategory:
   # The name of the column containing the Z axis values. Defaults to z if
   # omitted.
   - z: 'z'
+
+  # Specify the backend to use to generate the graph. Defaults to
+  # --graphs-backend if omitted.
+  - backend: "matplotlib"

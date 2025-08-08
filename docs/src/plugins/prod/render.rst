@@ -28,6 +28,9 @@ findable by the shell used to invoke SIERRA; an error will be thrown otherwise.
 Usage
 =====
 
+This plugin can be selected by adding ``prod.render`` to the list passed to
+``--prod``.
+
 This plugin creates ``<batchroot>/videos`` when active. Videos for each
 experiment will accrue in subdirectories under here. E.g.::
 

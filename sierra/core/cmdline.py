@@ -980,7 +980,25 @@ class CoreCmdline(BaseCmdline):
             nargs="+",
             default=["prod.graphs"],
         )
+        self.stage4.add_argument(
+            "--graphs-backend",
+            choices=["matplotlib", "bokeh"],
+            help="""
+                 Specify the default backend to be used when generating plots.
+                 Can be overriden on a per-graph basis.
 
+                     - ``matplotlib`` - Use matplotlib to generate static PNG
+                       images.
+
+                     - ``bokeh`` - Use bokeh to generate stand-alone HTML files
+                       containing interactive bokeh visualizations.  Files are
+                       suitable for inclusion in static webpages, viewing in a
+                       browser, etc.
+
+                 See :ref:`plugins/prod/graphs` for more information.
+                 """,
+            default="matplotlib",
+        )
         self.stage4.add_argument(
             "--exp-graphs",
             choices=["intra", "inter", "all", "none"],

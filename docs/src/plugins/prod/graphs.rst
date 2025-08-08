@@ -4,8 +4,20 @@
 Static Graph Generation
 =======================
 
-This plugin generates static graphs using holoviews+matplotlib during
-stage 4. It has the following stage 3 plugin recommendations:
+This plugin generates graphs using holoviews during stage 4; any graph type
+supported by a holoviews backend can be selected with ``--graphs-backend``.
+Since this plugin uses holoviews to do all the heavy lifting, you may wonder
+"Why wrap holoviews backends at all?" A wrapper of a wrapper would seem
+gratuitous at first glance. The reason is that SIERRA's wrapping here enables
+*declarative* generation graphs supported by any of the holoviews backends. If
+you used holoviews directly, you would have to change your python code to use a
+different backend, as well as to account for subtleties when switching between
+backends which are not yet ironed out in holoviews. SIERRA's declarative
+approach here enables you focus on your goal (what type of graph to generate,
+what you want on it, etc.), rather than the details of *how* that is
+implemented.
+
+This plugin has the following stage 3 plugin recommendations:
 
 - :ref:`plugins/proc/stat` (all graphs). Without this, no statistics can be
   included on graphs.
@@ -15,7 +27,9 @@ Usage
 
 .. TODO:: fill in CLI interface here once it is pulled out.
 
-This plugin supports two types of graphs, and therefore two types of analyses:
+This plugin can be selected by adding ``prod.graphs`` to the list passed to
+``--prod``. This plugin supports two logical types of graphs, and therefore two
+types of analyses:
 
 - Intra-experiment graphs, which can be thought of as graphs generated directly
   from the aggregated data from a set of :term:`Experimental Runs <Experimental
@@ -23,6 +37,11 @@ This plugin supports two types of graphs, and therefore two types of analyses:
 
 - Inter-experiment graphs, which are generated from a selected subset of data
   from each :term:`Experiment` in a :term:`Batch Experiment`.
+
+Within each of these logical graph types, any ``--graphs-backend`` can be
+specified to generate the actual graphs; overrideable on a per-graph basis. This
+makes generating mixed e.g. static graphs for inclusion in presentations and
+interactive graphs for inclusion in webpages easy.
 
 .. list-table::
    :header-rows: 1

@@ -61,6 +61,7 @@ def generate(
                 xlabel=graph.get("xlabel", None),
                 ylabel=graph.get("ylabel", None),
                 zlabel=graph.get("zlabel", None),
+                backend=graph.get("backend", cmdopts["graphs_backend"]),
                 colnames=(
                     graph.get("x", "x"),
                     graph.get("y", "y"),
