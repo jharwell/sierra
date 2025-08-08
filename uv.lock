@@ -4174,7 +4174,7 @@ wheels = [
 
 [[package]]
 name = "sierra-research"
-version = "1.4.16"
+version = "1.4.17"
 source = { editable = "." }
 dependencies = [
     { name = "coloredlogs" },

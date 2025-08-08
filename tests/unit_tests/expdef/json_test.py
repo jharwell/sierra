@@ -16,58 +16,46 @@ import sierra.core.logging
 
 
 def test_rdrw():
-    sierra.core.logging.initialize('INFO')
+    sierra.core.logging.initialize("INFO")
 
-    config = definition.WriterConfig([{'src_parent': None,
-                                       'src_tag': '$'}])
-    exp1 = ExpDef(input_fpath="./tests/expdef/f9.json",
-                  write_config=config)
+    config = definition.WriterConfig([{"src_parent": None, "src_tag": "$"}])
+    exp1 = ExpDef(input_fpath="./tests/unit_tests/expdef/f9.json", write_config=config)
 
     exp1.write("/tmp/f9-out.json")
 
-    diff = jsondiff.diff(json.load(open("./tests/expdef/f9.json")),
-                         json.load(open("/tmp/f9-out.json")))
+    diff = jsondiff.diff(
+        json.load(open("./tests/unit_tests/expdef/f9.json")),
+        json.load(open("/tmp/f9-out.json")),
+    )
 
     assert len(diff) == 0
 
 
 def test_f2():
-    f = ExpDef(input_fpath="./tests/expdef/f2.json")
+    f = ExpDef(input_fpath="./tests/unit_tests/expdef/f2.json")
 
     # Element existence
     assert f.has_element("$.colors")
     assert not f.has_element("$.colorss")
 
     # Attribute existence
-    assert f.has_attr("$.colors[?(@.value1=='foo')]",
-                      "color")
-    assert f.has_attr("$.colors[?(@.value2=='bar')]",
-                      "color")
-    assert not f.has_attr("$.colors[?(@.value1=='foo')]",
-                          "value")
-    assert not f.has_attr("$.colors[?(@.value1=='bar')]",
-                          "color")
+    assert f.has_attr("$.colors[?(@.value1=='foo')]", "color")
+    assert f.has_attr("$.colors[?(@.value2=='bar')]", "color")
+    assert not f.has_attr("$.colors[?(@.value1=='foo')]", "value")
+    assert not f.has_attr("$.colors[?(@.value1=='bar')]", "color")
 
     # Attribute update
-    assert f.attr_change("$.colors[?(@.value2=='bar')]",
-                         "value2",
-                         "baz")
-    assert not f.attr_change("$.colors[?(@.value2=='bar')]",
-                             "value2",
-                             "bar")
+    assert f.attr_change("$.colors[?(@.value2=='bar')]", "value2", "baz")
+    assert not f.attr_change("$.colors[?(@.value2=='bar')]", "value2", "bar")
 
-    assert f.has_attr("$.colors[?(@.value2=='baz')]",
-                      "color")
+    assert f.has_attr("$.colors[?(@.value2=='baz')]", "color")
 
-    assert not f.has_attr("$.colors[?(@.color=='blue')]",
-                          "number")
+    assert not f.has_attr("$.colors[?(@.color=='blue')]", "number")
 
     assert f.attr_add("$.colors[?(@.color=='red')]", "number", "1")
 
-    assert f.attr_get("$.colors[?(@.color=='red')]",
-                      "number") == "1"
-    assert f.attr_get("$.colors[?(@.color=='blue')]",
-                      "number") is None
+    assert f.attr_get("$.colors[?(@.color=='red')]", "number") == "1"
+    assert f.attr_get("$.colors[?(@.color=='blue')]", "number") is None
 
     # Add element to non-existing parent
     assert not f.element_add("$.numbers", "numbers", {"one": "1", "two": "2"})
@@ -83,10 +71,7 @@ def test_f2():
     assert f.attr_get("$.numbers", "three") == "3"
 
     # Add an already existing element, causing a list to be created
-    assert not f.element_add("$",
-                             "numbers",
-                             {"one": "1", "two": "2"},
-                             allow_dup=False)
+    assert not f.element_add("$", "numbers", {"one": "1", "two": "2"}, allow_dup=False)
     assert f.has_element("$.numbers")
     assert f.has_attr("$.numbers", "one")
     assert f.has_attr("$.numbers", "two")
@@ -94,8 +79,8 @@ def test_f2():
     assert f.has_attr("$.numbers", "four")
     assert f.attr_get("$.numbers", "one") == "1"
     assert f.attr_get("$.numbers", "two") == "2"
-    assert f.attr_get("$.numbers", "three") == '3'
-    assert f.attr_get("$.numbers", "four") == '4'
+    assert f.attr_get("$.numbers", "three") == "3"
+    assert f.attr_get("$.numbers", "four") == "4"
 
     # Remove non-existing element
     assert not f.element_remove("$.numbers", "numbers")
@@ -106,7 +91,7 @@ def test_f2():
 
 
 def test_f4():
-    f = ExpDef(input_fpath="./tests/expdef/f4.json")
+    f = ExpDef(input_fpath="./tests/unit_tests/expdef/f4.json")
 
     # Element existence
     assert f.has_element("$.batters")
@@ -124,22 +109,15 @@ def test_f4():
     assert not f.has_attr("$", "topping")
 
     # Attribute update
-    assert f.attr_change("$",
-                         "type",
-                         "pie")
+    assert f.attr_change("$", "type", "pie")
     assert f.has_attr("$", "type")
     assert f.attr_get("$", "type") == "pie"
 
-    assert not f.attr_change("$.batters",
-                             "batter",
-                             "foo")
+    assert not f.attr_change("$.batters", "batter", "foo")
     assert f.has_element("$.batters.batter")
     assert f.attr_get("$.batters", "batter") is None
-    assert f.attr_change("$.topping2[?(@.type=='Maple')]",
-                         "id",
-                         "foobar")
-    assert f.attr_get("$.topping2[?(@.type=='Maple')]",
-                      "id") == "foobar"
+    assert f.attr_change("$.topping2[?(@.type=='Maple')]", "id", "foobar")
+    assert f.attr_get("$.topping2[?(@.type=='Maple')]", "id") == "foobar"
 
     assert f.element_remove("$", "topping")
     assert not f.has_element("$.topping")
@@ -153,16 +131,19 @@ def test_f4():
 
 
 def test_flatten():
-    sierra.core.logging.initialize('INFO')
-    config = definition.WriterConfig([{'src_parent': None,
-                                       'src_tag': '$'}])
+    sierra.core.logging.initialize("INFO")
+    config = definition.WriterConfig([{"src_parent": None, "src_tag": "$"}])
     for i in range(1, 5):
-        f1 = ExpDef(input_fpath=pathlib.Path(f"./tests/expdef/flatten{i}.json"),
-                    write_config=config)
+        f1 = ExpDef(
+            input_fpath=pathlib.Path(f"./tests/unit_tests/expdef/flatten{i}.json"),
+            write_config=config,
+        )
         f1.flatten(["path"])
         f1.write(f"/tmp/flatten{i}-out.json")
 
-        diff = jsondiff.diff(json.load(open(f"./tests/expdef/flatten{i}-out.json")),
-                             json.load(open(f"/tmp/flatten{i}-out.json")))
+        diff = jsondiff.diff(
+            json.load(open(f"./tests/unit_tests/expdef/flatten{i}-out.json")),
+            json.load(open(f"/tmp/flatten{i}-out.json")),
+        )
 
         assert len(diff) == 0

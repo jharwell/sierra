@@ -21,17 +21,17 @@ jobs:
           - 3.9
           - 3.12
 
-        function:
-          - cmdline_opts_test
-          - env_vars_test
-          - builtin_bc_test
-          - parallelism_test
-          - stage1_bivar_test
-          - stage2_bivar_test
-          - stage3_bivar_test
-          - stage4_bivar_test
-          - stage5_univar_test
-          - stage5_bivar_test
+        session:
+          - core_cmdline_opts
+          - core_env_vars
+          - core_builtin_bc
+          - core_parallelism
+          - core_stage1_bivar
+          - core_stage2_bivar
+          - core_stage3_bivar
+          - core_stage4_bivar
+          - core_stage5_univar
+          - core_stage5_bivar
 
         exclude:
           - os: ubuntu-22.04
@@ -55,11 +55,11 @@ jobs:
           timeout_minutes: 30
           max_attempts: 3
           shell: bash
-          command: uv run -p ${{ matrix.python-version }} nox -s core_integration -p ${{ matrix.python-version }} --default-venv-backend=uv -- -f ${{ matrix.function }}
+          command: uv run nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-core-${{ matrix.function }}-${{ matrix.os }}-${{ matrix.python-version }}-coverage
+          name: ci-core-${{ matrix.session }}-${{ matrix.os }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

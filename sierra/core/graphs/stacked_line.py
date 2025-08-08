@@ -24,11 +24,13 @@ from . import pathset
 _logger = logging.getLogger(__name__)
 
 
-def _ofile_ext(backend: str) -> str:
+def _ofile_ext(backend: str) -> tp.Optional[str]:
     if backend == "matplotlib":
         return config.kStaticImageType
     elif backend == "bokeh":
         return config.kInteractiveImageType
+
+    return None
 
 
 def generate(
@@ -137,7 +139,7 @@ def generate(
         )
 
     _save(plot, output_fpath, backend)
-    _logger.debu(
+    _logger.debug(
         "Graph written to <batchroot>/%s",
         output_fpath.relative_to(paths.batchroot),
     )

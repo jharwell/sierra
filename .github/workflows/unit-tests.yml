@@ -42,14 +42,9 @@ jobs:
 
       - name: Run nox
         run: |
-          export PATH=$pythonLocation/bin:$PATH
-          export PYTHONPATH=$PYTHONPATH:$PWD
-
-          uv run -p ${{ matrix.python-version }} \
-          nox \
+          uv run nox \
           --pythons ${{ matrix.python-version }} \
-          --sessions unit_tests \
-          --default-venv-backend=uv
+          --sessions unit_tests
 
       - uses: actions/upload-artifact@v4
         with:

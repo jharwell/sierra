@@ -11,11 +11,13 @@ import nox
 import psutil
 
 # Project packages
+from tests.integration_tests import core, utils
 
-versions = ["3.9", "3.10", "3.11", "3.12"]
+
+nox.options.default_venv_backend = "uv"
 
 
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def lint(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
@@ -52,7 +54,7 @@ def lint(session):
 
 
 # venv argument needed so the apt module can be found in the nox venv on linux
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def analyze_pytype(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
@@ -69,7 +71,7 @@ def analyze_pytype(session):
 
 
 # venv argument needed so the apt module can be found in the nox venv on linux
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def analyze_mypy(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
@@ -129,7 +131,7 @@ def analyze_mypy(session):
     )
 
 
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def docs(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
@@ -144,7 +146,7 @@ def docs(session):
     session.run("pydocstyle", "--select=D400", "sierra")
 
 
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def unit_tests(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
@@ -155,7 +157,7 @@ def unit_tests(session):
         path = pathlib.Path(os.environ.get("HOME"), "git/thesis/sierra-sample-project")
         session.env["SIERRA_PLUGIN_PATH"] = str(path)
 
-    session.run("pytest", "--cov")
+    session.run("pytest", "--cov", "tests/unit_tests")
 
 
 # 2024-11-19 [JRH]: This currently is just a paper-thin wrapper around the shell
@@ -164,35 +166,28 @@ def unit_tests(session):
 # loops is way easier/better/cleaner.
 
 
-@nox.session(python=versions)
-def core_integration(session):
-    session.install(".")  # same as 'pip3 install .'
-
-    session.run("./scripts/core-integration-tests.sh", *session.posargs)
-
-
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def plugin_argos_integration(session):
     session.install(".")  # same as 'pip3 install .'
 
     session.run("./scripts/argos-integration-tests.sh", *session.posargs)
 
 
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def plugin_ros1gazebo_integration(session):
     session.install(".")  # same as 'pip3 install .'
 
     session.run("./scripts/ros1gazebo-integration-tests.sh", *session.posargs)
 
 
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def plugin_ros1robot_integration(session):
     session.install(".")  # same as 'pip3 install .'
 
     session.run("./scripts/ros1robot-integration-tests.sh", *session.posargs)
 
 
-@nox.session(python=versions)
+@nox.session(python=utils.versions)
 def plugin_jsonsim_integration(session):
     session.install(".")  # same as 'pip3 install .'
 

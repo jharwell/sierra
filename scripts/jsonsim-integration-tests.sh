@@ -127,7 +127,7 @@ print(path)
     elif [ "$env" = "prefectserver.dockerremote" ]; then
         export PREFECT_API_URL=http://127.0.0.1:4200/api
         docker build . \
-               -f tests/prefectserver.dockerremote.Dockerfile \
+               -f tests/integration_tests/prefectserver.dockerremote.Dockerfile \
                -t sierra-test:latest \
                --build-arg USERNAME=$(whoami)
 

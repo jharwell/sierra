@@ -231,6 +231,7 @@ class UnivarInterScenarioComparator:
             title=title,
             xlabel=info.xlabel,
             ylabel=label,
+            backend=cmdopts["graphs_backend"],
             xticks=xticks,
             xticklabels=xticklabels,
             logyscale=cmdopts["plot_log_yscale"],

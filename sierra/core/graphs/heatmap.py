@@ -25,11 +25,13 @@ from . import pathset as _pathset
 _logger = logging.getLogger(__name__)
 
 
-def _ofile_ext(backend: str) -> str:
+def _ofile_ext(backend: str) -> tp.Optional[str]:
     if backend == "matplotlib":
         return config.kStaticImageType
     elif backend == "bokeh":
         return config.kInteractiveImageType
+
+    return None
 
 
 def generate(
@@ -72,7 +74,7 @@ def generate(
 
     input_fpath = pathset.input_root / (input_stem + ext)
     output_fpath = pathset.output_root / "HM-{0}.{1}".format(
-        output_stem, ofile_ext=_ofile_ext(backend)
+        output_stem, _ofile_ext(backend)
     )
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -215,9 +217,9 @@ def generate2(
 
     # Optional arguments
     if large_text:
-        text_size = config.kGraphTextSizeLarge
+        text_size = config.kGraphs["text_size_large"]
     else:
-        text_size = config.kGraphTextSizeSmall
+        text_size = config.kGraphs["text_size_small"]
 
     dfs = [storage.df_read(f, medium) for f in ipaths]
 
@@ -271,13 +273,13 @@ def generate2(
     )
 
     # Output figures
-    plot.opts(fig_inches=config.kGraphBaseSize)
+    plot.opts(fig_inches=config.kGraphs["base_size"])
 
     hv.save(
         plot,
         output_fpath,
         fig=config.kStaticImageType,
-        dpi=config.kGraphDPI,
+        dpi=config.kGraphs["dpi"],
     )
     plt.close("all")
 

@@ -186,6 +186,7 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
                 match.get("y", "y"),
                 match.get("z", "z"),
             ),
+            backend="matplotlib",
         )
 
     else:
