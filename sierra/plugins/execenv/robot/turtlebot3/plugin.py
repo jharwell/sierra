@@ -21,7 +21,7 @@ import implements
 from sierra.core import types, execenv, utils
 from sierra.core.experiment import bindings
 
-_logger = logging.getLogger("robot.turtlebot3")
+_logger = logging.getLogger(__name__)
 
 
 def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:

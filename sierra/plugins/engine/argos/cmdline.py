@@ -15,50 +15,23 @@ import argparse
 # Project packages
 from sierra.core import types, config
 from sierra.plugins.execenv import hpc
-import sierra.core.cmdline as cmd
+from sierra.plugins import PluginCmdline
 
 
-class EngineCmdline(cmd.BaseCmdline):
-    """Defines :term:`ARGoS` extensions to :class:`~sierra.core.cmdline.CoreCmdline`."""
+class EngineCmdline(PluginCmdline):
+    """Defines :term:`ARGoS` cmdline."""
 
     def __init__(
         self,
-        parents: tp.Optional[tp.List[argparse.ArgumentParser]],
+        parents: tp.List[argparse.ArgumentParser],
         stages: tp.List[int],
     ) -> None:
-
-        if parents is not None:
-            self.parser = argparse.ArgumentParser(
-                add_help=False, parents=parents, allow_abbrev=False
-            )
-        else:
-            self.parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
-
-        self.scaffold_cli()
-        self.init_cli(stages)
-
-    def scaffold_cli(self) -> None:
-        self.stage1_exp = self.parser.add_argument_group(
-            "Stage1: Experiment generation"
-        )
-        self.stage1_physics = self.parser.add_argument_group(
-            "Stage1: Configuring ARGoS physics engines"
-        )
-        self.stage1_rendering = self.parser.add_argument_group(
-            "Stage1: Rendering (see also stage4 rendering options)"
-        )
-        self.stage1_robots = self.parser.add_argument_group(
-            "Stage1: Configuring robots"
-        )
-
-    def init_cli(self, stages: tp.List[int]) -> None:
-        if 1 in stages:
-            self.init_stage1()
+        super().__init__(parents, stages)
 
     def init_stage1(self) -> None:
         # Experiment options
 
-        self.stage1_exp.add_argument(
+        self.stage1.add_argument(
             "--exp-setup",
             help="""
 
@@ -80,7 +53,7 @@ class EngineCmdline(cmd.BaseCmdline):
 
         # Physics engines options
 
-        self.stage1_physics.add_argument(
+        self.stage1.add_argument(
             "--physics-engine-type2D",
             choices=["dynamics2d"],
             help="""
@@ -98,7 +71,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default="dynamics2d",
         )
 
-        self.stage1_physics.add_argument(
+        self.stage1.add_argument(
             "--physics-engine-type3D",
             choices=["dynamics3d"],
             help="""
@@ -117,7 +90,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default="dynamics3d",
         )
 
-        self.stage1_physics.add_argument(
+        self.stage1.add_argument(
             "--physics-n-engines",
             choices=[1, 2, 4, 6, 8, 12, 16, 24],
             type=int,
@@ -176,7 +149,7 @@ class EngineCmdline(cmd.BaseCmdline):
                              """
             + self.stage_usage_doc([1]),
         )
-        self.stage1_physics.add_argument(
+        self.stage1.add_argument(
             "--physics-iter-per-tick",
             type=int,
             help="""
@@ -193,7 +166,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default=config.kARGoS["physics_iter_per_tick"],
         )
 
-        self.stage1_physics.add_argument(
+        self.stage1.add_argument(
             "--physics-spatial-hash2D",
             help="""
 
@@ -206,7 +179,7 @@ class EngineCmdline(cmd.BaseCmdline):
         )
 
         # Rendering options
-        self.stage1_rendering.add_argument(
+        self.stage1.add_argument(
             "--camera-config",
             choices=["overhead", "sw", "sw+interp"],
             help="""
@@ -236,7 +209,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default="overhead",
         )
 
-        self.stage1_robots.add_argument(
+        self.stage1.add_argument(
             "--with-robot-rab",
             help="""
 
@@ -258,7 +231,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default=False,
         )
 
-        self.stage1_robots.add_argument(
+        self.stage1.add_argument(
             "--with-robot-leds",
             help="""
 
@@ -279,7 +252,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default=False,
         )
 
-        self.stage1_robots.add_argument(
+        self.stage1.add_argument(
             "--with-robot-battery",
             help="""
 
@@ -299,7 +272,7 @@ class EngineCmdline(cmd.BaseCmdline):
             default=False,
         )
 
-        self.stage1_robots.add_argument(
+        self.stage1.add_argument(
             "--n-agents",
             help="""
                                              The # agents (robots) that should
@@ -314,6 +287,15 @@ class EngineCmdline(cmd.BaseCmdline):
             type=int,
             default=None,
         )
+
+
+def build(
+    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+) -> PluginCmdline:
+    """
+    Get a cmdline parser supporting the :term:`ARGoS` engine.
+    """
+    return EngineCmdline(parents=parents, stages=stages)
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
@@ -345,5 +327,4 @@ def sphinx_cmdline_stage1():
 
 
 def sphinx_cmdline_stage2():
-    parent = hpc.cmdline.HPCCmdline([2]).parser
-    return EngineCmdline([parent], [2]).parser
+    return EngineCmdline(None, [2]).parser

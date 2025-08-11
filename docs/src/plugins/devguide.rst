@@ -10,7 +10,8 @@ Plugin Development Guide
 ========================
 
 The page details some general guidelines that all SIERRA plugins should follow
-for maximum compatibility and usability.
+for maximum compatibility and usability, as well as tutorials for developing
+plugins common to all types.
 
 Naming
 ======
@@ -82,3 +83,148 @@ multiple use cases.
 
 Plugins should respect all core SIERRA cmdline arguments, as well as all
 general-purpose arguments for all stages the plugin can be used in.
+
+.. _plugins/devguide/cmdline:
+
+Extending the SIERRA Cmdline For Your Plugin
+============================================
+
+This tutorial covers how add cmdline options for a new plugin of any type to
+SIERRA.
+
+#. Create ``cmdline.py`` in your plugin directory alongside your ``plugin.py``
+   file (or whatever the main plugin file is called).
+
+#. Create the ``build()`` function, which should return an instance of
+   :class:`~sierra.plugins.PluginCmdline`::
+
+      def build(
+          parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+      ) -> PluginCmdline:
+          """
+          Get a cmdline parser supporting the ``proc.collate`` processing plugin.
+          """
+          cmdline = PluginCmdline(parents, stages)
+          cmdline.multistage.add_argument(
+              "--foo-arg",
+              help="blah blah blah",
+              action="store_true",
+          )
+          # More arguments
+          return cmdline
+
+   There are 6 parser groups available for you to add arguments to:
+
+   - ``multistage`` - Arguments which are used in multiple pipeline stages.
+
+   - ``stage1`` - Arguments only used in stage 1.
+
+   - ``stage2`` - Arguments only used in stage 2.
+
+   - ``stage3`` -  Arguments only used in stage 3.
+
+   - ``stage4`` - Arguments only used in stage 4.
+
+   - ``stage5`` - Arguments only used in stage 5.
+
+   These are provided to give cmdline parsing more structure, and to make
+   creating docs directly from ``argparse`` via sphinx easy.
+
+   .. NOTE:: You can also create a cmdline *class* by inheriting from
+             :class:`~sierra.plugins.PluginCmdline`. If you do this route, you will
+             define ``init_XX()`` functions to populate the parser groups
+             described above. All of these functions are optional; see class
+             docs for details.
+
+#. Create the ``to_cmdopts()`` function.  This function creates a dictionary
+   from the parsed cmdline arguments which SIERRA uses to create an internal
+   ``cmdopts`` dictionary used throughout. Keys can have any name, though in
+   general it is best to make them the same as the name of the argument
+   (principle of least surprise)::
+
+     def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
+        return {
+            "foo": args.foo_arg,
+        }
+
+#. Try out your new cmdline! SIERRA should pick it up automatically. For
+   example, if you have created a cmdline for an ``--engine`` plugin available
+   as ``starfleet.enterprise``, if you set ``--log-level=DEBUG`` you should see
+   something like this in SIERRA's output::
+
+     2025-08-16 17:19:40 INFO sierra.main - Dynamically building cmdline from selected plugins
+     2025-08-16 17:19:40 DEBUG sierra.main - Loaded --exec-env=hpc.local cmdline
+     2025-08-16 17:19:40 DEBUG sierra.main - Loaded --engine=starfleet.enterprise cmdline
+     2025-08-16 17:19:40 DEBUG sierra.main - Loaded --proc=proc.statistics cmdline
+     2025-08-16 17:19:40 DEBUG sierra.main - Loaded --prod=prod.graphs cmdline
+
+   and then later when SIERRA is building the ``cmdopts`` dictionary::
+
+     2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --engine=starfleet.enterprise
+     2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --exec-env=hpc.local
+     2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --proc=proc.statistics
+     2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --prod=prod.graphs
+
+   If you don't see similar lines for your plugin, set ``--log-level=TRACE`` and
+   debug from there.
+
+#. Setup documentation generation by adding ``sphinx_cmdline_XX()`` functions,
+   where ``XX`` is one of
+   ``{stage1,stage2,stage3,stage4,stage5,multistage}``. These are simple hooks
+   which will allow you to generate CLI documentation directly from ``argparse``
+   configuration via sphinx. So you might have::
+
+     def sphinx_cmdline_multistage():
+         return build(None, [3, 4, 5]).parser
+
+   for a cmdline that contains arguments for stages {3,4,5}. Then, you can do::
+
+     .. argparse::
+        :filename: /path/to/plugin/cmdline.py
+        :func: sphinx_cmdline_multistage
+        :prog: sierra-cli
+
+   in your documentation to generate some nice docs. This step is optional but
+   recommended.
+
+
+Special Cases
+-------------
+
+There are some small differences between adding options for say a ``--project``
+plugin vs. a ``--engine`` vs. any other plugin type; those are called out below.
+
+.. tabs::
+
+   .. group-tab::  Projects
+
+      Must define the ``--scenario`` and ``--controller`` cmdline arguments to
+      interact with the SIERRA core.
+
+      .. NOTE:: The ``--scenario`` argument can be used to encode the arena
+                dimensions used in an experiment; this is one of two ways to
+                communicate to SIERRA that size of the experimental arena for
+                each :term:`Experiment`. See :ref:`req/exp/arena-size` for more
+                details.
+
+      Can define the ``validate()`` function in their derived cmdline classes.
+      This function is optional, and should assert() as needed to check cmdline
+      arg validity. For most cases, you shouldn't need to define this function;
+      it is provided if you need to do some tricky validation beyond what is
+      baked into argparse.
+
+   .. group-tab:: Engines
+
+      Because of how SIERRA sets up the cmdline plugin, engine cmdlines cannot
+      define the ``validate()`` function; it will never be called if defined.
+      This is generally not an issue because each project is associated with
+      exactly one engine, and so can do any checks needed for the engine
+      there. If you need/want to validate arguments from engines, you can do
+      that via ``cmdline_postparse_configure()`` -- see
+      :ref:`tutorials/plugin/engine` for details.
+
+      Must define ``--exp-setup`` and make it available to SIERRA via the
+      ``to_cmdopts()`` function.
+
+
+With that out of the way, the steps to extend the SIERRA cmdline are as follows:

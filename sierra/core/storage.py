@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-Terminal interface for the various storage plugins that come with SIERRA.
+Trampoline bindings for the various storage plugins that come with SIERRA.
 
 See :ref:`tutorials/plugin/storage` for more details.
 """
@@ -15,6 +15,7 @@ import pandas as pd
 
 # Project packages
 import sierra.core.plugin as pm
+from sierra.core.trampoline import cmdline_parser
 
 
 def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
@@ -33,4 +34,4 @@ def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> Non
     return storage.df_write(df, path, **kwargs)  # type: ignore
 
 
-__all__ = ["df_read", "df_write"]
+__all__ = ["df_read", "df_write", "cmdline_parser"]

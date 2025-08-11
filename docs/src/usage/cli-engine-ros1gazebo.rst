@@ -7,11 +7,3 @@ Stage1: Generating Experiments
    :filename: ../sierra/plugins/engine/ros1gazebo/cmdline.py
    :func: sphinx_cmdline_stage1
    :prog: SIERRA
-
-Stage2: Running Experiments
----------------------------
-
-.. argparse::
-   :filename: ../sierra/plugins/engine/ros1gazebo/cmdline.py
-   :func: sphinx_cmdline_stage2
-   :prog: SIERRA

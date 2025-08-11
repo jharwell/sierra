@@ -11,9 +11,35 @@ This engine can be selected via ``--engine=engine.argos``.
 This is the default engine on which SIERRA will run experiments, and uses the
 :term:`ARGoS` simulator. It cannot be used to run experiments on real robots.
 
-.. toctree::
 
-   batch_criteria.rst
+.. _plugins/engine/argos/usage:
+
+Usage
+=====
+
+Batch Criteria
+--------------
+
+See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
+short version is that they are the core of SIERRA--how to get it to DO stuff for
+you.  The following batch criteria are defined which can be used with any
+:term:`Project`.
+
+.. toctree::
+   :maxdepth: 1
+
+   bc/population-size.rst
+   bc/population-constant-density.rst
+   bc/population-variable-density.rst
+
+Cmdline Interface
+-----------------
+
+.. argparse::
+   :filename: ../sierra/plugins/engine/argos/cmdline.py
+   :func: sphinx_cmdline_stage1
+   :prog: sierra-cli
+
 
 Environment Variables
 =====================

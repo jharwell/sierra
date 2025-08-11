@@ -1,11 +1,7 @@
-# Copyright 2025 John Harwell, All rights reserved.
+# Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""
-Container module for plugins related to :term:`Data Processing`.
-
-Driven by ``--proc``.
-"""
+"""Common functionality ``--proc`` plugins."""
 
 # Core packages
 

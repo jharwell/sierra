@@ -50,32 +50,7 @@ Creating The Cmdline Interface
 ==============================
 
 #. Create additional cmdline arguments for the new engine by following
-   :ref:`tutorials/misc/cmdline` for engines. If your new engine doesn't need
-   any new arguments, you can skip this step.
-
-#. Connect your new engine cmdline into SIERRA via defining
-   ``cmdline_parser()`` in your ``plugin.py`` as shown below. If your new
-   engine doesn't need any new arguments, you can skip this step.
-
-   .. code-block:: python
-
-       def cmdline_parser() -> argparse.ArgumentParser:
-           """
-           Get a cmdline parser supporting the engine. The returned parser
-           should extend :class:`~sierra.core.cmdline.BaseCmdline`.
-
-           This example extends :class:`~sierra.core.cmdline.BaseCmdline` with:
-
-           - :class:`~sierra.plugins.execenv.hpc.cmdline.HPCCmdline` (HPC common)
-           - :class:`~cmd.EngineCmdline` (engine specifics)
-
-           assuming this engine can run on HPC environments.
-           """
-           # Initialize all stages and return the initialized
-           # parser to SIERRA for use.
-           parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-           return cmd.EngineCmdline(parents=[parser],
-                                      stages=[-1, 1, 2, 3, 4, 5]).parser
+   :ref:`plugins/devguide/cmdline` for engines.
 
 #. Defining any additional configuration/argument checking beyond what is
    possible in argparse via ``cmdline_postparse_configure()`` in your
@@ -544,7 +519,7 @@ A Full Skeleton
 
    .. tab:: ``cmdline.py``
 
-      .. literalinclude:: ../../misc/cmdline-engine.py
+      .. literalinclude:: ./cmdline-engine.py
          :language: python
 
    .. tab:: ``plugin.py``

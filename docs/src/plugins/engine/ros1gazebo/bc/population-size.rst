@@ -1,20 +1,8 @@
-.. _plugins/engines/ros1gazebo/bc:
+.. _plugins/engines/ros1gazebo/bc/population-size:
 
-==============
-Batch Criteria
-==============
-
-See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
-short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.  The following batch criteria are defined which can be used with any
-:term:`Project`.
-
-- :ref:`plugins/engine/ros1gazebo/bc/population-size`
-
-.. _plugins/engine/ros1gazebo/bc/population-size:
-
-System Population Size
-======================
+===============
+Population Size
+===============
 
 Changing the system size to investigate behavior across scales within a static
 arena size (i.e., variable density). Systems are homogeneous.
@@ -22,7 +10,7 @@ arena size (i.e., variable density). Systems are homogeneous.
 .. _plugins/engine/ros1gazebo/bc/population-size-cmdline:
 
 Cmdline Syntax
---------------
+==============
 
 ``population_size.{model}{N}[.C{cardinality}]``
 
@@ -41,7 +29,7 @@ Cmdline Syntax
   linear increment. Defaults to 10 if omitted.
 
 Examples
---------
+========
 
 - ``population_size.Log1024``: Static population sizes 1...1024
 - ``population_size.Linear1000``: Static population sizes 100...1000 (10)

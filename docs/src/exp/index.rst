@@ -62,7 +62,8 @@ generated in :term:`Experimental Runs <Experimental Run>`. That is, once data is
 generated as a result of running things in stage 2, how it is processed and
 transformed into deliverables.
 
+.. toctree::
 
-.. include:: stage3-dataflow.rst
-.. include:: stage4-dataflow.rst
-.. include:: stage5-dataflow.rst
+   stage3-dataflow.rst
+   stage4-dataflow.rst
+   stage5-dataflow.rst

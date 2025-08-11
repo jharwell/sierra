@@ -12,57 +12,30 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, cmdline
+from sierra.core import types
+from sierra.plugins import PluginCmdline
+from sierra.plugins.execenv import hpc
 
 
-class PrefectCmdline(cmdline.BaseCmdline):
-    def __init__(self, stages: tp.List[int]) -> None:
-        self.parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
+class PrefectCmdline(hpc.cmdline.HPCCmdline):
+    """
+    Define the common :term:`Prefect` cmdline.
 
-        self.scaffold_cli()
-        self.init_cli(stages)
+    This class decorates the HPC cmdline with some additional options; it
+    *mostly* makes sense to consider HPC as a more general form of execution
+    environment and prefect a specialization of it. Mostly.
+    """
 
-    def scaffold_cli(self) -> None:
-        desc = (
-            "For engines which are simulators (and can "
-            "therefore be run in Prefect environments)."
-        )
-        self.prefect = self.parser.add_argument_group("Prefect options", desc)
-
-    def init_cli(self, stages: tp.List[int]) -> None:
-        if 2 in stages:
-            self.init_stage2()
+    def __init__(
+        self, parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+    ) -> None:
+        super().__init__(parents, stages)
 
     def init_stage2(self) -> None:
         """Add Prefect cmdline options."""
-        self.prefect.add_argument(
-            "--docker-extra-mounts",
-            nargs="+",
-            help="""
-                 Add extra mounts in the usual docker format, space separated.
-                 """
-            + self.stage_usage_doc([2]),
-        )
-        self.prefect.add_argument(
-            "--docker-image",
-            help="""
-                 Path to the docker image to use.
-                 """
-            + self.stage_usage_doc([2]),
-        )
-        self.prefect.add_argument(
-            "--docker-is-host-user",
-            action="store_true",
-            default=False,
-            help="""
-                 Direct prefect -> docker to run things as the host user within
-                 docker containers.  Said user obviously has to exist in the
-                 container for this to work.
-                 """
-            + self.stage_usage_doc([2]),
-        )
+        super().init_stage2()
 
-        self.prefect.add_argument(
+        self.stage2.add_argument(
             "--work-pool",
             default="sierra-pool",
             help="""
@@ -70,7 +43,7 @@ class PrefectCmdline(cmdline.BaseCmdline):
                  """
             + self.stage_usage_doc([2]),
         )
-        self.prefect.add_argument(
+        self.stage2.add_argument(
             "--work-queue",
             default="sierra-queue",
             help="""
@@ -82,16 +55,13 @@ class PrefectCmdline(cmdline.BaseCmdline):
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     """Update cmdopts dictionary with the prefect-specific cmdline options."""
-    return {
-        # stage 2
-        "docker_extra_mounts": args.docker_extra_mounts,
-        "docker_image": args.docker_image,
-        "docker_is_host_user": args.docker_is_host_user,
+    opts = hpc.cmdline.to_cmdopts(args)
+    updates = {
         "work_pool": args.work_pool,
         "work_queue": args.work_queue,
     }
+    opts |= updates
+    return opts
 
 
-__all__ = [
-    "PrefectCmdline",
-]
+__all__ = ["to_cmdopts"]

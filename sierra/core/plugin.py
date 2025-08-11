@@ -314,29 +314,30 @@ def module_load_tiered(
 
     Generally, the precedence is project -> project submodule -> engine module
     -> SIERRA core module, to allow users to override SIERRA core functionality
-    with ease. Specifically:
+    with ease.  Specifically:
 
-    #. Check if the requested module is a project. If it is, return it.
+        #. Check if the requested module directly exists.  If it does, return
+           it.
 
-    #. Check if the requested module is a part of a project (i.e.,
-       ``<project>.<path>`` exists). If it does, return it. This requires that
-       :envvar:`SIERRA_PLUGIN_PATH` to be set properly.
+        #. Check if the requested module is a part of a project (i.e.,
+           ``<project>.<path>`` exists).  If it does, return it.  This requires
+           that :envvar:`SIERRA_PLUGIN_PATH` to be set properly.
 
-    #. Check if the requested module is provided by the engine plugin (i.e.,
-       ``sierra.engine.<engine>.<path>`` exists). If it does, return it.
+        #. Check if the requested module is provided by the engine plugin (i.e.,
+           ``sierra.engine.<engine>.<path>`` exists).  If it does, return it.
 
-    #. Check if the requested module is part of the SIERRA core (i.e.,
-       ``sierra.core.<path>`` exists). If it does, return it.
+        #. Check if the requested module is part of the SIERRA core (i.e.,
+           ``sierra.core.<path>`` exists).  If it does, return it.
 
     If no match was found using any of these, throw an error.
-
     """
-    # First, see if the requested module is a project
+    # First, see if the requested module is a project/directly exists as
+    # specified.
     if module_exists(path):
-        logging.trace("Using project path %s", path)  # type: ignore
+        logging.trace("Using direct path %s", path)  # type: ignore
         return module_load(path)
 
-    # First, see if the requested module is part of the project plugin
+    # Next, check if the requested module is part of the project plugin
     if project is not None:
         component_path = f"{project}.{path}"
         if module_exists(component_path):
@@ -435,7 +436,7 @@ def exec_env_sanity_checks(exec_env: str, module) -> None:
 
     in_module = inspect.getmembers(module, inspect.isclass)
 
-    opt_functions = ["cmdline_postparse_configure", "exec_env_checker"]
+    opt_functions = ["cmdline_postparse_configure", "exec_env_check"]
     opt_classes = ["ExpRunShellCmdsGenerator", "ExpShellCmdsGenerator"]
 
     for c in opt_classes:
@@ -470,7 +471,6 @@ def engine_sanity_checks(engine: str, module) -> None:
     ]
 
     req_functions = [
-        "cmdline_parser",
         "population_size_from_def",
         "population_size_from_pickle",
     ]
@@ -479,7 +479,7 @@ def engine_sanity_checks(engine: str, module) -> None:
 
     opt_functions = [
         "cmdline_postparse_configure",
-        "exec_env_checker",
+        "exec_env_check",
         "agent_prefix_extract",
         "arena_dims_from_criteria",
     ]

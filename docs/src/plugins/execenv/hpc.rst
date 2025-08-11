@@ -1,4 +1,4 @@
-.. _plugins/exec-env/hpc:
+.. _plugins/execenv/hpc:
 
 =================================
 HPC Execution Environment Plugins
@@ -34,7 +34,7 @@ listed on this page:
        if everything ran on a common filesystem prior to running any later
        stages.
 
-.. _plugins/exec-env/hpc/local:
+.. _plugins/execenv/hpc/local:
 
 Local HPC Plugin
 ================
@@ -59,7 +59,7 @@ will start additional simulations as currently running simulations finish. No
 additional configuration/environment variables are needed with this HPC
 environment for use with SIERRA.
 
-.. _plugins/exec-env/hpc/pbs:
+.. _plugins/execenv/hpc/pbs:
 
 PBS HPC Plugin
 ==============
@@ -120,7 +120,7 @@ The following environmental variables are used in the PBS HPC environment:
        variables automatically, and because GNU parallel starts another level of
        child shells.
 
-.. _plugins/exec-env/hpc/slurm:
+.. _plugins/execenv/hpc/slurm:
 
 SLURM HPC Plugin
 ================
@@ -193,7 +193,7 @@ The following environmental variables are used in the SLURM HPC environment:
        automatically, because GNU parallel starts another level of child
        shells.
 
-.. _plugins/exec-env/hpc/adhoc:
+.. _plugins/execenv/hpc/adhoc:
 
 Adhoc HPC Plugin
 ================

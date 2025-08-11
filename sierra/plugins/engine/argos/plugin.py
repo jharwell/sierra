@@ -25,7 +25,6 @@ from sierra.plugins.engine.argos import cmdline
 from sierra.core import config, types, utils, batchroot, execenv
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
-from sierra.plugins.execenv import hpc
 
 _logger = logging.getLogger("engine.argos")
 
@@ -171,19 +170,13 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
         assert shutil.which("Xvfb") is not None, "Xvfb not found"
 
 
-def cmdline_parser() -> argparse.ArgumentParser:
+def cmdline_parser(
+    parents: tp.List[argparse.ArgumentParser],
+) -> tp.Optional[argparse.ArgumentParser]:
     """
     Get a cmdline parser supporting the :term:`ARGoS` engine.
-
-    Extends built-in cmdline parser with:
-
-        - :class:`~sierra.plugins.execenv.hpc.cmdline.HPCCmdline` (HPC common)
-
-        - :class:`~sierra.plugins.engine.argos.cmdline.EngineCmdline` (ARGoS
-          specifics)
     """
-    parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.EngineCmdline(parents=[parser], stages=[-1, 1, 2, 3, 4, 5]).parser
+    return cmdline.EngineCmdline(parents=parents, stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 def cmdline_postparse_configure(

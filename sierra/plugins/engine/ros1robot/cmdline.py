@@ -14,146 +14,134 @@ import argparse
 
 # Project packages
 from sierra.core import types, ros1, config
-import sierra.core.cmdline as cmd
+from sierra.plugins import PluginCmdline
+from sierra.core.ros1 import cmdline
 
 
-class EngineCmdline(cmd.BaseCmdline):
-    """Defines :term:`ROS1` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+class EngineCmdline(cmdline.ROSCmdline):
+    """Defines :term:`ROS1` extensions to :class:`~sierra.core.cmdline.CoreCmdline`."""
 
-    """
-
-    def __init__(self,
-                 parents: tp.Optional[tp.List[argparse.ArgumentParser]],
-                 stages: tp.List[int]) -> None:
-
-        if parents is not None:
-            self.parser = argparse.ArgumentParser(parents=parents,
-                                                  add_help=False,
-                                                  allow_abbrev=False)
-        else:
-            self.parser = argparse.ArgumentParser(add_help=False,
-                                                  allow_abbrev=False)
-
-        self.scaffold_cli()
-        self.init_cli(stages)
-
-    def scaffold_cli(self) -> None:
-        self.multistage = self.parser.add_argument_group('Multi-stage options',
-                                                         'Options which are used in multiple pipeline stages')
-        self.stage1 = self.parser.add_argument_group('Stage1: Experiment generation')
-        self.stage2 = self.parser.add_argument_group('Stage2: Experiment execution'
-                                                     'For running real robot experiments')
-
-    def init_cli(self, stages: tp.List[int]) -> None:
-        if -1 in stages:
-            self.init_multistage()
-
-        if 1 in stages:
-            self.init_stage1()
-
-        if 2 in stages:
-            self.init_stage2()
+    def __init__(
+        self,
+        parents: tp.Optional[tp.List[argparse.ArgumentParser]],
+        stages: tp.List[int],
+    ) -> None:
+        super().__init__(parents, stages)
 
     def init_multistage(self) -> None:
-        self.multistage.add_argument("--skip-online-check",
-                                     help="""
+        super().init_multistage()
+        self.multistage.add_argument(
+            "--skip-online-check",
+            help="""
+                 If passed, then the usual 'is this robot online' checks will be
+                 skipped.
+                 """
+            + self.stage_usage_doc([1, 2]),
+            action="store_true",
+        )
 
-                                     If passed, then the usual 'is this robot
-                                     online' checks will be skipped.
+        self.multistage.add_argument(
+            "--online-check-method",
+            choices=["ping+ssh", "nc+ssh"],
+            help="""
+                 How SIERRA should check if a given robot is online.  Valid
+                 values:
 
-                                     """ + self.stage_usage_doc([1, 2]),
-                                     action='store_true')
+                     - ``ping+ssh`` - First, verify that you can ping each the
+                       hostname/IP associated with each robot.  Second, verify
+                       that passwordless ssh to the hostname/IP works.  This is
+                       the most common option.
 
-        self.multistage.add_argument("--online-check-method",
-                                     choices=['ping+ssh', 'nc+ssh'],
-                                     help="""
-
-                                     How SIERRA should check if a given robot is
-                                     online. Valid values:
-
-                                     - ``ping+ssh`` - First, verify that you can
-                                       ping each the hostname/IP associated with
-                                       each robot. Second, verify that
-                                       passwordless ssh to the hostname/IP
-                                       works. This is the most common option.
-
-                                     - ``nc+ssh`` - First, verify that an ssh
-                                       connection exists from the SIERRA host
-                                       machine to the robot on the specified
-                                       port using netcat. Second, verify that
-                                       passwordless ssh to the robot on the
-                                       specified port works. This is useful when
-                                       connecting to the robots through a
-                                       reverse SSH tunnel, which can be
-                                       necessary if the robots don't have a
-                                       fixed IP address and cannot be addressed
-                                       by FQDN (looking at you eduroam...).
-
-                                     """,
-                                     default='ping+ssh')
+                     - ``nc+ssh`` - First, verify that an ssh connection exists
+                       from the SIERRA host machine to the robot on the
+                       specified port using netcat.  Second, verify that
+                       passwordless ssh to the robot on the specified port
+                       works.  This is useful when connecting to the robots
+                       through a reverse SSH tunnel, which can be necessary if
+                       the robots don't have a fixed IP address and cannot be
+                       addressed by FQDN (looking at you eduroam...).
+                 """,
+            default="ping+ssh",
+        )
 
     def init_stage1(self) -> None:
-        self.stage1.add_argument("--skip-sync",
-                                 help="""
+        super().init_stage1()
+        self.stage1.add_argument(
+            "--skip-sync",
+            help="""
+                 If passed, then the generated experiment will not be synced to
+                 robots.  This is useful when:
 
-                                 If passed, then the generated experiment will not
-                                 be synced to robots. This is useful when:
+                     - You are developing your :term:`Project` and just want to
+                       check locally if the experiment is being generated
+                       properly.
 
-                                 - You are developing your :term:`Project` and
-                                   just want to check locally if the experiment
-                                   is being generated properly.
-
-                                 - You have a lot of robots and/or the network
-                                   connection from the SIERRA host machine to
-                                   the robots is slow, and copying the
-                                   experiment multiple times as you tweak
-                                   parameters takes a long time.
-
-                                 """ + self.stage_usage_doc([1]),
-                                 action='store_true')
+                     - You have a lot of robots and/or the network connection
+                       from the SIERRA host machine to the robots is slow, and
+                       copying the experiment multiple times as you tweak
+                       parameters takes a long time.
+                 """
+            + self.stage_usage_doc([1]),
+            action="store_true",
+        )
 
     def init_stage2(self) -> None:
-        self.stage2.add_argument("--exec-inter-run-pause",
-                                 metavar="SECONDS",
-                                 help="""
+        super().init_stage2()
 
-                                 How long to pause between :term:`Experimental
-                                 Runs <Experimental Run>`, giving you time to
-                                 reset the environment, move robots, etc.
+        self.stage2.add_argument(
+            "--exec-resume",
+            help="""
+                 Resume a batch experiment that was killed/stopped/etc last time
+                 SIERRA was run.
+                 """
+            + self.stage_usage_doc([2]),
+            action="store_true",
+            default=False,
+        )
 
-                                 """ + self.stage_usage_doc([2]),
-                                 type=int,
-                                 default=config.kROS['inter_run_pause'])
+        self.stage2.add_argument(
+            "--exec-inter-run-pause",
+            metavar="SECONDS",
+            help="""
+                 How long to pause between :term:`Experimental Runs
+                 <Experimental Run>`, giving you time to reset the environment,
+                 move robots, etc.
+                 """
+            + self.stage_usage_doc([2]),
+            type=int,
+            default=config.kROS["inter_run_pause"],
+        )
 
-        self.stage2.add_argument("--exec-resume",
-                                 help="""
 
-                                 Resume a batch experiment that was
-                                 killed/stopped/etc last time SIERRA was
-                                 run.
+def build(
+    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+) -> PluginCmdline:
+    """
+    Get a cmdline parser supporting the :term:`ROS1+Robot` engine.
 
-                                 """ + self.stage_usage_doc([2]),
-                                 action='store_true',
-                                 default=False)
+    Extends built-in cmdline parser with:
+
+        - :class:`~sierra.core.ros1.cmdline.ROSCmdline` (ROS1 common)
+
+        - :class:`~sierra.plugins.engine.ros1robot.cmdline.EngineCmdline`
+          (ROS1+robot specifics)
+    """
+    return EngineCmdline(parents=parents, stages=stages)
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    """Update cmdopts with ROS1+robot-specific cmdline options.
-
-    """
+    """Update cmdopts with ROS1+robot-specific cmdline options."""
     opts = ros1.cmdline.to_cmdopts(args)
     self_updates = {
         # Multistage
-        'exec_jobs_per_node': 1,  # (1 job/robot)
-        'skip_online_check': args.skip_online_check,
-        'online_check_method': args.online_check_method,
-
+        "exec_jobs_per_node": 1,  # (1 job/robot)
+        "skip_online_check": args.skip_online_check,
+        "online_check_method": args.online_check_method,
         # stage 1
-        'skip_sync': args.skip_sync,
-
+        "skip_sync": args.skip_sync,
         # stage 2
-        'exec_resume': args.exec_resume,
-        'exec_inter_run_pause': args.exec_inter_run_pause
+        "exec_resume": args.exec_resume,
+        "exec_inter_run_pause": args.exec_inter_run_pause,
     }
 
     opts |= self_updates
@@ -161,15 +149,11 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
 
 
 def sphinx_cmdline_stage1():
-    parent = ros1.cmdline.ROSCmdline([1]).parser
-    return EngineCmdline([parent], [1]).parser
+    return EngineCmdline(None, [1]).parser
 
 
 def sphinx_cmdline_stage2():
-    parent = ros1.cmdline.ROSCmdline([2]).parser
-    return EngineCmdline([parent], [2]).parser
+    return EngineCmdline(None, [2]).parser
 
 
-__all__ = [
-    'EngineCmdline'
-]
+__all__ = ["EngineCmdline"]

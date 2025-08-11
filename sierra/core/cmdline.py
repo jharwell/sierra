@@ -39,14 +39,12 @@ class ArgumentParser(argparse.ArgumentParser):
     kHelpMsg = (
         "Usage:\n\nsierra-cli [-v | --version] [OPTION]...\n\n"
         "What command line options SIERRA accepts depends on the loaded\n"
-        "--project, --engine, --exec-env, and project-specific options.\n"
-        "'man sierra-cli' will give you the full set of options that\n"
-        "comes with SIERRA.\n\n"
+        "plugin set. 'man sierra-cli' will give you the full set of options\n"
+        "that comes with SIERRA.\n\n"
     )
 
     def error(self, message):
         self.print_usage(sys.stderr)
-        # self.print_help(sys.stderr)
         self.exit(2, f"{self.prog}: error: {message}\n")
 
     def print_help(self, file=None):
@@ -61,6 +59,20 @@ class BaseCmdline:
     The base cmdline definition class for SIERRA for reusability.
 
     """
+
+    def __init__(self) -> None:
+        self.multistage_desc = (
+            "Multi-stage options",
+            "Options which are used in multiple pipeline stages",
+        )
+        self.stage1_desc = "Stage 1 options", "Options for generating experiments"
+        self.stage2_desc = "Stage 2 options", "Options for running experiments"
+        self.stage3_desc = (
+            "Stage 3 options",
+            "Options for processing experiment results",
+        )
+        self.stage4_desc = "Stage 4 options", "Options for generating products"
+        self.stage5_desc = "Stage 5 options", "Options for product comparison"
 
     @staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
@@ -89,6 +101,8 @@ class BootstrapCmdline(BaseCmdline):
     """
 
     def __init__(self) -> None:
+        super().__init__()
+
         self.parser = ArgumentParser(add_help=True, allow_abbrev=False)
 
         bootstrap = self.parser.add_argument_group(
@@ -220,6 +234,112 @@ class BootstrapCmdline(BaseCmdline):
         )
 
         bootstrap.add_argument(
+            "--expdef",
+            choices=["expdef.xml", "expdef.json"],
+            help="""
+                 Specify the experiment definition format, so that SIERRA can
+                 select an appropriate plugin to read/write files of that
+                 format, and manipulate in-memory representations to create
+                 runnable experiments.  Any plugin on
+                 :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
+                 come with SIERRA are:
+
+                     - ``expdef.xml`` - Experimental definitions are created
+                       from XML files.  This causes ``--expdef-template`` to be
+                       parsed as XML.
+
+                     - ``expdef.json`` - Experimental definitions are created
+                       from json files.  This causes ``--expdef-template`` to be
+                       parsed as JSON.
+                 """
+            + self.stage_usage_doc([1, 4, 5]),
+            default="expdef.xml",
+        )
+        bootstrap.add_argument(
+            "--storage",
+            choices=["storage.csv", "storage.arrow"],
+            help="""
+                 Specify the storage medium for :term:`Experimental Run`
+                 outputs, so that SIERRA can select an appropriate plugin to
+                 read them.  Any plugin on :envvar:`SIERRA_PLUGIN_PATH`, but the
+                 ones that come with SIERRA are:
+
+                     - ``storage.csv`` - Experimental run outputs are stored in
+                       a per-run directory as one or more CSV files.
+
+                     - ``storage.arrow`` - Experimental run outputs are stored
+                       in a per-run directory as one or more apache arrow files.
+
+                 Regardless of the value of this option, SIERRA always generates
+                 CSV files as it runs and averages outputs, generates graphs,
+                 etc.
+                 """
+            + self.stage_usage_doc([3]),
+            default="storage.csv",
+        )
+
+        bootstrap.add_argument(
+            "--proc",
+            choices=[
+                "proc.statistics",
+                "proc.imagize",
+                "proc.collate",
+                "proc.decompress",
+                "proc.compress",
+            ],
+            help="""
+                 Specify the set of plugins to run during stage 3 for data
+                 processing.  The plugins are executed IN ORDER of appearance,
+                 so make sure to handle dependencies.  Any plugin on
+                 :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
+                 come with SIERRA are:
+
+                     - ``proc.statistics`` - Generate statistics from all
+                       :term:`Raw Output Data` files.
+
+                     - ``proc.imagize`` - :term:`Imagize` :term:`Raw Output
+                       Data` files.
+
+                     - ``proc.collate`` - Performs :term:`Data Collation` on
+                       :term:`Raw Output Data` files.
+
+                     - ``proc.compress`` - Performs data compression on all
+                       :term:`Raw Output Data` files.
+
+                     - ``proc.decompress`` - Performs data decompression on all
+                       :term:`Raw Output Data` files previously compresed with
+                       ``proc.compress``.
+                 """
+            + self.stage_usage_doc([3]),
+            nargs="+",
+            default=["proc.statistics", "proc.collate"],
+        )
+
+        bootstrap.add_argument(
+            "--prod",
+            choices=[
+                "prod.graphs",
+                "prod.render",
+            ],
+            help="""
+                 Specify the set of plugins to run during stage 4 for
+                 product/deliverable generation.  The plugins are executed IN
+                 ORDER of appearance, so make sure to handle dependencies.  Any
+                 plugin on :envvar:`SIERRA_PLUGIN_PATH` can be used, but the
+                 ones that come with SIERRA are:
+
+                     - ``prod.graphs`` - Generate graphs :term:`Processed Output
+                       Data` files.
+
+                     - ``prod.render`` - Render previously :term:`imagized
+                       <Imagize>` files into videos.
+                 """
+            + self.stage_usage_doc([4]),
+            nargs="+",
+            default=["prod.graphs"],
+        )
+
+        bootstrap.add_argument(
             "--rcfile",
             help="""
                  Specify the rcfile SIERRA should read additional cmdline
@@ -236,6 +356,8 @@ class CoreCmdline(BaseCmdline):
     def __init__(
         self, parents: tp.Optional[tp.List[ArgumentParser]], stages: tp.List[int]
     ) -> None:
+        super().__init__()
+
         self.scaffold_cli(parents)
         self.init_cli(stages)
 
@@ -253,22 +375,22 @@ class CoreCmdline(BaseCmdline):
             )
 
         self.multistage = self.parser.add_argument_group(
-            "Multi-stage options", "Options which are used in multiple pipeline stages"
+            self.multistage_desc[0], self.multistage_desc[1]
         )
         self.stage1 = self.parser.add_argument_group(
-            "Stage1: General options for generating experiments"
+            self.stage1_desc[0], self.stage1_desc[1]
         )
         self.stage2 = self.parser.add_argument_group(
-            "Stage2: General options for running experiments"
+            self.stage2_desc[0], self.stage2_desc[1]
         )
         self.stage3 = self.parser.add_argument_group(
-            "Stage3: General options for eprocessing experiment results"
+            self.stage3_desc[0], self.stage3_desc[1]
         )
         self.stage4 = self.parser.add_argument_group(
-            "Stage4: General options for generating graphs"
+            self.stage4_desc[0], self.stage4_desc[1]
         )
         self.stage5 = self.parser.add_argument_group(
-            "Stage5: General options for controller comparison"
+            self.stage5_desc[0], self.stage5_desc[1]
         )
         self.shortforms = self.parser.add_argument_group(
             title="Shortform aliases",
@@ -536,181 +658,6 @@ class CoreCmdline(BaseCmdline):
             + self.stage_usage_doc([1, 2]),
         )
 
-        self.multistage.add_argument(
-            "--skip-collate",
-            help="""
-                 Specify that no collation of data across experiments within a
-                 batch (stage 4) or across runs within an experiment (stage 3)
-                 should be performed.  Useful if collation takes a long time and
-                 multiple types of stage 4 outputs are desired.  Collation is
-                 generally idempotent unless you change the stage3 options
-                 (YMMV).
-                 """
-            + self.stage_usage_doc([3, 4]),
-            action="store_true",
-        )
-        # Plotting options
-        self.multistage.add_argument(
-            "--plot-log-xscale",
-            help="""
-                 Place the set of X values used to generate intra- and
-                 inter-experiment graphs into the logarithmic space.  Mainly
-                 useful when the batch criteria involves large system sizes, so
-                 that the plots are more readable.
-                 """
-            + self.graphs_applicable_doc(
-                [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
-            )
-            + self.stage_usage_doc([4, 5]),
-            action="store_true",
-        )
-
-        self.multistage.add_argument(
-            "--plot-enumerated-xscale",
-            help="""
-                 Instead of using the values generated by a given batch criteria
-                 for the X values, use an enumerated list[0, ..., len(X value) -
-                 1].  Mainly useful when the batch criteria involves large
-                 system sizes, so that the plots are more readable.
-                 """
-            + self.graphs_applicable_doc(
-                [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
-            )
-            + self.stage_usage_doc([4, 5]),
-            action="store_true",
-        )
-
-        self.multistage.add_argument(
-            "--plot-log-yscale",
-            help="""
-                 Place the set of Y values used to generate intra - and
-                 inter-experiment graphs into the logarithmic space.  Mainly
-                 useful when the batch criteria involves large system sizes, so
-                 that the plots are more readable.
-                 """
-            + self.graphs_applicable_doc(
-                [
-                    ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`",
-                    ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
-                ]
-            )
-            + self.stage_usage_doc([4, 5]),
-            action="store_true",
-        )
-
-        self.multistage.add_argument(
-            "--plot-regression-lines",
-            help="""
-
-                                     For all 2D generated scatterplots, plot a
-                                     linear regression line and the equation of
-                                     the line to the legend. """
-            + self.graphs_applicable_doc(
-                [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
-            )
-            + self.stage_usage_doc([4, 5]),
-        )
-
-        self.multistage.add_argument(
-            "--plot-primary-axis",
-            type=int,
-            help="""
-                 This option allows you to override the primary axis, which is
-                 normally is computed based on the batch criteria.
-
-                 For example, in a bivariate batch criteria composed of
-
-                     - :ref:`plugins/engine/argos/bc/population-size` on the X
-                       axis (rows)
-
-                     - Another batch criteria which does not affect system size
-                       (columns)
-
-                 Metrics will be calculated by `computing` across .csv rows and
-                 `projecting` down the columns by default, since system size
-                 will only vary within a row.  Passing a value of 1 to this
-                 option will override this calculation, which can be useful in
-                 bivariate batch criteria in which you are interested in the
-                 effect of the OTHER non-size criteria on various performance
-                 measures.
-
-                 0=criteria of interest varies across `rows`.
-
-                 1=criteria of interest varies across `columns`.
-
-                 This option only affects generating graphs from bivariate batch
-                 criteria.
-                 """
-            + self.graphs_applicable_doc(
-                [
-                    ":py:func:`Heatmap <sierra.core.graphs.heatmap.generate>`",
-                    ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
-                ]
-            )
-            + self.stage_usage_doc([4, 5]),
-            default=None,
-        )
-
-        self.multistage.add_argument(
-            "--plot-large-text",
-            help="""
-                                          This option specifies that the title,
-                                          X/Y axis labels/tick labels should be
-                                          larger than the SIERRA default.  This
-                                          is useful when generating graphs
-                                          suitable for two column paper format
-                                          where the default text size for
-                                          rendered graphs will be too small to
-                                          see easily.  The SIERRA defaults are
-                                          generally fine for the one
-                                          column/journal paper format.
-                                          """
-            + self.stage_usage_doc([4, 5]),
-            action="store_true",
-        )
-
-        self.multistage.add_argument(
-            "--plot-transpose-graphs",
-            help="""
-                 Transpose the X, Y axes in generated graphs.  Useful as a
-                 general way to tweak graphs for best use of space within a
-                 paper.
-
-                 .. versionchanged:: 1.2.20
-
-                 Renamed from ``--transpose-graphs`` to make its relation to
-                 other plotting options clearer.
-                 """
-            + self.graphs_applicable_doc(
-                [":py:func:`Heatmap <sierra.core.graphs.heatmap.generate>`"]
-            )
-            + self.stage_usage_doc([4, 5]),
-            action="store_true",
-        )
-
-        self.multistage.add_argument(
-            "--expdef",
-            choices=["expdef.xml", "expdef.json"],
-            help="""
-                 Specify the experiment definition format, so that SIERRA can
-                 select an appropriate plugin to read/write files of that
-                 format, and manipulate in-memory representations to create
-                 runnable experiments.  Any plugin on
-                 :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
-                 come with SIERRA are:
-
-                     - ``expdef.xml`` - Experimental definitions are created
-                       from XML files.  This causes ``--expdef-template`` to be
-                       parsed as XML.
-
-                     - ``expdef.json`` - Experimental definitions are created
-                       from json files.  This causes ``--expdef-template`` to be
-                       parsed as JSON.
-                 """
-            + self.stage_usage_doc([1, 4, 5]),
-            default="expdef.xml",
-        )
-
     def init_stage1(self) -> None:
         """
         Define cmdline arguments for stage 1.
@@ -756,44 +703,6 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 3.
         """
-
-        self.stage3.add_argument(
-            "--proc",
-            choices=[
-                "proc.statistics",
-                "proc.imagize",
-                "proc.collate",
-                "proc.decompress",
-                "proc.compress",
-            ],
-            help="""
-                 Specify the set of plugins to run during stage 3 for data
-                 processing.  The plugins are executed IN ORDER of appearance,
-                 so make sure to handle dependencies.  Any plugin on
-                 :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
-                 come with SIERRA are:
-
-                     - ``proc.statistics`` - Generate statistics from all
-                       :term:`Raw Output Data` files.
-
-                     - ``proc.imagize`` - :term:`Imagize` :term:`Raw Output
-                       Data` files.
-
-                     - ``proc.collate`` - Performs :term:`Data Collation` on
-                       :term:`Raw Output Data` files.
-
-                     - ``proc.compress`` - Performs data compression on all
-                       :term:`Raw Output Data` files.
-
-                     - ``proc.decompress`` - Performs data decompression on all
-                       :term:`Raw Output Data` files previously compresed with
-                       ``proc.compress``.
-                 """
-            + self.stage_usage_doc([3]),
-            nargs="+",
-            default=["proc.statistics", "proc.collate"],
-        )
-
         self.stage3.add_argument(
             "--df-verify",
             help="""
@@ -815,91 +724,6 @@ class CoreCmdline(BaseCmdline):
                  """
             + self.stage_usage_doc([3]),
             action="store_true",
-            default=False,
-        )
-
-        self.stage3.add_argument(
-            "--storage",
-            choices=["storage.csv", "storage.arrow"],
-            help="""
-                 Specify the storage medium for :term:`Experimental Run`
-                 outputs, so that SIERRA can select an appropriate plugin to
-                 read them.  Any plugin on :envvar:`SIERRA_PLUGIN_PATH`, but the
-                 ones that come with SIERRA are:
-
-                     - ``storage.csv`` - Experimental run outputs are stored in
-                       a per-run directory as one or more CSV files.
-
-                     - ``storage.arrow`` - Experimental run outputs are stored
-                       in a per-run directory as one or more apache arrow files.
-
-                 Regardless of the value of this option, SIERRA always generates
-                 CSV files as it runs and averages outputs, generates graphs,
-                 etc.
-                 """
-            + self.stage_usage_doc([3]),
-            default="storage.csv",
-        )
-
-        self.stage3.add_argument(
-            "--dist-stats",
-            choices=["none", "all", "conf95", "bw"],
-            help="""
-                 Specify what kinds of statistics, if any, should be calculated
-                 on the distribution of experimental data during stage 3 for
-                 inclusion on graphs during stage 4:
-
-                     - ``none`` - Only calculate and show raw mean on graphs.
-
-                     - ``conf95`` - Calculate standard deviation of experimental
-                       distribution and show 95%% confidence interval on
-                       relevant graphs.
-
-                     - ``bw`` - Calculate statistics necessary to show box and
-                       whisker plots around each point in the graph.
-                 """
-            + utils.sphinx_ref(
-                ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"
-            )
-            + """only).
-
-                  - ``all`` - Generate all possible statistics, and plot all
-                    possible statistics on graphs.
-              """
-            + self.graphs_applicable_doc(
-                [
-                    ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`",
-                    ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
-                ]
-            )
-            + self.stage_usage_doc([3, 4]),
-            default="none",
-        )
-
-        self.stage3.add_argument(
-            "--compress-remove-after",
-            action="store_true",
-            help="""
-                 If the ``proc.compress`` plugin is run, remove the uncompressed
-                 :term:`Raw Output Data` files after compression.  This can save
-                 TONS of disk space.  No data is lost because everything output
-            by each :term:`Experimental Run` is in the compressed archive.
-                 """
-            + self.stage_usage_doc([3]),
-            default=False,
-        )
-        self.stage3.add_argument(
-            "--imagize-no-stats",
-            action="store_true",
-            help="""
-                 If the ``proc.imagize`` plugin is run, don't run statistics
-                 generation/assume it has already been run.  This can save TONS
-                 of time for large imagizing workloads/workloads where the
-            memory limitations of the SIERRA host machine are such that you need
-            to specify different levels of ``--processing-parallelism`` for
-            statistics calculations/imagizing to avoid filling up memory.
-                 """
-            + self.stage_usage_doc([3]),
             default=False,
         )
 
@@ -956,115 +780,6 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 4.
         """
-
-        self.stage4.add_argument(
-            "--prod",
-            choices=[
-                "prod.graphs",
-                "prod.render",
-            ],
-            help="""
-                 Specify the set of plugins to run during stage 4 for
-                 product/deliverable generation.  The plugins are executed IN
-                 ORDER of appearance, so make sure to handle dependencies.  Any
-                 plugin on :envvar:`SIERRA_PLUGIN_PATH` can be used, but the
-                 ones that come with SIERRA are:
-
-                     - ``prod.graphs`` - Generate graphs :term:`Processed Output
-                       Data` files.
-
-                     - ``prod.render`` - Render previously :term:`imagized
-                       <Imagize>` files into videos.
-                 """
-            + self.stage_usage_doc([4]),
-            nargs="+",
-            default=["prod.graphs"],
-        )
-        self.stage4.add_argument(
-            "--graphs-backend",
-            choices=["matplotlib", "bokeh"],
-            help="""
-                 Specify the default backend to be used when generating plots.
-                 Can be overriden on a per-graph basis.
-
-                     - ``matplotlib`` - Use matplotlib to generate static PNG
-                       images.
-
-                     - ``bokeh`` - Use bokeh to generate stand-alone HTML files
-                       containing interactive bokeh visualizations.  Files are
-                       suitable for inclusion in static webpages, viewing in a
-                       browser, etc.
-
-                 See :ref:`plugins/prod/graphs` for more information.
-                 """,
-            default="matplotlib",
-        )
-        self.stage4.add_argument(
-            "--exp-graphs",
-            choices=["intra", "inter", "all", "none"],
-            help="""
-                 Specify which types of graphs should be generated from
-                 experimental results:
-
-                     - ``intra`` - Generate intra-experiment graphs from the
-                       results of a single experiment within a batch, for each
-                       experiment in the batch(this can take a long time with
-                       large batch experiments).  If any intra-experiment models
-                       are defined and enabled, those are run and the results
-                       placed on appropriate graphs.
-
-                     - ``inter`` - Generate inter-experiment graphs _across_ the
-                       results of all experiments in a batch.  These are very
-                       fast to generate, regardless of batch experiment size.
-                       If any inter-experiment models are defined and enabled,
-                       those are run and the results placed on appropriate
-                       graphs.
-
-                     - ``all`` - Generate all types of graphs.
-
-                     - ``none`` - Skip graph generation; provided to skip graph
-                       generation if only video outputs are desired.
-                 """
-            + self.stage_usage_doc([4]),
-            default="all",
-        )
-
-        self.stage4.add_argument(
-            "--project-no-LN",
-            help="""
-                 Specify that the intra-experiment and inter-experiment
-                 linegraphs defined in project YAML configuration should not be
-                 generated.  Useful if you are working on something which
-                 results in the generation of other types of graphs, and the
-                 generation of those linegraphs is not currently needed only
-                 slows down your development cycle.
-
-                 Model linegraphs are still generated, if applicable.
-                 """,
-            action="store_true",
-        )
-
-        self.stage4.add_argument(
-            "--project-no-HM",
-            help="""
-                 Specify that the intra-experiment heatmaps defined in project
-                 YAML configuration should not be generated.  Useful if:
-
-                     - You are working on something which results in the
-                       generation of other types of graphs, and the generation
-                       of heatmaps only slows down your development cycle.
-
-                     - You are working on stage5 comparison graphs for bivariate
-                       batch criteria, and re-generating many heatmaps during
-                       stage4 is taking too long.
-
-                 Model heatmaps are still generated, if applicable.
-
-                 .. versionadded:: 1.2.20
-                 """,
-            action="store_true",
-        )
-
         # Model options
         models = self.parser.add_argument_group("Models")
         models.add_argument(
@@ -1075,47 +790,6 @@ class CoreCmdline(BaseCmdline):
                  behind having models disabled by default is that most users
                  won't have them.
                  """,
-            action="store_true",
-        )
-
-        # Rendering options
-        rendering = self.parser.add_argument_group(
-            "Stage4: Rendering (see also stage1 rendering options)"
-        )
-
-        rendering.add_argument(
-            "--render-cmd-opts",
-            help="""
-                 Specify the :program:`ffmpeg` options to appear between the
-                 specification of the input image files and the specification of
-                 the output file.  The default is suitable for use with ARGoS
-                 frame grabbing set to a frames size of 1600x1200 to output a
-                 reasonable quality video.
-                 """
-            + self.stage_usage_doc([4]),
-            default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p",
-        )
-
-        rendering.add_argument(
-            "--project-rendering",
-            help="""
-                 Enable generation of videos from imagized CSV files created as
-                 a result of running the ``proc.imagize`` plugin.  See
-                 :ref:`plugins/product/render` for details.
-                 """
-            + self.stage_usage_doc([4]),
-            action="store_true",
-        )
-
-        rendering.add_argument(
-            "--bc-rendering",
-            help="""
-                 Enable generation of videos from generated graphs, such as
-                 heatmaps.  Bivariate batch criteria only.
-
-                 .. versionadded:: 1.2.20
-                 """
-            + self.stage_usage_doc([4]),
             action="store_true",
         )
 
@@ -1320,6 +994,14 @@ class CoreCmdline(BaseCmdline):
                 assert (
                     args.controller is not None
                 ), "--controller is required for --scenario-comparison"
+
+
+def core_parser() -> argparse.ArgumentParser:
+    return CoreCmdline().parser
+
+
+def bootstrap_parser() -> argparse.ArgumentParser:
+    return BootstrapCmdline().parser
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:

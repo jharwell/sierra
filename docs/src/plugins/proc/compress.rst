@@ -31,4 +31,10 @@ Usage
 This plugin can be selected by adding ``proc.decompress`` to the list passed to
 ``--proc``.
 
-See :ref:`usage/cli` documentation for ``--compress-remove-after``.
+Cmdline Interface
+-----------------
+
+.. argparse::
+   :filename: ../sierra/plugins/proc/compress/cmdline.py
+   :func: sphinx_cmdline_stage3
+   :prog: sierra-cli

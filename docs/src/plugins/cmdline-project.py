@@ -1,12 +1,12 @@
 import typing as tp
 import argparse
 
-import sierra.core.cmdline as cmd
+from sierra.plugins import PluginCmdline
 
 from matrix import cmdline as cmd
 
 
-class Cmdline(cmd.EngineCmdline):
+class Cmdline(PluginCmdline):
     """
     Defines cmdline extensions to the core command line arguments for all
     projects using the :class:`~matrix.cmdline.EngineCmdline` class.
@@ -26,19 +26,7 @@ class Cmdline(cmd.EngineCmdline):
    def __init__(self,
                 parents: tp.Optional[tp.List[argparse.ArgumentParser]],
                 stages: tp.List[int]) -> None:
-
-        # Normal operation when running sierra-cli
-        if parents is not None:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  parents=parents,
-                                                  allow_abbrev=False)
-        else:
-            # Optional--only needed for generating sphinx documentation
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  allow_abbrev=False)
-
-        # Initialize arguments according to configuration
-        self.init_cli(stages)
+       super().__init__(parents, stages)
 
     def init_multistage(self) -> None:
         super().init_multistage()

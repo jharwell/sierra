@@ -4,7 +4,7 @@
 """
 Container module for plugins related to :term:`Experiment` definitions.
 
-Driven by ``--expdef-template``.
+Driven by ``--expdef``.
 """
 
 # Core packages

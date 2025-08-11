@@ -1,8 +1,8 @@
 .. _plugins/prod/graphs:
 
-=======================
-Static Graph Generation
-=======================
+================
+Graph Generation
+================
 
 This plugin generates graphs using holoviews during stage 4; any graph type
 supported by a holoviews backend can be selected with ``--graphs-backend``.
@@ -24,8 +24,6 @@ This plugin has the following stage 3 plugin recommendations:
 
 Usage
 =====
-
-.. TODO:: fill in CLI interface here once it is pulled out.
 
 This plugin can be selected by adding ``prod.graphs`` to the list passed to
 ``--prod``. This plugin supports two logical types of graphs, and therefore two
@@ -97,6 +95,14 @@ statistics. E.g.::
 
 ``collated/`` contains graphs which are generated across experiments in the
 batch from :term:`Batch Summary Data` files.
+
+Cmdline Interface
+=================
+
+.. argparse::
+   :filename: ../sierra/plugins/prod/graphs/cmdline.py
+   :func: sphinx_cmdline_multistage
+   :prog: sierra-cli
 
 Configuration
 =============

@@ -184,26 +184,6 @@ class ExpConfigurer:
         return "per-exp"
 
 
-def cmdline_parser() -> argparse.ArgumentParser:
-    """
-    Get a cmdline parser supporting the :term:`ROS1+Gazebo` engine.
-
-    Extends the built-in cmdline parser with:
-
-        - :class:`~sierra.plugins.execenv.hpc.cmdline.HPCCmdline` (HPC common)
-
-        - :class:`~sierra.core.ros1.cmdline.ROSCmdline` (ROS1 common)
-
-        - :class:`~sierra.plugins.engine.ros1gazebo.cmdline.EngineCmdline`
-          (Gazebo specifics)
-    """
-    parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-    parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.EngineCmdline(
-        parents=[parent1, parent2], stages=[-1, 1, 2, 3, 4, 5]
-    ).parser
-
-
 def cmdline_postparse_configure(
     env: str, args: argparse.Namespace
 ) -> argparse.Namespace:

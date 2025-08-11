@@ -125,25 +125,27 @@ collation *within* in an experiment (intra-experiment). Collation *across*
 experiments (if enabled/configured) is done during stage 4, and is handled by a
 different plugin.
 
-Configuration
-=============
-
-Configuration for this plugin consists of *what* data to collate, and some
-tweaks for *how* that data should be collated.
+Usage
+=====
 
 This plugin can be selected by adding ``proc.collate`` to the list passed to
-``--proc``.
+``--proc``.  Configuration for this plugin consists of *what* data to collate,
+and some tweaks for *how* that data should be collated.
 
-.. todo:: Fill this in with the appropriate auto-generated blob for cmdline opts.
+Cmdline Interface
+-----------------
 
-.. _plugins/proc/collate/config/yaml:
+.. argparse::
+   :filename: ../sierra/plugins/proc/collate/cmdline.py
+   :func: sphinx_cmdline_multistage
+   :prog: sierra-cli
 
-YAML
-----
+Configuration
+-------------
 
 Controls *what* to collate. Collated data is usually "interesting" in some way,
 usually related to system performance. Thus, configuration lives in a
-``perf.yaml``file. In the ``main.yaml`` for the project:
+``perf.yaml`` file. In the ``main.yaml`` for the project:
 
 .. code-block:: YAML
 

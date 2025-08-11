@@ -1,8 +1,8 @@
 .. _plugins/engine/ros1gazebo:
 
-====================
+==================
 ROS1+Gazebo Engine
-====================
+==================
 
 `ROS1 <https://ros.org>`_ + `Gazebo <https://github.com/gazebosim/gz-sim>`_.
 
@@ -23,9 +23,32 @@ list of valid robot positions via ``--robot-positions`` which SIERRA will choose
 from randomly for each robot.
 
 
-.. toctree::
+.. _plugins/engine/ros1gazebo/usage:
 
-   batch_criteria.rst
+Usage
+=====
+
+Batch Criteria
+--------------
+
+See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
+short version is that they are the core of SIERRA--how to get it to DO stuff for
+you.  The following batch criteria are defined which can be used with any
+:term:`Project`.
+
+.. toctree::
+   :maxdepth: 1
+
+   bc/population-size.rst
+
+Cmdline Interface
+-----------------
+
+.. argparse::
+   :filename: ../sierra/plugins/engine/ros1gazebo/cmdline.py
+   :func: sphinx_cmdline_stage1
+   :prog: sierra-cli
+
 
 Environment Variables
 =====================

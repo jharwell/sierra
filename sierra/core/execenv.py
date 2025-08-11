@@ -20,6 +20,7 @@ import implements
 
 # Project packages
 from sierra.core import utils, types, config
+from sierra.core.trampoline import cmdline_parser
 from sierra.core.experiment import bindings
 import sierra.core.plugin as pm
 
@@ -148,7 +149,6 @@ def cmdline_postparse_configure(
 
     # Configure for selected execution enivornment first, to check for
     # low-level details.
-    args.__dict__["exec_env"] = exec_env
     module = pm.pipeline.get_plugin_module(exec_env)
 
     if hasattr(module, "cmdline_postparse_configure"):

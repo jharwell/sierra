@@ -54,6 +54,9 @@ SIERRA can turn them into images and render them:
 Usage
 =====
 
+This plugin can be selected by adding ``proc.collate`` to the list passed to
+``--proc``.
+
 This plugin creates ``<batchroot>/imagize`` when active. All images generated
 during stage 3 accrue under this root directory. Each experiment will get their
 own subdirectory in this root for their images. E.g.::
@@ -68,5 +71,10 @@ own subdirectory in this root for their images. E.g.::
 
 
 
-Configuration
-=============
+Cmdline Interface
+-----------------
+
+.. argparse::
+   :filename: ../sierra/plugins/proc/imagize/cmdline.py
+   :func: sphinx_cmdline_stage3
+   :prog: sierra-cli

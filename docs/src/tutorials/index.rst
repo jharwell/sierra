@@ -46,9 +46,3 @@ needs.
    plugin/exec-env/index.rst
    plugin/storage/index.rst
    plugin/expdef/index.rst
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Misc Tutorials
-
-   misc/cmdline.rst

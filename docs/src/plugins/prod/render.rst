@@ -43,6 +43,13 @@ experiment will accrue in subdirectories under here. E.g.::
            ...
 
 
+Cmdline Interface
+-----------------
+
+.. argparse::
+   :filename: ../sierra/plugins/prod/render/cmdline.py
+   :func: sphinx_cmdline_stage4
+   :prog: sierra-cli
 
 
 .. _plugins/prod/render/usage/engine:

@@ -12,26 +12,15 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, cmdline
+from sierra.core import types
+from sierra.plugins import PluginCmdline
 
 
-class HPCCmdline(cmdline.BaseCmdline):
-    def __init__(self, stages: tp.List[int]) -> None:
-        self.parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
-
-        self.scaffold_cli()
-        self.init_cli(stages)
-
-    def scaffold_cli(self) -> None:
-        desc = (
-            "For engines which are simulators (and can "
-            "therefore be run in HPC environments)."
-        )
-        self.hpc = self.parser.add_argument_group("HPC options", desc)
-
-    def init_cli(self, stages: tp.List[int]) -> None:
-        if 2 in stages:
-            self.init_stage2()
+class HPCCmdline(PluginCmdline):
+    def __init__(
+        self, parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+    ) -> None:
+        super().__init__(parents, stages)
 
     def init_stage2(self) -> None:
         """Add HPC cmdline options.
@@ -48,7 +37,7 @@ class HPCCmdline(cmdline.BaseCmdline):
         - ``--exec-strict``
 
         """
-        self.hpc.add_argument(
+        self.stage2.add_argument(
             "--exec-jobs-per-node",
             help="""
 
@@ -66,7 +55,7 @@ class HPCCmdline(cmdline.BaseCmdline):
             default=None,
         )
 
-        self.hpc.add_argument(
+        self.stage2.add_argument(
             "--exec-devnull",
             help="""
 
@@ -84,12 +73,12 @@ class HPCCmdline(cmdline.BaseCmdline):
             default=True,
         )
 
-        self.hpc.add_argument(
+        self.stage2.add_argument(
             "--exec-no-devnull",
             help="""
 
                               Don't redirect ALL output from simulations to
-                              /dev/null. Useful for engine where you can't
+                              /dev/null. Useful for engines where you can't
                               disable all INFO messages at compile time, and
                               don't want to have to grep through lots of
                               redundant stdout files to see if there were any
@@ -101,38 +90,33 @@ class HPCCmdline(cmdline.BaseCmdline):
             dest="exec_devnull",
         )
 
-        self.hpc.add_argument(
+        self.stage2.add_argument(
             "--exec-resume",
             help="""
-
-                              Resume a batch experiment that was
-                              killed/stopped/etc last time SIERRA was run.
-
-                              """
+                 Resume a batch experiment that was killed/stopped/etc last time
+                 SIERRA was run.
+                 """
             + self.stage_usage_doc([2]),
             action="store_true",
             default=False,
         )
 
-        self.hpc.add_argument(
+        self.stage2.add_argument(
             "--exec-strict",
             help="""
+                 If passed, then if any experimental commands fail during stage
+                 2 SIERRA will exit, rather than try to keep going and execute
+                 the rest of the experiments.
 
-                              If passed, then if any experimental commands fail
-                              during stage 2 SIERRA will exit, rather than try
-                              to keep going and execute the rest of the
-                              experiments.
+                 Useful for:
 
-                              Useful for:
+                     - "Correctness by construction" experiments, where you know
+                       if SIERRA doesn't crash and it makes it to the end of
+                       your batch experiment then none of the individual
+                       experiments crashed.
 
-                              - "Correctness by construction" experiments, where
-                                you know if SIERRA doesn't crash and it makes it
-                                to the end of your batch experiment then none of
-                                the individual experiments crashed.
-
-                              - CI pipelines
-
-                              """,
+                     - CI pipelines.
+                 """,
             action="store_true",
         )
 

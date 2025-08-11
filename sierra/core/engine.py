@@ -25,21 +25,9 @@ import sierra.core.plugin as pm
 from sierra.core import types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
+from sierra.core.trampoline import cmdline_parser
 
 _logger = logging.getLogger(__name__)
-
-
-def cmdline_parser(engine: str) -> tp.Optional[argparse.ArgumentParser]:
-    """
-    Dispatches cmdline parser creation to selected engine.
-
-    If the selected engine does not define a cmdline, None is returned.
-    """
-    module = pm.pipeline.get_plugin_module(engine)
-    if hasattr(module, "cmdline_parser"):
-        return module.cmdline_parser()
-
-    return None
 
 
 def cmdline_postparse_configure(
@@ -55,7 +43,6 @@ def cmdline_postparse_configure(
     arguments accepted.
     """
     # Configure for selected engine
-    args.__dict__["engine"] = engine
     module = pm.pipeline.get_plugin_module(engine)
 
     if hasattr(module, "cmdline_postparse_configure"):

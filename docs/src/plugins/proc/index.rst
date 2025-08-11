@@ -4,10 +4,8 @@
 Experiment Outputs Processing Plugins
 =====================================
 
-.. include:: /src/exp/stage3-dataflow.rst
-
-Plugins
-=======
+See :ref:`here <exp/stage3-dataflow>` for information about how output data
+flows/is transformed during stage3 processing.
 
 With that context and framing, the documentation for each of the processing
 plugins which come with SIERRA are below.
@@ -15,7 +13,7 @@ plugins which come with SIERRA are below.
 .. toctree::
    :maxdepth: 1
 
-   stat.rst
+   statistics.rst
    collate.rst
    imagize.rst
    compress.rst

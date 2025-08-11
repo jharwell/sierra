@@ -1,4 +1,4 @@
-.. _plugins/exec-env/prefectserver:
+.. _plugins/execenv/prefectserver:
 
 ===========================================
 Prefect-based Execution Environment Plugins
@@ -6,14 +6,13 @@ Prefect-based Execution Environment Plugins
 
 SIERRA is capable of adapting its runtime infrastructure to use :term:`Prefect`
 flows so that experiments can be submitted to configured prefect servers, or run
-locally. SIERRA makes the following assumptions about the prefect environments
-corresponding to the plugins listed on this page:
+locally.
 
 .. NOTE:: The names of prefect plugins begin with ``prefectserver`` instead of
           ``prefect`` to avoid ``sys.path`` conflicts with the ``prefect``
           package which will otherwise arise.
 
-.. _plugins/exec-env/prefectserver/local:
+.. _plugins/execenv/prefectserver/local:
 
 Local Prefect Server Plugin
 ===========================
@@ -70,7 +69,7 @@ though it could be easily if randomized ports are used.
      - N/A
 
 
-.. _plugins/exec-env/prefectserver/dockerremote:
+.. _plugins/execenv/prefectserver/dockerremote:
 
 Remote+Docker Prefect Plugin
 ============================

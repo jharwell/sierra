@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.4.17"
+version = "1.4.18"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -90,10 +90,10 @@ docs = [
      # manpages, so will need to be updated with a later version that
      # has a fix.
     "sphinx==7.4.0",
-    "docutils==0.20",
+    "docutils>=0.18.1,<0.21",
 
     "sphinx-rtd-theme",
-    "sphinx-argparse",
+    "sphinx-argparse==0.4.0",
     "sphinx-tabs",
     "sphinxcontrib-napoleon",
     "psutil",

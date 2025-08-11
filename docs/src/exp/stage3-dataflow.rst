@@ -3,6 +3,9 @@
 
    SPDX-License-Identifier:  MIT
 
+.. _exp/stage3-dataflow:
+
+================
 Stage 3 Dataflow
 ================
 
@@ -82,7 +85,7 @@ abstractly as:
    }
 
 Intra-Experiment Processing
----------------------------
+===========================
 
 For *intra*-experiment data processing, all of the per-run outputs are matched
 across :term:`Experimental Runs <Experimental Run>` within an

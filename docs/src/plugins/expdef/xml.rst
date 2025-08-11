@@ -1,8 +1,8 @@
 .. _plugins/expdef/xml:
 
-==========================
-XML Experiment Definitions
-==========================
+===
+XML
+===
 
 This expdef plugin can be selected via ``--expdef=expdef.xml``.
 
@@ -17,7 +17,7 @@ See the section on XML in :ref:`req/expdef` for restrictions on the contents of
 XML input files.
 
 XML-based Engine Examples
-===========================
+=========================
 
 Examples of the structure/required content of the XML file passed to SIERRA via
 ``--expdef-template`` for each built-in XML-based :term:`Engine` are

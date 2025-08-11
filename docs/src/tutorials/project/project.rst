@@ -123,7 +123,7 @@ Steps
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
      plugin/project. This file is required, because all projects have to define
      the ``--controller`` and ``--scenario`` arguments used by SIERRA. See
-     :ref:`tutorials/misc/cmdline` for steps.
+     :ref:`plugins/devguide/cmdline` for steps.
 
    - ``project.py`` - Magic cookie python file that tells SIERRA that the
      enclosing directory is a project plugin.

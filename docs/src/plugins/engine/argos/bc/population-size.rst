@@ -1,0 +1,40 @@
+.. _plugins/engine/argos/bc/population-size:
+
+===============
+Population Size
+===============
+
+Changing the population size to investigate behavior across scales within a
+static arena size (i.e., variable density). This criteria is functionally
+identical to :ref:`plugins/engine/argos/bc/population-variable-density` in
+terms of changes to the template expdef file, but has a different semantic
+meaning which can make generated deliverables more immediately understandable,
+depending on the context of what is being investigated (e.g., population size
+vs. population density on the X axis).
+
+Cmdline Syntax
+==============
+
+``population_size.{model}{N}[.C{cardinality}]``
+
+- ``model`` - The population size model to use.
+
+  - ``Log`` - Population sizes for each experiment are distributed 1...N by
+    powers of 2.
+
+  - ``Linear`` - Population sizes for each experiment are distributed linearly
+    between 1...N, split evenly into 10 different sizes.
+
+- ``N`` - The maximum population size.
+
+- ``cardinality`` - If the model is ``Linear``, then this can be used
+  to specify how many experiments to generate; i.e, it defines the *size* of the
+  linear increment. Defaults to 10 if omitted.
+
+Examples
+========
+
+- ``population_size.Log1024``: Static population sizes 1...1024
+- ``population_size.Linear1000``: Static population sizes 100...1000 (10)
+- ``population_size.Linear3.C3``: Static population sizes 1...3 (3)
+- ``population_size.Linear10.C2``: Static population sizes 5...10 (2)

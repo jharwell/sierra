@@ -16,7 +16,6 @@ import implements
 import yaml
 
 # Project packages
-from sierra.plugins.engine.ros1robot import cmdline
 from sierra.core import engine, config, ros1, types, utils, batchroot, execenv
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
@@ -304,21 +303,6 @@ class ExpConfigurer:
                 res.stderr.decode("utf-8") if res else None,
             )
             raise
-
-
-def cmdline_parser() -> argparse.ArgumentParser:
-    """
-    Get a cmdline parser supporting the :term:`ROS1+Robot` engine.
-
-    Extends built-in cmdline parser with:
-
-        - :class:`~sierra.core.ros1.cmdline.ROSCmdline` (ROS1 common)
-
-        - :class:`~sierra.plugins.engine.ros1robot.cmdline.EngineCmdline`
-          (ROS1+robot specifics)
-    """
-    parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
-    return cmdline.EngineCmdline(parents=[parent1], stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 def cmdline_postparse_configure(

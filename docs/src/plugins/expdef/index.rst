@@ -31,6 +31,7 @@ With that understanding in place, the supported formats that come with SIERRA
 are:
 
 .. toctree::
+   :maxdepth: 1
 
    xml.rst
    json.rst

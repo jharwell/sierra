@@ -3,11 +3,14 @@
 
    SPDX-License-Identifier:  MIT
 
+.. _exp/stage4-dataflow:
+
+================
 Stage 4 Dataflow
 ================
 
 Intra-Experiment Products
--------------------------
+=========================
 
 After :ref:`dataflow/stage3/intra-proc`, data is in :term:`Processed Output
 Data` files and/or :term:`Collated Output Data` files. In stage 4, the
@@ -33,7 +36,7 @@ turned off via cmdline).
                python coding needed!
 
 Inter-Experiment Products
--------------------------
+=========================
 
 After :ref:`plugins/proc/dataflow`, data is in :term:`Collated Output Data`
 files and/or :term:`Collated Output Data` files. In stage 4, we can run

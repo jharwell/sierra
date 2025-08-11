@@ -44,8 +44,9 @@ setup_env() {
        --scenario=OutdoorWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3
-       -sonline-check\
-       -ssync\
+       --exec-env robot.turtlebot3 \
+       -sonline-check \
+       -ssync \
        --log-level=TRACE"
 
     export PARALLEL="--env LD_LIBRARY_PATH"

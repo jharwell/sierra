@@ -54,90 +54,7 @@ class Pipeline:
         # policy because their converted shortforms are overwritten below.
         self.args = self._handle_shortforms(args)
 
-        self.cmdopts = {
-            # multistage
-            "pipeline": self.args.pipeline,
-            "sierra_root": os.path.expanduser(self.args.sierra_root),
-            "scenario": self.args.scenario,
-            "expdef_template": self.args.expdef_template,
-            "project": self.args.project,
-            "exec_env": args.exec_env,
-            "engine_vc": self.args.engine_vc,
-            "n_runs": args.n_runs,
-            "exp_overwrite": self.args.exp_overwrite,
-            "exp_range": self.args.exp_range,
-            "dist_stats": self.args.dist_stats,
-            "skip_collate": self.args.skip_collate,
-            "engine": self.args.engine,
-            "processing_parallelism": self.args.processing_parallelism,
-            "exec_parallelism_paradigm": self.args.exec_parallelism_paradigm,
-            "plot_log_xscale": self.args.plot_log_xscale,
-            "plot_enumerated_xscale": self.args.plot_enumerated_xscale,
-            "plot_log_yscale": self.args.plot_log_yscale,
-            "plot_regression_lines": self.args.plot_regression_lines,
-            "plot_primary_axis": self.args.plot_primary_axis,
-            "plot_large_text": self.args.plot_large_text,
-            "plot_transpose_graphs": self.args.plot_transpose_graphs,
-            "expdef": self.args.expdef,
-            # stage 1
-            "preserve_seeds": self.args.preserve_seeds,
-            # stage 2
-            "nodefile": self.args.nodefile,
-            # stage 3
-            "proc": self.args.proc,
-            "df_verify": self.args.df_verify,
-            "compress_remove_after": self.args.compress_remove_after,
-            "imagize_no_stats": self.args.imagize_no_stats,
-            "df_homogenize": self.args.df_homogenize,
-            "render_cmd_opts": self.args.render_cmd_opts,
-            "processing_mem_limit": self.args.processing_mem_limit,
-            "storage": self.args.storage,
-            # stage 4
-            "prod": self.args.prod,
-            "graphs_backend": self.args.graphs_backend,
-            "exp_graphs": self.args.exp_graphs,
-            "project_no_LN": self.args.project_no_LN,
-            "project_no_HM": self.args.project_no_HM,
-            "project_rendering": self.args.project_rendering,
-            "bc_rendering": self.args.bc_rendering,
-            "models_enable": self.args.models_enable,
-            # stage 5
-            "controllers_list": self.args.controllers_list,
-            "controllers_legend": self.args.controllers_legend,
-            "scenarios_list": self.args.scenarios_list,
-            "scenarios_legend": self.args.scenarios_legend,
-            "scenario_comparison": self.args.scenario_comparison,
-            "controller_comparison": self.args.controller_comparison,
-            "comparison_type": self.args.comparison_type,
-        }
-
-        # Load additional cmdline options from engine
-        self.logger.debug(
-            "Updating cmdopts with extensions from %s", self.cmdopts["engine"]
-        )
-        module = pm.module_load_tiered("cmdline", engine=self.cmdopts["engine"])
-        self.cmdopts |= module.to_cmdopts(self.args)
-
-        if self.pathset is not None:
-            # Load additional cmdline options from project. This is mandatory,
-            # because all projects have to define --controller and --scenario
-            # at a minimum.
-            self.logger.debug(
-                "Updating cmdopts with extensions from %s", self.cmdopts["project"]
-            )
-            path = "{0}.cmdline".format(self.cmdopts["project"])
-            module = pm.module_load(path)
-
-            self.cmdopts |= module.to_cmdopts(self.args)
-
-        # Projects are specified as X.Y on cmdline so to get the path to the
-        # project dir we combine the parent_dir (which is already a path) and
-        # the name of the project (Y component).
-        project = pm.pipeline.get_plugin(self.cmdopts["project"])
-        path = project["parent_dir"] / "/".join(self.cmdopts["project"].split("."))
-        self.cmdopts["project_root"] = str(path)
-        self.cmdopts["project_config_root"] = str(path / "config")
-        self.cmdopts["project_model_root"] = str(path / "models")
+        self.cmdopts = self._init_cmdopts()
 
         self._load_config()
 
@@ -179,6 +96,110 @@ class Pipeline:
         # not part of default pipeline
         if 5 in self.args.pipeline:
             PipelineStage5(self.main_config, self.cmdopts).run(self.args)
+
+    def _init_cmdopts(self) -> None:
+        cmdopts = {
+            # multistage
+            "pipeline": self.args.pipeline,
+            "sierra_root": os.path.expanduser(self.args.sierra_root),
+            "scenario": self.args.scenario,
+            "expdef_template": self.args.expdef_template,
+            "project": self.args.project,
+            "exec_env": self.args.exec_env,
+            "engine_vc": self.args.engine_vc,
+            "n_runs": self.args.n_runs,
+            "exp_overwrite": self.args.exp_overwrite,
+            "exp_range": self.args.exp_range,
+            "engine": self.args.engine,
+            "processing_parallelism": self.args.processing_parallelism,
+            "exec_parallelism_paradigm": self.args.exec_parallelism_paradigm,
+            "expdef": self.args.expdef,
+            # stage 1
+            "preserve_seeds": self.args.preserve_seeds,
+            # stage 2
+            "nodefile": self.args.nodefile,
+            # stage 3
+            "proc": self.args.proc,
+            "df_verify": self.args.df_verify,
+            "df_homogenize": self.args.df_homogenize,
+            "processing_mem_limit": self.args.processing_mem_limit,
+            "storage": self.args.storage,
+            # stage 4
+            "prod": self.args.prod,
+            "models_enable": self.args.models_enable,
+            # stage 5
+            "controllers_list": self.args.controllers_list,
+            "controllers_legend": self.args.controllers_legend,
+            "scenarios_list": self.args.scenarios_list,
+            "scenarios_legend": self.args.scenarios_legend,
+            "scenario_comparison": self.args.scenario_comparison,
+            "controller_comparison": self.args.controller_comparison,
+            "comparison_type": self.args.comparison_type,
+        }
+
+        # Load additional cmdline options from --engine
+        self.logger.debug("Updating cmdopts from --engine=%s", cmdopts["engine"])
+        module = pm.module_load_tiered("cmdline", engine=cmdopts["engine"])
+        cmdopts |= module.to_cmdopts(self.args)
+
+        # Load additional cmdline options from --exec-env
+        path = "{0}.cmdline".format(cmdopts["exec_env"])
+        if pm.module_exists(path):
+            self.logger.debug(
+                "Updating cmdopts from --exec-env=%s", cmdopts["exec_env"]
+            )
+            module = pm.module_load_tiered(path)
+            cmdopts |= module.to_cmdopts(self.args)
+
+        # Load additional cmdline options from --expdef
+        path = "{0}.cmdline".format(cmdopts["expdef"])
+        if pm.module_exists(path):
+            self.logger.debug("Updating cmdopts from --expdef=%s", cmdopts["expdef"])
+            module = pm.module_load_tiered(path)
+            cmdopts |= module.to_cmdopts(self.args)
+
+        # Load additional cmdline options from --proc plugins
+        for p in cmdopts["proc"]:
+            path = "{0}.cmdline".format(p)
+            if pm.module_exists(path):
+                self.logger.debug("Updating cmdopts from --proc=%s", p)
+                module = pm.module_load_tiered(path)
+                cmdopts |= module.to_cmdopts(self.args)
+
+        for p in cmdopts["prod"]:
+            path = "{0}.cmdline".format(p)
+            if pm.module_exists(path):
+                self.logger.debug("Updating cmdopts from --prod=%s", p)
+                module = pm.module_load_tiered(path)
+                cmdopts |= module.to_cmdopts(self.args)
+
+        # Load additional cmdline options from --storage
+        path = "{0}.cmdline".format(cmdopts["storage"])
+        if pm.module_exists(path):
+            self.logger.debug("Updating cmdopts from --storage=%s", cmdopts["storage"])
+            module = pm.module_load_tiered(path)
+            cmdopts |= module.to_cmdopts(self.args)
+
+        if self.pathset is not None:
+            # Load additional cmdline options from project. This is mandatory,
+            # because all projects have to define --controller and --scenario
+            # at a minimum.
+            self.logger.debug("Updating cmdopts from --project=%s", cmdopts["project"])
+            path = "{0}.cmdline".format(cmdopts["project"])
+            module = pm.module_load(path)
+
+            cmdopts |= module.to_cmdopts(self.args)
+
+        # Projects are specified as X.Y on cmdline so to get the path to the
+        # project dir we combine the parent_dir (which is already a path) and
+        # the name of the project (Y component).
+        project = pm.pipeline.get_plugin(cmdopts["project"])
+        path = project["parent_dir"] / "/".join(cmdopts["project"].split("."))
+        cmdopts["project_root"] = str(path)
+        cmdopts["project_config_root"] = str(path / "config")
+        cmdopts["project_model_root"] = str(path / "models")
+
+        return cmdopts
 
     def _handle_shortforms(self, args: argparse.Namespace) -> argparse.Namespace:
         """

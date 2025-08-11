@@ -46,10 +46,16 @@ collate them under here for later processing. ``exec/`` contains statistics
 about SIERRA runtime. Useful for capturing runtime of specific experiments to
 better plan/schedule time on HPC clusters.
 
-Configuration
-=============
+Cmdline Interface
+-----------------
 
-See :ref:`usage/cli` documentation for ``--dist-stats``.
+.. argparse::
+   :filename: ../sierra/plugins/proc/statistics/cmdline.py
+   :func: sphinx_cmdline_multistage
+   :prog: sierra-cli
+
+Configuration
+-------------
 
 This plugin reads ``graphs.yaml`` for intra- and inter-experiment graphs. If
 either are present, then it *only* gathers and processing data for the selected

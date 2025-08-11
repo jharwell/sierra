@@ -25,14 +25,39 @@ SIERRA designates the host machine as the ROS master, and allows you to
 helpful in some situations (e.g., simple robots which can't manage network
 mounted filesystems).
 
-.. toctree::
+.. _plugins/engine/ros1gazebo/usage:
 
-   batch_criteria.rst
+Usage
+=====
+
+Batch Criteria
+--------------
+
+See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
+short version is that they are the core of SIERRA--how to get it to DO stuff for
+you.  The following batch criteria are defined which can be used with any
+:term:`Project`.
+
+.. toctree::
+   :maxdepth: 1
+
+   bc/population-size.rst
+
+Cmdline Interface
+-----------------
+
+.. argparse::
+   :filename: ../sierra/plugins/engine/ros1robot/cmdline.py
+   :func: sphinx_cmdline_stage1
+   :prog: sierra-cli
+
+
 
 Environment Variables
 =====================
 
-This engine ignores :envvar:`SIERRA_ARCH`.
+This engine ignores :envvar:`SIERRA_ARCH`. This engine uses
+:envvar:`SIERRA_NODEFILE`.
 
 Random Seeding For Reproducibility
 ==================================
