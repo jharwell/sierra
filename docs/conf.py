@@ -248,7 +248,12 @@ if not os.path.exists("/tmp/plantuml.jar"):
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {"globaltoc_maxdepth": 2, "collapse_navigation": False}
+html_theme_options = {
+    # "globaltoc_maxdepth": 2,
+    "navigation_depth": 4,
+    "collapse_navigation": False,
+    "sticky_navigation": True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -263,10 +268,7 @@ html_last_updated_fmt = "%b %d, %Y"
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
 html_sidebars = {
-    "**": [
-        "relations.html",  # needs 'show_related': True theme option to display
-        "searchbox.html",
-    ]
+    "**": ["globaltoc.html", "relations.html", "sourcelink.html", "searchbox.html"]
 }
 
 # html_context = {

@@ -36,7 +36,7 @@ setup_env() {
     which python3
     which gazebo
     gazebo -v
-    
+
     export COVERAGE_CMD="coverage \
     run \
      --debug=debug \
@@ -56,6 +56,7 @@ setup_env() {
        -xno-devnull \
        --log-level=TRACE"
 
+    $SIERRA_BASE_CMD --version
     export PARALLEL="--env LD_LIBRARY_PATH"
 }
 

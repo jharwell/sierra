@@ -149,11 +149,11 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
 
 
 def sphinx_cmdline_stage1():
-    return EngineCmdline(None, [1]).parser
+    return EngineCmdline([], [1]).parser
 
 
 def sphinx_cmdline_stage2():
-    return EngineCmdline(None, [2]).parser
+    return EngineCmdline([], [2]).parser
 
 
 __all__ = ["EngineCmdline"]

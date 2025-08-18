@@ -44,4 +44,4 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
 
 
 def sphinx_cmdline_multistage():
-    return build(None, [3, 4]).parser
+    return build([], [3, 4]).parser

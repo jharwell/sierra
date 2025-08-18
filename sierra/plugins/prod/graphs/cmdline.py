@@ -27,7 +27,7 @@ def build(
     return cmdline
 
 
-def _build_multistage(cmdline: PluginCmdline) -> None:
+def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
     # Plotting options
     cmdline.multistage.add_argument(
         "--plot-log-xscale",
@@ -159,9 +159,10 @@ def _build_multistage(cmdline: PluginCmdline) -> None:
         + cmdline.stage_usage_doc([4, 5]),
         action="store_true",
     )
+    return cmdline
 
 
-def _build_stage4(cmdline: PluginCmdline) -> None:
+def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
     cmdline.stage4.add_argument(
         "--graphs-backend",
         choices=["matplotlib", "bokeh"],
@@ -267,4 +268,4 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
 
 
 def sphinx_cmdline_multistage():
-    return build(None, [3, 4, 5]).parser
+    return build([], [3, 4, 5]).parser

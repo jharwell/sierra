@@ -19,7 +19,7 @@ import yaml
 
 # Project packages
 import sierra.core.plugin as pm
-from sierra.core import config, utils, batchroot
+from sierra.core import config, utils, batchroot, types
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -97,7 +97,7 @@ class Pipeline:
         if 5 in self.args.pipeline:
             PipelineStage5(self.main_config, self.cmdopts).run(self.args)
 
-    def _init_cmdopts(self) -> None:
+    def _init_cmdopts(self) -> types.Cmdopts:
         cmdopts = {
             # multistage
             "pipeline": self.args.pipeline,
@@ -128,13 +128,7 @@ class Pipeline:
             "prod": self.args.prod,
             "models_enable": self.args.models_enable,
             # stage 5
-            "controllers_list": self.args.controllers_list,
-            "controllers_legend": self.args.controllers_legend,
-            "scenarios_list": self.args.scenarios_list,
-            "scenarios_legend": self.args.scenarios_legend,
-            "scenario_comparison": self.args.scenario_comparison,
-            "controller_comparison": self.args.controller_comparison,
-            "comparison_type": self.args.comparison_type,
+            "compare": self.args.compare,
         }
 
         # Load additional cmdline options from --engine
@@ -173,6 +167,13 @@ class Pipeline:
                 module = pm.module_load_tiered(path)
                 cmdopts |= module.to_cmdopts(self.args)
 
+        for p in cmdopts["compare"]:
+            path = "{0}.cmdline".format(p)
+            if pm.module_exists(path):
+                self.logger.debug("Updating cmdopts from --compare=%s", p)
+                module = pm.module_load_tiered(path)
+                cmdopts |= module.to_cmdopts(self.args)
+
         # Load additional cmdline options from --storage
         path = "{0}.cmdline".format(cmdopts["storage"])
         if pm.module_exists(path):
@@ -180,15 +181,13 @@ class Pipeline:
             module = pm.module_load_tiered(path)
             cmdopts |= module.to_cmdopts(self.args)
 
-        if self.pathset is not None:
-            # Load additional cmdline options from project. This is mandatory,
-            # because all projects have to define --controller and --scenario
-            # at a minimum.
-            self.logger.debug("Updating cmdopts from --project=%s", cmdopts["project"])
-            path = "{0}.cmdline".format(cmdopts["project"])
-            module = pm.module_load(path)
-
-            cmdopts |= module.to_cmdopts(self.args)
+        # Load additional cmdline options from project. This is mandatory,
+        # because all projects have to define --controller and --scenario
+        # at a minimum.
+        self.logger.debug("Updating cmdopts from --project=%s", cmdopts["project"])
+        path = "{0}.cmdline".format(cmdopts["project"])
+        module = pm.module_load(path)
+        cmdopts |= module.to_cmdopts(self.args)
 
         # Projects are specified as X.Y on cmdline so to get the path to the
         # project dir we combine the parent_dir (which is already a path) and

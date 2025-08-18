@@ -13,7 +13,6 @@ import typing as tp
 
 # Project packages
 from sierra.core import types
-from sierra.plugins import PluginCmdline
 from sierra.plugins.execenv import hpc
 
 

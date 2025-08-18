@@ -283,7 +283,7 @@ def core_stage5_univar(session):
         f"--project=projects.sample_argos "
         f"--pipeline 5 "
         f"--n-runs=4 "
-        f"--bc-univar "
+        f"--bc-cardinality=1 "
         f"-plog-yscale "
         f"-plarge-text "
         f"-pprimary-axis=1 "
@@ -308,9 +308,10 @@ def core_stage5_univar(session):
         stage5_cmd = (
             f"{stage5_base_cmd} "
             f"--batch-criteria population_size.Linear3.C3 "
-            f"--controller-comparison "
+            f"--compare compare.graphs "
+            f"--across=controllers "
             f"--dist-stats={stat} "
-            f"--controllers-list=foraging.footbot_foraging,foraging.footbot_foraging_slow"
+            f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
         )
         session.run(*stage5_cmd.split())
 
@@ -335,10 +336,11 @@ def core_stage5_univar(session):
         stage5_cmd = (
             f"{stage5_base_cmd} "
             f"--batch-criteria population_size.Linear3.C3 "
-            f"--scenario-comparison "
+            f"--compare compare.graphs "
+            f"--across=scenarios "
             f"--controller=foraging.footbot_foraging "
             f"--dist-stats={stat} "
-            f"--scenarios-list=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
+            f"--things=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
         )
         session.run(*stage5_cmd.split())
 
@@ -601,7 +603,6 @@ def core_stage5_bivar(session):
         sierra_cmd = (
             f"{session.env['ARGOS_BASE_CMD']} "
             f"--controller {controller} "
-            f"--bc-rendering "
             f"--physics-n-engines=1 "
             f"--batch-criteria population_size.Linear3.C3 max_speed.1.9.C5 "
             f"--pipeline 1 2 3 4"
@@ -615,7 +616,7 @@ def core_stage5_bivar(session):
         f"--project=projects.sample_argos "
         f"--pipeline 5 "
         f"--n-runs=4 "
-        f"--bc-bivar "
+        f"--bc-cardinality=2 "
         f"--log-level=TRACE"
     )
 
@@ -628,13 +629,13 @@ def core_stage5_bivar(session):
         sierra_stage5_cmd = (
             f"{stage5_base_cmd} "
             f"--batch-criteria population_size.Linear3.C3 max_speed.1.9.C5 "
-            f"--controller-comparison "
+            f"--across=controllers "
             f"--dist-stats=conf95 "
             f"--comparison-type={comps[i]} "
             f"--plot-log-yscale "
             f"--plot-large-text "
             f"--plot-transpose-graphs "
-            f"--controllers-list=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
+            f"--things=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
         )
 
         # Define paths

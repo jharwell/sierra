@@ -393,7 +393,6 @@ __all__ = [
     "ExpRunShellCmdsGenerator",
     "ExpShellCmdsGenerator",
     "ExpConfigurer",
-    "cmdline_parser",
     "cmdline_postparse_configure",
     "exec_env_check",
 ]

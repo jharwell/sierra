@@ -1,4 +1,4 @@
-.. _plugins/execenv:
+.. _plugins/exec-env:
 
 =============================
 Execution Environment Plugins
@@ -9,8 +9,8 @@ Execution Environment Plugins
    :caption: Contents:
 
    hpc.rst
-   prefect.rst
+   prefectserver.rst
    realrobot.rst
 
 Additional execution environments can be supported via
-:ref:`tutorials/plugin/execenv`.
+:ref:`tutorials/plugin/exec-env`.

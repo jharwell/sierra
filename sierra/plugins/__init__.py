@@ -33,7 +33,7 @@ class PluginCmdline(cmdline.BaseCmdline):
         """
         Scaffold CLI by defining the parser and common argument groups.
         """
-        if parents is not None:
+        if parents:
             self.parser = argparse.ArgumentParser(
                 prog="sierra-cli", parents=parents, add_help=False, allow_abbrev=False
             )
@@ -126,6 +126,3 @@ class PluginCmdline(cmdline.BaseCmdline):
         """
         Define cmdline arguments for stage 5.
         """
-
-    def validate(self, args: argparse.Namespace) -> None:
-        pass

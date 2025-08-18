@@ -14,7 +14,7 @@ import psutil
 
 # Project packages
 import sierra.version
-from sierra.core import utils, types
+from sierra.core import utils
 
 kVersionMsg = (
     "reSearch pIpEline for Reproducibility, Reusability and "
@@ -339,6 +339,25 @@ class BootstrapCmdline(BaseCmdline):
             default=["prod.graphs"],
         )
 
+        bootstrap.add_argument(
+            "--compare",
+            choices=[
+                "compare.graphs",
+            ],
+            help="""
+                 Specify the set of plugins to run during stage 5 for
+                 product/deliverable comparison.  The plugins are executed IN
+                 ORDER of appearance, so make sure to handle dependencies.  Any
+                 plugin on :envvar:`SIERRA_PLUGIN_PATH` can be used, but the
+                 ones that come with SIERRA are:
+
+                     - ``compare.graphs`` - Combine previously generated graphs
+                       onto a single plot.
+                 """
+            + self.stage_usage_doc([5]),
+            nargs="+",
+            default=["compare.graphs"],
+        )
         bootstrap.add_argument(
             "--rcfile",
             help="""
@@ -797,236 +816,27 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 5.
         """
-        self.stage5.add_argument(
-            "--controllers-list",
-            help="""
-                 Comma separated list of controllers to compare within
-                 ``--sierra-root``.
-
-                 The first controller in this list will be used for as the
-                 controller of primary interest if ``--comparison-type`` is
-                 passed.
-                 """
-            + self.stage_usage_doc([5]),
-        )
-
-        self.stage5.add_argument(
-            "--controllers-legend",
-            help="""
-                 Comma separated list of names to use on the legend for the
-                 generated comparison graphs, specified in the same order as the
-                 ``--controllers-list``.
-                 """
-            + self.stage_usage_doc(
-                [5], "If omitted: the raw controller names will be used."
-            ),
-        )
-
-        self.stage5.add_argument(
-            "--scenarios-list",
-            help="""
-                 Comma separated list of scenarios to compare ``--controller``
-                 across within ``--sierra-root``.
-                 """
-            + self.stage_usage_doc([5]),
-        )
-
-        self.stage5.add_argument(
-            "--scenarios-legend",
-            help="""
-                 Comma separated list of names to use on the legend for the
-                 generated inter-scenario controller comparison graphs(if
-                 applicable), specified in the same order as the
-                 ``--scenarios-list``.
-                 """
-            + self.stage_usage_doc(
-                [5], "If omitted: the raw scenario names will be used."
-            ),
-        )
-        self.stage5.add_argument(
-            "--scenario-comparison",
-            help="""
-                 Perform a comparison of ``--controller`` across
-                 ``--scenarios-list`` (univariate batch criteria only).
-                 """
-            + self.stage_usage_doc(
-                [5],
-                "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed.",
-            ),
-            action="store_true",
-        )
-
-        self.stage5.add_argument(
-            "--controller-comparison",
-            help="""
-                 Perform a comparison of ``--controllers-list`` across all
-                 scenarios at least one controller has been run on.
-                 """
-            + self.stage_usage_doc(
-                [5],
-                "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed.",
-            ),
-            action="store_true",
-        )
-
-        self.stage5.add_argument(
-            "--comparison-type",
-            choices=["LNraw"],
-            help=r"""
-                 Specify how controller comparisons should be performed.
-
-                 If the batch criteria is univariate, the options are:
-
-                     - ``LNraw`` - Output raw 1D performance measures using a
-                       single {0} for each measure, with all
-                       ``--controllers-list`` controllers shown on the same
-                       graph.
-
-                 If the batch criteria is bivariate, the options are:
-
-                     - ``LNraw`` - Output raw performance measures as a set of
-                       {0}, where each line graph is constructed from the i-th
-                       row/column for the 2D dataframe for the performance
-                       results for all controllers.
-
-                       .. NOTE:: SIERRA cannot currently plot statistics on the
-                                 linegraphs built from slices of the 2D
-                                 CSVs/heatmaps generated during stage4, because
-                                 statistics generation is limited to stage3.
-                                 This limitation may be removed in a future
-                                 release.
-
-                 For all comparison types, ``--controllers-legend`` is used if
-                 passed for legend.
-                 """.format(
-                utils.sphinx_ref(
-                    ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"
-                )
-            )
-            + self.stage_usage_doc([5]),
-        )
-
-        self.stage5.add_argument(
-            "--bc-univar",
-            help="""
-                 Specify that the batch criteria is univariate.  This cannot be
-                 deduced from the command line ``--batch-criteria`` argument in
-                 all cases because we are comparing controllers *across*
-                 scenarios, and each scenario (potentially) has a different
-                 batch criteria definition, which will result in (potentially)
-                 erroneous comparisons if we don't re-generate the batch
-                 criteria for each scenaro we compare controllers within.
-                 """
-            + self.stage_usage_doc([5]),
-            action="store_true",
-        )
-
-        self.stage5.add_argument(
-            "--bc-bivar",
-            help="""
-                 Specify that the batch criteria is bivariate.  This cannot be
-                 deduced from the command line ``--batch-criteria`` argument in
-                 all cases because we are comparing controllers *across*
-                 scenarios, and each scenario(potentially) has a different batch
-                 criteria definition, which will result in (potentially)
-                 erroneous comparisons if we don't re-generate the batch
-                 criteria for each scenaro we compare controllers in .
-                 """
-            + self.stage_usage_doc([5]),
-            action="store_true",
-        )
-
-    def validate(self, args: argparse.Namespace) -> None:
-        """
-        Validate the parsed cmdline arguments.
-
-        Only perform checks for args defined by this class; args from child
-        parsers should be validated in derived classes.
-
-        This ensures that the pipeline will work properly in all stages, given
-        the options that were passed.
-        """
-        self._validate_check_bc(args)
-        self._validate_check_pipeline(args)
-
-        assert args.sierra_root is not None, "--sierra-root is required for all stages"
-
-    def _validate_check_bc(self, args: argparse.Namespace) -> None:
-        if len(args.batch_criteria) >= 1:
-            assert len(args.batch_criteria) == len(
-                set(args.batch_criteria)
-            ), "Duplicate batch criteria passed"
-
-            assert isinstance(
-                args.batch_criteria, list
-            ), "Batch criteria not passed as list on cmdline"
-
-    def _validate_check_pipeline(self, args: argparse.Namespace) -> None:
-        if any(stage in args.pipeline for stage in [1]) in args.pipeline:
-            assert (
-                args.expdef_template is not None
-            ), "--expdef-template is required for running stage 1"
-            assert (
-                args.scenario is not None
-            ), "--scenario is required for running stage 1"
-            assert args.n_runs is not None, "--n-runs is required for running stage 1"
-
-        assert all(
-            stage in [1, 2, 3, 4, 5] for stage in args.pipeline
-        ), "Only 1-5 are valid pipeline stages"
-
-        if any(stage in args.pipeline for stage in [1, 2, 3, 4]):
-            assert (
-                len(args.batch_criteria) > 0
-            ), "--batch-criteria is required for running stages 1-4"
-            assert (
-                args.controller is not None
-            ), "--controller is required for running stages 1-4"
-
-        if 5 in args.pipeline:
-            assert (
-                args.bc_univar or args.bc_bivar
-            ), "--bc-univar or --bc-bivar is required for stage 5"
-            assert (
-                args.scenario_comparison or args.controller_comparison
-            ), "--scenario-comparison or --controller-comparison required for stage 5"
-            if args.scenario_comparison:
-                assert (
-                    args.controller is not None
-                ), "--controller is required for --scenario-comparison"
-
-
-def core_parser() -> argparse.ArgumentParser:
-    return CoreCmdline().parser
-
-
-def bootstrap_parser() -> argparse.ArgumentParser:
-    return BootstrapCmdline().parser
-
-
-def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    """
-    Fallback if the selected engine cmdline doesn't define this function.
-
-    Totally fine to not define this function.
-    """
-    return {}
+        pass
 
 
 def sphinx_cmdline_multistage():
     return CoreCmdline([BootstrapCmdline().parser], [-1]).parser
 
 
+def sphinx_cmdline_stage1():
+    return CoreCmdline([], [1]).parser
+
+
 def sphinx_cmdline_stage3():
-    return CoreCmdline(None, [3]).parser
+    return CoreCmdline([], [3]).parser
 
 
 def sphinx_cmdline_stage4():
-    return CoreCmdline(None, [4]).parser
+    return CoreCmdline([], [4]).parser
 
 
 def sphinx_cmdline_stage5():
-    return CoreCmdline(None, [5]).parser
+    return CoreCmdline([], [5]).parser
 
 
 __all__ = [

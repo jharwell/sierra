@@ -21,7 +21,7 @@ import pathlib
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core import types, utils, config, batchroot, graphs
-from sierra.core.pipeline.stage5 import namecalc, preprocess, outputroot, comparator
+from sierra.plugins.compare.graphs import namecalc, preprocess, outputroot, comparator
 
 
 class BaseInterControllerComparator(comparator.BaseComparator):

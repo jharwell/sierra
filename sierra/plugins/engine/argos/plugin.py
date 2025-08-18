@@ -21,7 +21,6 @@ import implements
 import packaging.version
 
 # Project packages
-from sierra.plugins.engine.argos import cmdline
 from sierra.core import config, types, utils, batchroot, execenv
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
@@ -168,15 +167,6 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
     if cmdopts["engine_vc"]:
         assert shutil.which("Xvfb") is not None, "Xvfb not found"
-
-
-def cmdline_parser(
-    parents: tp.List[argparse.ArgumentParser],
-) -> tp.Optional[argparse.ArgumentParser]:
-    """
-    Get a cmdline parser supporting the :term:`ARGoS` engine.
-    """
-    return cmdline.EngineCmdline(parents=parents, stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
 def cmdline_postparse_configure(

@@ -20,7 +20,7 @@ import implements
 
 # Project packages
 from sierra.core import utils, types, config
-from sierra.core.trampoline import cmdline_parser
+from sierra.core.trampoline import cmdline_parser as cmdline_parser
 from sierra.core.experiment import bindings
 import sierra.core.plugin as pm
 
@@ -156,7 +156,7 @@ def cmdline_postparse_configure(
     else:
         logger.debug(
             (
-                "Skipping configuring cmdline from --exec-env='%s': "
+                "Skipping configuring cmdline from --exec-env=%s: "
                 "does not define cmdline_postparse_configure()"
             ),
             exec_env,
@@ -339,4 +339,5 @@ __all__ = [
     "check_connectivity",
     "check_for_simulator",
     "get_executable_shellname",
+    "cmdline_parser",
 ]

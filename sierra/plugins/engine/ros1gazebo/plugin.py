@@ -19,11 +19,9 @@ import packaging.version
 import implements
 
 # Project packages
-from sierra.plugins.engine.ros1gazebo import cmdline
 from sierra.core import config, ros1, types, batchroot, execenv
 from sierra.core.experiment import bindings, definition
 import sierra.core.variables.batch_criteria as bc
-from sierra.plugins.execenv import hpc
 
 _logger = logging.getLogger("ros1gazebo.plugin")
 
@@ -378,4 +376,4 @@ def pre_exp_diagnostics(
     )
 
 
-__all__ = ["cmdline_parser", "cmdline_postparse_configure", "exec_env_check"]
+__all__ = ["cmdline_postparse_configure", "exec_env_check"]

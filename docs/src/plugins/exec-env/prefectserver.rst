@@ -1,4 +1,4 @@
-.. _plugins/execenv/prefectserver:
+.. _plugins/exec-env/prefectserver:
 
 ===========================================
 Prefect-based Execution Environment Plugins
@@ -12,7 +12,7 @@ locally.
           ``prefect`` to avoid ``sys.path`` conflicts with the ``prefect``
           package which will otherwise arise.
 
-.. _plugins/execenv/prefectserver/local:
+.. _plugins/exec-env/prefectserver/local:
 
 Local Prefect Server Plugin
 ===========================
@@ -69,7 +69,7 @@ though it could be easily if randomized ports are used.
      - N/A
 
 
-.. _plugins/execenv/prefectserver/dockerremote:
+.. _plugins/exec-env/prefectserver/dockerremote:
 
 Remote+Docker Prefect Plugin
 ============================

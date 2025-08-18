@@ -52,6 +52,7 @@ setup_env() {
        --with-robot-rab \
        --log-level=TRACE"
 
+    $SIERRA_BASE_CMD --version
     export PARALLEL="--env ARGOS_PLUGIN_PATH --env LD_LIBRARY_PATH"
 }
 
@@ -168,6 +169,7 @@ print(path)
 
     output_root=$batch_root/exp-outputs/
     scratch_root=$batch_root/scratch/
+
 
     export SIERRA_CMD="$SIERRA_BASE_CMD \
     --controller=foraging.footbot_foraging \

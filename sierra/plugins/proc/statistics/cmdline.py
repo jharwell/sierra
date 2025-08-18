@@ -11,7 +11,7 @@ import argparse
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, utils
+from sierra.core import types
 from sierra.plugins import PluginCmdline
 
 
@@ -61,4 +61,4 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
 
 
 def sphinx_cmdline_multistage():
-    return build(None, [3, 4, 5]).parser
+    return build([], [3, 4, 5]).parser

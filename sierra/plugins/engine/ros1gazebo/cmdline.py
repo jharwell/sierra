@@ -16,7 +16,6 @@ import argparse
 from sierra.core import types
 from sierra.core import config
 from sierra.core import ros1
-from sierra.plugins.execenv import hpc
 from sierra.plugins import PluginCmdline
 
 
@@ -170,7 +169,7 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
 
 
 def sphinx_cmdline_stage1():
-    return EngineCmdline(None, [1]).parser
+    return EngineCmdline([], [1]).parser
 
 
 __all__ = ["EngineCmdline"]

@@ -380,7 +380,7 @@ def storage_sanity_checks(medium: str, module) -> None:
     """
     Check the selected ``--storage`` plugin.
     """
-    logging.trace("Verifying --storage plugin interface")  # type: ignore
+    logging.trace("Verifying --storage=%s plugin interface", medium)  # type: ignore
 
     functions = ["df_read", "df_write", "suffixes"]
     in_module = inspect.getmembers(module, inspect.isfunction)
@@ -395,7 +395,7 @@ def expdef_sanity_checks(expdef: str, module) -> None:
     """
     Check the selected ``--expdef`` plugin.
     """
-    logging.trace("Verifying --expdef plugin interface")  # type: ignore
+    logging.trace("Verifying --expdef=%s plugin interface", expdef)  # type: ignore
 
     functions = ["root_querypath", "unpickle"]
     module_funcs = inspect.getmembers(module, inspect.isfunction)
@@ -415,9 +415,9 @@ def expdef_sanity_checks(expdef: str, module) -> None:
 
 def proc_sanity_checks(proc: str, module) -> None:
     """
-    Check the selected ``--proc`` plugin.
+    Check the selected ``--proc`` plugins.
     """
-    logging.trace("Verifying --proc plugin interface")  # type: ignore
+    logging.trace("Verifying --proc=%s plugin interface", proc)  # type: ignore
 
     functions = ["proc_batch_exp"]
     in_module = inspect.getmembers(module, inspect.isfunction)
@@ -428,11 +428,41 @@ def proc_sanity_checks(proc: str, module) -> None:
         ), f"Processing plugin  {proc} does not define {f}()"
 
 
+def prod_sanity_checks(prod: str, module) -> None:
+    """
+    Check the selected ``--prod`` plugins.
+    """
+    logging.trace("Verifying --prod=%s plugin interface", prod)  # type: ignore
+
+    functions = ["proc_batch_exp"]
+    in_module = inspect.getmembers(module, inspect.isfunction)
+
+    for f in functions:
+        assert any(
+            f == name for (name, _) in in_module
+        ), f"Product plugin  {prod} does not define {f}()"
+
+
+def compare_sanity_checks(compare: str, module) -> None:
+    """
+    Check the selected ``--compare`` plugins.
+    """
+    logging.trace("Verifying --compare=%s plugin interface", compare)  # type: ignore
+
+    functions = ["proc_exps"]
+    in_module = inspect.getmembers(module, inspect.isfunction)
+
+    for f in functions:
+        assert any(
+            f == name for (name, _) in in_module
+        ), f"Comparison plugin  {compare} does not define {f}()"
+
+
 def exec_env_sanity_checks(exec_env: str, module) -> None:
     """
     Check the selected ``--exec-env`` plugin.
     """
-    logging.trace("Verifying --exec-env plugin interface")  # type: ignore
+    logging.trace("Verifying --exec-env=%s plugin interface", exec_env)  # type: ignore
 
     in_module = inspect.getmembers(module, inspect.isclass)
 
@@ -464,7 +494,7 @@ def engine_sanity_checks(engine: str, module) -> None:
     """
     Check the selected ``--engine`` plugin.
     """
-    logging.trace("Verifying --engine plugin interface")  # type: ignore
+    logging.trace("Verifying --engine=%s plugin interface", engine)  # type: ignore
 
     req_classes = [
         "ExpConfigurer",
@@ -538,4 +568,6 @@ __all__ = [
     "exec_env_sanity_checks",
     "engine_sanity_checks",
     "proc_sanity_checks",
+    "prod_sanity_checks",
+    "compare_sanity_checks",
 ]

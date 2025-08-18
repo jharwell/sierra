@@ -169,6 +169,7 @@ def unit_tests(session):
 @nox.session(python=utils.versions)
 def plugin_argos_integration(session):
     session.install(".")  # same as 'pip3 install .'
+    session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
     session.run("./scripts/argos-integration-tests.sh", *session.posargs)
 
@@ -176,6 +177,7 @@ def plugin_argos_integration(session):
 @nox.session(python=utils.versions)
 def plugin_ros1gazebo_integration(session):
     session.install(".")  # same as 'pip3 install .'
+    session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
     session.run("./scripts/ros1gazebo-integration-tests.sh", *session.posargs)
 
@@ -183,6 +185,7 @@ def plugin_ros1gazebo_integration(session):
 @nox.session(python=utils.versions)
 def plugin_ros1robot_integration(session):
     session.install(".")  # same as 'pip3 install .'
+    session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
     session.run("./scripts/ros1robot-integration-tests.sh", *session.posargs)
 
@@ -190,5 +193,6 @@ def plugin_ros1robot_integration(session):
 @nox.session(python=utils.versions)
 def plugin_jsonsim_integration(session):
     session.install(".")  # same as 'pip3 install .'
+    session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
     session.run("./scripts/jsonsim-integration-tests.sh", *session.posargs)

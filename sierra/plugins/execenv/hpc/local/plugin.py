@@ -11,7 +11,6 @@ Not necessarily HPC, but it fits well enough under that semantic umbrella.
 import typing as tp
 import shutil
 import pathlib
-import argparse
 
 # 3rd party packages
 import implements
@@ -19,7 +18,6 @@ import implements
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
-from sierra.plugins.execenv import hpc
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -129,4 +127,4 @@ class BatchShellCmdsGenerator:
         return [use_bash, parallel_spec]
 
 
-__all__ = ["ExpShellCmdsGenerator", "BatchShellCmdsGenerator", "cmdline_parser"]
+__all__ = ["ExpShellCmdsGenerator", "BatchShellCmdsGenerator"]

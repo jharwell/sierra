@@ -23,7 +23,7 @@ from sierra.core import engine, startup, batchroot, execenv, utils
 from sierra.core.pipeline.pipeline import Pipeline
 import sierra.core.plugin as pm
 import sierra.core.logging  # type: ignore
-from sierra.core import expdef, prod, proc, storage
+from sierra.core import expdef, prod, proc, storage, compare
 
 kIssuesURL = "https://github.com/jharwell/sierra/issues"
 
@@ -34,8 +34,30 @@ class SIERRA:
     def __init__(self, bootstrap: corecmd.BootstrapCmdline) -> None:
         bootstrap_args, other_args = self._bootstrap(bootstrap)
         manager = self._load_plugins(bootstrap_args)
-        self._load_cmdline(bootstrap_args, other_args)
         self._verify_plugins(manager, bootstrap_args)
+        self.args = self._load_cmdline(bootstrap_args, other_args)
+
+        # Configure cmdopts for engine + execution environment by modifying
+        # arguments/adding new arguments as needed, and perform additional
+        # validation.
+        self.args = execenv.cmdline_postparse_configure(
+            bootstrap_args.exec_env, self.args
+        )
+        self.args = engine.cmdline_postparse_configure(
+            bootstrap_args.engine, bootstrap_args.exec_env, self.args
+        )
+
+        # Inject bootstrap arguments into the namespace for non-bootstrap
+        # arguments to make setting up the pipeline downstream much more
+        # uniform.
+        self.args.__dict__["project"] = bootstrap_args.project
+        self.args.__dict__["engine"] = bootstrap_args.engine
+        self.args.__dict__["exec_env"] = bootstrap_args.exec_env
+        self.args.__dict__["expdef"] = bootstrap_args.expdef
+        self.args.__dict__["storage"] = bootstrap_args.storage
+        self.args.__dict__["proc"] = bootstrap_args.proc
+        self.args.__dict__["prod"] = bootstrap_args.prod
+        self.args.__dict__["compare"] = bootstrap_args.compare
 
     def __call__(self) -> None:
         # If only 1 pipeline stage is passed, then the list of stages to run is
@@ -83,87 +105,62 @@ class SIERRA:
 
     def _load_cmdline(
         self, bootstrap_args: argparse.Namespace, other_args: tp.List[str]
-    ) -> None:
-        """
-        Dynamically build the cmdline from the selected plugins and parse args.
+    ) -> argparse.Namespace:
+        """Build the cmdline from the selected plugins and parse args.
 
+        This is one of the places where the SIERRA magic happens. This function
+        dynamically combines declared cmdlines from each active plugin, in the
+        following partial dependency order::
 
-        #. Get the ``--project`` cmdline, which is the "leaf" of the cmdline
-           chain::
+               --project -> {--expdef, --proc, --prod, --compare, --storage} -> --exec-env --> --engine
 
-               --project -> {--expdef, --proc, --prod, --storage} -> --exec-env --> --engine
-
-        #. Parse all non-bootstrap args.
+        Plugins in the {} could *probably* be reordered without breaking things,
+        but the other plugins (--project, --exec-env, --engine) need to be where
+        they are in the chain. Change the order at your own risk!
         """
 
         self.logger.info("Dynamically building cmdline from selected plugins")
         parents = [corecmd.CoreCmdline([], [-1, 1, 2, 3, 4, 5]).parser]
         stages = [-1, 1, 2, 3, 4, 5]
 
-        if execenv_parser := execenv.cmdline_parser(
-            bootstrap_args.exec_env, parents, stages
-        ):
-            self.logger.debug("Loaded --exec-env=%s cmdline", bootstrap_args.exec_env)
-            parents = [execenv_parser]
+        # For plugin options which don't take lists, we can just iterate over
+        # them with some simple conf and build their portions of the cmdline.
+        simple = {
+            "engine": {"arg": "--engine", "module": engine},
+            "exec_env": {"arg": "--exec-env", "module": execenv},
+            "expdef": {"arg": "--expdef", "module": expdef},
+            "storage": {"arg": "--storage", "module": storage},
+        }
+        for name, conf in simple.items():
+            if parser := conf["module"].cmdline_parser(
+                bootstrap_args.__dict__[name], parents, stages
+            ):
+                self.logger.debug(
+                    "Loaded %s=%s cmdline", conf["arg"], bootstrap_args.__dict__[name]
+                )
+                parents = [parser]
 
-        if engine_parser := engine.cmdline_parser(
-            bootstrap_args.engine, parents, stages
-        ):
-            self.logger.debug("Loaded --engine=%s cmdline", bootstrap_args.engine)
-            parents = [engine_parser]
-
-        if expdef_parser := expdef.cmdline_parser(
-            bootstrap_args.expdef, parents, stages
-        ):
-            self.logger.debug("Loaded --expdef=%s cmdline", bootstrap_args.expdef)
-            parents = [expdef_parser]
-
-        if storage_parser := storage.cmdline_parser(
-            bootstrap_args.storage, parents, stages
-        ):
-            self.logger.debug("Loaded --storage=%s cmdline", bootstrap_args.storage)
-            parents = [storage_parser]
-
-        for p in bootstrap_args.proc:
-            if proc_parser := proc.cmdline_parser(p, parents, stages):
-                self.logger.debug("Loaded --proc=%s cmdline", p)
-                parents = [proc_parser]
-
-        for p in bootstrap_args.prod:
-            if prod_parser := prod.cmdline_parser(p, parents, stages):
-                self.logger.debug("Loaded --prod=%s cmdline", p)
-                parents = [prod_parser]
+        # These plugin options take lists of plugins to use, and so take
+        # slightly more complicated processing.
+        lists = {
+            "proc": {"arg": "--proc", "module": proc},
+            "prod": {"arg": "--prod", "module": prod},
+            "compare": {"arg": "--compare", "module": compare},
+        }
+        for name, conf in lists.items():
+            for to_load in bootstrap_args.__dict__[name]:
+                if parser := conf["module"].cmdline_parser(to_load, parents, stages):
+                    self.logger.debug("Loaded %s=%s cmdline", conf["arg"], to_load)
+                    parents = [parser]
 
         path = f"{bootstrap_args.project}.cmdline"
         module = pm.module_load(path)
 
         nonbootstrap_cmdline = module.build(parents, stages)
-        self.args = nonbootstrap_cmdline.parser.parse_args(other_args)
-        self.args.sierra_root = os.path.expanduser(self.args.sierra_root)
-        self.args = self._handle_rc(bootstrap_args.rcfile, self.args)
-
-        nonbootstrap_cmdline.validate(self.args)
-
-        # Configure cmdopts for engine + execution environment by modifying
-        # arguments/adding new arguments as needed, and perform additional
-        # validation.
-        self.args = execenv.cmdline_postparse_configure(
-            bootstrap_args.exec_env, self.args
-        )
-        self.args = engine.cmdline_postparse_configure(
-            bootstrap_args.engine, bootstrap_args.exec_env, self.args
-        )
-
-        # Inject bootstrap arguments into the namespace for non-bootstrap
-        # arguments to make setting up the pipeline downstream much more
-        # uniform.
-        self.args.__dict__["project"] = bootstrap_args.project
-        self.args.__dict__["engine"] = bootstrap_args.engine
-        self.args.__dict__["exec_env"] = bootstrap_args.exec_env
-        self.args.__dict__["expdef"] = bootstrap_args.expdef
-        self.args.__dict__["storage"] = bootstrap_args.storage
-        self.args.__dict__["proc"] = bootstrap_args.proc
-        self.args.__dict__["prod"] = bootstrap_args.prod
+        args = nonbootstrap_cmdline.parser.parse_args(other_args)
+        args.sierra_root = os.path.expanduser(args.sierra_root)
+        args = self._handle_rc(bootstrap_args.rcfile, args)
+        return args
 
     def _load_plugins(self, bootstrap_args: argparse.Namespace):
         this_file = pathlib.Path(__file__)
@@ -200,19 +197,24 @@ class SIERRA:
         module = manager.get_plugin_module(bootstrap_args.exec_env)
         pm.exec_env_sanity_checks(bootstrap_args.exec_env, module)
 
-        # Verify processing environment plugins
+        # Verify processing plugins
         for p in bootstrap_args.proc:
             module = manager.get_plugin_module(p)
             pm.proc_sanity_checks(p, module)
 
-        # Verify expdef environment plugin
-        module = manager.get_plugin_module(bootstrap_args.expdef)
-        pm.expdef_sanity_checks(bootstrap_args.expdef, module)
-
-        # Verify processing environment plugins
+        # Verify product plugins
         for p in bootstrap_args.prod:
             module = manager.get_plugin_module(p)
-            pm.proc_sanity_checks(p, module)
+            pm.prod_sanity_checks(p, module)
+
+        # Verify comparison plugins
+        for p in bootstrap_args.compare:
+            module = manager.get_plugin_module(p)
+            pm.compare_sanity_checks(p, module)
+
+        # Verify expdef plugin
+        module = manager.get_plugin_module(bootstrap_args.expdef)
+        pm.expdef_sanity_checks(bootstrap_args.expdef, module)
 
         # Verify storage plugin
         module = manager.get_plugin_module(bootstrap_args.storage)

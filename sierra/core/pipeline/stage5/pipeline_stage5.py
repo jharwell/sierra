@@ -7,42 +7,30 @@
 # Core packages
 import logging
 import pathlib
+import time
+import datetime
 import argparse
 
 # 3rd party packages
 import yaml
 
 # Project packages
-from sierra.core.pipeline.stage5 import inter_controller as intercc
-from sierra.core.pipeline.stage5 import inter_scenario as intersc
-from sierra.core.pipeline.stage5 import outputroot
 from sierra.core import types, utils, config
+import sierra.core.plugin as pm
 
 
 class PipelineStage5:
-    """Compare controllers within or across scenarios.
-
-    This can be either:
-
-    #. Compare a set of controllers *within* the same scenario using performance
-       measures specified in YAML configuration.
-
-    #. Compare a single controller *across* a set of scenarios using performance
-       measures specified in YAML configuration.
-
-    This stage is idempotent.
+    """Compare generated products across controllers, scenarios, or batch criteria.
 
     Attributes:
         cmdopts: Dictionary of parsed cmdline parameters.
-
-        controllers: List of controllers to compare.
 
         main_config: Dictionary of parsed main YAML configuration.
 
         stage5_config: Dictionary of parsed stage5 YAML configuration.
 
-        output_roots: Dictionary containing output directories for
-                      inter-{scenario,controller}  graph generation.
+        stage5_roots: Dictionary containing output directories for
+                      inter-{scenario,controller,criteria}  product comparison.
 
     """
 
@@ -61,125 +49,25 @@ class PipelineStage5:
 
         self.logger = logging.getLogger(__name__)
 
-        if self.cmdopts["controllers_list"] is not None:
-            self.controllers = self.cmdopts["controllers_list"].split(",")
-        else:
-            self.controllers = []
-
-        if self.cmdopts["scenarios_list"] is not None:
-            self.scenarios = self.cmdopts["scenarios_list"].split(",")
-        else:
-            self.scenarios = []
-
-        self.stage5_roots = outputroot.PathSet(
-            cmdopts, self.controllers, self.scenarios
-        )
-
-        self.project_root = pathlib.Path(
-            self.cmdopts["sierra_root"], self.cmdopts["project"]
-        )
-
     def run(self, cli_args: argparse.Namespace) -> None:
-        """Run stage 5 of the experimental pipeline.
-
-        If ``--controller-comparison`` was passed:
-
-        #. :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.UnivarInterControllerComparator`
-            or
-            :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.BivarInterControllerComparator`
-            as appropriate, depending on which type of
-            :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
-            selected on the cmdline.
-
-        If ``--scenario-comparison`` was passed:
-
-        #. :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.UnivarInterScenarioComparator`
-            (only valid for univariate batch criteria currently).
-
-        """
-        # Create directories for .csv files and graphs
-        utils.dir_create_checked(self.stage5_roots.graph_root, True)
-        utils.dir_create_checked(self.stage5_roots.csv_root, True)
-
-        if self.stage5_roots.model_root is not None:
-            utils.dir_create_checked(self.stage5_roots.model_root, True)
-
-        if self.cmdopts["controller_comparison"]:
-            self._run_cc(cli_args)
-        elif self.cmdopts["scenario_comparison"]:
-            self._run_sc(cli_args)
-
-    def _run_cc(self, cli_args: argparse.Namespace) -> None:
-        # Use nice controller names on graph legends if configured
-        if self.cmdopts["controllers_legend"] is not None:
-            legend = self.cmdopts["controllers_legend"].split(",")
-        else:
-            legend = self.controllers
-
-        self.logger.info("Inter-batch controller comparison of %s...", self.controllers)
-
-        if cli_args.bc_univar:
-            univar = intercc.UnivarInterControllerComparator(
-                self.controllers,
-                self.stage5_roots,
-                self.cmdopts,
-                cli_args,
-                self.main_config,
-            )
-            univar(
-                target_graphs=self.stage5_config["inter-controller"]["graphs"],
-                legend=legend,
-            )
-        else:
-            bivar = intercc.BivarInterControllerComparator(
-                self.controllers,
-                self.stage5_roots,
-                self.cmdopts,
-                cli_args,
-                self.main_config,
-            )
-            bivar(
-                target_graphs=self.stage5_config["inter-controller"]["graphs"],
-                legend=legend,
-            )
-
-        self.logger.info("Inter-batch controller comparison complete")
-
-    def _run_sc(self, cli_args: argparse.Namespace) -> None:
-        # Use nice scenario names on graph legends if configured
-        if self.cmdopts["scenarios_legend"] is not None:
-            legend = self.cmdopts["scenarios_legend"].split(",")
-        else:
-            legend = self.scenarios
-
-        controller = cli_args.controller
-
+        spec = self.cmdopts["compare"]
         self.logger.info(
-            "Inter-batch  comparison of %s across %s...", controller, self.scenarios
+            "Comparing products with %s comparison plugins: %s", len(spec), spec
         )
+        for s in spec:
+            module = pm.pipeline.get_plugin_module(s)
+            self.logger.info(
+                "Running %s",
+                s,
+            )
 
-        assert (
-            cli_args.bc_univar
-        ), "inter-scenario controller comparison only valid for univariate batch criteria"
-
-        comparator = intersc.UnivarInterScenarioComparator(
-            controller,
-            self.scenarios,
-            self.stage5_roots,
-            self.cmdopts,
-            cli_args,
-            self.main_config,
-        )
-
-        comparator(
-            target_graphs=self.stage5_config["inter-scenario"]["graphs"], legend=legend
-        )
-
-        self.logger.info(
-            "Inter-batch  comparison of %s across %s complete",
-            controller,
-            self.scenarios,
-        )
+            start = time.time()
+            module.proc_exps(
+                self.main_config, self.cmdopts, cli_args, self.stage5_config
+            )
+            elapsed = int(time.time() - start)
+            sec = datetime.timedelta(seconds=elapsed)
+            self.logger.info("Processing with %s complete in %s", s, str(sec))
 
 
 __all__ = ["PipelineStage5"]

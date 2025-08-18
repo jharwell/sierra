@@ -1,4 +1,4 @@
-.. _plugins/execenv/realrobot:
+.. _plugins/exec-env/realrobot:
 
 ========================================
 Real Robot Execution Environment Plugins
@@ -13,7 +13,7 @@ engines out of the box too):
 
 - :ref:`plugins/engine/ros1robot`
 
-.. _plugins/execenv/realrobot/turtlebot3:
+.. _plugins/exec-env/realrobot/turtlebot3:
 
 Turtlebot3
 ==========

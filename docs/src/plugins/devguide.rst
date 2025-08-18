@@ -177,7 +177,8 @@ SIERRA.
      def sphinx_cmdline_multistage():
          return build(None, [3, 4, 5]).parser
 
-   for a cmdline that contains arguments for stages {3,4,5}. Then, you can do::
+   in ``cmdline.py`` for a cmdline that contains arguments for stages
+   {3,4,5}. Then, you can do::
 
      .. argparse::
         :filename: /path/to/plugin/cmdline.py
@@ -207,24 +208,7 @@ plugin vs. a ``--engine`` vs. any other plugin type; those are called out below.
                 each :term:`Experiment`. See :ref:`req/exp/arena-size` for more
                 details.
 
-      Can define the ``validate()`` function in their derived cmdline classes.
-      This function is optional, and should assert() as needed to check cmdline
-      arg validity. For most cases, you shouldn't need to define this function;
-      it is provided if you need to do some tricky validation beyond what is
-      baked into argparse.
-
    .. group-tab:: Engines
-
-      Because of how SIERRA sets up the cmdline plugin, engine cmdlines cannot
-      define the ``validate()`` function; it will never be called if defined.
-      This is generally not an issue because each project is associated with
-      exactly one engine, and so can do any checks needed for the engine
-      there. If you need/want to validate arguments from engines, you can do
-      that via ``cmdline_postparse_configure()`` -- see
-      :ref:`tutorials/plugin/engine` for details.
 
       Must define ``--exp-setup`` and make it available to SIERRA via the
       ``to_cmdopts()`` function.
-
-
-With that out of the way, the steps to extend the SIERRA cmdline are as follows:

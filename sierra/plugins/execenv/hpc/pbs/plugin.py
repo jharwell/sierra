@@ -18,7 +18,6 @@ import implements
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
-from sierra.plugins.execenv import hpc
 
 
 def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
@@ -110,13 +109,4 @@ class ExpShellCmdsGenerator:
         return [unique_nodes, use_bash, parallel_spec]
 
 
-def cmdline_parser(
-    parents: tp.List[argparse.ArgumentParser],
-) -> tp.Optional[argparse.ArgumentParser]:
-    """
-    Get a cmdline parser supporting the ``hpc.pbs`` execution environment.
-    """
-    return hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-
-
-__all__ = ["cmdline_postparse_configure", "cmdline_parser"]
+__all__ = ["cmdline_postparse_configure"]

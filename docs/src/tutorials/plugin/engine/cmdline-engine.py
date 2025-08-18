@@ -1,11 +1,11 @@
 import typing as tp
 import argparse
 
-import sierra.core.cmdline as cmd
+import sierra.core.cmdline as corecmd
 from sierra.core import types
 
 
-class Cmdline(cmd.BaseCmdline):
+class Cmdline(corecmd.BaseCmdline):
     """
     Defines cmdline extensions to the core command line arguments
     defined in :class:`~sierra.core.cmdline.CoreCmdline` for the

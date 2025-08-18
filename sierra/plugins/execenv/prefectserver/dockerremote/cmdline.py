@@ -20,8 +20,7 @@ def build(
     parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
 ) -> PluginCmdline:
     """
-    Get a cmdline parser supporting the ``prefectserver.dockerremote`` execution
-    environment.
+    Get a cmdline for the ``prefectserver.dockerremote`` execution environment.
     """
     cmdline = prefectserver.cmdline.PrefectCmdline(parents, stages)
 
