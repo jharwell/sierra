@@ -30,8 +30,8 @@ runs:
           sudo chmod 777 /var/lib/slurm-llnl/
           sudo chmod 777 /var/log/slurm-llnl/
 
-          sudo cp -f ./scripts/slurm.conf /etc/slurm-llnl/slurm.conf
-          sudo cp -f ./scripts/slurm.conf /etc/slurm/slurm.conf
+          sudo cp -f ./tests/smoke_tests/slurm.conf /etc/slurm-llnl/slurm.conf
+          sudo cp -f ./tests/smoke_tests/slurm.conf /etc/slurm/slurm.conf
 
           sudo systemctl start slurmctld
           sudo systemctl start slurmd

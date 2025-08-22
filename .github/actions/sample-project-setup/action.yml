@@ -1,8 +1,8 @@
 name: 'Setup SIERRA sample project'
 description: 'Setup SIERRA project for CI and testing'
 inputs:
-  platform:  # id of input
-    description: 'The SIERRA platform to setup for'
+  engine:  # id of input
+    description: 'The SIERRA engine to setup for'
     required: true
   rosdistro:
     description: 'The version of ROS to test with'
@@ -88,17 +88,17 @@ runs:
       if: runner.os == 'Linux'
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache
+        packages: libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache g++
         version: ${{ runner.os }}
 
     - name: Install ARGoS deps into container
       shell: bash
       run: |
         if ! command -v "sudo" &> /dev/null; then
-           apt install libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache -y
+           apt install libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache g++ -y
         fi
     - name: Install ARGoS
-      if: inputs.platform == 'argos'
+      if: inputs.engine == 'argos'
       shell: bash
       run: |
         git clone https://github.com/ilpincy/argos3.git
@@ -120,7 +120,7 @@ runs:
         rm -rf argos3
 
     - name: Build SIERRA project for ARGoS
-      if: inputs.platform == 'argos'
+      if: inputs.engine == 'argos'
       shell: bash
       working-directory: ${{ github.workspace }} # Needed to match with scripts/argos-integration-tests.sh
 
@@ -137,47 +137,49 @@ runs:
     ############################################################################
     # ROS1+Gazebo setup
     ############################################################################
-    - name: Install ROS1 platform dependency
-      if: inputs.platform == 'ros1gazebo'
+    - name: Install ROS1 engine dependency
+      if: inputs.engine == 'ros1gazebo'
       uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: ${{ inputs.rosdistro }}
 
     - name: Install SIERRA ROSbridge system dependencies (Linux)
-      if: inputs.platform == 'ros1gazebo'
+      if: inputs.engine == 'ros1gazebo'
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy python3-pip libxv1
         version: ${{ runner.os }}
 
     - name: Install SIERRA ROSbridge python dependencies (Linux)
-      if: inputs.platform == 'ros1gazebo'
+      if: inputs.engine == 'ros1gazebo'
       shell: bash
       run: |
         # 2023/1/18: You still need install these even after installing stuff
         # with apt AND if the sysem python matches your current python. I don't
         # know why.
+        export VIRTUAL_ENV=
+        export PATH=$(echo $PATH | sed -e 's|.venv/bin:||g')
         which python3
         python3 --version
-        uv pip install empy \
-                     rospkg \
-                     wheel \
-                     pyparsing \
-                     pyqt5 \
-                     pysip \
-                     numpy \
-                     matplotlib \
-                     pyyaml \
-                     psutil \
-                     defusedxml \
-                     pyparsing \
-                     pydev \
-                     pyopengl \
-                     opencv-python \
-                     catkin_tools
+        pip install empy \
+                    rospkg \
+                    wheel \
+                    pyparsing \
+                    pyqt5 \
+                    pysip \
+                    numpy \
+                    matplotlib \
+                    pyyaml \
+                    psutil \
+                    defusedxml \
+                    pyparsing \
+                    pydev \
+                    pyopengl \
+                    opencv-python \
+                    catkin_tools
 
     - name: Install SIERRA ROSBridge dependency (ubuntu)
-      if: inputs.platform == 'ros1gazebo'
+      if: inputs.engine == 'ros1gazebo'
       shell: bash
       run: |
         source /opt/ros/${{ inputs.rosdistro }}/setup.bash

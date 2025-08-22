@@ -19,4 +19,5 @@ set -x
 # default on github action runners, so we fudge the SLURM environment
 # a bit to make things work
 export SLURM_JOB_NODELIST=":"
-$SIERRA_CMD --exec-env=hpc.slurm
+echo $SIERRA_CMD
+$SIERRA_CMD --exec-env=hpc.slurm  --exec-parallelism-paradigm=per-exp

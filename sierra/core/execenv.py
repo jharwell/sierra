@@ -250,15 +250,17 @@ def check_connectivity(
     cmdopts: types.Cmdopts, login: str, hostname: str, port: int, host_type: str
 ) -> None:
 
+    hostname = hostname.split(":")[0]
     _logger.info("Checking connectivity to %s", hostname)
     ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
     nc_diag = f"{host_type},port={port} via {hostname}"
 
+    res = None
     if cmdopts["online_check_method"] == "ping+ssh":
         try:
             _logger.debug("Attempt to ping %s, type=%s", hostname, host_type)
             timeout = config.kEngine["ping_timeout"]
-            subprocess.run(
+            res = subprocess.run(
                 f"ping -c 3 -W {timeout} {hostname}",
                 shell=True,
                 check=True,
@@ -267,13 +269,18 @@ def check_connectivity(
             )
         except subprocess.CalledProcessError:
             _logger.fatal("Unable to ping %s, type=%s", hostname, host_type)
+            _logger.fatal(
+                "stdout=%s, stderr=%s",
+                res.stdout.decode("utf-8") if res else None,
+                res.stderr.decode("utf-8") if res else None,
+            )
             raise
         _logger.debug("%s is alive, type=%s", hostname, host_type)
     elif cmdopts["online_check_method"] == "nc+ssh":
         try:
             _logger.debug("Check for ssh tunnel to %s", nc_diag)
             timeout = config.kEngine["ping_timeout"]
-            subprocess.run(
+            res = subprocess.run(
                 f"nc -z {hostname} {port}",
                 shell=True,
                 check=True,
@@ -282,13 +289,18 @@ def check_connectivity(
             )
         except subprocess.CalledProcessError:
             _logger.fatal("No ssh tunnel to %s", nc_diag)
+            _logger.fatal(
+                "stdout=%s, stderr=%s",
+                res.stdout.decode("utf-8") if res else None,
+                res.stderr.decode("utf-8") if res else None,
+            )
             raise
         _logger.debug("ssh tunnel to %s alive", nc_diag)
 
     try:
 
         _logger.debug("Verify ssh to %s", ssh_diag)
-        subprocess.run(
+        res2 = subprocess.run(
             (
                 f"ssh -p{port} "
                 "-o PasswordAuthentication=no "
@@ -303,6 +315,11 @@ def check_connectivity(
         )
     except subprocess.CalledProcessError:
         _logger.fatal("Unable to connect to %s", ssh_diag)
+        _logger.fatal(
+            "stdout=%s, stderr=%s",
+            res2.stdout.decode("utf-8") if res2 else None,
+            res2.stderr.decode("utf-8") if res2 else None,
+        )
         raise
     _logger.info("%s@%s online", host_type, hostname)
 

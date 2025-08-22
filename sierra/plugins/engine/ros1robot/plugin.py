@@ -277,6 +277,7 @@ class ExpConfigurer:
             f"{exp_input_root}/ "
             f"{robot_input_root}/"
         )
+        res = None
         try:
             _logger.trace("Running mkdir: %s", mkdir_cmd)  # type: ignore
             res = subprocess.run(

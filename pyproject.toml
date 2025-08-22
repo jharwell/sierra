@@ -36,7 +36,7 @@ dependencies = [
 requires-python = ">=3.9"
 readme = "README.rst"
 license = {file = "LICENSE"}
-keywords = ["research", "automation", "robotics",
+keywords = ["research", "automation", "robotics", "parameter sweeps",
             "agent-based modeling", "reproducibility", "reusability"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",

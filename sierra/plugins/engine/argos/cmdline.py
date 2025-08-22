@@ -14,7 +14,6 @@ import argparse
 
 # Project packages
 from sierra.core import types, config
-from sierra.plugins.execenv import hpc
 from sierra.plugins import PluginCmdline
 
 
@@ -300,9 +299,7 @@ def build(
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     """Update cmdopts with ARGoS-specific cmdline options."""
-    opts = hpc.cmdline.to_cmdopts(args)
-
-    self_updates = {
+    return {
         # Stage 1
         "n_agents": args.n_agents,
         "exp_setup": args.exp_setup,
@@ -317,9 +314,6 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
         "with_robot_battery": args.with_robot_battery,
         "camera_config": args.camera_config,
     }
-
-    opts |= self_updates
-    return opts
 
 
 def sphinx_cmdline_stage1():

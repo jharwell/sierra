@@ -152,3 +152,13 @@ where SIERRA analyzes things like:
   referenced data, generate a report of what items passed and which failed. This
   should be fairly straightforward, because the blessed data would come from a
   previous experiment, and therefore be packaged in SIERRA's directory structure.
+
+Rewrite in Rust
+---------------
+
+Stage1 would greatly benefit from rewriting in rust, because they
+don't involve any "exotic" 3rd party libs like pandas/holoviews. Rewriting in
+rust would bring a massive speed boost to generating large experiments in
+stage1. Rewriting other stages in rust *might* be helpful, but there would be a
+limit to the rewrite, because e.g., holoviews would still have to be used. An
+interesting programming and architecture challenge, to say the least.

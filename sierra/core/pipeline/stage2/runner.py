@@ -70,8 +70,8 @@ class ExpShell:
         # Only show output if the process failed (i.e., did not return 0)
         if proc.returncode != 0:
             self.logger.error("Cmd '%s' failed!", spec.cmd)
-            stdout_str = stdout_raw.decode("ascii")
-            stderr_str = stderr_raw.decode("ascii")
+            stdout_str = stdout_raw.decode("utf-8")
+            stderr_str = stderr_raw.decode("utf-8")
 
             if spec.env:
                 stdout_str = stdout_str.split("~~~~ENV_START~~~~", maxsplit=1)[0]

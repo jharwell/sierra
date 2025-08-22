@@ -34,11 +34,11 @@ jobs:
 
       - uses: ./.github/actions/sample-project-setup
         with:
-          platform: argos
+          engine: argos
 
       - uses: ./.github/actions/sample-project-setup
         with:
-          platform: jsonsim
+          engine: jsonsim
 
       - name: Run nox
         run: |

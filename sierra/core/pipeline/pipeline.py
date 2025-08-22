@@ -46,15 +46,15 @@ class Pipeline:
             stage in [1, 2, 3, 4, 5] for stage in args.pipeline
         ), f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
 
-        # After running this, all shortform aliases have been converted to their
-        # longform counterparts in the argparse.Namespace. The namespace passed
-        # in contains arguments for the core and all plugins, so its OK to
-        # handle shortforms which aren't in the SIERRA core at this point. This
-        # also preserves the "longforms trump shortforms if both are passed"
-        # policy because their converted shortforms are overwritten below.
-        self.args = self._handle_shortforms(args)
+        # The namespace passed in contains arguments for the core and all
+        # plugins, so its OK to handle shortforms which aren't in the SIERRA
+        # core at this point. This also preserves the "longforms trump
+        # shortforms if both are passed" policy because their converted
+        # shortforms are overwritten below.
+        self.args = args
+        shortforms = self._handle_shortforms()
 
-        self.cmdopts = self._init_cmdopts()
+        self.cmdopts = self._init_cmdopts(shortforms)
 
         self._load_config()
 
@@ -97,8 +97,8 @@ class Pipeline:
         if 5 in self.args.pipeline:
             PipelineStage5(self.main_config, self.cmdopts).run(self.args)
 
-    def _init_cmdopts(self) -> types.Cmdopts:
-        cmdopts = {
+    def _init_cmdopts(self, shortforms: types.Cmdopts) -> types.Cmdopts:
+        longforms = {
             # multistage
             "pipeline": self.args.pipeline,
             "sierra_root": os.path.expanduser(self.args.sierra_root),
@@ -130,6 +130,7 @@ class Pipeline:
             # stage 5
             "compare": self.args.compare,
         }
+        cmdopts = longforms
 
         # Load additional cmdline options from --engine
         self.logger.debug("Updating cmdopts from --engine=%s", cmdopts["engine"])
@@ -189,6 +190,11 @@ class Pipeline:
         module = pm.module_load(path)
         cmdopts |= module.to_cmdopts(self.args)
 
+        # This has to be AFTER loading cmdopts from all plugins so that any
+        # unset/defaulted options don't override the shortform. This also means
+        # that shortforms override longforms if both are passed.
+        cmdopts |= shortforms
+
         # Projects are specified as X.Y on cmdline so to get the path to the
         # project dir we combine the parent_dir (which is already a path) and
         # the name of the project (Y component).
@@ -200,7 +206,7 @@ class Pipeline:
 
         return cmdopts
 
-    def _handle_shortforms(self, args: argparse.Namespace) -> argparse.Namespace:
+    def _handle_shortforms(self) -> types.Cmdopts:
         """
         Replace all shortform arguments in with their longform counterparts.
 
@@ -215,9 +221,10 @@ class Pipeline:
             "x": "exec",
             "s": "skip",
         }
+        ret = {}
 
         for k in shortform_map:
-            passed = getattr(args, k, None)
+            passed = getattr(self.args, k, None)
             if not passed:
                 self.logger.trace(
                     ("No shortform args for -%s -> --%s passed to SIERRA"),
@@ -246,17 +253,17 @@ class Pipeline:
                     key = "{0}_{1}".format(
                         shortform_map[k], p[0].replace("-", "_").replace("no_", "")
                     )
-                    setattr(args, key, "no" not in p[0])
+                    ret[key] = "no" not in p[0]
 
                 elif len(p) == 1 and "=" in p[0]:
                     arg, value = p[0].split("=")
                     key = "{0}_{1}".format(shortform_map[k], arg.replace("-", "_"))
-                    setattr(args, key, value)
+                    ret[key] = value
                 else:
                     key = "{0}_{1}".format(shortform_map[k], p[1:].replace("-", "_"))
-                    setattr(args, key, p[1:])
+                    ret[key] = p[1:]
 
-        return args
+        return ret
 
     def _load_config(self) -> None:
         self.logger.debug(

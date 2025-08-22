@@ -11,8 +11,9 @@ import nox
 import psutil
 
 # Project packages
-from tests.integration_tests import core, utils
-
+from tests.smoke_tests import core, utils
+from tests.smoke_tests.plugin import argos, jsonsim, ros1robot, ros1gazebo
+from tests.smoke_tests.plugin import execenv
 
 nox.options.default_venv_backend = "uv"
 
@@ -167,32 +168,24 @@ def unit_tests(session):
 
 
 @nox.session(python=utils.versions)
-def plugin_argos_integration(session):
+def plugin_ros1gazebo_smoke(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
-    session.run("./scripts/argos-integration-tests.sh", *session.posargs)
+    session.run("./scripts/ros1gazebo-smoke-tests.sh", *session.posargs)
 
 
 @nox.session(python=utils.versions)
-def plugin_ros1gazebo_integration(session):
+def plugin_ros1robot_smoke(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
-    session.run("./scripts/ros1gazebo-integration-tests.sh", *session.posargs)
+    session.run("./scripts/ros1robot-smoke-tests.sh", *session.posargs)
 
 
 @nox.session(python=utils.versions)
-def plugin_ros1robot_integration(session):
+def plugin_jsonsim_smoke(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
-    session.run("./scripts/ros1robot-integration-tests.sh", *session.posargs)
-
-
-@nox.session(python=utils.versions)
-def plugin_jsonsim_integration(session):
-    session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
-
-    session.run("./scripts/jsonsim-integration-tests.sh", *session.posargs)
+    session.run("./scripts/jsonsim-smoke-tests.sh", *session.posargs)

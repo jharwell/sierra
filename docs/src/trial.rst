@@ -31,6 +31,7 @@ you clone things somewhere else.
               - ``ffmpeg``
               - ``xvfb``
               - ``psmisc``
+              - ``iputils-ping``
 
            .. group-tab:: OSX
 

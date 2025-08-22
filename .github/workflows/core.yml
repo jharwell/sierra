@@ -48,7 +48,7 @@ jobs:
 
       - uses: ./.github/actions/sample-project-setup
         with:
-          platform: argos
+          engine: argos
 
       - uses: nick-fields/retry@v3
         with:

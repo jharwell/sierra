@@ -416,9 +416,10 @@ class CoreCmdline(BaseCmdline):
             description="""
                         Most cmdline options to SIERRA are longform (i.e.,
                         ``--option``), but some families of options have
-                        shortforms (i.e., ``-o`` for ``--option``) as
-                        well. Shortform arguments behave the same as their
-                        longform counterparts.
+                        shortforms (i.e., ``-o`` for ``--option``) as well.
+                        Shortform arguments behave the same as their longform
+                        counterparts.  If both are passed, the the shortform
+                        overrides.
                         """,
         )
 

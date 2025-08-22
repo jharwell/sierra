@@ -17,7 +17,6 @@
   getting too complicated.
 - [X] Imagizing integration tests
 
-** TODO Make cmdline a first-class plugin, update tutorials
 
 ** TODO Update other plugin tutorials {storage, expdef}
 After the {platform, execenv} docs overhaul, these tutorials look really bad by
@@ -188,3 +187,4 @@ CLOSED: [2024-11-19 Tue 11:27]
 better type checking
 ** DONE [#B] Add .sierrarc to read common cmdline args/envvar settings from
 ** DONE [#C] Fix all links in document to not be prefixed with 'ln-sierra'
+** DONE Make cmdline a first-class plugin, update tutorials
