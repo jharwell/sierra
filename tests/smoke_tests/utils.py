@@ -88,11 +88,16 @@ def stage2_univar_check_outputs(
     n_runs: int,
 ) -> None:
     output_root = batch_root / "exp-outputs"
-    # Check SIERRA directory structure
-    for i in range(cardinality):
-        for run in range(4):  # {0..3}
-            output_dir = f"{output_root}/c1-exp{i}/template_run{run}_output"
-            assert os.path.isdir(output_dir), f"Directory {output_dir} does not exist"
+
+    # Check SIERRA directory structure. ros1+gazebo doesn't currently output
+    # anything, so this check will fail.
+    if engine != "ros1gazebo":
+        for i in range(cardinality):
+            for run in range(4):  # {0..3}
+                output_dir = f"{output_root}/c1-exp{i}/template_run{run}_output"
+                assert os.path.isdir(
+                    output_dir
+                ), f"Directory {output_dir} does not exist"
 
     # Check stage2 generated data
     for i in range(cardinality):
@@ -111,6 +116,8 @@ def stage2_univar_check_outputs(
                 ]
                 for f in files:
                     assert os.path.isfile(f), f"File {f} does not exist"
+            elif engine == "ros1gazebo":
+                pass  # Nothing currently generated
             else:
                 assert False, f"Unhandled engine case {engine}"
 

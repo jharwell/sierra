@@ -11,7 +11,6 @@ authors = [
     {name= "John Harwell", email = "john.r.harwell@gmail.com"},
 ]
 dependencies = [
-    "uv",
     "holoviews",
     "matplotlib",
     "hvplot",
@@ -33,6 +32,7 @@ dependencies = [
     "retry",
     "sympy",
 ]
+
 requires-python = ">=3.9"
 readme = "README.rst"
 license = {file = "LICENSE"}
@@ -55,10 +55,8 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
 
-[project.urls]
-Homepage = "https://github.com/jharwell/sierra"
 
-[project.optional-dependencies]
+[dependency-groups]
 analysis = [
      # Only compatible with python <= 3.10. Latest version (3.3.6) not
      # compatible with 3.11 or 3.12, so pinning for now. Hopefully
@@ -104,7 +102,14 @@ docs = [
     "sphinx-autobuild",
     "sphinxcontrib-plantuml"
 ]
-devel = ["sierra-research[docs,analysis,ci]"]
+dev = [
+    {include-group ="docs"},
+    {include-group ="analysis"},
+    {include-group ="ci"},
+]
+
+[project.urls]
+Homepage = "https://github.com/jharwell/sierra"
 
 [project.scripts]
 sierra-cli = "sierra.main:main"

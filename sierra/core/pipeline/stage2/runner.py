@@ -85,7 +85,6 @@ class ExpShell:
                 "Cmd stderr (last 10 lines): %s",
                 "\n" + "\n".join(stderr_str.split("\n")[-10:]),
             )
-
             if self.exec_strict:
                 raise RuntimeError(
                     ("Command failed and strict checking was " "requested")
@@ -97,7 +96,7 @@ class ExpShell:
 
     def _update_env(self, stdout) -> None:
         record = False
-        for e in stdout.decode("ascii").split("\n"):
+        for e in stdout.decode("utf-8").split("\n"):
             if record:
                 candidate = e.strip().split("=")
                 if len(candidate) != 2:

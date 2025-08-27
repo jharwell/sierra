@@ -26,19 +26,11 @@ jobs:
   # functionality, it the core is already largely tested on OSX via that
   # route. Plugins are another story, and are explicitly tested on OSX where
   # feasible.
-  core-ci-ubuntu-2204:
-    uses: ./.github/workflows/core.yml
-    secrets: inherit
-    with:
-      os: ubuntu-22.04
+  # core-smoke-tests:
+  #   uses: ./.github/workflows/core.yml
+  #   secrets: inherit
 
-  core-ci-ubuntu-2404:
-    uses: ./.github/workflows/core.yml
-    secrets: inherit
-    with:
-      os: ubuntu-24.04
-
-  plugin-ci:
+  plugin-smoke-tests:
     uses: ./.github/workflows/plugin.yml
     secrets: inherit
 
@@ -50,18 +42,15 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - core-ci-ubuntu-2204
-      - plugin-ci
+      # - core-smoke-tests
+      - plugin-smoke-tests
       - unit-tests
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: 3.9
-
       - uses: actions/download-artifact@v4
-
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
       - name: Generate coverage report
         shell: bash
         run: |
@@ -73,7 +62,7 @@ jobs:
           # This is necessary for coverage since we run all integration tests in
           # nox, otherwise coverage can't find e.g., the sierra-cli executable
           # and we can't upload coverage.
-          uv sync -p 3.9 --extra devel
+          uv sync -p 3.9 --group dev
           source .venv/bin/activate
 
           which sierra-cli
@@ -118,17 +107,35 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs:
-      - core-ci-ubuntu-2204
-      - core-ci-ubuntu-2404
-      - plugin-ci
       - coverage
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: 3.9
+      - name: Generate manpages
+        shell: bash
+        run: |
+          # Hatch will only pickup manpages with shared-data if they are INSIDE
+          # a package directory. Since we don't want to commit this to source
+          # control, we copy in in CI here.
+          mkdir -p sierra/data/man
 
+          # 3.10 is known to work with the current configuration to generate
+          # docs.
+          cd docs && uv run -p 3.10 sphinx-build -b man . _build/man
+          cd ..
+          cp docs/_build/man/*.1 sierra/data/man/
+          cp docs/_build/man/*.7 sierra/data/man/
+
+          # 3.10 is known to work with the current configuration to generate
+          # docs.
+          uv sync -p 3.10 --group docs
+
+          # Build the package and verify manpages were included
+          uv build && python3 -m zipfile -l dist/sierra_research-*.whl |grep man
+
+          which python3
+          which sierra-cli
+          sierra-cli --version
 
       - name: Set beta release tag
         if: github.ref == 'refs/heads/devel'

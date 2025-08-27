@@ -68,7 +68,24 @@ class ExpShellCmdsGenerator:
         self.cmdopts = cmdopts
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        return []
+        shell = shutil.which("bash")
+
+        return [
+            # Since parallel doesn't export any envvars to child processes by
+            # default, we add some common ones.
+            types.ShellCmdSpec(
+                cmd='export PARALLEL="${PARALLEL} --env LD_LIBRARY_PATH"',
+                shell=True,
+                wait=True,
+                env=True,
+            ),
+            # Make sure GNU parallel uses the right shell, because it seems to
+            # defaults to /bin/sh since all cmds are run in a python shell which
+            # does not have $SHELL set.
+            types.ShellCmdSpec(
+                cmd=f"export PARALLEL_SHELL={shell}", shell=True, wait=True, env=True
+            ),
+        ]
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -88,14 +105,6 @@ class ExpShellCmdsGenerator:
             cmd=f"scontrol show hostnames $SLURM_JOB_NODELIST > {nodelist}",
             shell=True,
             wait=True,
-        )
-
-        # Make sure GNU parallel uses the right shell, because it seems to
-        # defaults to /bin/sh since all cmds are run in a python shell which
-        # does not have $SHELL set.
-        shell = shutil.which("bash")
-        use_bash = types.ShellCmdSpec(
-            cmd=f"export PARALLEL_SHELL={shell}", shell=True, wait=True
         )
 
         parallel = (
@@ -118,7 +127,7 @@ class ExpShellCmdsGenerator:
         )
         parallel_spec = types.ShellCmdSpec(cmd=parallel, shell=True, wait=True)
 
-        return [unique_nodes, use_bash, parallel_spec]
+        return [unique_nodes, parallel_spec]
 
 
 __all__ = ["cmdline_postparse_configure", "ExpShellCmdsGenerator"]

@@ -55,6 +55,9 @@ Environment Variables
 
 This engine ignores :envvar:`SIERRA_ARCH`.
 
+This engine sets :envvar:`PYTHONPATH` so that ``roscore`` can run properly in
+HPC environments.
+
 Random Seeding For Reproducibility
 ==================================
 

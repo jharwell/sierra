@@ -57,7 +57,24 @@ class ExpShellCmdsGenerator:
         self.cmdopts = cmdopts
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        return []
+        shell = shutil.which("bash")
+
+        return [
+            # Since parallel doesn't export any envvars to child processes by
+            # default, we add some common ones.
+            types.ShellCmdSpec(
+                cmd='export PARALLEL="${PARALLEL} --env LD_LIBRARY_PATH --env PYTHONPATH"',
+                shell=True,
+                wait=True,
+                env=True,
+            ),
+            # Make sure GNU parallel uses the right shell, because it seems to
+            # defaults to /bin/sh since all cmds are run in a python shell which
+            # does not have $SHELL set.
+            types.ShellCmdSpec(
+                cmd=f"export PARALLEL_SHELL={shell}", shell=True, wait=True, env=True
+            ),
+        ]
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -83,19 +100,9 @@ class ExpShellCmdsGenerator:
             shell=True,
             wait=True,
         )
-        # Make sure GNU parallel uses the right shell, because it seems to
-        # defaults to /bin/sh since all cmds are run in a python shell which
-        # does not have $SHELL set.
-        use_bash = types.ShellCmdSpec(
-            cmd="export PARALLEL_SHELL={0}".format(shutil.which("bash")),
-            shell=True,
-            wait=True,
-            env=True,
-        )
-
         # GNU parallel cmd
         parallel = (
-            "parallel {2} "
+            "env && parallel {2} "
             "--jobs {1} "
             "--results {4} "
             "--joblog {3} "
@@ -115,7 +122,7 @@ class ExpShellCmdsGenerator:
 
         parallel_spec = types.ShellCmdSpec(cmd=parallel, shell=True, wait=True)
 
-        return [unique_nodes, use_bash, parallel_spec]
+        return [unique_nodes, parallel_spec]
 
 
 __all__ = [

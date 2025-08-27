@@ -18,7 +18,7 @@ from sierra.core import batchroot
 from tests.smoke_tests import utils, setup
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["ros1gazebo"])
 @setup.session_setup
 @setup.session_teardown
 def ros1gazebo_stage1_univar(session):

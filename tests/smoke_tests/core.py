@@ -19,7 +19,7 @@ from tests.smoke_tests import setup, utils
 from sierra.core import batchroot
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_env_vars(session):
@@ -62,7 +62,7 @@ def core_env_vars(session):
     session.run(*sierra_cmd.split(), silent=True)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_builtin_bc(session):
@@ -97,7 +97,7 @@ def core_builtin_bc(session):
     session.run(*(f"{sierra_cmd} --pipeline 2 3 4").split(), silent=True)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_cmdline_opts(session):
@@ -170,7 +170,7 @@ def core_cmdline_opts(session):
     shutil.rmtree(os.path.expanduser("~/test3"))
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_parallelism(session):
@@ -208,7 +208,7 @@ def core_parallelism(session):
     utils.stage2_univar_check_outputs("argos", batch_root, 3, 4)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_stage5_univar(session):
@@ -290,7 +290,7 @@ def core_stage5_univar(session):
         utils.stage5_univar_check_cc_outputs(session, "argos")
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_stage1_bivar(session):
@@ -349,7 +349,7 @@ def core_stage1_bivar(session):
     utils.stage1_bivar_check_outputs("argos", input_root2, 5, 3, 4)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_stage2_bivar(session):
@@ -395,7 +395,7 @@ def core_stage2_bivar(session):
                 assert os.path.isfile(file_path), f"File {file_path} does not exist"
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_stage3_bivar(session):
@@ -451,7 +451,7 @@ def core_stage3_bivar(session):
     utils.stage3_bivar_check_outputs("argos", batch_root, 2, 3, bw_stats)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_stage4_bivar(session):
@@ -505,7 +505,7 @@ def core_stage4_bivar(session):
     utils.stage4_bivar_check_outputs("argos", batch_root, 3, 3, bw_stats + conf95_stats)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
 def core_stage5_bivar(session):

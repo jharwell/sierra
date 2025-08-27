@@ -21,7 +21,7 @@ from sierra.core import batchroot
 from tests.smoke_tests import utils, setup
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["hpc"])
 @nox.parametrize("env", ["hpc.local", "hpc.adhoc", "hpc.slurm"])
 @nox.parametrize("engine", ["engine.argos", "plugins.jsonsim", "engine.ros1gazebo"])
 @setup.session_setup
@@ -95,6 +95,7 @@ def execenv_hpc(session, env, engine):
             f"--batch-criteria population_size.Linear3.C3 "
             f"--pipeline 1 2"
         )
+        cardinality = 3
 
     output_root = batch_root / "exp-outputs"
     scratch_root = batch_root / "scratch"
@@ -116,7 +117,6 @@ def execenv_hpc(session, env, engine):
             "--exec-devnull",
             f"--exec-env={env}",
             "--exec-parallelism-paradigm=per-exp",
-            silent=True,
         )
         utils.stage2_univar_check_outputs(
             engine.split(".")[1], batch_root, cardinality, 4
@@ -168,7 +168,7 @@ def execenv_hpc(session, env, engine):
         )
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["prefectserver"])
 @nox.parametrize("env", ["prefectserver.local"], ["prefectserver.dockerremote"])
 @setup.session_setup
 @setup.session_teardown

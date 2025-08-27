@@ -18,7 +18,7 @@ from sierra.core import batchroot
 from tests.smoke_tests import utils, setup
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 def argos_physics_engines(session):
@@ -43,7 +43,7 @@ def argos_physics_engines(session):
         session.run(*sierra_cmd.split(), silent=True)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 def argos_stage1_univar(session):
@@ -90,7 +90,7 @@ def argos_stage1_univar(session):
             assert template_file.is_file(), f"File {template_file} missing"
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 @nox.parametrize("dist_stats", ["none", "conf95", "bw"])
@@ -132,7 +132,7 @@ def argos_stage3_univar(session, dist_stats):
     utils.stage3_univar_check_outputs("argos", batch_root, 3, to_check)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 @nox.parametrize(
@@ -189,7 +189,7 @@ def argos_stage4_univar(session, bc, dist_stats):
     utils.stage4_univar_check_outputs("argos", batch_root, 3, to_check)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 @nox.parametrize("camera_config", ["overhead", "sw", "sw+interp"])
@@ -238,7 +238,7 @@ def argos_vc(session, camera_config):
         assert video_file.is_file(), f"Video file {video_file} does not exist"
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 def argos_imagize(session):
@@ -290,7 +290,7 @@ def argos_imagize(session):
     assert video_file.is_file(), f"Video file {video_file} does not exist"
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
 def argos_cmdline(session):

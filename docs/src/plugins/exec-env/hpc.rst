@@ -18,7 +18,7 @@ listed on this page:
      - Rationale
 
    * - All nodes allocated to SIERRA have the same # of cores (can be less than
-       the total # available on each compute node). Note that this may be `less`
+       the total # available on each compute node). Note that this may be *less*
        than the actual number of cores available on each node, if the HPC
        environment allows node sharing, and the job SIERRA runs in is allocated
        less than the total # cores on a given node.
@@ -59,6 +59,30 @@ will start additional simulations as currently running simulations finish. No
 additional configuration/environment variables are needed with this HPC
 environment for use with SIERRA.
 
+The following environmental variables are automatically exported to child GNU
+parallel processes in the local HPC environment:
+
+The following environmental variables are used in the local HPC environment:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Environment variable
+
+     - SIERRA context
+
+
+   * - :envvar:`PARALLEL`
+
+     - Used to transfer environment variables into the GNU parallel
+       environment. SIERRA appends to this variable.
+
+   * - :envvar:`LD_LIBRARY_PATH`
+
+     - Exported by SIERRA via :envvar:`PARALLEL` to child GNU parallel
+       processes.
+
+
 .. _plugins/exec-env/hpc/pbs:
 
 PBS HPC Plugin
@@ -72,14 +96,26 @@ describes the PBS-SIERRA interface. Some PBS environment variables are used by
 SIERRA to configure experiments during stage 1,2 (see TOQUE-PBS docs for
 meaning); if they are not defined SIERRA will throw an error.
 
+The following environmental variables are used in the PBS HPC environment:
+
 .. list-table:: PBS-SIERRA interface
    :header-rows: 1
 
-   * - PBS environment variable
+   * - Environment variable
 
      - SIERRA context
 
-   * - PBS_NUM_PPN
+   * - :envvar:`PARALLEL`
+
+     - Used to transfer environment variables into the GNU parallel
+       environment. SIERRA appends to this variable.
+
+   * - :envvar:`LD_LIBRARY_PATH`
+
+     - Exported by SIERRA via :envvar:`PARALLEL` to child GNU parallel
+       processes.
+
+   * - :envvar:`PBS_NUM_PPN`
 
      - Used to calculate # threads per experimental run for each allocated
        compute node via::
@@ -88,37 +124,17 @@ meaning); if they are not defined SIERRA will throw an error.
 
        That is, ``--exec-jobs-per-node`` is required for PBS HPC environments.
 
-   * - PBS_NODEFILE
+   * - :envvar:`PBS_NODEFILE`
 
      - Obtaining the list of nodes allocated to a job which SIERRA can direct
        GNU parallel to use for experiments.
 
-   * - PBS_JOBID
+   * - :envvar:`PBS_JOBID`
 
      - Creating the UUID nodelist file passed to GNU parallel, guaranteeing
        no collisions (i.e., simultaneous SIERRA invocations sharing allocated
        nodes) if multiple jobs are started from the same directory.
 
-The following environmental variables are used in the PBS HPC environment:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Environment variable
-
-     - Use
-
-   * - :envvar:`SIERRA_ARCH`
-
-     - Used to enable architecture/OS specific builds of simulators for maximum
-       speed at runtime on clusters.
-
-   * - :envvar:`PARALLEL`
-
-     - Used to transfer environment variables into the GNU parallel
-       environment. This must be always done because PBS doesn't transfer
-       variables automatically, and because GNU parallel starts another level of
-       child shells.
 
 .. _plugins/exec-env/hpc/slurm:
 
@@ -138,60 +154,53 @@ not defined SIERRA will throw an error.
 .. list-table:: SLURM-SIERRA interface
    :header-rows: 1
 
-   * - SLURM environment variable
+   * - Environment variable
 
      - SIERRA context
 
      - Command line override
 
-   * - SLURM_CPUS_PER_TASK
+   * - :envvar:`PARALLEL`
+
+     - Used to transfer environment variables into the GNU parallel
+       environment. SIERRA appends to this variable.
+
+     - N/A
+
+   * - :envvar:`LD_LIBRARY_PATH`
+
+     - Exported by SIERRA via :envvar:`PARALLEL` to child GNU parallel
+       processes.
+
+     - N/A
+
+   * - :envvar:`SLURM_CPUS_PER_TASK`
 
      - Used to set # threads per experimental node for each allocated compute
        node.
 
      - N/A
 
-   * - SLURM_TASKS_PER_NODE
+   * - :envvar:`SLURM_TASKS_PER_NODE`
 
      - Used to set # parallel jobs per allocated compute node.
 
      - ``--exec-jobs-per-node``
 
-   * - SLURM_JOB_NODELIST
+   * - :envvar:`SLURM_JOB_NODELIST`
 
      - Obtaining the list of nodes allocated to a job which SIERRA can direct
        GNU parallel to use for experiments.
 
      - N/A
 
-   * - SLURM_JOB_ID
+   * - :envvar:`SLURM_JOB_ID`
 
      - Creating the UUID nodelist file passed to GNU parallel, guaranteeing no
        collisions (i.e., simultaneous SIERRA invocations sharing allocated nodes
        if multiple jobs are started from the same directory).
 
      - N/A
-
-The following environmental variables are used in the SLURM HPC environment:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Environment variable
-
-     - Use
-
-   * - :envvar:`SIERRA_ARCH`
-
-     - Used to enable architecture/OS specific builds of simulators for maximum
-       speed at runtime on clusters.
-
-   * - :envvar:`PARALLEL`
-
-     - Used to transfer environment variables into the GNU parallel
-       environment. This must be done even though SLURM can transfer variables
-       automatically, because GNU parallel starts another level of child
-       shells.
 
 .. _plugins/exec-env/hpc/adhoc:
 
@@ -208,7 +217,7 @@ compute nodes it is allocated each invocation:
 
 The following environmental variables are used in the Adhoc HPC environment:
 
-.. list-table::
+.. list-table:: Adhoc-SIERRA interface
    :header-rows: 1
 
    * - Environment variable
@@ -217,14 +226,25 @@ The following environmental variables are used in the Adhoc HPC environment:
 
      - Command line override
 
-     - Notes
+   * - :envvar:`PARALLEL`
+
+     - Used to transfer environment variables into the GNU parallel
+       environment. SIERRA appends to this variable.
+
+     - N/A
+
+   * - :envvar:`LD_LIBRARY_PATH`
+
+     - Exported by SIERRA via :envvar:`PARALLEL` to child GNU parallel
+       processes.
+
+     - N/A
 
    * - :envvar:`SIERRA_NODEFILE`
 
      - Contains hostnames/IP address of all compute nodes SIERRA can use. Same
-       format as GNU parallel ``--sshloginfile``.
+       format as GNU parallel ``--sshloginfile``.  :envvar:`SIERRA_NODEFILE`
+       must be defined or ``--nodefile`` passed. If neither is true, SIERRA will
+       throw an error.
 
      - ``--nodefile``
-
-     - :envvar:`SIERRA_NODEFILE` must be defined or ``--nodefile`` passed. If
-       neither is true, SIERRA will throw an error.

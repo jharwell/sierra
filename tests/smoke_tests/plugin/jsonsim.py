@@ -17,7 +17,7 @@ from sierra.core import batchroot
 from tests.smoke_tests import utils, setup
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["jsonsim"])
 @setup.session_setup
 @setup.session_teardown
 def jsonsim_stage1_univar(session):
@@ -50,7 +50,7 @@ def jsonsim_stage1_univar(session):
     utils.stage1_univar_check_outputs("jsonsim", "per-batch", input_root, 5, 4)
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["jsonsim"])
 @setup.session_setup
 @setup.session_teardown
 def jsonsim_stage3_univar(session):
@@ -83,7 +83,7 @@ def jsonsim_stage3_univar(session):
     utils.stage3_univar_check_outputs("jsonsim", batch_root, 5, [".mean"])
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["jsonsim"])
 @setup.session_setup
 @setup.session_teardown
 def jsonsim_stage4_univar(session):

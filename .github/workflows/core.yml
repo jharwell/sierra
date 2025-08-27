@@ -2,23 +2,20 @@ name: SIERRA Core CI
 
 on:
   workflow_call:
-    inputs:
-      os:
-        required: True
-        type: string
 
 jobs:
   plumbing:
-    runs-on: ${{ inputs.os }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     strategy:
       matrix:
-        os:
-          - ${{ inputs.os }}
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
 
         # 2024/08/26: Test the earliest and latest supported version, to speed
         # up CI.
         python-version:
-          - 3.9
+          - "3.10"
           - 3.12
 
         session:
@@ -33,19 +30,8 @@ jobs:
           - core_stage5_univar
           - core_stage5_bivar
 
-        exclude:
-          - os: ubuntu-22.04
-            python-version: 3.12
-
-          - os: ubuntu-24.04
-            python-version: 3.9
-
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: argos

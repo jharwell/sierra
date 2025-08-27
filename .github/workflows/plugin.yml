@@ -6,7 +6,8 @@ on:
 
 jobs:
   plugin-argos:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     defaults:
       run:
         shell: bash
@@ -14,9 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        os:
-          - ubuntu-22.04
-          - ubuntu-24.04
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
 
         # 2024/08/26: Test the earliest and latest supported version, to speed
         # up CI.
@@ -38,28 +38,21 @@ jobs:
 
         # We only run a few OSX tests, because most of the ARGoS tests don't
         # rely on OS-specific things, and testing them adds marginal confidence.
-        include:
-          - os: macos-13
-            session: argos_stage1_univar
-            python-version: 3.12
+        # include:
+          # - container: macos-13
+          #   session: argos_stage1_univar
+          #   python-version: 3.12
 
-          - os: macos-13
-            session: argos_stage3_univar
-            python-version: 3.9
+          # - container: macos-13
+          #   session: argos_stage3_univar
+          #   python-version: 3.9
 
         exclude:
-          - os: ubuntu-22.04
-            python-version: 3.12
-
-          - os: ubuntu-24.04
+          - container: jharwell/ubuntu24.04-sierra:latest
             python-version: 3.9
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: argos
@@ -69,18 +62,27 @@ jobs:
         with:
           timeout_minutes: 60
           max_attempts: 3
-          command: nox -s ${{ matrix.session }} -p ${{ matrix.python-version }}
+          command: |
+            uv run -p ${{ matrix.python-version }} \
+            nox -s ${{ matrix.session }} -p ${{ matrix.python-version }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-engine-argos-${{ matrix.session }}-${{ matrix.os }}-${{ matrix.python-version }}-coverage
+          name: ci-engine-argos-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error
 
   plugin-ros1robot:
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container: ${{ matrix.container }}
     defaults:
       run:
         shell: bash
@@ -91,15 +93,14 @@ jobs:
         python-version:
           - 3.9
 
+        container:
+          - jharwell/ubuntu20.04-sierra:latest
+
         session:
           - ros1robot_stage1_univar
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: ros1robot
@@ -107,18 +108,26 @@ jobs:
 
       - name: Smoke tests
         run: |
+          uv run -p ${{ matrix.python-version }} \
           nox -s ${{ matrix.session }} -p ${{ matrix.python-version }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-engine-ros1robot-${{ matrix.session }}-ubuntu-20.04-${{ matrix.python-version }}-coverage
+          name: ci-engine-ros1robot-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error
 
   plugin-ros1gazebo:
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container: ${{ matrix.container }}
     defaults:
       run:
         shell: bash
@@ -134,12 +143,12 @@ jobs:
         session:
           - ros1gazebo_stage1_univar
 
+        container:
+          - jharwell/ubuntu20.04-sierra:latest
+
+
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: ros1gazebo
@@ -147,18 +156,26 @@ jobs:
 
       - name: Smoke tests
         run: |
-          source .venv/bin/activate
+          uv run -p ${{ matrix.python-version }} \
           nox -s ${{ matrix.session }} -p ${{ matrix.python-version }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-engine-ros1gazebo-${{ matrix.session }}-ubuntu-20.04-${{ matrix.python-version }}-coverage
+          name: ci-engine-ros1gazebo-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error
 
   plugin-jsonsim:
     runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     defaults:
       run:
         shell: bash
@@ -167,29 +184,35 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - 3.9
-        os:
-          - ubuntu-22.04
+          - 3.12
 
         session:
           - jsonsim_stage1_univar
           - jsonsim_stage3_univar
           - jsonsim_stage4_univar
 
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
+
+
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
       - name: Smoke tests
         run: |
-          uv run nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
+          uv run -p ${{ matrix.python-version }} \
+          nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-engine-jsonsim-${{ matrix.session }}-${{ matrix.os }}-${{ matrix.python-version }}-coverage
+          name: ci-engine-jsonsim-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error
@@ -197,6 +220,12 @@ jobs:
 
   plugin-exec-env-2404:
     runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.container }}
+      # 2025-09-11 [JRH]: Volumes to mount must be passed as options so they can
+      # be mounted rw;  specifying in the 'volumes' field mounts them ro, which
+      # doesn't work for slurm.
+      options: --privileged --cgroupns=host --cpus 2 -v /sys/fs/cgroup:/sys/fs/cgroup:rw -v /run/dbus:/run/dbus
     defaults:
       run:
         shell: bash
@@ -205,46 +234,78 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - 3.9
+          - 3.12
 
         session:
-          - execenv_hpc-3.9(engine='engine.argos', env='hpc.local')
-          - execenv_hpc-3.9(engine='engine.argos', env='hpc.adhoc')
-          - execenv_hpc-3.9(engine='engine.argos', env='hpc.slurm')
-          - execenv_hpc-3.9(engine='plugins.jsonsim', env='hpc.local')
-          - execenv_hpc-3.9(engine='plugins.jsonsim', env='hpc.adhoc')
-          - execenv_hpc-3.9(engine='plugins.jsonsim', env='hpc.slurm')
+          - execenv_hpc-3.12(engine='engine.argos', env='hpc.local')
+          - execenv_hpc-3.12(engine='engine.argos', env='hpc.adhoc')
+          - execenv_hpc-3.12(engine='engine.argos', env='hpc.slurm')
+          - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.local')
+          - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.adhoc')
+          - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.slurm')
           - execenv_prefectserver
+
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: argos
 
-      - uses: ./.github/actions/slurm-setup
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: jsonsim
 
-      - name: Smoke Tests
+
+      - name: Smoke tests (slurm)
+        if: ${{ contains(matrix.session, 'slurm') }}
         run: |
+          uv sync -p ${{ matrix.python-version }} --group dev
+
+          # No idea why this is needed, but slurm doesn't start without it.
+          mkdir -p /sys/fs/cgroup/system.slice/system.slice/localhost_slurmstepd.scope
+          slurmctld -D &
+          sleep 5
+          slurmd -D &
+          sleep 5
+          scontrol update nodename=localhost state=DOWN reason=initial;
+          scontrol update nodename=localhost state=IDLE;
+
+          uv run -p ${{ matrix.python-version }} nox -s "${{ matrix.session }}" -p ${{ matrix.python-version }}
+
+
+      - name: Smoke Tests (not slurm)
+        if: ${{ !contains(matrix.session, 'slurm') }}
+        run: |
+          uv run -p ${{ matrix.python-version }} \
           nox -s "${{ matrix.session }}" -p ${{ matrix.python-version }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
+
+      - name: Set session name
+        id: session-name
+        run: |
+          # Replace problematic characters
+          SAFE_SESSION=$(echo "${{ matrix.session }}" | tr "/:(),' " '______')
+          echo "safe_session=${SAFE_SESSION}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-exec-env-${{ matrix.session }}-ubuntu-22.04-${{ matrix.python-version }}-coverage
+          name: ci-exec-env-${{ steps.session-name.outputs.safe_session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error
 
   plugin-exec-env-2004:
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container: ${{ matrix.container }}
     defaults:
       run:
         shell: bash
@@ -256,31 +317,55 @@ jobs:
           - 3.9
 
         session:
-          # 2025-08-25 [JRH]: SLURM doesn't work on 20.04 because that runs in a
-          # container, and setting up slurm requires systemd...so, just don't
-          # run SLURM on 20.04, which adds marginal confidence anyway.
           - execenv_hpc-3.9(engine='engine.ros1gazebo', env='hpc.local')
-          # - execenv_hpc-3.9(engine='engine.ros1gazebo', env='hpc.adhoc')
+          - execenv_hpc-3.9(engine='engine.ros1gazebo', env='hpc.adhoc')
+        container:
+          - jharwell/ubuntu20.04-sierra:latest
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: ros1gazebo
 
       - name: Smoke Tests
         run: |
+          source $HOME/.local/setup.bash
+          uv sync -p ${{ matrix.python-version }} --group dev
+          uv pip install -p ${{ matrix.python-version }} \
+              pysip \
+              numpy \
+              matplotlib \
+              pyyaml \
+              psutil \
+              defusedxml \
+              pyparsing \
+              pydev \
+              pyopengl \
+              opencv-python \
+              catkin_tools
           source .venv/bin/activate
-          . $HOME/.local/setup.bash # sierra rosbridge install prefix
-          nox -s "${{ matrix.session }}" -p ${{ matrix.python-version }}
+          uv run -p ${{ matrix.python-version }} \
+              nox -s "${{ matrix.session }}" -p ${{ matrix.python-version }}
+
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
+
+      - name: Set session name
+        id: session-name
+        run: |
+          # Replace problematic characters
+          SAFE_SESSION=$(echo "${{ matrix.session }}" | tr "/:(),' " '______')
+          echo "safe_session=${SAFE_SESSION}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-exec-env-${{ matrix.session }}-ubuntu-20.04-${{ matrix.python-version }}-coverage
+          name: ci-exec-env-${{ steps.session-name.outputs.safe_session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

@@ -19,20 +19,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  analyze-ci-ubuntu-2204:
-    uses: ./.github/workflows/analyze-nox.yml
-    secrets: inherit
-    with:
-      os: ubuntu-22.04
-
   analyze-ci-ubuntu-2404:
     uses: ./.github/workflows/analyze-nox.yml
     secrets: inherit
     with:
-      os: ubuntu-24.04
+      container: jharwell/ubuntu24.04-sierra:latest
 
-  analyze-ci-osx:
-    uses: ./.github/workflows/analyze-nox.yml
-    secrets: inherit
-    with:
-      os: macos-13
+  # 2025-09-02 [JRH]: Static analysis is pretty much always the same across
+  # OSes, so testing on e.g. OSX here adds minimal confidence.

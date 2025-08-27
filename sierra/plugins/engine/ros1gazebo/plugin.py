@@ -59,13 +59,22 @@ class ExpRunShellCmdsGenerator:
             wait=True,
             env=True,
         )
+        # ROS/Gazebo don't provide options to not print stuff, so we have to use
+        # the nuclear option.
+        roscore_cmd = f"roscore -p {self.roscore_port} "
+        if self.cmdopts["exec_devnull"]:
+            roscore_cmd += "> /dev/null 2>&1 "
+
+        roscore_cmd += "& "
 
         # Each experiment gets their own roscore. Because each roscore has a
         # different port, this prevents any robots from pre-emptively starting
         # the next experiment before the rest of the robots have finished the
         # current one.
         roscore_process = types.ShellCmdSpec(
-            cmd=f"roscore -p {self.roscore_port} & ", shell=True, wait=False
+            cmd=roscore_cmd,
+            shell=True,
+            wait=False,
         )
 
         # Second, the command to give Gazebo a unique port on the host during
@@ -112,10 +121,10 @@ class ExpRunShellCmdsGenerator:
         # ROS/Gazebo don't provide options to not print stuff, so we have to use
         # the nuclear option.
         if self.cmdopts["exec_devnull"]:
-            cmd += "2>&1 > /dev/null"
+            cmd += "> /dev/null 2>&1"
 
         cmd += ";"
-
+        print("CMD: ", cmd)
         return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 
     def post_run_cmds(
@@ -131,7 +140,24 @@ class ExpShellCmdsGenerator:
         self.exp_num = exp_num
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        return []
+        # 2025-09-11 [JRH]: This was a NASTY bug which got triggered when
+        # running SIERRA in a venv. ROS is installed system-wide, but mixing
+        # venv+system packages via a --system venv caused all sorts of problems
+        # because the venv versions were often mixing newer with older packages
+        # at load time. So, we have to allow the venv interpreter to find the
+        # system-wide packages AFTER everything is loaded by modifying the
+        # PYTHONPATH for the sub-shell that SIERRA runs everything in.
+        #
+        # Hopefully this is better in ROS2.
+
+        return [
+            types.ShellCmdSpec(
+                cmd="export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages/",
+                shell=True,
+                wait=True,
+                env=True,
+            ),
+        ]
 
     def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         return []

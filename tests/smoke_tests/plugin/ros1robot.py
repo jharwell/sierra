@@ -18,7 +18,7 @@ from sierra.core import batchroot
 from tests.smoke_tests import utils, setup
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=utils.versions, tags=["ros1robot"])
 @setup.session_setup
 @setup.session_teardown
 @nox.parametrize("bc", ["population_size.Linear3.C3", "population_size.Log8"])

@@ -84,21 +84,8 @@ runs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install and cache ARGoS dependencies (Linux)
-      if: runner.os == 'Linux'
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache g++
-        version: ${{ runner.os }}
-
-    - name: Install ARGoS deps into container
-      shell: bash
-      run: |
-        if ! command -v "sudo" &> /dev/null; then
-           apt install libfreeimage-dev libfreeimageplus-dev qtbase5-dev freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev lua5.3 libgraphviz-dev ccache g++ -y
-        fi
     - name: Install ARGoS
-      if: inputs.engine == 'argos'
+      if: runner.os == 'macOS' && inputs.engine == 'argos'
       shell: bash
       run: |
         git clone https://github.com/ilpincy/argos3.git
@@ -122,7 +109,7 @@ runs:
     - name: Build SIERRA project for ARGoS
       if: inputs.engine == 'argos'
       shell: bash
-      working-directory: ${{ github.workspace }} # Needed to match with scripts/argos-integration-tests.sh
+      working-directory: ${{ github.workspace }}
 
       run: |
         cd sierra-sample-project/argos
@@ -137,52 +124,26 @@ runs:
     ############################################################################
     # ROS1+Gazebo setup
     ############################################################################
-    - name: Install ROS1 engine dependency
-      if: inputs.engine == 'ros1gazebo'
-      uses: ros-tooling/setup-ros@v0.7
-      with:
-        required-ros-distributions: ${{ inputs.rosdistro }}
-
-    - name: Install SIERRA ROSbridge system dependencies (Linux)
-      if: inputs.engine == 'ros1gazebo'
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: ros-${{ inputs.rosdistro }}-desktop-full ros-${{ inputs.rosdistro }}-turtlebot3-description ros-${{ inputs.rosdistro }}-turtlebot3-msgs ros-${{ inputs.rosdistro }}-turtlebot3-gazebo ros-${{ inputs.rosdistro }}-turtlebot3-bringup python${{ matrix.python-version }} python${{ matrix.python-version }}-dev python${{ matrix.python-version }}-venv python3-apt python3-cairo intltool python3-wheel python3-rospkg python3-empy python3-pip libxv1
-        version: ${{ runner.os }}
-
-    - name: Install SIERRA ROSbridge python dependencies (Linux)
-      if: inputs.engine == 'ros1gazebo'
-      shell: bash
-      run: |
-        # 2023/1/18: You still need install these even after installing stuff
-        # with apt AND if the sysem python matches your current python. I don't
-        # know why.
-        export VIRTUAL_ENV=
-        export PATH=$(echo $PATH | sed -e 's|.venv/bin:||g')
-        which python3
-        python3 --version
-        pip install empy \
-                    rospkg \
-                    wheel \
-                    pyparsing \
-                    pyqt5 \
-                    pysip \
-                    numpy \
-                    matplotlib \
-                    pyyaml \
-                    psutil \
-                    defusedxml \
-                    pyparsing \
-                    pydev \
-                    pyopengl \
-                    opencv-python \
-                    catkin_tools
-
     - name: Install SIERRA ROSBridge dependency (ubuntu)
       if: inputs.engine == 'ros1gazebo'
       shell: bash
       run: |
         source /opt/ros/${{ inputs.rosdistro }}/setup.bash
+
+
+        pip3 install pysip \
+                     numpy \
+                     matplotlib \
+                     pyyaml \
+                     psutil \
+                     defusedxml \
+                     pyparsing \
+                     pydev \
+                     pyopengl \
+                     opencv-python \
+                     catkin_tools \
+                     rospkg \
+                     empy
 
         git clone https://github.com/jharwell/sierra_rosbridge.git
         cd sierra_rosbridge
@@ -193,6 +154,7 @@ runs:
         catkin build
         cd ..
         rm -rf sierra_rosbridge
+
 
     ############################################################################
     # ROS1+Robot setup

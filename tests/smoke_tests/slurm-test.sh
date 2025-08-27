@@ -3,7 +3,6 @@
 #SBATCH --nodes 1
 #SBATCH --tasks-per-node=2
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=2G
 #SBATCH --output=R-%x.%j.out
 #SBATCH --error=R-%x.%j.err
 #SBATCH -J slurm-test

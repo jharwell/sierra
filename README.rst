@@ -142,10 +142,10 @@ Requirements To Use SIERRA
 
 The basic requirements are:
 
-- Recent OSX (tested with 13+) or Linux (tested with ubuntu 22.04+). Windows is
+- Recent OSX (tested with 13+) or Linux (tested with ubuntu 20.04+). Windows is
   not currently supported; if windows support would be helpful for your intended
   usage, please get in touch. SIERRA is written in pure python and can
-  definitely be made to work on windows
+  definitely be made to work on windows.
 
 - python >= 3.9.
 

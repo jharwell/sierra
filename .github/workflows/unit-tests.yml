@@ -5,33 +5,19 @@ on:
 
 jobs:
   ci-unit-tests:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     strategy:
       matrix:
-        os:
-          - ubuntu-22.04
-          - ubuntu-24.04
-          - macos-13
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
 
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI.
         python-version:
-          - 3.9
+          - "3.10"
           - 3.12
-
-        exclude:
-          - os: ubuntu-22.04
-            python-version: 3.12
-
-          - os: ubuntu-24.04
-            python-version: 3.9
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: argos
