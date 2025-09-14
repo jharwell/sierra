@@ -228,7 +228,7 @@ and ``--sierra-root``.
 
 This will compare all scenarios that the
 ``foraging.footbot_foraging`` controller has been run on according to
-the configuration defined in ``stage5.yaml``. SIERRA will plot the 95%
+the configuration defined in ``graphs.yaml``. SIERRA will plot the 95%
 confidence intervals on all generated graphs for the univariate batch criteria
 (whatever it was). If multiple batch criterias were used with this controller in
 the same scenario, SIERRA will process all of them and generate unique graphs
@@ -261,7 +261,7 @@ SIERRA will compute the list of scenarios that the ``foraging.footbot_foraging``
 and the ``foraging.footbot_foraging_slow`` controllers have *all* been
 run. Comparison graphs for each scenario with the
 ``foraging.footbot_foraging,foraging.footbot_foraging_slow`` controllers will be
-generated according to the configuration defined in ``stage5.yaml``. SIERRA will
+generated according to the configuration defined in ``graphs.yaml``. SIERRA will
 plot the 95% confidence intervals on all generated graphs for the univariate
 batch criteria (whatever it was). If multiple batch criterias were used with
 each controller in the same scenario, SIERRA will process all of them and

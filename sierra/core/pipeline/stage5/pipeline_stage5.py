@@ -6,16 +6,14 @@
 
 # Core packages
 import logging
-import pathlib
 import time
 import datetime
 import argparse
 
 # 3rd party packages
-import yaml
 
 # Project packages
-from sierra.core import types, utils, config
+from sierra.core import types
 import sierra.core.plugin as pm
 
 
@@ -26,8 +24,6 @@ class PipelineStage5:
         cmdopts: Dictionary of parsed cmdline parameters.
 
         main_config: Dictionary of parsed main YAML configuration.
-
-        stage5_config: Dictionary of parsed stage5 YAML configuration.
 
         stage5_roots: Dictionary containing output directories for
                       inter-{scenario,controller,criteria}  product comparison.
@@ -41,11 +37,6 @@ class PipelineStage5:
     ) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
-
-        path = pathlib.Path(self.cmdopts["project_config_root"], config.kYAML.stage5)
-
-        with utils.utf8open(path) as f:
-            self.stage5_config = yaml.load(f, yaml.FullLoader)
 
         self.logger = logging.getLogger(__name__)
 
@@ -62,9 +53,7 @@ class PipelineStage5:
             )
 
             start = time.time()
-            module.proc_exps(
-                self.main_config, self.cmdopts, cli_args, self.stage5_config
-            )
+            module.proc_exps(self.main_config, self.cmdopts, cli_args)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             self.logger.info("Processing with %s complete in %s", s, str(sec))

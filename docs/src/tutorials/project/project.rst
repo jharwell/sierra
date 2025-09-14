@@ -73,14 +73,14 @@ Steps
 
         .. tab:: ``graphs.yaml``
 
-           Configuration for graph generation during stage 4. This file is
-           optional. See :ref:`plugins/product/graphs` for documentation.
+           Configuration for graph generation. This
+           file is optional. Used by multiple plugins. An incomplete list:
 
-        .. tab:: ``stage5.yaml``
+           - :ref:`plugins/product/graphs`,
 
-           Configuration for stage5 controller comparisons. This file is
-           required if stage 5 is run, and optional otherwise. See
-           :doc:`plugins/compare` for documentation.
+           - :ref:`plugins/compare/graphs`
+
+           - :ref:`plugins/prod/render`
 
         .. tab:: ``models.yaml``
 

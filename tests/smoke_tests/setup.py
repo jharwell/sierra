@@ -23,7 +23,7 @@ def setup_env(session) -> None:
 
     # Default to local testing
     argos_install_prefix = pathlib.Path.home() / ".local"
-    sierra_sample_root = pathlib.Path("./sierra-sample-project")
+    sierra_sample_root = pathlib.Path("../sierra-sample-project")
 
     env = {}
     session.env["SIERRA_ROOT"] = pathlib.Path.home() / "test"

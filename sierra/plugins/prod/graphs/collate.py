@@ -161,20 +161,27 @@ class GraphCollator:
 
             data_df = storage.df_read(csv_ipath, "storage.csv")
 
-            assert (
-                target["col"] in data_df.columns.values
-            ), "{0} not in columns of {1}".format(
-                target["col"], target["src_stem"] + stat.df_ext
-            )
-
             # 2025-07-08 [JRH]: This is the ONE place in all the graph
             # generation code which is a procedural switch on graph type.
             if target["type"] == "summary_line":
                 idx = target.get("index", -1)
+                assert "col" in target, "'col' key is required"
+                assert (
+                    target["col"] in data_df.columns.values
+                ), "{0} not in columns of {1}".format(
+                    target["col"], target["src_stem"] + stat.df_ext
+                )
                 datapoint = data_df.loc[data_df.index[idx], target["col"]]
                 stat.df.loc[exp_dir, stat.summary_col] = datapoint
             elif target["type"] == "stacked_line":
-                stat.df[exp_dir] = data_df[target["col"]]
+                assert "cols" in target, "'cols' key is required"
+
+                assert (
+                    target["cols"] in data_df.columns.values
+                ), "{0} not in columns of {1}".format(
+                    target["cols"], target["src_stem"] + stat.df_ext
+                )
+                stat.df[exp_dir] = data_df[target["cols"]]
             elif target["type"] == "heatmap":
                 idx = target.get("index", -1)
 

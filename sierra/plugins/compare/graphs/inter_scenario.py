@@ -183,10 +183,10 @@ class UnivarInterScenarioComparator:
             cmdopts=cmdopts,
             batch_output_root=pathset.output_root,
             dest_stem=graph["dest_stem"],
-            inc_exps=graph.get("include_exp", None),
             title=graph.get("title", None),
             label=graph["label"],
             legend=legend,
+            backend=graph.get("backend", cmdopts["graphs_backend"]),
         )
 
     def _gen_graph(
@@ -196,10 +196,11 @@ class UnivarInterScenarioComparator:
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
         dest_stem: str,
-        inc_exps: tp.Optional[str],
         title: str,
         label: str,
         legend: tp.List[str],
+        backend: str,
+        inc_exps: tp.Optional[str] = None,
     ) -> None:
         """Generate graph comparing the specified controller across scenarios."""
         opath_leaf = namecalc.for_sc(batch_leaf, self.scenarios, dest_stem, None)
@@ -231,7 +232,7 @@ class UnivarInterScenarioComparator:
             title=title,
             xlabel=info.xlabel,
             ylabel=label,
-            backend=cmdopts["graphs_backend"],
+            backend=backend,
             xticks=xticks,
             xticklabels=xticklabels,
             logyscale=cmdopts["plot_log_yscale"],

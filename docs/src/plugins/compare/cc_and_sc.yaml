@@ -1,0 +1,58 @@
+# Inter-controller comparison: For a set of controllers which have all been
+# run in the same scenario.
+inter-controller:
+  # The filename (no path, extension) of the .csv within the collated .csv
+  # output directory for each batch experiment which contains the information
+  # to collate across controllers/scenarios.
+  #
+  # The src_stem must match the dest_stem from an inter-experiment line graph
+  # in order to generate the comparison graph!
+  #
+  # Note that if you are using bivariate batch criteria + intra-scenario
+  # comparison, you *may* have to append the interval # to the end of the
+  # stem, because collated 2D CSV files form a temporal sequence over the
+  # duration of the experiment. If you forget to do this, you will get a
+  # warning and no graph will be generated, because SIERRA won't know which
+  # 2D csv you want to us as source. Frequently you are interested in steady
+  # state behavior, so putting 'n_intervals - 1' is desired.
+  #
+  # If the src_stem is from a CSV you generated outside of the SIERRA
+  # core/via a hook, then this restriction does not apply.
+  - src_stem: PM-ss-raw
+
+    # The filename (no path, extent) of the .csv file within the
+    # controller/scenario comparison directory in ``--sierra-root`` (outside
+    # of the directories for each controller/scenario!) which should contain
+    # the data collated from each batch experiment. I usually put a prefix
+    # such as ``cc`` (controller comparison) to help distinguish these graphs
+    # from the collated graphs in stage 4.
+    dest_stem: cc-PM-ss-raw
+
+    # The title the graph should have. This cannot be computed from the batch
+    # criteria in general in stage 5, because you can comparison results
+    # across scenarios which use different batch criteria. Defaults to '' if
+    # omitted.
+    title: ''
+
+    # The Y or Z label of the graph (depending on the type of comparison
+    # graph selected on the cmdline). This key is optional.
+    label: 'Avg. Object Collection Rate'
+
+    # For bivariate batch criteria, select which criteria should be on the X
+    # axis if the comparison graphs are linegraphs. 0=criteria1,
+    # 1=criteria2. Ignored for univariate batch criteria or if heatmaps are
+    # selected for as the comparison type. This key is optional, and
+    # defaults to 0 if omitted.
+    primary_axis: 0
+
+   # The experiments from each batch experiment which should be included on
+   # the comparison graph. This is useful to exclude exp0 (for example), if
+   # you are interested in behavior under non-ideal conditions and exp0
+   # contains behavior under ideal conditions as the "base case" in the
+   # batch. Syntax is parsed as a python slice, so as ``X:Y`` as you would
+   # expect. This key is optional, and defaults to ``:`` if omitted.
+    include_exp: '2:'
+
+    # Specify the backend to use to generate the graph. Defaults to
+    # --graphs-backend if omitted.
+    backend: "matplotlib"

@@ -11,10 +11,12 @@ import logging
 
 # 3rd party packages
 import json
+import yaml
+import strictyaml
 
 # Project packages
 from sierra.core import types, batchroot, graphs
-from sierra.core.graphs import bcbridge
+from sierra.core.graphs import bcbridge, schema
 
 _logger = logging.getLogger(__name__)
 
@@ -45,6 +47,13 @@ def generate(
                 continue
 
             _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
+
+            try:
+                graph = strictyaml.load(yaml.dump(graph), schema.heatmap).data
+
+            except strictyaml.YAMLError as e:
+                _logger.critical("Non-conformant heatmap YAML: %s", e)
+                raise
 
             graph_pathset = graphs.PathSet(
                 input_root=pathset.stat_collate_root,

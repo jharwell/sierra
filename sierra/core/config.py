@@ -165,7 +165,6 @@ kYAML = types.YAMLConfigFileSpec(
     graphs="graphs.yaml",
     controllers="controllers.yaml",
     models="models.yaml",
-    stage5="stage5.yaml",
 )
 
 kGazebo = {

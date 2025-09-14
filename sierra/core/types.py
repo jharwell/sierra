@@ -69,7 +69,6 @@ class YAMLConfigFileSpec:
     graphs: str
     controllers: str
     models: str
-    stage5: str
 
 
 @dataclass

@@ -11,10 +11,12 @@ import logging
 
 # 3rd party packages
 import json
+import yaml
+import strictyaml
 
 # Project packages
 from sierra.core import types, batchroot, graphs
-from sierra.core.graphs import bcbridge
+from sierra.core.graphs import bcbridge, schema
 
 _logger = logging.getLogger(__name__)
 
@@ -47,8 +49,18 @@ def generate(
             _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
 
             if graph["type"] == "summary_line":
+                try:
+                    graph = strictyaml.load(yaml.dump(graph), schema.summary_line).data
+                except strictyaml.YAMLError as e:
+                    _logger.critical("Non-conformant summary_line YAML: %s", e)
+                    raise
                 _gen_summary_linegraph(graph, pathset, cmdopts, info)
             elif graph["type"] == "stacked_line":
+                try:
+                    graph = strictyaml.load(yaml.dump(graph), schema.stacked_line).data
+                except strictyaml.YAMLError as e:
+                    _logger.critical("Non-conformant stacked_line YAML: %s", e)
+                    raise
                 _gen_stacked_linegraph(graph, pathset, cmdopts, info)
 
 

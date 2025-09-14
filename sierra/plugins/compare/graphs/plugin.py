@@ -10,12 +10,15 @@ Stage5 plugin to compare graphs across {controllers, scenarios, criterias}.
 # Core packages
 import logging
 import argparse
+import pathlib
 
 # 3rd party packages
+import yaml
+import strictyaml
 
 # Project packages
-from sierra.core import types, utils
-from sierra.plugins.compare.graphs import outputroot
+from sierra.core import types, utils, config
+from sierra.plugins.compare.graphs import outputroot, schema
 from sierra.plugins.compare.graphs import inter_controller as intercc
 from sierra.plugins.compare.graphs import inter_scenario as intersc
 
@@ -26,7 +29,6 @@ def proc_exps(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     cli_args: argparse.Namespace,
-    stage5_config: types.YAMLDict,
 ) -> None:
     stage5_roots = outputroot.PathSet(
         cmdopts,
@@ -45,10 +47,14 @@ def proc_exps(
         cmdopts["bc_cardinality"] <= 2
     ), "This plugin only supports batch criteria with cardinality <=2"
 
+    path = pathlib.Path(cmdopts["project_config_root"], config.kYAML.graphs)
+    with utils.utf8open(path) as f:
+        graphs_config = yaml.load(f, yaml.FullLoader)
+
     if cmdopts["across"] == "controllers":
-        _run_cc(main_config, cmdopts, cli_args, stage5_roots, stage5_config)
+        _run_cc(main_config, cmdopts, cli_args, stage5_roots, graphs_config)
     elif cmdopts["across"] == "scenarios":
-        _run_sc(main_config, cmdopts, cli_args, stage5_roots, stage5_config)
+        _run_sc(main_config, cmdopts, cli_args, stage5_roots, graphs_config)
     elif cmdopts["across"] == "criterias":
         raise RuntimeError("Inter-criteria comparison not implemented yet!")
 
@@ -58,7 +64,7 @@ def _run_cc(
     cmdopts: types.Cmdopts,
     cli_args: argparse.Namespace,
     stage5_roots: outputroot.PathSet,
-    stage5_config: types.YAMLDict,
+    graphs_config: types.YAMLDict,
 ) -> None:
     controllers = cmdopts["things"].split(",")
 
@@ -70,6 +76,14 @@ def _run_cc(
 
     _logger.info("Inter-batch controller comparison of %s...", controllers)
 
+    try:
+        graphs_config = strictyaml.load(
+            yaml.dump(graphs_config["inter-controller"]), schema.cc
+        )
+    except strictyaml.YAMLError as e:
+        _logger.critical("Non-conformant inter-controller YAML: %s", e)
+        raise
+
     if cmdopts["bc_cardinality"] == 1:
         univar = intercc.UnivarInterControllerComparator(
             controllers,
@@ -79,7 +93,7 @@ def _run_cc(
             main_config,
         )
         univar(
-            target_graphs=list(stage5_config["inter-controller"]["graphs"]),
+            target_graphs=list(graphs_config["inter-controller"]),
             legend=list(legend),
         )
     elif cmdopts["bc_cardinality"] == 2:
@@ -91,7 +105,7 @@ def _run_cc(
             main_config,
         )
         bivar(
-            target_graphs=list(stage5_config["inter-controller"]["graphs"]),
+            target_graphs=list(graphs_config["inter-controller"]),
             legend=list(legend),
         )
 
@@ -103,7 +117,7 @@ def _run_sc(
     cmdopts: types.Cmdopts,
     cli_args: argparse.Namespace,
     stage5_roots: outputroot.PathSet,
-    stage5_config: types.YAMLDict,
+    graphs_config: types.YAMLDict,
 ) -> None:
     scenarios = cmdopts["things"].split(",")
 
@@ -116,6 +130,13 @@ def _run_sc(
     controller = cmdopts["controller"]
 
     _logger.info("Inter-batch comparison of %s across %s...", controller, scenarios)
+    try:
+        graphs_config = strictyaml.load(
+            yaml.dump(graphs_config["inter-scenarior"]), schema.cc
+        )
+    except strictyaml.YAMLError as e:
+        _logger.critical("Non-conformant inter-scenario YAML: %s", e)
+        raise
 
     assert (
         cmdopts["bc_cardinality"] == 1
@@ -131,7 +152,7 @@ def _run_sc(
     )
 
     comparator(
-        target_graphs=list(stage5_config["inter-scenario"]["graphs"]),
+        target_graphs=list(graphs_config["inter-scenario"]),
         legend=list(legend),
     )
 

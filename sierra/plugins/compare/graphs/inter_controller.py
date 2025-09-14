@@ -183,6 +183,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             label=graph.get("label", ""),
             inc_exps=graph.get("include_exp", None),
             legend=legend,
+            backend=graph.get("backend", cmdopts["graphs_backend"]),
         )
 
     def _accum_csv(
@@ -232,6 +233,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         label: str,
         inc_exps: tp.Optional[str],
         legend: tp.List[str],
+        backend: str,
     ) -> None:
         """Generate a graph comparing the specified controllers within a scenario."""
         opath_leaf = namecalc.for_cc(batch_leaf, dest_stem, None)
@@ -262,7 +264,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             title=title,
             xlabel=info.xlabel,
             ylabel=label,
-            backend=cmdopts["graphs_backend"],
+            backend=backend,
             xticklabels=xtick_labels,
             xticks=xticks,
             logyscale=cmdopts["plot_log_yscale"],
