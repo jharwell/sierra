@@ -106,7 +106,8 @@ def session_setup(func):
             f"--scenario=LowBlockCount.10x10x2 "
             f"--with-robot-leds "
             f"--with-robot-rab "
-            f"--log-level=TRACE"
+            f"--log-level=TRACE "
+            f"--df-verify "
         )
 
         session.env["JSONSIM_BASE_CMD"] = (
@@ -123,7 +124,8 @@ def session_setup(func):
             f"-xno-devnull "
             f"--expdef=expdef.json "
             f"--jsonsim-path={session.env['SIERRA_SAMPLE_ROOT']}/plugins/jsonsim/jsonsim.py "
-            f"--log-level=TRACE"
+            f"--log-level=TRACE "
+            "--df-verify "
         )
 
         session.env["ROS1ROBOT_BASE_CMD"] = (
@@ -140,7 +142,8 @@ def session_setup(func):
             f"--execenv robot.turtlebot3 "
             f"-sonline-check "
             f"-ssync "
-            f"--log-level=TRACE"
+            f"--log-level=TRACE "
+            f"--df-verify "
         )
 
         session.env["ROS1GAZEBO_BASE_CMD"] = (
@@ -156,6 +159,7 @@ def session_setup(func):
             f"--controller=turtlebot3.wander "
             f"--robot turtlebot3 "
             f"--log-level=TRACE "
+            f"--df-verify "
         )
         session.log("Setting up environment...")
 

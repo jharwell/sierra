@@ -242,21 +242,51 @@ class BaseGatherer:
     def _verify_exp_outputs_pairwise(
         self,
         exp_output_root: pathlib.Path,
-        csv_root1: pathlib.Path,
-        csv_root2: pathlib.Path,
+        ofile_root1: pathlib.Path,
+        ofile_root2: pathlib.Path,
     ) -> None:
-        for csv in csv_root2.iterdir():
-            path1 = csv
-            path2 = csv_root2 / csv.name
+        for ofile in ofile_root1.rglob("*"):
+            path1 = ofile
+            path2 = ofile_root2 / ofile.name
 
-            # .csvs for rendering that we don't verify
-            if path1.is_dir() or path2.is_dir():
+            # If either path is a directory, that directory MIGHT container
+            # imagizing data. We use the following heuristic:
+            #
+            # If the directory only contains files AND all the files have the
+            # same extension AND all the files contain the directory name, we
+            # conclude that the directory contains imagizing data and skip it.
+            #
+            # Otherwise, check it, as projects/engines can output their data in
+            # a directory tree, and we want to verify that.
+            print(path1, path2)
+
+            if (
+                path1.is_dir()
+                and path2.is_dir()
+                and all(f.is_file() and path1.name in f.name for f in path1.iterdir())
+                and all(f.is_file() and path2.name in f.name for f in path2.iterdir())
+            ):
                 self.logger.debug(
                     (
-                        "Not verifying <exp_output_root>/%s: "
+                        "Not verifying {<exp_output_root>/%s,<exp_output_root>/%s} pairwise: "
                         "contains data for imagizing"
                     ),
                     path1.relative_to(exp_output_root),
+                    path2.relative_to(exp_output_root),
+                )
+                continue
+
+            if path1.is_dir() or path2.is_dir():
+                continue
+
+            if path1.parent.name in path1.name or path2.parent.name in path2.name:
+                self.logger.trace(
+                    (
+                        "Not verifying {<exp_output_root>/%s,<exp_output_root>/%s} pairwise: "
+                        "imagizing data"
+                    ),
+                    path1.relative_to(exp_output_root),
+                    path2.relative_to(exp_output_root),
                 )
                 continue
 
@@ -282,9 +312,9 @@ class BaseGatherer:
                     len(df1[c1]) == len(df1[c2]) for c2 in df1.columns
                 ), f"Not all columns from {path1} have same length"
 
-                assert all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns), (
-                    f"Not all columns from {path1} and {path2} have " "the same length"
-                )
+                assert all(
+                    len(df1[c1]) == len(df2[c2]) for c2 in df1.columns
+                ), f"Not all columns from {path1} and {path2} have the same length"
 
 
 __all__ = ["GatherSpec", "BaseGatherer"]
