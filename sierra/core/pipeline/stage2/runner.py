@@ -1,7 +1,7 @@
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Classes for executing experiments via the specified ``--exec-env``."""
+"""Classes for executing experiments via the specified ``--execenv``."""
 
 # Core packages
 import os
@@ -161,9 +161,9 @@ class BatchExpRunner:
 
         """
         self.logger.info(
-            "Engine=%s, exec_env=%s",
+            "Engine=%s, execenv=%s",
             self.cmdopts["engine"],
-            self.cmdopts["exec_env"],
+            self.cmdopts["execenv"],
         )
 
         module = pm.pipeline.get_plugin_module(self.cmdopts["engine"])
@@ -182,10 +182,10 @@ class BatchExpRunner:
 
         # Verify environment is OK before running anything
         self.logger.debug("Checking --engine execution environment")
-        engine.exec_env_check(self.cmdopts)
+        engine.execenv_check(self.cmdopts)
 
-        self.logger.debug("Checking --exec-env execution environment")
-        execenv.exec_env_check(self.cmdopts)
+        self.logger.debug("Checking --execenv execution environment")
+        execenv.execenv_check(self.cmdopts)
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()

@@ -4,7 +4,7 @@
 """
 Container module for the local execution environment.
 
-See :ref:`plugins/exec-env/hpc/local`.
+See :ref:`plugins/execenv/hpc/local`.
 """
 
 # Core packages

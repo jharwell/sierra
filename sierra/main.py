@@ -41,10 +41,10 @@ class SIERRA:
         # arguments/adding new arguments as needed, and perform additional
         # validation.
         self.args = execenv.cmdline_postparse_configure(
-            bootstrap_args.exec_env, self.args
+            bootstrap_args.execenv, self.args
         )
         self.args = engine.cmdline_postparse_configure(
-            bootstrap_args.engine, bootstrap_args.exec_env, self.args
+            bootstrap_args.engine, bootstrap_args.execenv, self.args
         )
 
         # Inject bootstrap arguments into the namespace for non-bootstrap
@@ -52,7 +52,7 @@ class SIERRA:
         # uniform.
         self.args.__dict__["project"] = bootstrap_args.project
         self.args.__dict__["engine"] = bootstrap_args.engine
-        self.args.__dict__["exec_env"] = bootstrap_args.exec_env
+        self.args.__dict__["execenv"] = bootstrap_args.execenv
         self.args.__dict__["expdef"] = bootstrap_args.expdef
         self.args.__dict__["storage"] = bootstrap_args.storage
         self.args.__dict__["proc"] = bootstrap_args.proc
@@ -112,10 +112,10 @@ class SIERRA:
         dynamically combines declared cmdlines from each active plugin, in the
         following partial dependency order::
 
-               --project -> {--expdef, --proc, --prod, --compare, --storage} -> --exec-env --> --engine
+               --project -> {--expdef, --proc, --prod, --compare, --storage} -> --execenv --> --engine
 
         Plugins in the {} could *probably* be reordered without breaking things,
-        but the other plugins (--project, --exec-env, --engine) need to be where
+        but the other plugins (--project, --execenv, --engine) need to be where
         they are in the chain. Change the order at your own risk!
         """
 
@@ -127,7 +127,7 @@ class SIERRA:
         # them with some simple conf and build their portions of the cmdline.
         simple = {
             "engine": {"arg": "--engine", "module": engine},
-            "exec_env": {"arg": "--exec-env", "module": execenv},
+            "execenv": {"arg": "--execenv", "module": execenv},
             "expdef": {"arg": "--expdef", "module": expdef},
             "storage": {"arg": "--storage", "module": storage},
         }
@@ -194,8 +194,8 @@ class SIERRA:
         pm.engine_sanity_checks(bootstrap_args.engine, module)
 
         # Verify execution environment plugin
-        module = manager.get_plugin_module(bootstrap_args.exec_env)
-        pm.exec_env_sanity_checks(bootstrap_args.exec_env, module)
+        module = manager.get_plugin_module(bootstrap_args.execenv)
+        pm.execenv_sanity_checks(bootstrap_args.execenv, module)
 
         # Verify processing plugins
         for p in bootstrap_args.proc:

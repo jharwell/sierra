@@ -1,4 +1,4 @@
-.. _tutorials/plugin/exec-env:
+.. _tutorials/plugin/execenv:
 
 ===========================================
 Creating a New Execution Environment Plugin
@@ -152,7 +152,7 @@ Finally--Connect to SIERRA!
 After going through all the sections above and creating your plugin, tell SIERRA
 about it by putting ``$HOME/git/plugins`` on your
 :envvar:`SIERRA_PLUGIN_PATH`. Then your plugin can be selected as
-``--exec-env=hpc.HAL``. Note that if you change what directory you put on the
+``--execenv=hpc.HAL``. Note that if you change what directory you put on the
 plugin path, how you selected your engine will change. E.g., if you put
 ``$HOME/git/`` on :envvar:`SIERRA_PLUGIN_PATH`, then your new plugin will be
 accessible via ``plugins.engine.HAL`` instead.

@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.4.21"
+version = "1.4.22"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -62,7 +62,7 @@ analysis = [
      # Only compatible with python <= 3.10. Latest version (3.3.6) not
      # compatible with 3.11 or 3.12, so pinning for now. Hopefully
      # this will be fixed eventually.
-    'pylint==2.14.5',
+    'pylint',
     'pytype',
     'pydocstyle',
     'xenon',

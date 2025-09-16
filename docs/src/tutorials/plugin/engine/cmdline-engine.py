@@ -16,7 +16,7 @@ class Cmdline(corecmd.BaseCmdline):
 
         parents: A list of other parsers which are the parents of
                  this parser. This is used to inherit cmdline options
-                 from the selected ``--exec-env`` at runtime. If
+                 from the selected ``--execenv`` at runtime. If
                  None, then we are generating sphinx documentation
                  from cmdline options.
 

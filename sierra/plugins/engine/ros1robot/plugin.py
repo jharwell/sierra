@@ -335,7 +335,7 @@ def cmdline_postparse_configure(
     return args
 
 
-def exec_env_check(cmdopts: types.Cmdopts) -> None:
+def execenv_check(cmdopts: types.Cmdopts) -> None:
     """
     Verify execution environment in stage 2 for :term:`ROS1+Robot`.
 
@@ -395,5 +395,5 @@ __all__ = [
     "ExpShellCmdsGenerator",
     "ExpConfigurer",
     "cmdline_postparse_configure",
-    "exec_env_check",
+    "execenv_check",
 ]

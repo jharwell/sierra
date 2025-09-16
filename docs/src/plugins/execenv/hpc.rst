@@ -1,4 +1,4 @@
-.. _plugins/exec-env/hpc:
+.. _plugins/execenv/hpc:
 
 =================================
 HPC Execution Environment Plugins
@@ -34,12 +34,12 @@ listed on this page:
        if everything ran on a common filesystem prior to running any later
        stages.
 
-.. _plugins/exec-env/hpc/local:
+.. _plugins/execenv/hpc/local:
 
 Local HPC Plugin
 ================
 
-This HPC environment can be selected via ``--exec-env=hpc.local``.
+This HPC environment can be selected via ``--execenv=hpc.local``.
 
 This is the default HPC environment in which SIERRA will run all
 :term:`Experimental Runs <Experimental Run>` on the same computer from which it
@@ -83,12 +83,12 @@ The following environmental variables are used in the local HPC environment:
        processes.
 
 
-.. _plugins/exec-env/hpc/pbs:
+.. _plugins/execenv/hpc/pbs:
 
 PBS HPC Plugin
 ==============
 
-This HPC environment can be selected via ``--exec-env=hpc.pbs``.
+This HPC environment can be selected via ``--execenv=hpc.pbs``.
 
 In this HPC environment, SIERRA will run experiments spread across multiple
 allocated nodes by a PBS compatible scheduler such as Moab.  The following table
@@ -136,14 +136,14 @@ The following environmental variables are used in the PBS HPC environment:
        nodes) if multiple jobs are started from the same directory.
 
 
-.. _plugins/exec-env/hpc/slurm:
+.. _plugins/execenv/hpc/slurm:
 
 SLURM HPC Plugin
 ================
 
 `<https://slurm.schedmd.com/documentation.html>`_
 
-This HPC environment can be selected via ``--exec-env=hpc.slurm``.
+This HPC environment can be selected via ``--execenv=hpc.slurm``.
 
 In this HPC environment, SIERRA will run experiments spread across multiple
 allocated nodes by the SLURM scheduler. The following table describes the
@@ -202,12 +202,12 @@ not defined SIERRA will throw an error.
 
      - N/A
 
-.. _plugins/exec-env/hpc/adhoc:
+.. _plugins/execenv/hpc/adhoc:
 
 Adhoc HPC Plugin
 ================
 
-This HPC environment can be selected via ``--exec-env=hpc.adhoc``.
+This HPC environment can be selected via ``--execenv=hpc.adhoc``.
 
 In this HPC environment, SIERRA will run experiments spread across an ad-hoc
 network of compute nodes. SIERRA makes the following assumptions about the

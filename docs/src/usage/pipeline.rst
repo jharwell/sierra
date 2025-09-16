@@ -53,7 +53,7 @@ The following plugins are active in this stage:
      - Generating inputs for the selected :term:`Engine` which can be executed
        in stage 2 from the ``--expdef-template`` experiment template file.
 
-   * - :ref:`Execution environment <plugins/exec-env>`
+   * - :ref:`Execution environment <plugins/execenv>`
 
      - Assisting with experimental input generation so experiments can be
        executed during stage 2.
@@ -102,7 +102,7 @@ The following plugins are active in this stage:
      - Performing validation of execution environment before running experiments
        in stage 2.
 
-   * - :ref:`Execution environment <plugins/exec-env>`
+   * - :ref:`Execution environment <plugins/execenv>`
 
      - Executing shell commands to run the experiments generated during stage 2.
 

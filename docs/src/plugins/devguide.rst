@@ -153,7 +153,7 @@ SIERRA.
    something like this in SIERRA's output::
 
      2025-08-16 17:19:40 INFO sierra.main - Dynamically building cmdline from selected plugins
-     2025-08-16 17:19:40 DEBUG sierra.main - Loaded --exec-env=hpc.local cmdline
+     2025-08-16 17:19:40 DEBUG sierra.main - Loaded --execenv=hpc.local cmdline
      2025-08-16 17:19:40 DEBUG sierra.main - Loaded --engine=starfleet.enterprise cmdline
      2025-08-16 17:19:40 DEBUG sierra.main - Loaded --proc=proc.statistics cmdline
      2025-08-16 17:19:40 DEBUG sierra.main - Loaded --prod=prod.graphs cmdline
@@ -161,7 +161,7 @@ SIERRA.
    and then later when SIERRA is building the ``cmdopts`` dictionary::
 
      2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --engine=starfleet.enterprise
-     2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --exec-env=hpc.local
+     2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --execenv=hpc.local
      2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --proc=proc.statistics
      2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --prod=prod.graphs
 

@@ -74,7 +74,7 @@ Basic Structure
 
    * - Batch scratch root.
 
-     - All GNU parallel outputs, ``--exec-env`` artifacts will appear under
+     - All GNU parallel outputs, ``--execenv`` artifacts will appear under
        here. Each experiment will get their own directory in this root for their
        own scratch. This root is separate from experiment inputs to make
        checking for segfaults, tar-ing experiments, etc. easier.

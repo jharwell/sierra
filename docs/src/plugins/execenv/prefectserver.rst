@@ -1,4 +1,4 @@
-.. _plugins/exec-env/prefectserver:
+.. _plugins/execenv/prefectserver:
 
 ===========================================
 Prefect-based Execution Environment Plugins
@@ -12,7 +12,7 @@ locally.
           ``prefect`` to avoid ``sys.path`` conflicts with the ``prefect``
           package which will otherwise arise.
 
-.. _plugins/exec-env/prefectserver/local:
+.. _plugins/execenv/prefectserver/local:
 
 Local Prefect Server Plugin
 ===========================
@@ -21,7 +21,7 @@ Local Prefect Server Plugin
 
    Beta version. Works, but some minor rough edges/bugs may be encountered.
 
-This prefect environment can be selected via ``--exec-env=prefect.localserver``.
+This prefect environment can be selected via ``--execenv=prefect.localserver``.
 This plugin defines the following prefect artifacts:
 
 - ``sierra/local`` flow to execute all :term:`Experimental Runs <Experimental
@@ -69,7 +69,7 @@ though it could be easily if randomized ports are used.
      - N/A
 
 
-.. _plugins/exec-env/prefectserver/dockerremote:
+.. _plugins/execenv/prefectserver/dockerremote:
 
 Remote+Docker Prefect Plugin
 ============================
@@ -79,7 +79,7 @@ Remote+Docker Prefect Plugin
    Beta version. Works, but some minor rough edges/bugs may be encountered.
 
 This prefect environment can be selected via
-``--exec-env=prefectserver.dockerremote``.
+``--execenv=prefectserver.dockerremote``.
 
 This plugin relies heavily on the server configuration: default queue, work
 pool, etc. Currently this is not configurable (i.e., you can't specify a

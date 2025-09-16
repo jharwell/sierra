@@ -102,10 +102,10 @@ Some guidance on selecting parallelism.:
     - Your engine is a simulator of some kind, and is single threaded.  In this
       case, there is no advantage to restricting parallelism to the level of
       :term:`Experiments <Experiment>`, and executing all runs in parallel (up
-      to the level supported by ``--exec-env`` and available computational
+      to the level supported by ``--execenv`` and available computational
       resources) is desirable for speed.
 
-    - You submit executable code directly in your ``--exec-env``.  That is,
+    - You submit executable code directly in your ``--execenv``.  That is,
       instead of a "classic" HPC approach where you submit a job script which
       when run will run your code, you submit e.g., executable python code to
       the scheduler which it will directly run.
@@ -115,7 +115,7 @@ Some guidance on selecting parallelism.:
 
 ``per-exp`` parallelism is appropriate if:
 
-    - Your ``--exec-env`` is a "classic" HPC environment, and the scheduler
+    - Your ``--execenv`` is a "classic" HPC environment, and the scheduler
       gives you exclusive control over a set of resources dedicated to you when
       requested, and then you have to run SIERRA within that job with the
       allocated resources.
@@ -544,4 +544,4 @@ so that your engine can be selected via ``--engine=engine.matrix``.
    (e.g., no dots, so ``matrix.foo`` is not a valid plugin name).
 
 .. NOTE:: If your engine supports/requires a new execution environment, head
-          over to :ref:`tutorials/plugin/exec-env`.
+          over to :ref:`tutorials/plugin/execenv`.

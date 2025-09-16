@@ -137,7 +137,7 @@ def session_setup(func):
             f"--scenario=OutdoorWorld.10x10x2 "
             f"--controller=turtlebot3.wander "
             f"--robot turtlebot3 "
-            f"--exec-env robot.turtlebot3 "
+            f"--execenv robot.turtlebot3 "
             f"-sonline-check "
             f"-ssync "
             f"--log-level=TRACE"

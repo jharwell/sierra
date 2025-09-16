@@ -1,4 +1,4 @@
-.. _plugins/exec-env:
+.. _plugins/execenv:
 
 =============================
 Execution Environment Plugins
@@ -13,4 +13,4 @@ Execution Environment Plugins
    realrobot.rst
 
 Additional execution environments can be supported via
-:ref:`tutorials/plugin/exec-env`.
+:ref:`tutorials/plugin/execenv`.

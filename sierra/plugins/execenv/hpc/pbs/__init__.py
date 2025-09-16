@@ -4,7 +4,7 @@
 """
 Container module for the PBS execution environment.
 
-See :ref:`plugins/exec-env/hpc/pbs`.
+See :ref:`plugins/execenv/hpc/pbs`.
 """
 
 # Core packages

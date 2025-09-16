@@ -102,7 +102,7 @@ def execenv_hpc(session, env, engine):
 
     if env == "hpc.local":
         # Test with regular output
-        session.run(*sierra_cmd.split(), f"--exec-env={env}", silent=True)
+        session.run(*sierra_cmd.split(), f"--execenv={env}", silent=True)
         utils.stage2_univar_check_outputs(
             engine.split(".")[1], batch_root, cardinality, 4
         )
@@ -115,7 +115,7 @@ def execenv_hpc(session, env, engine):
         session.run(
             *sierra_cmd.split(),
             "--exec-devnull",
-            f"--exec-env={env}",
+            f"--execenv={env}",
             "--exec-parallelism-paradigm=per-exp",
         )
         utils.stage2_univar_check_outputs(
@@ -143,7 +143,7 @@ def execenv_hpc(session, env, engine):
         session.env["SIERRA_NODEFILE"] = "/tmp/nodefile"
         session.run(
             *sierra_cmd.split(),
-            f"--exec-env={env}",
+            f"--execenv={env}",
             "--exec-parallelism-paradigm=per-exp",
             silent=True,
         )
@@ -213,7 +213,7 @@ def execenv_prefectserver(session, env):
 
         # Run with prefect local server
         session.run(
-            *f"{sierra_cmd} --exec-env=prefectserver.local".split(), silent=True
+            *f"{sierra_cmd} --execenv=prefectserver.local".split(), silent=True
         )
 
     elif env == "prefectserver.dockerremote":
@@ -338,7 +338,7 @@ def execenv_prefectserver(session, env):
         sample_root = session.env["SIERRA_SAMPLE_ROOT"]
 
         session.run(
-            *f"{sierra_cmd} --exec-env=prefectserver.dockerremote".split(),
+            *f"{sierra_cmd} --execenv=prefectserver.dockerremote".split(),
             "--docker-extra-mounts",
             f"{sierra_repo}:{sierra_repo}",
             f"{sample_root}:{sample_root}",

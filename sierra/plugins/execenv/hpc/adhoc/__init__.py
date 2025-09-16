@@ -4,7 +4,7 @@
 """
 Container module for the adhoc execution environment.
 
-See :ref:`plugins/exec-env/hpc/adhoc`.
+See :ref:`plugins/execenv/hpc/adhoc`.
 """
 
 # Core packages

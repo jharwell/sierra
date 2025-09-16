@@ -16,7 +16,7 @@ a real robot of your choice. To use this engine, you must setup the
 to work with most real robots which :term:`ROS1` supports, and as a starting
 point to derive more specific engine configuration for a given robot (if
 needed). For all execution environments using this engine (see
-:ref:`plugins/exec-env/realrobot` for examples), SIERRA will run experiments
+:ref:`plugins/execenv/realrobot` for examples), SIERRA will run experiments
 spread across multiple robots using GNU parallel.
 
 SIERRA designates the host machine as the ROS master, and allows you to

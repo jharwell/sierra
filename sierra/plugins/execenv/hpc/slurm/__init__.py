@@ -4,7 +4,7 @@
 """
 Container module for the SLURM execution environment.
 
-See :ref:`plugins/exec-env/hpc/slurm`.
+See :ref:`plugins/execenv/hpc/slurm`.
 """
 
 # Core packages

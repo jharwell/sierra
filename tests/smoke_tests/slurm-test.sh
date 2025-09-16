@@ -19,4 +19,4 @@ set -x
 # a bit to make things work
 export SLURM_JOB_NODELIST=":"
 echo $SIERRA_CMD
-$SIERRA_CMD --exec-env=hpc.slurm  --exec-parallelism-paradigm=per-exp
+$SIERRA_CMD --execenv=hpc.slurm  --exec-parallelism-paradigm=per-exp

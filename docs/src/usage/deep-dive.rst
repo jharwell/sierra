@@ -139,7 +139,7 @@ include:
    factory --> expdef : Joint\n~--controller + --scenario generator\nexpdef changes
 
    plugins --> expdef : Per-experiment --engine\nexpdef changes
-   plugins --> expdef : Per-experiment --exec-env\nexpdef changes
+   plugins --> expdef : Per-experiment --execenv\nexpdef changes
 
    plugins --> expdef : Per-run ~--engine\nexpdef changes
    plugins --> expdef : Per-run ~--project\nexpdef changes

@@ -215,7 +215,7 @@ def cmdline_postparse_configure(
     Configure cmdline args after parsing for the :term:`ROS1+Gazebo` engine.
 
     This sets arguments appropriately depending on what HPC environment is
-    selected with ``--exec-env``:
+    selected with ``--execenv``:
 
     - hpc.local
 
@@ -322,7 +322,7 @@ def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-def exec_env_check(cmdopts: types.Cmdopts) -> None:
+def execenv_check(cmdopts: types.Cmdopts) -> None:
     """
     Verify execution environment in stage 2 for :term:`ROS1+Gazebo`.
 
@@ -352,7 +352,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
     # Check we can find Gazebo
     version = execenv.check_for_simulator(
-        cmdopts["engine"], cmdopts["exec_env"], config.kGazebo["launch_cmd"]
+        cmdopts["engine"], cmdopts["execenv"], config.kGazebo["launch_cmd"]
     )
 
     # Check Gazebo version
@@ -402,4 +402,4 @@ def pre_exp_diagnostics(
     )
 
 
-__all__ = ["cmdline_postparse_configure", "exec_env_check"]
+__all__ = ["cmdline_postparse_configure", "execenv_check"]

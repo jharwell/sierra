@@ -31,13 +31,13 @@ _logger = logging.getLogger(__name__)
 
 
 def cmdline_postparse_configure(
-    engine: str, exec_env: str, args: argparse.Namespace
+    engine: str, execenv: str, args: argparse.Namespace
 ) -> argparse.Namespace:
     """Dispatcher for configuring the cmdopts dictionary.
 
-    Dispatches configuring to the selected ``--engine`` and ``--exec-env``.
+    Dispatches configuring to the selected ``--engine`` and ``--execenv``.
     Called before the pipeline starts to add modify existing cmdline arguments
-    after initial parsing.  ``engine`` and ``exec_env`` are needed as
+    after initial parsing.  ``engine`` and ``execenv`` are needed as
     arguments as they are not present in ``args``; they are "bootstrap" cmdline
     args needed to be parsed first to build the parser for the set of cmdline
     arguments accepted.
@@ -46,7 +46,7 @@ def cmdline_postparse_configure(
     module = pm.pipeline.get_plugin_module(engine)
 
     if hasattr(module, "cmdline_postparse_configure"):
-        args = module.cmdline_postparse_configure(exec_env, args)
+        args = module.cmdline_postparse_configure(execenv, args)
     else:
         _logger.debug(
             (
@@ -59,7 +59,7 @@ def cmdline_postparse_configure(
     return args
 
 
-def exec_env_check(cmdopts: types.Cmdopts) -> None:
+def execenv_check(cmdopts: types.Cmdopts) -> None:
     """Dispatcher for verifying execution environments in stage 2.
 
     This is required because what is needed to create experiments in stage 1 for
@@ -68,13 +68,13 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
     """
     module = pm.pipeline.get_plugin_module(cmdopts["engine"])
-    if hasattr(module, "exec_env_check"):
-        module.exec_env_check(cmdopts)
+    if hasattr(module, "execenv_check"):
+        module.execenv_check(cmdopts)
     else:
         _logger.debug(
             (
                 "Skipping execution environment check for "
-                "--engine=%s: does not define exec_env_check()"
+                "--engine=%s: does not define execenv_check()"
             ),
             cmdopts["engine"],
         )

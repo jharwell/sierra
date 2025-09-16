@@ -184,9 +184,9 @@ your code does not meet these assumptions, then you will need to make some
    experimental run root which SIERRA looks for simulation outputs is configured
    via YAML; see :ref:`tutorials/project/main-config` for details.
 
-   For HPC execution environments (see :ref:`plugins/exec-env/hpc`), this
+   For HPC execution environments (see :ref:`plugins/execenv/hpc`), this
    requirement is easy to meet. For real robot execution environments (see
-   :ref:`plugins/exec-env/realrobot`), this can be more difficult to meet.
+   :ref:`plugins/execenv/realrobot`), this can be more difficult to meet.
 
 #. All experimental run outputs are in a format that SIERRA understands within
    the output directory for the run. See :ref:`plugins/storage` for which output

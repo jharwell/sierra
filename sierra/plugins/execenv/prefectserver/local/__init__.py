@@ -4,7 +4,7 @@
 """
 Container module for the local execution environment.
 
-See :ref:`plugins/exec-env/prefect/local`.
+See :ref:`plugins/execenv/prefect/local`.
 """
 
 # Core packages

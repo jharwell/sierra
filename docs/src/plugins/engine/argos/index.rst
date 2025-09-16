@@ -51,7 +51,7 @@ Execution Environments
 
 The # threads per :term:`experimental run <Experimental Run>` is defined with
 ``--physics-n-engines``, and that option is required for the
-``--exec-env=hpc.local`` environment during stage 1.
+``--execenv=hpc.local`` environment during stage 1.
 
 Random Seeding For Reproducibility
 ==================================

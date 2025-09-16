@@ -117,7 +117,7 @@ class EngineCmdline(PluginCmdline):
                                          the arena, and 2 3D engines will manage
                                          the other 2/3 of the arena.
 
-                                         If ``--exec-env`` is something other
+                                         If ``--execenv`` is something other
                                          than ``hpc.local`` then the # physics
                                          engines will be computed from the HPC
                                          environment, and the cmdline value (if

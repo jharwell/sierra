@@ -4,7 +4,7 @@
 """
 Container module for plugins related to prefect execution environments.
 
-Driven by ``--exec-env``.
+Driven by ``--execenv``.
 """
 
 # Core packages

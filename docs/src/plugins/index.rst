@@ -10,7 +10,7 @@ supports several different plugin types:
 - Multiple :term:`Engines <Engine>` which researchers can write code to
   target.
 
-- :ref:`Multiple execution environments <plugins/exec-env>`, for execution of
+- :ref:`Multiple execution environments <plugins/execenv>`, for execution of
   experiments. Built-in support includes HPC environments and real hardware such
   as robots.
 
@@ -38,7 +38,7 @@ SIERRA supports.
    :maxdepth: 1
 
    engine/index.rst
-   exec-env/index.rst
+   execenv/index.rst
    storage/index.rst
    expdef/index.rst
    proc/index.rst

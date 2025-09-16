@@ -49,7 +49,7 @@ experiments.
    --n-runs=3 \
    --engine=engine.argos\
    --project=projects.sample_argos \
-   --exec-env=hpc.local \
+   --execenv=hpc.local \
    --physics-n-engines=1 \
    --exp-setup=exp_setup.T10000 \
    --controller=foraging.footbot_foraging\
@@ -102,7 +102,7 @@ options set.
    --n-runs=96 \
    --engine=engine.argos\
    --project=projects.sample_argos \
-   --exec-env=hpc.slurm \
+   --execenv=hpc.slurm \
    --exp-setup=exp_setup.T10000 \
    --controller=foraging.footbot_foraging \
    --scenario=LowBlockCount.10x10x2 \
@@ -145,7 +145,7 @@ videos of simulations.
    --project=projects.sample_argos \
    --controller=foraging.footbot_foraging \
    --scenario=LowBlockCount.10x10x2 \
-   --exec-env=hpc.local \
+   --execenv=hpc.local \
    --n-runs=3 \
    --engine-vc \
    --exp-graphs=none \
@@ -179,7 +179,7 @@ TWO variables/things you want to vary jointly)::
    --project=projects.sample_argos \
    --controller=foraging.footbot_foraging \
    --scenario=LowBlockCount.10x10x2 \
-   --exec-env=hpc.local \
+   --execenv=hpc.local \
    --n-runs=3 \
    --engine-vc \
    --exp-graphs=none \
@@ -282,7 +282,7 @@ plugin::
    --engine=engine.ros1gazebo \
    --project=projects.sample_ros1gazebo \
    --n-runs=4 \
-   --exec-env=hpc.local \
+   --execenv=hpc.local \
    --expdef-template=exp/your-experiment.launch \
    --scenario=HouseWorld.10x10x1 \
    --sierra-root=$HOME/exp/test \
@@ -327,7 +327,7 @@ options set.
    --engine=engine.ros1gazebo \
    --project=projects.sample_ros1gazebo \
    --n-runs=96 \
-   --exec-env=hpc.slurm \
+   --execenv=hpc.slurm \
    --expdef-template=exp/your-experiment.launch \
    --scenario=HouseWorld.10x10x1 \
    --sierra-root=$HOME/exp/test \
@@ -360,7 +360,7 @@ with TWO variables/things you want to vary jointly)::
    --project=projects.sample_ros1gazebo \
    --controller=turtlebot3_sim.wander \
    --scenario=HouseWorld.10x10x2 \
-   --exec-env=hpc.local \
+   --execenv=hpc.local \
    --n-runs=3 \
    --exp-graphs=none \
    --batch-criteria population_size.Log8 max_speed.1.9.C5
@@ -398,7 +398,7 @@ plugin::
    --controller=turtlebot3.wander \
    --robot turtlebot3 \
    --exp-setup=exp_setup.T100 \
-   --exec-env=robot.turtlebot3 \
+   --execenv=robot.turtlebot3 \
    --nodefile=turtlebots.txt
    --exec-inter-run-pause=60 \
    --no-master-node

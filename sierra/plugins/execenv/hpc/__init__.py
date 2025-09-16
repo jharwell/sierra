@@ -4,7 +4,7 @@
 """
 Container module for plugins related to execution environments (HPC flavor).
 
-Driven by ``--exec-env``.
+Driven by ``--execenv``.
 """
 
 # Core packages

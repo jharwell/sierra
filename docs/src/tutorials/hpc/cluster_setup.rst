@@ -9,9 +9,9 @@ your local machine. If you haven't done that yet--shoo!
 
 This setup applies to the following SIERRA HPC cluster environments:
 
-- :ref:`plugins/exec-env/hpc/pbs`
+- :ref:`plugins/execenv/hpc/pbs`
 
-- :ref:`plugins/exec-env/hpc/slurm`
+- :ref:`plugins/execenv/hpc/slurm`
 
 ARGoS Setup on HPC Clusters
 ===========================
@@ -47,7 +47,7 @@ Once ARGoS/your C++ code has been built, you can setup SIERRA:
    directory with the EXACT name you want it to be callable with on the cmdline
    via ``--project``.
 
-#. Read the documentation for :ref:`plugins/exec-env/hpc`, and select and
+#. Read the documentation for :ref:`plugins/execenv/hpc`, and select and
    appropriate plugin to use. Be sure to define all necessary environment
    variables!!
 

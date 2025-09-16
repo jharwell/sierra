@@ -122,8 +122,8 @@ SIERRA! The steps to do so are:
    - How many variations of the main settings for each experiment to run:
      ``--n-runs``.
 
-   - Where it is running/how to run experiments: ``--exec-env``. See
-     :ref:`plugins/exec-env` for available plugins.
+   - Where it is running/how to run experiments: ``--execenv``. See
+     :ref:`plugins/execenv` for available plugins.
 
    - What controller to run: ``--controller``. See
      :ref:`tutorials/project/main-config` for details on how valid

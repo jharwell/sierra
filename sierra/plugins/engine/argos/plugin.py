@@ -124,7 +124,7 @@ class ExpConfigurer:
         return "per-exp"
 
 
-def exec_env_check(cmdopts: types.Cmdopts) -> None:
+def execenv_check(cmdopts: types.Cmdopts) -> None:
     """
     Perform stage2 execution environment checks for the :term:`ARgoS` engine.
 
@@ -145,7 +145,7 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
 
     # Check we can find ARGoS
     proc = execenv.check_for_simulator(
-        cmdopts["engine"], cmdopts["exec_env"], config.kARGoS["launch_cmd"]
+        cmdopts["engine"], cmdopts["execenv"], config.kARGoS["launch_cmd"]
     )
 
     # Check ARGoS version
@@ -176,7 +176,7 @@ def cmdline_postparse_configure(
     Configure cmdline args after parsing for the :term:`ARGoS` engine.
 
     This sets arguments appropriately depending on what HPC environment is
-    selected with ``--exec-env``.
+    selected with ``--execenv``.
 
     - hpc.local
 
@@ -261,7 +261,7 @@ def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
     if any(stage in args.pipeline for stage in [1, 2]):
         assert (
             args.physics_n_engines is not None
-        ), "--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}"
+        ), "--physics-n-engines is required for --execenv=hpc.local when running stage{1,2}"
 
     ppn_per_run_req = args.physics_n_engines
 

@@ -17,8 +17,8 @@ Execution Environments
 
 .. toctree::
 
-   /src/plugins/exec-env/hpc.rst
-   /src/plugins/exec-env/realrobot.rst
+   /src/plugins/execenv/hpc.rst
+   /src/plugins/execenv/realrobot.rst
 
 Experiment Definitions
 ======================

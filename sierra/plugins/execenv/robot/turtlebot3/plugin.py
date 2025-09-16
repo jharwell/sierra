@@ -177,7 +177,7 @@ class ExpShellCmdsGenerator:
         return ret
 
 
-def exec_env_check(cmdopts: types.Cmdopts) -> None:
+def execenv_check(cmdopts: types.Cmdopts) -> None:
     """
     Verify execution environment in stage 2 for the :term:`ROS1+Robot` engine.
 
@@ -201,4 +201,4 @@ def exec_env_check(cmdopts: types.Cmdopts) -> None:
             )
 
 
-__all__ = ["cmdline_postparse_configure", "exec_env_check", "ExpShellCmdsGenerator"]
+__all__ = ["cmdline_postparse_configure", "execenv_check", "ExpShellCmdsGenerator"]

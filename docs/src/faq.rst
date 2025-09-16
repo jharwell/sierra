@@ -72,7 +72,7 @@ FAQ
 #. Q: SIERRA fails to run on my HPC environment?
 
    A: The most likely reason is that you don't have the necessary environment
-   variables set up--see :ref:`plugins/exec-env/hpc` for details on what is
+   variables set up--see :ref:`plugins/execenv/hpc` for details on what is
    required.
 
 #. Q: SIERRA doesn't generate any graphs during stage4/the graph I'm interested

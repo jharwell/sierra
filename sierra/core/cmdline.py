@@ -180,7 +180,7 @@ class BootstrapCmdline(BaseCmdline):
         )
 
         bootstrap.add_argument(
-            "--exec-env",
+            "--execenv",
             help="""
                  This argument defines `how` experiments are going to be run,
                  using the ``--engine`` you have selected.
@@ -192,36 +192,36 @@ class BootstrapCmdline(BaseCmdline):
                  are:
 
                      - ``hpc.local`` - This directs SIERRA to run experiments on
-                       the local machine.  See :ref:`plugins/exec-env/hpc/local`
+                       the local machine.  See :ref:`plugins/execenv/hpc/local`
                        for a detailed description.
 
                      - ``hpc.pbs`` - The directs SIERRA to run experiments
                        spread across multiple allocated nodes in an HPC
                        computing environment managed by TORQUE-PBS.  See
-                       :ref:`plugins/exec-env/hpc/pbs` for a detailed
+                       :ref:`plugins/execenv/hpc/pbs` for a detailed
                        description.
 
                      - ``hpc.slurm`` - The directs SIERRA to run experiments
                        spread across multiple allocated nodes in an HPC
                        computing environment managed by SLURM.  See
-                       :ref:`plugins/exec-env/hpc/slurm` for a detailed
+                       :ref:`plugins/execenv/hpc/slurm` for a detailed
                        description.
 
                      - ``hpc.adhoc`` - This will direct SIERRA to run
                        experiments on an ad-hoc network of computers.  See
-                       :ref:`plugins/exec-env/hpc/adhoc` for a detailed
+                       :ref:`plugins/execenv/hpc/adhoc` for a detailed
                        description.
 
                      - ``prefectserver.local`` - This will direct SIERRA to run
                        experiments locally using a spun-up :term:`Prefect` job
                        scheduler/server.  See
-                       :ref:`plugins/exec-env/prefectserver/local` for a
+                       :ref:`plugins/execenv/prefectserver/local` for a
                        detailed description.
 
                      - ``prefectserver.dockerremote`` - This will direct SIERRA
                        to run experiments remote using a :term:`Prefect` job
                        scheduler/server in docker containers.  See
-                       :ref:`plugins/exec-env/prefectserver/dockerremote` for a
+                       :ref:`plugins/execenv/prefectserver/dockerremote` for a
                        detailed description.
 
                      - ``robot.turtlebot3`` - This will direct SIERRA to run
@@ -671,7 +671,7 @@ class CoreCmdline(BaseCmdline):
                  results processed to form the result of a single experiment
                  within a batch.
 
-                 If ``--engine`` is a simulator and ``--exec-env`` is something
+                 If ``--engine`` is a simulator and ``--execenv`` is something
                  other than ``hpc.local`` then this may be be used to determine
                  the concurrency of experimental runs.
                  """

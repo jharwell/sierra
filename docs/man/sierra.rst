@@ -22,7 +22,7 @@ The following manpages are available:
 - :manpage:`sierra-plugins` - All of SIERRA's builtin plugins for:
 
   - ``--engine``
-  - ``--exec-env``
+  - ``--execenv``
   - ``--expdef``
   - ``--prod``
   - ``--proc``

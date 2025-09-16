@@ -70,7 +70,7 @@ Plugins
 
    Must be set to contain the library directory where you installed/built ARGoS,
    as well as the library directory for your project ``.so``. Checked to be
-   non-empty before running stage 2 for all ``--exec-env`` plugins. SIERRA does
+   non-empty before running stage 2 for all ``--execenv`` plugins. SIERRA does
    `not` modify this variable, so it needs to be setup properly prior to
    invoking SIERRA (i.e., the directory containing the :term:`Project` ``.so``
    file needs to be on it). SIERRA can't know, in general, where the location of

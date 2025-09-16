@@ -105,7 +105,7 @@ class Pipeline:
             "scenario": self.args.scenario,
             "expdef_template": self.args.expdef_template,
             "project": self.args.project,
-            "exec_env": self.args.exec_env,
+            "execenv": self.args.execenv,
             "engine_vc": self.args.engine_vc,
             "n_runs": self.args.n_runs,
             "exp_overwrite": self.args.exp_overwrite,
@@ -137,11 +137,11 @@ class Pipeline:
         module = pm.module_load_tiered("cmdline", engine=cmdopts["engine"])
         cmdopts |= module.to_cmdopts(self.args)
 
-        # Load additional cmdline options from --exec-env
-        path = "{0}.cmdline".format(cmdopts["exec_env"])
+        # Load additional cmdline options from --execenv
+        path = "{0}.cmdline".format(cmdopts["execenv"])
         if pm.module_exists(path):
             self.logger.debug(
-                "Updating cmdopts from --exec-env=%s", cmdopts["exec_env"]
+                "Updating cmdopts from --execenv=%s", cmdopts["execenv"]
             )
             module = pm.module_load_tiered(path)
             cmdopts |= module.to_cmdopts(self.args)

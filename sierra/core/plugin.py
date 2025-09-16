@@ -4,7 +4,7 @@
 """SIERRA plugin management to make SIERRA OPEN/CLOSED.
 
 Also contains checks that selected plugins implement the necessary classes and
-functions.  Currently checkes: ``--storage``, ``--exec-env``, and ``--engine``.
+functions.  Currently checkes: ``--storage``, ``--execenv``, and ``--engine``.
 """
 
 # Core packages
@@ -458,15 +458,15 @@ def compare_sanity_checks(compare: str, module) -> None:
         ), f"Comparison plugin  {compare} does not define {f}()"
 
 
-def exec_env_sanity_checks(exec_env: str, module) -> None:
+def execenv_sanity_checks(execenv: str, module) -> None:
     """
-    Check the selected ``--exec-env`` plugin.
+    Check the selected ``--execenv`` plugin.
     """
-    logging.trace("Verifying --exec-env=%s plugin interface", exec_env)  # type: ignore
+    logging.trace("Verifying --execenv=%s plugin interface", execenv)  # type: ignore
 
     in_module = inspect.getmembers(module, inspect.isclass)
 
-    opt_functions = ["cmdline_postparse_configure", "exec_env_check"]
+    opt_functions = ["cmdline_postparse_configure", "execenv_check"]
     opt_classes = ["ExpRunShellCmdsGenerator", "ExpShellCmdsGenerator"]
 
     for c in opt_classes:
@@ -477,7 +477,7 @@ def exec_env_sanity_checks(exec_env: str, module) -> None:
                     "%s--some SIERRA functionality may not be "
                     "available. See docs for details."
                 ),
-                exec_env,
+                execenv,
                 c,
             )
 
@@ -485,7 +485,7 @@ def exec_env_sanity_checks(exec_env: str, module) -> None:
         if not any(f in name for (name, _) in in_module):
             logging.debug(
                 ("Execution environment plugin %s does not define %s()."),
-                exec_env,
+                execenv,
                 f,
             )
 
@@ -509,7 +509,7 @@ def engine_sanity_checks(engine: str, module) -> None:
 
     opt_functions = [
         "cmdline_postparse_configure",
-        "exec_env_check",
+        "execenv_check",
         "agent_prefix_extract",
         "arena_dims_from_criteria",
     ]
@@ -565,7 +565,7 @@ __all__ = [
     "bc_load",
     "module_load_tiered",
     "storage_sanity_checks",
-    "exec_env_sanity_checks",
+    "execenv_sanity_checks",
     "engine_sanity_checks",
     "proc_sanity_checks",
     "prod_sanity_checks",

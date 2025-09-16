@@ -3,7 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
-"""Common functionality for ``--exec-env`` plugins to use."""
+"""Common functionality for ``--execenv`` plugins to use."""
 
 # Core packages
 import typing as tp
@@ -40,16 +40,16 @@ class ExpShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts["exec_env"])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["execenv"])
         if hasattr(module, "ExpShellCmdsGenerator"):
             self.env = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
         else:
             _logger.debug(
                 (
                     "Skipping generating experiment shell commands "
-                    "for --exec-env=%s: does not define ExpShellCmdsGenerator"
+                    "for --execenv=%s: does not define ExpShellCmdsGenerator"
                 ),
-                self.cmdopts["exec_env"],
+                self.cmdopts["execenv"],
             )
 
             self.env = None
@@ -93,16 +93,16 @@ class BatchShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-        module = pm.pipeline.get_plugin_module(self.cmdopts["exec_env"])
+        module = pm.pipeline.get_plugin_module(self.cmdopts["execenv"])
         if hasattr(module, "BatchShellCmdsGenerator"):
             self.env = module.BatchShellCmdsGenerator(self.cmdopts)
         else:
             _logger.debug(
                 (
                     "Skipping generating batch experiment shell commands "
-                    "for --exec-env=%s: does not define BatchShellCmdsGenerator"
+                    "for --execenv=%s: does not define BatchShellCmdsGenerator"
                 ),
-                self.cmdopts["exec_env"],
+                self.cmdopts["execenv"],
             )
 
             self.env = None
@@ -133,15 +133,15 @@ class BatchShellCmdsGenerator:
 
 
 def cmdline_postparse_configure(
-    exec_env: str, args: argparse.Namespace
+    execenv: str, args: argparse.Namespace
 ) -> argparse.Namespace:
     """Dispatcher for configuring the cmdopts dictionary.
 
-    Dispatches configuring to the selected ``--exec-env``.  Called before the
+    Dispatches configuring to the selected ``--execenv``.  Called before the
     pipeline starts to add modify existing cmdline arguments after initial
     parsing.
 
-    ``exec_env`` is needed as an arguments as it is not present in ``args``; it
+    ``execenv`` is needed as an arguments as it is not present in ``args``; it
     is a "bootstrap" cmdline arg needed to be parsed first to build the parser
     for the set of cmdline arguments accepted.
     """
@@ -149,39 +149,39 @@ def cmdline_postparse_configure(
 
     # Configure for selected execution enivornment first, to check for
     # low-level details.
-    module = pm.pipeline.get_plugin_module(exec_env)
+    module = pm.pipeline.get_plugin_module(execenv)
 
     if hasattr(module, "cmdline_postparse_configure"):
         args = module.cmdline_postparse_configure(args)
     else:
         logger.debug(
             (
-                "Skipping configuring cmdline from --exec-env=%s: "
+                "Skipping configuring cmdline from --execenv=%s: "
                 "does not define cmdline_postparse_configure()"
             ),
-            exec_env,
+            execenv,
         )
 
     return args
 
 
-def exec_env_check(cmdopts: types.Cmdopts) -> None:
+def execenv_check(cmdopts: types.Cmdopts) -> None:
     """Dispatcher for verifying execution environments in stage 2.
 
     This is required because what is needed to create experiments in stage 1 for
     an execution environment is not necessarily the same as what is needed (in
     terms of envvars, daemons, etc.) when running them.
     """
-    module = pm.pipeline.get_plugin_module(cmdopts["exec_env"])
-    if hasattr(module, "exec_env_check"):
-        module.exec_env_check(cmdopts)
+    module = pm.pipeline.get_plugin_module(cmdopts["execenv"])
+    if hasattr(module, "execenv_check"):
+        module.execenv_check(cmdopts)
     else:
         _logger.debug(
             (
                 "Skipping execution environment check for "
-                "--exec-env=%s: does not define exec_env_check()"
+                "--execenv=%s: does not define execenv_check()"
             ),
-            cmdopts["exec_env"],
+            cmdopts["execenv"],
         )
 
 
@@ -324,7 +324,7 @@ def check_connectivity(
     _logger.info("%s@%s online", host_type, hostname)
 
 
-def check_for_simulator(engine: str, exec_env: str, name: str):
+def check_for_simulator(engine: str, execenv: str, name: str):
     shellname = get_executable_shellname(name)
 
     version_cmd = f"{shellname} -v"
@@ -337,7 +337,7 @@ def check_for_simulator(engine: str, exec_env: str, name: str):
         return res
     else:
         raise RuntimeError(
-            f"Bad --exec-env '{exec_env}' for engine '{engine}': cannot find '{name}'"
+            f"Bad --execenv '{execenv}' for engine '{engine}': cannot find '{name}'"
         )
 
 
