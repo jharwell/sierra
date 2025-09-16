@@ -32,4 +32,3 @@ Examples
 - ``population_constant_density.1p0.I16.C4``: Constant density of 1.0. Arena
   dimensions will increase by 16 in both X and Y for each experiment in the
   batch (4 total).
-

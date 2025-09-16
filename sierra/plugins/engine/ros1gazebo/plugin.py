@@ -124,7 +124,6 @@ class ExpRunShellCmdsGenerator:
             cmd += "> /dev/null 2>&1"
 
         cmd += ";"
-        print("CMD: ", cmd)
         return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 
     def post_run_cmds(

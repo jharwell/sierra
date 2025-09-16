@@ -235,7 +235,6 @@ class BootstrapCmdline(BaseCmdline):
 
         bootstrap.add_argument(
             "--expdef",
-            choices=["expdef.xml", "expdef.json"],
             help="""
                  Specify the experiment definition format, so that SIERRA can
                  select an appropriate plugin to read/write files of that
@@ -257,7 +256,6 @@ class BootstrapCmdline(BaseCmdline):
         )
         bootstrap.add_argument(
             "--storage",
-            choices=["storage.csv", "storage.arrow"],
             help="""
                  Specify the storage medium for :term:`Experimental Run`
                  outputs, so that SIERRA can select an appropriate plugin to
@@ -280,13 +278,6 @@ class BootstrapCmdline(BaseCmdline):
 
         bootstrap.add_argument(
             "--proc",
-            choices=[
-                "proc.statistics",
-                "proc.imagize",
-                "proc.collate",
-                "proc.decompress",
-                "proc.compress",
-            ],
             help="""
                  Specify the set of plugins to run during stage 3 for data
                  processing.  The plugins are executed IN ORDER of appearance,
@@ -317,10 +308,6 @@ class BootstrapCmdline(BaseCmdline):
 
         bootstrap.add_argument(
             "--prod",
-            choices=[
-                "prod.graphs",
-                "prod.render",
-            ],
             help="""
                  Specify the set of plugins to run during stage 4 for
                  product/deliverable generation.  The plugins are executed IN
@@ -341,9 +328,6 @@ class BootstrapCmdline(BaseCmdline):
 
         bootstrap.add_argument(
             "--compare",
-            choices=[
-                "compare.graphs",
-            ],
             help="""
                  Specify the set of plugins to run during stage 5 for
                  product/deliverable comparison.  The plugins are executed IN

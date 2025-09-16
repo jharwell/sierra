@@ -26,9 +26,9 @@ jobs:
   # functionality, it the core is already largely tested on OSX via that
   # route. Plugins are another story, and are explicitly tested on OSX where
   # feasible.
-  # core-smoke-tests:
-  #   uses: ./.github/workflows/core.yml
-  #   secrets: inherit
+  core-smoke-tests:
+    uses: ./.github/workflows/core.yml
+    secrets: inherit
 
   plugin-smoke-tests:
     uses: ./.github/workflows/plugin.yml
@@ -42,15 +42,17 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      # - core-smoke-tests
+      - core-smoke-tests
       - plugin-smoke-tests
       - unit-tests
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v4
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
+
       - name: Generate coverage report
         shell: bash
         run: |
@@ -87,12 +89,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-integration-coverage
-
-          path: .coverage
-
-      - uses: actions/upload-artifact@v4
-        with:
           name: ci-integration-coverage-xml
           path: coverage.xml
 
@@ -102,7 +98,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
         run: |
-          coveralls
+          uv run -p 3.9 coveralls
 
   create-release:
     runs-on: ubuntu-latest
@@ -111,9 +107,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Generate manpages
         shell: bash
         run: |
+          # 3.10 is known to work with the current configuration to generate
+          # docs.
+          uv sync -p 3.10 --group dev
+
           # Hatch will only pickup manpages with shared-data if they are INSIDE
           # a package directory. Since we don't want to commit this to source
           # control, we copy in in CI here.
@@ -126,21 +130,14 @@ jobs:
           cp docs/_build/man/*.1 sierra/data/man/
           cp docs/_build/man/*.7 sierra/data/man/
 
-          # 3.10 is known to work with the current configuration to generate
-          # docs.
-          uv sync -p 3.10 --group docs
 
           # Build the package and verify manpages were included
           uv build && python3 -m zipfile -l dist/sierra_research-*.whl |grep man
 
-          which python3
-          which sierra-cli
-          sierra-cli --version
-
       - name: Set beta release tag
         if: github.ref == 'refs/heads/devel'
         shell: bash
-        run: echo RELEASE_TAG=$(pyproject-info project.version | tr -d '"').beta >> $GITHUB_ENV
+        run: echo RELEASE_TAG=$(uv run pyproject-info project.version | tr -d '"').beta >> $GITHUB_ENV
 
       - name: Github beta release
         if: github.ref == 'refs/heads/devel'

@@ -19,6 +19,7 @@ heatmap = strictyaml.Map(
         "src_stem": strictyaml.Str(),
         "dest_stem": strictyaml.Str(),
         "type": strictyaml.Str(),
+        strictyaml.Optional("col"): strictyaml.Str(),
         strictyaml.Optional("title"): strictyaml.Str(),
         strictyaml.Optional("zlabel"): strictyaml.Str(),
         strictyaml.Optional("xlabel"): strictyaml.Str(),

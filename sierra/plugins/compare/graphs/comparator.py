@@ -13,10 +13,12 @@ import pathlib
 import argparse
 
 # 3rd party packages
+import strictyaml
+import yaml
 
 # Project packages
 from sierra.core import types, batchroot
-from sierra.plugins.compare.graphs import outputroot
+from sierra.plugins.compare.graphs import outputroot, schema
 
 
 class BaseComparator:
@@ -90,6 +92,17 @@ class BaseComparator:
         # For each comparison graph we are interested in, generate it using data
         # from all matching batch roots
         for graph in target_graphs:
+            try:
+                if self.cmdopts["across"] == "controllers":
+                    graph = strictyaml.load(yaml.dump(graph), schema.cc).data
+                elif self.cmdopts["across"] == "scenarios":
+                    graph = strictyaml.load(yaml.dump(graph), schema.sc).data
+                elif self.cmdopts["across"] == "criterias":
+                    raise NotImplementedError
+            except strictyaml.YAMLError as e:
+                self.logger.critical("Non-conformant comparison YAML: %s", e)
+                raise
+
             self.compare(
                 cmdopts=self.cmdopts, graph=graph, roots=selected, legend=legend
             )

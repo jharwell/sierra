@@ -14,11 +14,10 @@ import pathlib
 
 # 3rd party packages
 import yaml
-import strictyaml
 
 # Project packages
 from sierra.core import types, utils, config
-from sierra.plugins.compare.graphs import outputroot, schema
+from sierra.plugins.compare.graphs import outputroot
 from sierra.plugins.compare.graphs import inter_controller as intercc
 from sierra.plugins.compare.graphs import inter_scenario as intersc
 
@@ -76,14 +75,6 @@ def _run_cc(
 
     _logger.info("Inter-batch controller comparison of %s...", controllers)
 
-    try:
-        graphs_config = strictyaml.load(
-            yaml.dump(graphs_config["inter-controller"]), schema.cc
-        )
-    except strictyaml.YAMLError as e:
-        _logger.critical("Non-conformant inter-controller YAML: %s", e)
-        raise
-
     if cmdopts["bc_cardinality"] == 1:
         univar = intercc.UnivarInterControllerComparator(
             controllers,
@@ -130,13 +121,6 @@ def _run_sc(
     controller = cmdopts["controller"]
 
     _logger.info("Inter-batch comparison of %s across %s...", controller, scenarios)
-    try:
-        graphs_config = strictyaml.load(
-            yaml.dump(graphs_config["inter-scenarior"]), schema.cc
-        )
-    except strictyaml.YAMLError as e:
-        _logger.critical("Non-conformant inter-scenario YAML: %s", e)
-        raise
 
     assert (
         cmdopts["bc_cardinality"] == 1

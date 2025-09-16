@@ -47,47 +47,52 @@ def argos_physics_engines(session):
 @setup.session_setup
 @setup.session_teardown
 def argos_stage1_univar(session):
-    """Check that stage 1 outputs what it is supposed to."""
-    bc = ["population_size.Linear3.C3"]
-    template_stem = "template"
-    scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
-    batch_root = batchroot.ExpRoot(
-        sierra_root=f"{session.env['SIERRA_ROOT']}",
-        project="projects.sample_argos",
-        controller="foraging.footbot_foraging",
-        leaf=leaf,
-    ).to_path()
+    bc = ["population_size.Linear3.C3", "population_constant_density.1p0.I16.C3"]
 
-    input_root = batch_root / "exp-inputs"
+    for criteria in bc:
+        template_stem = "template"
+        scenario = "LowBlockCount.10x10x2"
+        leaf = batchroot.ExpRootLeaf(
+            bc=[criteria], template_stem=template_stem, scenario=scenario
+        )
+        batch_root = batchroot.ExpRoot(
+            sierra_root=f"{session.env['SIERRA_ROOT']}",
+            project="projects.sample_argos",
+            controller="foraging.footbot_foraging",
+            leaf=leaf,
+        ).to_path()
 
-    sierra_cmd = (
-        f"{session.env['ARGOS_BASE_CMD']} "
-        f"--batch-criteria population_size.Linear3.C3 "
-        f"--controller=foraging.footbot_foraging "
-        f"--pipeline 1"
-    )
+        input_root = batch_root / "exp-inputs"
 
-    # Run the command
-    session.run(*sierra_cmd.split(), silent=True)
+        sierra_cmd = (
+            f"{session.env['ARGOS_BASE_CMD']} "
+            f"--batch-criteria {criteria} "
+            f"--controller=foraging.footbot_foraging "
+            f"--pipeline 1"
+        )
 
-    # Check SIERRA directory structure
-    for i in range(3):
-        exp_dir = input_root / f"c1-exp{i}"
-        assert exp_dir.is_dir(), f"Directory {exp_dir} does not exist"
+        # Run the command
+        session.run(*sierra_cmd.split(), silent=True)
 
-        # Check stage1 generated files
-        assert (
-            exp_dir / "commands.txt"
-        ).is_file(), f"File commands.txt missing in {exp_dir}"
-        assert (
-            exp_dir / "exp_def.pkl"
-        ).is_file(), f"File exp_def.pkl missing in {exp_dir}"
-        assert (exp_dir / "seeds.pkl").is_file(), f"File seeds.pkl missing in {exp_dir}"
+        # Check SIERRA directory structure
+        for i in range(3):
+            exp_dir = input_root / f"c1-exp{i}"
+            assert exp_dir.is_dir(), f"Directory {exp_dir} does not exist"
 
-        for run in range(4):
-            template_file = exp_dir / f"template_run{run}.argos"
-            assert template_file.is_file(), f"File {template_file} missing"
+            # Check stage1 generated files
+            assert (
+                exp_dir / "commands.txt"
+            ).is_file(), f"File commands.txt missing in {exp_dir}"
+            assert (
+                exp_dir / "exp_def.pkl"
+            ).is_file(), f"File exp_def.pkl missing in {exp_dir}"
+            assert (
+                exp_dir / "seeds.pkl"
+            ).is_file(), f"File seeds.pkl missing in {exp_dir}"
+
+            for run in range(4):
+                template_file = exp_dir / f"template_run{run}.argos"
+                assert template_file.is_file(), f"File {template_file} missing"
 
 
 @nox.session(python=utils.versions, tags=["argos"])
