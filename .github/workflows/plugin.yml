@@ -240,9 +240,11 @@ jobs:
           - execenv_hpc-3.12(engine='engine.argos', env='hpc.local')
           - execenv_hpc-3.12(engine='engine.argos', env='hpc.adhoc')
           - execenv_hpc-3.12(engine='engine.argos', env='hpc.slurm')
+          - execenv_hpc-3.12(engine='engine.argos', env='hpc.pbs')
           - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.local')
           - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.adhoc')
           - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.slurm')
+          - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.pbs')
           - execenv_prefectserver
 
         container:
@@ -266,10 +268,15 @@ jobs:
 
           # No idea why this is needed, but slurm doesn't start without it.
           mkdir -p /sys/fs/cgroup/system.slice/system.slice/localhost_slurmstepd.scope
+
+          # This sort of mocks what systemctl does when starting slurm NOT in a
+          # container.
           slurmctld -D &
           sleep 5
           slurmd -D &
           sleep 5
+
+
           scontrol update nodename=localhost state=DOWN reason=initial;
           scontrol update nodename=localhost state=IDLE;
 

@@ -22,7 +22,7 @@ from tests.smoke_tests import utils, setup
 
 
 @nox.session(python=utils.versions, tags=["hpc"])
-@nox.parametrize("env", ["hpc.local", "hpc.adhoc", "hpc.slurm"])
+@nox.parametrize("env", ["hpc.local", "hpc.adhoc", "hpc.slurm", "hpc.pbs"])
 @nox.parametrize("engine", ["engine.argos", "plugins.jsonsim", "engine.ros1gazebo"])
 @setup.session_setup
 @setup.session_teardown
@@ -153,13 +153,33 @@ def execenv_hpc(session, env, engine):
 
     elif env == "hpc.slurm":
         os.environ["SIERRA_CMD"] = sierra_cmd
-        print(sierra_cmd)
         session.run(
             "sbatch",
             "--wait",
             "-v",
             "--export=ALL",
             "./tests/smoke_tests/slurm-test.sh",
+            external=True,
+            silent=True,
+        )
+        utils.stage2_univar_check_outputs(
+            engine.split(".")[1], batch_root, cardinality, 4
+        )
+
+    elif env == "hpc.pbs":
+        os.environ["SIERRA_CMD"] = sierra_cmd
+
+        # 2025-09-19 [JRH]: I can't get OpenPBS to work and the documentation is
+        # pretty terrible, and I ESPECIALLY can't get it to work in a
+        # container. Therefore, the test for this execution environment is a
+        # (much) lower fidelity mock:
+        #
+        # - We manually set the necessary PBS environment variables.
+        #
+        # - We don't submit our script to the server via qsub, but rather just
+        #   run it directly.
+        session.run(
+            "./tests/smoke_tests/pbs-test.sh",
             external=True,
             silent=True,
         )
@@ -212,9 +232,7 @@ def execenv_prefectserver(session, env):
             shutil.rmtree(prefect_dir)
 
         # Run with prefect local server
-        session.run(
-            *f"{sierra_cmd} --execenv=prefectserver.local".split(), silent=True
-        )
+        session.run(*f"{sierra_cmd} --execenv=prefectserver.local".split(), silent=True)
 
     elif env == "prefectserver.dockerremote":
         # Clear prefect directory
