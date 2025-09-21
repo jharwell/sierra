@@ -13,9 +13,7 @@ from sierra.core.experiment import definition
 
 
 class IBaseVariable(implements.Interface):
-    """Interface that all variables must implement.
-
-    """
+    """Interface that all variables must implement."""
 
     def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
         """Generate expdef attributes to change in a batch experiment definition.
@@ -44,14 +42,11 @@ class IBaseVariable(implements.Interface):
         raise NotImplementedError
 
     def gen_files(self) -> None:
-        """Generate one or more new files to add to the batch experiment definition.
+        """Generate files to add to the batch experiment definition.
 
-        Presumably, the created files will be referenced in the template input
-        file by path.
-
+        Presumably, the created files will be referenced in the
+        ``--expdef-template`` file by path.
         """
 
 
-__all__ = [
-    'IBaseVariable'
-]
+__all__ = ["IBaseVariable"]

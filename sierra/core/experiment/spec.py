@@ -44,7 +44,7 @@ class SimpleBatchScaffoldSpec:
                         "Executing scaffold: cli=%s: modify %s "
                         "expdef elements per experiment"
                     ),
-                    self.criteria.cli_arg,
+                    self.criteria.name,
                     len(self.chgs[0]),
                 )
         elif self.adds:
@@ -56,7 +56,7 @@ class SimpleBatchScaffoldSpec:
                         "Executing scaffold: cli=%s: Add %s expdef "
                         "elements per experiment"
                     ),
-                    self.criteria.cli_arg,
+                    self.criteria.name,
                     len(self.adds[0]),
                 )
         else:
@@ -100,7 +100,7 @@ class CompoundBatchScaffoldSpec:
                         "%s expdef elements AND modify %s expdef  "
                         "elements per experiment"
                     ),
-                    self.criteria.cli_arg,
+                    self.criteria.name,
                     len(self.adds[0]),
                     len(self.chgs[0]),
                 )
@@ -179,12 +179,12 @@ def scaffold_spec_factory(
     if chgs and adds:
         logging.debug(
             "Create compound batch experiment scaffolding spec for '%s'",
-            criteria.cli_arg,
+            criteria.name,
         )
         return CompoundBatchScaffoldSpec(criteria, **kwargs)
     else:
         logging.debug(
-            "Create simple batch experiment scaffolding spec for '%s'", criteria.cli_arg
+            "Create simple batch experiment scaffolding spec for '%s'", criteria.name
         )
         return SimpleBatchScaffoldSpec(criteria, **kwargs)
 

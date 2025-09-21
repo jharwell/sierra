@@ -138,12 +138,9 @@ def factory(
     """Create a :class:`PopulationSize` derived class from the cmdline definition."""
     max_sizes = population_size.parse(cli_arg)
 
-    def __init__(self) -> None:
-        PopulationSize.__init__(
-            self, cli_arg, main_config, batch_input_root, cmdopts["robot"], max_sizes
-        )
-
-    return type(cli_arg, (PopulationSize,), {"__init__": __init__})  # type: ignore
+    return PopulationSize(
+        cli_arg, main_config, batch_input_root, cmdopts["robot"], max_sizes
+    )
 
 
 __all__ = ["PopulationSize"]
