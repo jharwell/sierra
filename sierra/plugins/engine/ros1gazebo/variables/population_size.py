@@ -201,18 +201,14 @@ def factory(
         zs = random.choices(range(0, kw["arena_z"]), k=max_sizes[-1])  # type: ignore
         positions = [Vector3D(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
-    def __init__(self) -> None:
-        PopulationSize.__init__(
-            self,
-            cli_arg,
-            main_config,
-            batch_input_root,
-            cmdopts["robot"],
-            max_sizes,
-            positions,
-        )
-
-    return type(cli_arg, (PopulationSize,), {"__init__": __init__})  # type: ignore
+    return PopulationSize(
+        cli_arg,
+        main_config,
+        batch_input_root,
+        cmdopts["robot"],
+        max_sizes,
+        positions,
+    )
 
 
 __all__ = ["PopulationSize"]

@@ -115,13 +115,8 @@ def factory(
 
     extent = utils.ArenaExtent(Vector3D(kw["arena_x"], kw["arena_y"], kw["arena_z"]))
 
-    def __init__(self) -> None:
-        PopulationVariableDensity.__init__(
-            self, cli_arg, main_config, batch_input_root, densities, extent
-        )
-
-    return type(
-        cli_arg, (PopulationVariableDensity,), {"__init__": __init__}  # type: ignore
+    return PopulationVariableDensity(
+        cli_arg, main_config, batch_input_root, densities, extent
     )
 
 

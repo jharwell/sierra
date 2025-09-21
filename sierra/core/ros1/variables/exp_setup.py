@@ -187,19 +187,13 @@ def factory(arg: str, barrier_start: bool, robots_need_timekeeper: bool) -> ExpS
         },
     )
 
-    def __init__(self: ExpSetup) -> None:
-        ExpSetup.__init__(
-            self,
-            attr["n_secs_per_run"],
-            attr["n_datapoints"],
-            attr["n_ticks_per_sec"],
-            barrier_start,
-            robots_need_timekeeper,
-        )
-
-    return type(
-        attr["pretty_name"], (ExpSetup,), {"__init__": __init__}
-    )  # type: ignore
+    return ExpSetup(
+        attr["n_secs_per_run"],
+        attr["n_datapoints"],
+        attr["n_ticks_per_sec"],
+        barrier_start,
+        robots_need_timekeeper,
+    )
 
 
 __all__ = [

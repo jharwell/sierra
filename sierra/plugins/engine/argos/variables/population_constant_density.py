@@ -165,19 +165,13 @@ def factory(
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)
     dims = calc_dims(cmdopts, attr, **kwargs)
 
-    def __init__(self) -> None:
-        PopulationConstantDensity.__init__(
-            self,
-            cli_arg,
-            main_config,
-            batch_input_root,
-            attr["target_density"],
-            dims,
-            kw["scenario_tag"],
-        )
-
-    return type(
-        cli_arg, (PopulationConstantDensity,), {"__init__": __init__}  # type: ignore
+    return PopulationConstantDensity(
+        cli_arg,
+        main_config,
+        batch_input_root,
+        attr["target_density"],
+        dims,
+        kw["scenario_tag"],
     )
 
 

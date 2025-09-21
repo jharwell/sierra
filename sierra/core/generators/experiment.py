@@ -117,22 +117,23 @@ class BatchExpDefGenerator:
         )
         template_fpath = exp_spec.exp_input_root / self.exp_template_stem
         config_root = pathlib.Path(self.cmdopts["project_config_root"])
-        scenario = gf.scenario_generator_create(
+        scenario = gf.ScenarioGenerator(
             controller=self.controller_name,
+            scenario=self.scenario_basename,
             spec=exp_spec,
             expdef_template_fpath=template_fpath,
             cmdopts=self.cmdopts,
         )
 
-        controller = gf.controller_generator_create(
+        controller = gf.ControllerGenerator(
             controller=self.controller_name,
             config_root=config_root,
             cmdopts=self.cmdopts,
             spec=exp_spec,
         )
 
-        generator = gf.joint_generator_create(scenario=scenario, controller=controller)
-        self.cmdopts["joint_generator"] = generator.joint_name
+        generator = gf.JointGenerator(scenario=scenario, controller=controller)
+        self.cmdopts["joint_generator"] = generator.name
         return generator
 
 

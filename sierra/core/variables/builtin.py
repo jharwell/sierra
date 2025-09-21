@@ -129,10 +129,7 @@ def factory(
     """Create a :class:`MonteCarlo` derived class from the cmdline definition."""
     cardinality = _mc_parse(cli_arg)
 
-    def __init__(self) -> None:
-        MonteCarlo.__init__(self, cli_arg, main_config, batch_input_root, cardinality)
-
-    return type(cli_arg, (MonteCarlo,), {"__init__": __init__})  # type: ignore
+    return MonteCarlo(cli_arg, main_config, batch_input_root, cardinality)
 
 
 __all__ = ["MonteCarlo", "linspace_parse"]

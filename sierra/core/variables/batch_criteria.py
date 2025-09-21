@@ -56,7 +56,10 @@ class BaseBatchCriteria:
     def __init__(
         self, cli_arg: str, main_config: types.YAMLDict, batch_input_root: pathlib.Path
     ) -> None:
-        self.cli_arg = cli_arg
+
+        # 2025-09-21 [JRH]: The "name" of the batch criteria is just whatever is
+        # passed on the cmdline.
+        self.name = cli_arg
         self.main_config = main_config
         self.batch_input_root = batch_input_root
 
@@ -190,7 +193,7 @@ class BaseBatchCriteria:
             self.logger.debug(
                 ("Applying %s expdef mods from '%s' for exp%s in %s"),
                 len(modsi),
-                self.cli_arg,
+                self.name,
                 i,
                 exp_dirname,
             )
@@ -207,7 +210,7 @@ class BaseBatchCriteria:
             self.logger.debug(
                 ("Applying %s expdef modifications from '%s' for exp%s in %s"),
                 len(modsi[0]) + len(modsi[1]),
-                self.cli_arg,
+                self.name,
                 i,
                 exp_dirname,
             )
@@ -299,7 +302,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
     def __init__(self, criterias: tp.List[BaseBatchCriteria]) -> None:
         BaseBatchCriteria.__init__(
             self,
-            "+".join([c.cli_arg for c in criterias]),
+            "+".join([c.name for c in criterias]),
             criterias[0].main_config,
             criterias[0].batch_input_root,
         )
@@ -584,13 +587,11 @@ def univar_factory(
     if 5 in cmdopts["pipeline"]:
         ret = bcfactory(
             cli_arg, main_config, cmdopts, batch_input_root, scenario=scenario
-        )()
+        )
     else:
-        ret = bcfactory(cli_arg, main_config, cmdopts, batch_input_root)()
+        ret = bcfactory(cli_arg, main_config, cmdopts, batch_input_root)
 
-    logging.info(
-        "Create univariate batch criteria %s from %s", ret.__class__.__name__, path
-    )
+    logging.info("Create univariate batch criteria %s from %s", ret.name, path)
     return ret  # type: ignore
 
 
@@ -618,7 +619,7 @@ def factory(
     logging.info(
         "Created %s-D batch criteria from %s",
         len(criterias),
-        ",".join([c.__class__.__name__ for c in criterias]),
+        ",".join([c.name for c in criterias]),
     )
 
     return ret  # type: ignore
