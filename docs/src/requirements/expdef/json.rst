@@ -9,8 +9,7 @@ in *specific* places in the ``--expdef-template``, they should be avoided.
   use for a specific :term:`Experiment`. Can appear in JSON attributes. This
   makes auto-population of the controller name based on the ``--controller``
   argument and the contents of ``controllers.yaml`` (see
-  :ref:`tutorials/project/main-config` for details) in template input
-  files possible.
+  :ref:`tutorials/project/config` for details) in template input files possible.
 
 
 Furthermore, while JSON treats keys mapping to subtrees and keys mapping to

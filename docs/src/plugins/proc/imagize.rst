@@ -21,9 +21,9 @@ Requirements
 ============
 
 If :term:`Projects <Project>` or :term:`Engines <Engine>` generate files within
-the ``main.run_metrics_leaf`` (see :ref:`tutorials/project/main-config`)
-directory for each experimental run which meet the following criteria, then
-SIERRA can turn them into images and render them:
+the ``main.run_metrics_leaf`` (see :ref:`tutorials/project/config`) directory
+for each experimental run which meet the following criteria, then SIERRA can
+turn them into images and render them:
 
 - The files reside in a  subdirectory of ``main.run_metrics_leaf``.
 

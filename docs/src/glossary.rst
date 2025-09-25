@@ -235,7 +235,7 @@ works/is designed the way it is, and to help you find your way around.
       ringbuffer of remembered objects and a decaying ringbuffer of remembered
       objects (i.e., an object is forgotten after some period of time even if it
       is not forced out of the ringbuffer by seeing a new object). See
-      :ref:`configuring <tutorials/project/main-config>` your project.
+      :ref:`configuring <tutorials/project/config>` your project.
 
    Model
 

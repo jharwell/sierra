@@ -14,7 +14,7 @@ needs.
    :caption: Configuring SIERRA projects:
 
    project/project.rst
-   project/main-config/index.rst
+   project/config/index.rst
    project/generators.rst
    project/new-bc.rst
    project/hooks.rst

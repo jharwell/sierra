@@ -35,11 +35,11 @@
          ...
       </argos-configuration>
 
-   See also :ref:`tutorials/project/main-config`.
+   See also :ref:`tutorials/project/config`.
 
 #. ``--project`` matches the name of the C++ library for the project
    (i.e. ``--project.so``), unless ``library_name`` is present in
-   ``sierra.main.run`` YAML config. See :ref:`tutorials/project/main-config` for
+   ``sierra.main.run`` YAML config. See :ref:`tutorials/project/config` for
    details. For example if you pass ``--project=project-awesome``, then SIERRA
    will tell ARGoS to search in ``project-awesome.so`` for both loop function
    and controller definitions via XML changes, unless you specify otherwise in

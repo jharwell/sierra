@@ -182,7 +182,7 @@ your code does not meet these assumptions, then you will need to make some
    outputs need to appear in a directory such as
    ``$HOME/exp/research/simulations/sim1/outputs``. The directory within the
    experimental run root which SIERRA looks for simulation outputs is configured
-   via YAML; see :ref:`tutorials/project/main-config` for details.
+   via YAML; see :ref:`tutorials/project/config` for details.
 
    For HPC execution environments (see :ref:`plugins/execenv/hpc`), this
    requirement is easy to meet. For real robot execution environments (see

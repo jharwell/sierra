@@ -27,7 +27,7 @@ class ControllerGenerator:
     """Generate expdef changes for a selected ``--controller``.
 
     If the specified controller is not found in ``controllers.yaml`` for the
-    loaded :term:`Project`, an assert will be triggered.
+    loaded :term:`Project`, a warning will be issued.
     """
 
     def __init__(
@@ -52,16 +52,20 @@ class ControllerGenerator:
         with utils.utf8open(main_yaml) as f:
             self.main_config = yaml.load(f, yaml.FullLoader)
 
-        n_components = len(controller.split("."))
-        if n_components != 2:
-            raise RuntimeError(
-                (
-                    "Expected 2 controller components, got "
-                    f"{n_components}. Arguments to --controller "
-                    "must be of the form CATEGORY.TYPE (i.e., 2 "
-                    "components separated by a '.')."
+        # Only check this if controllers.yaml exists. If it doesn't, then user's
+        # can use whatever they want as the controller name (i.e., doesn't need
+        # to conform to the below schema).
+        if self.controller_config is not None:
+            n_components = len(controller.split("."))
+            if n_components != 2:
+                raise RuntimeError(
+                    (
+                        "Expected 2 controller components, got "
+                        f"{n_components}. Arguments to --controller "
+                        "must be of the form CATEGORY.TYPE (i.e., 2 "
+                        "components separated by a '.')."
+                    )
                 )
-            )
 
         self.category, self.name = controller.split(".")
         self.cmdopts = cmdopts
@@ -69,9 +73,9 @@ class ControllerGenerator:
         self.spec = spec
 
     def generate(self, exp_def: definition.BaseExpDef) -> definition.BaseExpDef:
-        """Generate all modifications to the experiment definition from the controller.
+        """Generate all modifications to the expdef from the controller.
 
-        Does not save.
+        Returns a new, modified expdef. Does not save to filesystem.
 
         """
         self._generate_controller_support(exp_def)

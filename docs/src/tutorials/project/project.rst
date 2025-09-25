@@ -62,14 +62,14 @@ Steps
         .. tab:: ``main.yaml``
 
            Main SIERRA configuration file. This file is required for all
-           pipeline stages. See :ref:`tutorials/project/main-config` for
+           pipeline stages. See :ref:`tutorials/project/config/main` for
            documentation.
 
         .. tab:: ``controllers.yaml``
 
            Configuration for controllers (input file/graph generation). This
            file is required for all pipeline stages. See
-           :ref:`tutorials/project/main-config` for documentation.
+           :ref:`tutorials/project/config` for documentation.
 
         .. tab:: ``graphs.yaml``
 
@@ -130,7 +130,7 @@ Steps
 
 #. Configure your project so SIERRA understands how to generate
    :term:`Experimental Run` inputs and process outputs correctly by following
-   :ref:`tutorials/project/main-config`.
+   :ref:`tutorials/project/config`.
 
 #. Define graphs to be generated from :term:`Experiment` outputs by following
    :ref:`plugins/product/graphs`. Strictly speaking this is optional, but

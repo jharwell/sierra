@@ -1,10 +1,24 @@
-Configuration for robot controllers.
+Configuration for robot controllers. Optional. If this config file is present,
+arguments to ``--controller`` must conform to the following schema::
 
-Root level dictionaries: varies; project dependent. Each root level
-dictionary is treated as the name of a :term:`Controller Category` when
-``--controller`` is parsed. For example, if you pass
-``--controller=mycategory.FizzBuzz`` to SIERRA, then you need to have a
-root level dictionary ``mycategory`` defined in ``controllers.yaml``.
+  CATEGORY.TYPE
+
+Both ``CATEGORY`` and ``TYPE`` are arbitrary strings, but must both be present
+and separated by a ``.``. If the config file is not present, then arguments to
+``--controller`` can be anything. This config file serves two purposes:
+
+- Allows users to declare "simple" changes which should be applied to the
+  ``--expdef`` dependent on the value of ``--controller``. If you need to do
+  fancy things, see :ref:`tutorials/project/generators`.
+
+- Allows users to declare what types of :ref:`products <plugins/prod>` should be
+  considered for generation based on the value of ``--controller``.
+
+This config file should contain project dependent root-level dictionaries. Each
+root level dictionary is treated as the name of a :term:`Controller Category`
+when ``--controller`` is parsed. For example, if you pass
+``--controller=mycategory.FizzBuzz`` to SIERRA, then you need to have a root
+level dictionary ``mycategory`` defined in ``controllers.yaml``.
 
 A complete YAML configuration for a :term:`Controller Category`
 ``mycategory`` and a controller ``FizzBuzz`` is shown below, separated by

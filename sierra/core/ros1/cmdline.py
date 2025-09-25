@@ -74,7 +74,7 @@ class ROSCmdline(PluginCmdline):
             help="""
                  The key name of the robot model, which must be present in the
                  appropriate section of ``{0}`` for the :term:`Project`.  See
-                 :ref:`tutorials/project/main-config` for details.
+                 :ref:`tutorials/project/config` for details.
                  """.format(
                 config.kYAML.main
             )

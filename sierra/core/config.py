@@ -164,6 +164,7 @@ kYAML = types.YAMLConfigFileSpec(
     main="main.yaml",
     graphs="graphs.yaml",
     controllers="controllers.yaml",
+    scenarios="scenarios.yaml",
     models="models.yaml",
 )
 

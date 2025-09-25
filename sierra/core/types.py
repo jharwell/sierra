@@ -68,6 +68,7 @@ class YAMLConfigFileSpec:
     main: str
     graphs: str
     controllers: str
+    scenarios: str
     models: str
 
 

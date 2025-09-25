@@ -6,7 +6,7 @@ FAQ
 
 #. Q: I'm getting an error about the output directory for my simulation run
    being missing--what is wrong? I told SIERRA where outputs should be created
-   by following :ref:`tutorials/project/main-config`.
+   by following :ref:`tutorials/project/config`.
 
    A: SIERRA does *not* create the output directory you tell it that all outputs
    for a simulation run will lie under--that is the responsibility of the
@@ -101,12 +101,11 @@ FAQ
 
    A: You could create one or more controller categories/controllers in
    ``controllers.yaml``. Within each category *AND* controller, you can specify
-   arbitrary changes to the ``--expdef-template``: adding tags, removing
-   tags, modifying attributes. This is a good way to apply tricky configuration
-   which doesn't really fit anywhere else, or to try out some "quick and dirty"
+   arbitrary changes to the ``--expdef-template``: adding tags, removing tags,
+   modifying attributes. This is a good way to apply tricky configuration which
+   doesn't really fit anywhere else, or to try out some "quick and dirty"
    changes to see if they do what you want before codifying them with a python
-   class (see :ref:`tutorials/project/main-config` for details on how
-   to do that).
+   class (see :ref:`tutorials/project/config` for details on how to do that).
 
 #. Q: SIERRA can't find a module it should be able to find via
    :envvar:`SIERRA_PLUGIN_PATH` or :envvar:`PYTHONPATH`. I know the module path

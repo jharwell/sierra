@@ -1,4 +1,4 @@
-name: Coverage Top-level
+name: Smoke Coverage Top-level
 
 # Run:
 #
@@ -38,7 +38,7 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     secrets: inherit
 
-  coverage:
+  coverage-smoke:
     runs-on: ubuntu-latest
 
     needs:
@@ -103,7 +103,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs:
-      - coverage
+      - coverage-smoke
 
     steps:
       - uses: actions/checkout@v3
@@ -129,7 +129,6 @@ jobs:
           cd ..
           cp docs/_build/man/*.1 sierra/data/man/
           cp docs/_build/man/*.7 sierra/data/man/
-
 
           # Build the package and verify manpages were included
           uv build && python3 -m zipfile -l dist/sierra_research-*.whl |grep man

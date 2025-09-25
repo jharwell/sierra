@@ -125,9 +125,10 @@ SIERRA! The steps to do so are:
    - Where it is running/how to run experiments: ``--execenv``. See
      :ref:`plugins/execenv` for available plugins.
 
-   - What controller to run: ``--controller``. See
-     :ref:`tutorials/project/main-config` for details on how valid
-     controllers are defined for a :term:`Project`. Project dependent.
+   - What controller/algorithm to run: ``--controller``. See
+   :ref:`tutorials/project/config` for details on how ``--controller`` can be
+   used to declaratively drive experiment generation for a
+   :term:`Project`. Project dependent.
 
    - How large the arena should be (for example), etc., which can be drawn from
      ``--scenario``, or the batch criteria.

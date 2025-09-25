@@ -94,10 +94,8 @@ invocation:
   :ref:`usage/cli`) or implicitly passed via
   :envvar:`SIERRA_NODEFILE`.
 
-- The ROS environment is setup either in the .bashrc for the robot login user,
-  or the necessary bits are in a script which SIERRA sources on login to each
-  robot (this is a configuration parameter--see
-  :ref:`tutorials/project/main-config`).
+- The ROS environment is setup either in the ``.bashrc`` for the robot login
+  user.
 
 - ROS does not provide a way to say "Run this experiment for X seconds", so
   SIERRA inserts its own timekeeper node into each robot which will exit after X
