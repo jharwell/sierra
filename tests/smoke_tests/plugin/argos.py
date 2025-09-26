@@ -270,7 +270,7 @@ def argos_imagize(session):
         f"{session.env['ARGOS_BASE_CMD']} "
         f"--batch-criteria population_size.Linear1.C1 "
         f"--pipeline 1 2 3 4 "
-        f"--proc proc.statistics proc.imagize "
+        f"--proc proc.statistics proc.imagize proc.collate "
         f"--prod prod.render prod.graphs "
         f"--project-rendering "
     )

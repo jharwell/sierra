@@ -15,7 +15,7 @@ SIERRA.
 
    pipeline.rst
    cli.rst
-   run_time_tree.rst
+   run-time-tree.rst
    subprograms.rst
    environment.rst
    variables.rst

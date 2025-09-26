@@ -20,7 +20,7 @@ import implements
 
 # Project packages
 from sierra.core import utils, types, config
-from sierra.core.trampoline import cmdline_parser as cmdline_parser
+from sierra.core.trampoline import cmdline_parser  # noqa: F401
 from sierra.core.experiment import bindings
 import sierra.core.plugin as pm
 
@@ -186,6 +186,10 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
 
 
 def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
+    """
+    Parse a text file containing a GNU parallel style list of computational
+    resources to use.
+    """
     ret = []
 
     with utils.utf8open(nodefile, "r") as f:
@@ -249,7 +253,9 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
 def check_connectivity(
     cmdopts: types.Cmdopts, login: str, hostname: str, port: int, host_type: str
 ) -> None:
-
+    """
+    Check if passwordless connection to the specified host+login works.
+    """
     hostname = hostname.split(":")[0]
     _logger.info("Checking connectivity to %s", hostname)
     ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
@@ -324,8 +330,15 @@ def check_connectivity(
     _logger.info("%s@%s online", host_type, hostname)
 
 
-def check_for_simulator(engine: str, execenv: str, name: str):
-    shellname = get_executable_shellname(name)
+def check_for_simulator(engine: str, execenv: str, name: str) -> str:
+    """
+    Check if the specified executable name exists/is findable.
+
+    Returns the version string for the executable. Requires the executable
+    respect/accept ``-v``.
+
+    """
+    shellname = get_executable_arch_aware(name)
 
     version_cmd = f"{shellname} -v"
     _logger.debug("Check version for '%s' via '%s'", shellname, version_cmd)
@@ -341,7 +354,11 @@ def check_for_simulator(engine: str, execenv: str, name: str):
         )
 
 
-def get_executable_shellname(base: str) -> str:
+def get_executable_arch_aware(base: str) -> str:
+    """
+    Get the executable name in an :envvar:`SIERRA_ARCH`-aware way as
+    <base>-<arch> if the envvar is set, and as <base> otherwise.
+    """
     if "SIERRA_ARCH" in os.environ:
         arch = os.environ["SIERRA_ARCH"]
         return f"{base}-{arch}"
@@ -356,5 +373,4 @@ __all__ = [
     "check_connectivity",
     "check_for_simulator",
     "get_executable_shellname",
-    "cmdline_parser",
 ]

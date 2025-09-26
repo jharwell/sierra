@@ -76,6 +76,11 @@ Plugins
    file needs to be on it). SIERRA can't know, in general, where the location of
    the C++ code corresponding to the loaded :term:`Project` is.
 
+.. envvar:: LD_LIBRARY_PATH
+
+   Must be set to contain library directories for dynamically loaded libraries
+   installed to nonstandard and/or non system locations.
+
 .. envvar:: PARALLEL
 
    When running on some execution environments, such as ``hpc.slurm,hpc.pbs``,

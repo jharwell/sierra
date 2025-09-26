@@ -112,7 +112,7 @@ General
    SIERRA's :ref:`datamodel <datamodel>`. If your code isn't conformant, never
    fear! You can still use SIERRA--you will just have to define your own plugins
    for :ref:`data processing <plugins/proc>` and :ref:`product generation
-   <plugins/product>`.
+   <plugins/prod>`.
 
 .. _req/expef:
 

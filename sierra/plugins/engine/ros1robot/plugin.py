@@ -26,6 +26,8 @@ _logger = logging.getLogger("engine.ros1robot")
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator:
+    """Generate the commands to run a single :term:`Experimental Run`."""
+
     def __init__(
         self,
         cmdopts: types.Cmdopts,
@@ -172,6 +174,8 @@ class ExpRunShellCmdsGenerator:
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator:
+    """Generate the commands to run the :term:`Experiment` in stage 2."""
+
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
@@ -217,6 +221,13 @@ class ExpShellCmdsGenerator:
 
 @implements.implements(bindings.IExpConfigurer)
 class ExpConfigurer:
+    """High level experiment configuration for the engine.
+
+    - Relaxing some ssh checks.
+
+    - Syncing files to robots.
+    """
+
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 

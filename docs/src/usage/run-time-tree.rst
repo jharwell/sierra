@@ -227,3 +227,7 @@ The meaning of each directory is discussed below.
 
   - ``exec/`` - Statistics about SIERRA runtime. Useful for capturing runtime of
     specific experiments to better plan/schedule time on HPC clusters, etc.
+
+.. NOTE:: The above tree assumes that the :ref:`parallelism paradigm
+          <tutorials/plugin/engine/config>` is ``per-exp``; if you select a
+          different paradigm, then the structure will look different.

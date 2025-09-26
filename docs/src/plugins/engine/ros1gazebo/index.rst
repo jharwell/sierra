@@ -23,6 +23,13 @@ list of valid robot positions via ``--robot-positions`` which SIERRA will choose
 from randomly for each robot.
 
 
+.. _plugins/engine/ros1gazebo/packages:
+
+OS Packages
+===========
+
+None for the moment, beyond whatever ROS1+Gazebo packages you install.
+
 .. _plugins/engine/ros1gazebo/usage:
 
 Usage

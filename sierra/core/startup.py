@@ -40,6 +40,7 @@ kDebianPackages = types.OSPackagesSpec(
         "pssh": False,
         "ffmpeg": False,
         "xvfb": False,
+        "iputils-ping": False,
     },
 )
 """

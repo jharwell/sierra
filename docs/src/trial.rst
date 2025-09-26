@@ -10,7 +10,8 @@ repositories are cloned into ``$HOME/research``; adjust the paths accordingly if
 you clone things somewhere else.
 
 #. Install OS packages (if you don't see your OS below you will have to find and
-   install the equivalent packages).
+   install the equivalent packages). Note: this installs ALL OS packages needed
+   by ALL plugins which come with SIERRA for the purposes of fast setup.
 
    .. tabs::
 
@@ -24,13 +25,9 @@ you clone things somewhere else.
               - ``texlive-latex-extra``
               - ``dvipng``
               - ``psmisc``
-
-              Install the following optional packages with ``apt install``:
-
               - ``pssh``
               - ``ffmpeg``
               - ``xvfb``
-              - ``psmisc``
               - ``iputils-ping``
 
            .. group-tab:: OSX
@@ -40,11 +37,7 @@ you clone things somewhere else.
               - ``parallel``
               - ``--cask mactex``
               - ``pssh``
-
-              Install the following optional packages with ``brew install``:
-
               - ``--cask xquartz``
-              - ``pssh``
               - ``ffmpeg``
 
 
@@ -96,18 +89,36 @@ you clone things somewhere else.
 
          #.  Install ROS bridge :xref:`SIERRA_ROSBRIDGE`::
 
-               pip3 install catkin_tools
+               source /opt/ros/<distro>/setup.bash
+
+               pip3 install pysip \
+                            numpy \
+                            matplotlib \
+                            pyyaml \
+                            psutil \
+                            defusedxml \
+                            pyparsing \
+                            pydev \
+                            pyopengl \
+                            opencv-python \
+                            catkin_tools \
+                            rospkg \
+                            empy
+
                git clone https://github.com/jharwell/sierra_rosbridge.git
                cd sierra_rosbridge
+               git checkout devel
                catkin init
-               catkin config --extend /opt/ros/<distro>
+               catkin config --extend /opt/ros/${{ inputs.rosdistro }}
+               catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local
+               catkin build
 
-            Where ``<distro>`` is replaced by your ROS distro.  Finally, set
-            catkin to install at a common location (e.g.,
-            ``$HOME/.local/ros/noetic``) and build the package::
+             Where ``<distro>`` is replaced by your ROS distro.  Finally, set
+             catkin to install at a common location (e.g.,
+             ``$HOME/.local/ros/noetic``) and build the package::
 
-              catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local/ros/noetic
-              catkin build
+               catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local/ros/noetic
+               catkin build
 
 
 #. Download and build the super-simple SIERRA sample project for your chosen

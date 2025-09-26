@@ -4,7 +4,7 @@
 """
 Container module for the :term:`Prefect` remote execution environment.
 
-See :ref:`plugins/execenv/prefect/dockerremote`.
+See :ref:`plugins/execenv/prefectserver/dockerremote`.
 """
 
 # Core packages

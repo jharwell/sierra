@@ -3,16 +3,10 @@
 #
 # SPDX-License Identifier: MIT
 #
-"""Preprocess intra-experiment outputs for stage 5.
+"""Preprocess inter-experiment outputs for stage 5.
 
 Basically, gather statistics generated from controllers for graph generation in
 previous stages into the correct files(s) for comparison.
-
-If the batch criteria is univariate, then only
-:func:`IntraExpPreparer.across_rows` is valid; for bivariate batch criteria,
-either :func:`IntraExpPreparer.across_rows` or
-:func:`IntraExpPreparer.across_cols` is valid, depending on what the primary
-axis is.
 """
 
 # Core packages

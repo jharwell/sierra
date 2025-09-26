@@ -15,7 +15,7 @@ import pandas as pd
 
 # Project packages
 import sierra.core.plugin as pm
-from sierra.core.trampoline import cmdline_parser
+from sierra.core.trampoline import cmdline_parser  # noqa: F401
 
 
 def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
@@ -34,4 +34,4 @@ def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> Non
     return storage.df_write(df, path, **kwargs)  # type: ignore
 
 
-__all__ = ["df_read", "df_write", "cmdline_parser"]
+__all__ = ["df_read", "df_write"]

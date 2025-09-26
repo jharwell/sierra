@@ -28,11 +28,11 @@ Suppose you want to extend one of the following core SIERRA classes to add
 additional attributes/methods you want to be accessible to all :term:`Batch
 Criteria` in your project:
 
-- :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+- :class:`~sierra.core.variables.batch_criteria.BaseBatchCriteria`
 
 - :class:`~sierra.core.variables.batch_criteria.UnivarBatchCriteria`
 
-- :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
+- :class:`~sierra.core.variables.batch_criteria.XVarBatchCriteria`
 
 To do this, do the following:
 

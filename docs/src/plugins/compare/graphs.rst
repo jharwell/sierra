@@ -23,6 +23,13 @@ This page has the following sections:
 All configuration for this plugin is in ``<project>/config/graphs.yaml``
 file.
 
+.. _plugins/compare/graphs/packages:
+
+OS Packages
+===========
+
+Same as for the :ref:`prod.graphs <plugins/prod/graphs>` plugin.
+
 Usage
 =====
 

@@ -77,13 +77,16 @@ class IGraphable(implements.Interface):
         """
         Generate graph info for generating graphs from :term:`Batch Criteria`.
 
-        Arguments: exp_names: Needed as an optional for bivariate batch
-        criteria.  When calculating say yticks using criteria2, if criteria2
-        uses :py:func:`populations()` in the process, the criteria's OWN
-        ``gen_exp_names()`` will be used, which will result in bad directory
-        name calculations.  This can be overcome by passing the list of exp
-        names to use at THIS level, which should override the value otherwise
-        present in :class:`GraphInfo`.
+        Arguments:
+
+           exp_names: Needed as an optional for bivariate batch
+                      criteria.  When calculating say yticks using criteria2, if
+                      criteria2 uses ``populations()`` in the process,
+                      the criteria's OWN ``gen_exp_names()`` will be used, which
+                      will result in bad directory name calculations.  This can
+                      be overcome by passing the list of exp names to use at
+                      THIS level, which should override the value otherwise
+                      present in :class:`GraphInfo`.
         """
         raise NotImplementedError
 

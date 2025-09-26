@@ -19,7 +19,7 @@ products in stage 4.
 This plugin processes at the file level for each :term:`Experimental Run`. All
 :term:`Raw Output Data` files produced by each run are gathered and statistics
 calculated, and the results written out as described in the
-:ref:`usage/run_time_tree`.
+:ref:`usage/run-time-tree`.
 
 Usage
 =====

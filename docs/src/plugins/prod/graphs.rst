@@ -22,6 +22,29 @@ This plugin has the following stage 3 plugin recommendations:
 - :ref:`plugins/proc/stat` (all graphs). Without this, no statistics can be
   included on graphs.
 
+.. _plugins/prod/graphs/packages:
+
+OS Packages
+===========
+
+.. tabs::
+
+      .. group-tab:: Ubuntu
+
+         Install the following required packages with ``apt install``:
+
+         - ``cm-super``
+         - ``texlive-fonts-recommended``
+         - ``texlive-latex-extra``
+         - ``dvipng``
+
+
+      .. group-tab:: OSX
+
+         Install the following required packages with ``brew install``:
+
+         - ``--cask mactex-no-gui``
+
 Usage
 =====
 
@@ -159,7 +182,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
       :term:`Engine` specific way; see :ref:`tutorials/plugin/engine/prod` for
       specifics of this hook.
 
-      .. literalinclude:: linegraph.yaml
+      .. literalinclude:: stacked_line.yaml
 
    .. tab:: Heatmap
 
@@ -183,7 +206,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
       "Nice" X-axis labels are not currently implement for inter-experiment
       stacked line graphs.
 
-      .. literalinclude:: linegraph.yaml
+      .. literalinclude:: stacked_line.yaml
 
    .. tab:: Summary Linegraph
 
@@ -192,7 +215,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
       took the *last* point of some measure of interest, that might summarize
       steady-state behavior.
 
-      .. literalinclude:: summary.yaml
+      .. literalinclude:: summary_line.yaml
 
    .. tab:: heatmap
 

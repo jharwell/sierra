@@ -197,7 +197,7 @@ The following plugins are active in this stage:
           generating products in stage 4.
 
 For some examples, see the "Generating Products" section of
-:xref:`2022-aamas-demo`. See :ref:`plugins/product/render` for details about
+:xref:`2022-aamas-demo`. See :ref:`plugins/prod/render` for details about
 rendering capabilities.
 
 Part of default pipeline.
@@ -225,7 +225,7 @@ The following plugins are active in this stage:
        with generating comparative products, such as the # agents for a
        given :term:`Experimental Run`.
 
-   * - :ref:`Comparative Generators <plugins/comparators>`
+   * - :ref:`Comparative Generators <plugins/compare>`
 
      -
 
@@ -233,10 +233,11 @@ The following plugins are active in this stage:
                   below will eventually be replaced by a proper plugin.
 
         - Different agent control algorithms which have all been run in the same
-          ``--scenario``. See :ref:`usage/stage5/intra-scenario` for details.
+          ``--scenario``. See :ref:`plugins/compare/graphs/intra-scenario` for
+          details.
 
         - A single ``--controller`` across multiple scenarios. See
-          :ref:`usage/stage5/inter-scenario` for details.
+          :ref:`plugins/compare/graphs/inter-scenario` for details.
 
 
 

@@ -62,7 +62,7 @@ Steps
         .. tab:: ``main.yaml``
 
            Main SIERRA configuration file. This file is required for all
-           pipeline stages. See :ref:`tutorials/project/config/main` for
+           pipeline stages. See :ref:`tutorials/project/config` for
            documentation.
 
         .. tab:: ``controllers.yaml``
@@ -76,7 +76,7 @@ Steps
            Configuration for graph generation. This
            file is optional. Used by multiple plugins. An incomplete list:
 
-           - :ref:`plugins/product/graphs`,
+           - :ref:`plugins/prod/graphs`,
 
            - :ref:`plugins/compare/graphs`
 
@@ -133,7 +133,7 @@ Steps
    :ref:`tutorials/project/config`.
 
 #. Define graphs to be generated from :term:`Experiment` outputs by following
-   :ref:`plugins/product/graphs`. Strictly speaking this is optional, but
+   :ref:`plugins/prod/graphs`. Strictly speaking this is optional, but
    automated graph generation during stage 4 is one of the most useful parts of
    SIERRA, so its kind of silly if you don't do this.
 

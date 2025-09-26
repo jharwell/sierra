@@ -25,18 +25,32 @@ else:
 ################################################################################
 
 Cmdopts: TypeAlias = tp.Dict[str, tp.Any]
+"""Dictionary of parsed cmdline options."""
+
 YAMLDict: TypeAlias = tp.Union[None, bool, str, float, int, tp.Dict[str, "YAMLDict"]]
+"""Parsed YAML dictionary."""
+
 SimpleDict: TypeAlias = tp.Dict[str, tp.Union[str, int]]
+"""Dictionary str -> {str|int} mappings."""
 
 # 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
 # can be replaced with the '|' syntax, which is much nicer. Also the TypeAlias
 # import from extensions won't be needed/will be part of the tying module.
 JSON: TypeAlias = tp.Union[dict[str, "JSON"], list["JSON"], str, int, float, bool, None]
+"""Dictionary of parsed JSON."""
 
 StrDict: TypeAlias = tp.Dict[str, str]
+"""Dictionary containing str -> str mappings."""
+
 IntDict: TypeAlias = tp.Dict[str, int]
+"""Dictionary containing str -> int mappings."""
+
 CLIArgSpec: TypeAlias = tp.Dict[str, tp.Any]
+"""Dictionary containing str -> anything mappings for parsing stuff from the
+cmdline into components."""
+
 PathList: TypeAlias = tp.List[pathlib.Path]
+"""List of paths."""
 
 
 @dataclass
@@ -65,6 +79,8 @@ class ShellCmdSpec:
 
 @dataclass
 class YAMLConfigFileSpec:
+    """Spec for all the .yaml files available for :term:`Projects <Project>`."""
+
     main: str
     graphs: str
     controllers: str
@@ -74,6 +90,8 @@ class YAMLConfigFileSpec:
 
 @dataclass
 class ParsedNodefileSpec:
+    """Per line in a GNU parallel style nodefil, containing info a single resource."""
+
     hostname: str
     n_cores: int
     login: str
@@ -82,6 +100,8 @@ class ParsedNodefileSpec:
 
 @dataclass
 class OSPackagesSpec:
+    """Info about what packages are required/optional on a given OS."""
+
     kernel: str
     name: str
     pkgs: tp.Dict[str, bool]
@@ -89,6 +109,8 @@ class OSPackagesSpec:
 
 @dataclass
 class StatisticsSpec:
+    """Spec mapping file types of statistics to file extensions to contain said stats."""
+
     exts: StrDict
 
 

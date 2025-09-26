@@ -90,10 +90,7 @@ class IntraExpGraphGenerator:
     """Generates graphs from :term:`Processed Output Data` files.
 
     Which graphs are generated is controlled by YAML configuration files parsed
-    in :class:`~sierra.plugins.prod.pipeline_stage4.PipelineStage4`.
-
-    This class can be extended/overriden using a :term:`Project` hook. See
-    :ref:`tutorials/project/hooks` for details.
+    in stage 4.
 
     Attributes:
         cmdopts: Dictionary of parsed cmdline attributes.

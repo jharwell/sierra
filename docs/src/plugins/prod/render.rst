@@ -23,6 +23,27 @@ section. SIERRA can render frames (images) into videos from 3 sources:
 This plugin uses :program:`ffmpeg` to do the actual rendering, and so it must be
 findable by the shell used to invoke SIERRA; an error will be thrown otherwise.
 
+.. _plugins/prod/render/packages:
+
+OS Packages
+===========
+
+.. tabs::
+
+      .. group-tab:: Ubuntu
+
+         Install the following required packages with ``apt install``:
+
+         - ``ffmpeg``
+
+
+      .. group-tab:: OSX
+
+         Install the following required packages with ``brew install``:
+
+         - ``ffmpeg``
+
+
 .. _plugins/prod/render/usage:
 
 Usage

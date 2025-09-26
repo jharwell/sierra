@@ -352,7 +352,7 @@ class IExpConfigurer(implements.Interface):
 
         The parallelism paradigm is part of the :term:`Engine` definition, and
         thus the "correct" paradigm to choose varies depending on the engine.
-        See :ref:`tutorials/plugins/engine/config` for complete details and
+        See :ref:`tutorials/plugin/engine/config` for complete details and
         guidance.
         """
         raise NotImplementedError

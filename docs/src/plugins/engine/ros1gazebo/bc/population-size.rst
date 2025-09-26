@@ -1,4 +1,4 @@
-.. _plugins/engines/ros1gazebo/bc/population-size:
+.. _plugins/engine/ros1gazebo/bc/population-size:
 
 ===============
 Population Size

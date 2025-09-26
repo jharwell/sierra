@@ -32,17 +32,17 @@ def proc_batch_exp(
     Generate graphs from the :term:`Batch Experiment`.
 
     Intra-experiment graph generation: if intra-experiment graphs should be
-    generated, according to cmdline configuration, the following is run:
+    generated, according to configuration, the following is run:
 
-        #. :py:func:`~sierra.core.plugins.prod.graphs.intra.generate` to
+        #. :py:func:`~sierra.plugins.prod.graphs.intra.generate` to
            generate graphs for each experiment in the batch, or a subset.
 
     Inter-experiment graph generation: if inter-experiment graphs should be
     generated according to cmdline configuration, the following is run:
 
-        #. :class:`~sierra.core.plugins.prod.graphs.collate.GraphCollator`.
+        #. :class:`~sierra.plugins.prod.graphs.collate.GraphCollator`.
 
-        #. :py:func:`~sierra.core.plugins.prod.graphs.inter.generate` to perform
+        #. :py:func:`~sierra.plugins.prod.graphs.inter.generate` to perform
            graph generation from collated CSV files.
     """
     graphs_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(

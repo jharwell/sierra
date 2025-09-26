@@ -11,6 +11,26 @@ This engine can be selected via ``--engine=engine.argos``.
 This is the default engine on which SIERRA will run experiments, and uses the
 :term:`ARGoS` simulator. It cannot be used to run experiments on real robots.
 
+.. _plugins/engine/argos/packages:
+
+OS Packages
+===========
+
+.. tabs::
+
+      .. group-tab:: Ubuntu
+
+         Install the following optional packages with ``apt install``:
+
+         - ``xvfb``  - Only needed for ``--engine-vc``.
+
+      .. group-tab:: OSX
+
+         Install the following optional packages with ``brew install``:
+
+         - ``--cask xquartz``   - Only needed for ``--engine-vc``.
+
+Note that you also need to install ARGoS.
 
 .. _plugins/engine/argos/usage:
 
@@ -69,7 +89,7 @@ Visual Capture and Rendering
 This engine can render it's simulation environment offscreen into a virtual
 buffer using :program:`Xvfb`, and output captured frames as PNG images during
 stage 2, which can then be rendered into per-run videos during stage 4 (see
-:ref:`plugins/product/render` for more details).
+:ref:`plugins/prod/render` for more details).
 
 To use:
 

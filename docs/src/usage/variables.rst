@@ -47,17 +47,5 @@ Examples
 - ``exp_setup.T1000``: Experimental run will be 1,000 seconds long and have
   1,000*5=5,000 timesteps, with default (50) # datapoints.
 
-- ``exp_setup.T2000.N100``: Experimental run will be 2,000 seconds long and have
-  2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100
-  timesteps).
-
-- ``exp_setup.T2000.N100``: Experimental run will be 2,000 seconds long and have
-  2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100
-  timesteps).
-
 - ``exp_setup.T10000.K10``: Experimental run will be 10,000 seconds long, and
   have 10,000*10=100,000 timesteps with default (50) # datapoints.
-
-- ``exp_setup.T10000.K10.N100``: Experimental run will be 10,000 seconds long,
-  and have 10,000*10=100,000 timesteps, with 100 datapoints (one every 100
-  seconds/1,000 timesteps).

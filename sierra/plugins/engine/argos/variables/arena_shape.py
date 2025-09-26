@@ -18,8 +18,7 @@ kWALL_WIDTH = 0.4
 
 
 @implements.implements(IBaseVariable)
-class ArenaShape():
-
+class ArenaShape:
     """Maps a list of desired arena dimensions sets of XML changes.
 
     This class is a base class which should (almost) never be used on its
@@ -35,9 +34,7 @@ class ArenaShape():
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
-        """Generate changes necessary setup ARGoS with the specified arena sizes.
-
-        """
+        """Generate changes necessary setup ARGoS with the specified arena sizes."""
         if not self.attr_changes:
             for extent in self.extents:
                 self.attr_changes.append(self._gen_chgs_for_extent(extent))
@@ -50,14 +47,14 @@ class ArenaShape():
         ysize = extent.ysize()
         zsize = extent.zsize()
 
-        chgs = definition.AttrChangeSet(definition.AttrChange(".//arena",
-                                                              "size",
-                                                              f"{xsize},{ysize},{zsize}"),
-                                        definition.AttrChange(".//arena",
-                                                              "center",
-                                                              "{0:.9f},{1:.9f},{2}".format(xsize / 2.0,
-                                                                                           ysize / 2.0,
-                                                                                           zsize / 2.0)))
+        chgs = definition.AttrChangeSet(
+            definition.AttrChange(".//arena", "size", f"{xsize},{ysize},{zsize}"),
+            definition.AttrChange(
+                ".//arena",
+                "center",
+                "{0:.9f},{1:.9f},{2}".format(xsize / 2.0, ysize / 2.0, zsize / 2.0),
+            ),
+        )
 
         # We restrict the places robots can spawn within the arena as follows:
         #
@@ -68,40 +65,69 @@ class ArenaShape():
         #   being near arena boundaries on the first timestep.
         #
         # - All robots start on the ground with Z=0.
-        chgs.add(definition.AttrChange(".//arena/distribute/position",
-                                       "max",
-                                       "{0:.9f}, {1:.9f}, 0".format(
-                                           xsize - 2.0 * kWALL_WIDTH * 1.1,
-                                           ysize - 2.0 * kWALL_WIDTH * 1.1)
-                                       ))
-        chgs.add(definition.AttrChange(".//arena/distribute/position",
-                                       "min",
-                                       "{0:.9f}, {1:.9f}, 0".format(
-                                           2.0 * kWALL_WIDTH * 1.1,
-                                           2.0 * kWALL_WIDTH * 1.1)
-                                       ))
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/distribute/position",
+                "max",
+                "{0:.9f}, {1:.9f}, 0".format(
+                    xsize - 2.0 * kWALL_WIDTH * 1.1, ysize - 2.0 * kWALL_WIDTH * 1.1
+                ),
+            )
+        )
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/distribute/position",
+                "min",
+                "{0:.9f}, {1:.9f}, 0".format(
+                    2.0 * kWALL_WIDTH * 1.1, 2.0 * kWALL_WIDTH * 1.1
+                ),
+            )
+        )
 
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_north']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(xsize,
-                                                                      kWALL_WIDTH)))
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_north']",
+                "size",
+                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH),
+            )
+        )
 
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_north']/body",
-                                       "position",
-                                       "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)))
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_south']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_north']/body",
+                "position",
+                "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize),
+            )
+        )
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_south']",
+                "size",
+                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH),
+            )
+        )
 
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_north']/body",
-                                       "position",
-                                       "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)))
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_south']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_south']/body",
-                                       "position",
-                                       "{0:.9f}, 0, 0 ".format(xsize / 2.0)))
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_north']/body",
+                "position",
+                "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize),
+            )
+        )
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_south']",
+                "size",
+                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH),
+            )
+        )
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_south']/body",
+                "position",
+                "{0:.9f}, 0, 0 ".format(xsize / 2.0),
+            )
+        )
 
         # East wall needs to have its X coordinate offset by the width of the
         # wall / 2 in order to be centered on the boundary for the arena. This
@@ -110,22 +136,35 @@ class ArenaShape():
         # along the east wall.
         #
         # I think this is a bug in ARGoS.
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_east']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                      ysize + kWALL_WIDTH)))
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_east']/body",
-                                       "position",
-                                       "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0,
-                                                                    ysize / 2.0)))
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_east']",
+                "size",
+                "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH, ysize + kWALL_WIDTH),
+            )
+        )
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_east']/body",
+                "position",
+                "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0, ysize / 2.0),
+            )
+        )
 
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_west']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                      ysize + kWALL_WIDTH)))
-        chgs.add(definition.AttrChange(".//arena/*[@id='wall_west']/body",
-                                       "position",
-                                       "0, {0:.9f}, 0".format(ysize / 2.0)))
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_west']",
+                "size",
+                "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH, ysize + kWALL_WIDTH),
+            )
+        )
+        chgs.add(
+            definition.AttrChange(
+                ".//arena/*[@id='wall_west']/body",
+                "position",
+                "0, {0:.9f}, 0".format(ysize / 2.0),
+            )
+        )
 
         return chgs
 
@@ -140,6 +179,5 @@ class ArenaShape():
 
 
 __all__ = [
-    'kWALL_WIDTH',
-    'ArenaShape',
+    "ArenaShape",
 ]

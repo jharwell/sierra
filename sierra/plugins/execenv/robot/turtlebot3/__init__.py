@@ -4,7 +4,7 @@
 """
 Container module for the Turtlebot3 robot execution environment plugin.
 
-See :ref:`plugins/execenv/real-robot/turtlebot3`.
+See :ref:`plugins/execenv/realrobot/turtlebot3`.
 """
 
 # Core packages

@@ -114,7 +114,7 @@ def _from_engine(
       <batch_root>/videos/<exp_name>
 
     ``<frames_leaf>`` is controlled via configuration.  For more
-    details, see :ref:`plugins/product/render`.
+    details, see :ref:`plugins/prod/render`.
 
     .. note:: This currently only works with PNG images.
     """
@@ -161,7 +161,7 @@ def _from_project_imagized(
 
         <batch_root>/videos/<exp>/<subdir_path>
 
-    For more details, see :ref:`plugins/product/render`.
+    For more details, see :ref:`plugins/prod/render`.
 
     .. note:: This currently only works with PNG images.
     """

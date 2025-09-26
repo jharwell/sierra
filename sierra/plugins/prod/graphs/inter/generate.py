@@ -39,11 +39,7 @@ def proc_batch_exp(
            to generate heatmaps (bivariate batch criteria only).
 
     Which graphs are generated can be controlled by YAML configuration files
-    parsed in
-    :class:`~sierra.plugins.prod.pipeline_stage4.PipelineStage4`.
-
-    This class can be extended/overriden using a: term: `Project` hook.  See
-    :ref:`tutorials/project/hooks` for details.
+    parsed in stage 4.
 
     Arguments:
         main_config: Parsed dictionary of main YAML configuration

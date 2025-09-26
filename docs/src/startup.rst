@@ -26,7 +26,9 @@ Basic Setup
 #. Install SIERRA
 
    - Install OS packages (if you don't see your OS below you will have to find
-     and install the equivalent packages).
+     and install the equivalent packages). Note that these are only the OS
+     packages required by the SIERRA core; many :ref:`plugins` have their own
+     package requirements, documented on their respective pages.
 
      .. tabs::
 
@@ -35,17 +37,6 @@ Basic Setup
               Install the following required packages with ``apt install``:
 
               - ``parallel``
-              - ``cm-super``
-              - ``texlive-fonts-recommended``
-              - ``texlive-latex-extra``
-              - ``dvipng``
-              - ``psmisc``
-
-              Install the following optional packages with ``apt install``:
-
-              - ``pssh``
-              - ``ffmpeg``
-              - ``xvfb``
               - ``psmisc``
 
            .. group-tab:: OSX
@@ -53,15 +44,6 @@ Basic Setup
               Install the following required packages with ``brew install``:
 
               - ``parallel``
-              - ``--cask mactex-no-gui``
-              - ``pssh``
-
-              Install the following optional packages with ``brew install``:
-
-              - ``--cask xquartz``
-              - ``pssh``
-              - ``ffmpeg``
-
 
      If you are on a different Linux distribution you will have to find and
      install the equivalent packages.
@@ -73,7 +55,12 @@ Basic Setup
                     package for a feature you try to use, you will get an
                     error.
 
-   - Install SIERRA packages by following :ref:`packages`.
+   - Install SIERRA::
+
+       pip3 install sierra-research
+
+     See :ref:`packages` for some additional useful info.
+
 
 
 Project Plugin Setup
@@ -126,9 +113,9 @@ SIERRA! The steps to do so are:
      :ref:`plugins/execenv` for available plugins.
 
    - What controller/algorithm to run: ``--controller``. See
-   :ref:`tutorials/project/config` for details on how ``--controller`` can be
-   used to declaratively drive experiment generation for a
-   :term:`Project`. Project dependent.
+     :ref:`tutorials/project/config` for details on how ``--controller`` can be
+     used to declaratively drive experiment generation for a
+     :term:`Project`. Project dependent.
 
    - How large the arena should be (for example), etc., which can be drawn from
      ``--scenario``, or the batch criteria.

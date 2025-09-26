@@ -13,7 +13,7 @@ SIERRA's capabilities for imagizing (translating from :term:`Raw Output Data`
 files into images) are detailed in this section. Imagize inputs are treated as
 snapshots of 2D or 3D data over time, and after being be turned into image files
 in stage 3 they can be rendered into videos in stage 4 (see
-:ref:`plugins/product/render`).
+:ref:`plugins/prod/render`).
 
 .. _plugins/proc/imagize/req:
 
@@ -41,7 +41,7 @@ turn them into images and render them:
 - The name of the subdir of ``main.run_metrics_leaf`` has a corresponding entry
   in ``graphs.yaml``. This is to enable selective imagizing of graphs, so that
   you don't get bogged down if you want to capture imagizing data en masse, but
-  only render some of it to videos later. See :ref:`plugins/product/graphs`
+  only render some of it to videos later. See :ref:`plugins/prod/graphs`
   for details.
 
 .. IMPORTANT::

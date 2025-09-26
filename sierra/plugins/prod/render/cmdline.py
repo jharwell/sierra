@@ -40,7 +40,7 @@ def build(
         help="""
                  Enable generation of videos from imagized CSV files created as
                  a result of running the ``proc.imagize`` plugin.  See
-                 :ref:`plugins/product/render` for details.
+                 :ref:`plugins/prod/render` for details.
                  """
         + cmdline.stage_usage_doc([4]),
         action="store_true",

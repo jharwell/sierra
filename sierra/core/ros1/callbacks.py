@@ -19,6 +19,7 @@ def population_size_from_pickle(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
 ) -> int:
+    """Extracts population size from unpickled experiment definition."""
     for add in adds_def:
         if "name" in add.attr and "n_agents" in add.attr["name"]:
             return int(add.attr["value"])
@@ -29,10 +30,12 @@ def population_size_from_pickle(
 def population_size_from_def(
     exp_def: definition.BaseExpDef, main_config: types.YAMLDict, cmdopts: types.Cmdopts
 ) -> int:
+    """Extracts population size from experiment definition."""
     return population_size_from_pickle(exp_def.element_adds, main_config, cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict, cmdopts: types.Cmdopts) -> str:
+    """Extracts the common robot prefix based on cmdline opts + YAML config."""
     return str(main_config["ros"]["robots"][cmdopts["robot"]]["prefix"])
 
 

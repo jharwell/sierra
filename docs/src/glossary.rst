@@ -43,7 +43,7 @@ works/is designed the way it is, and to help you find your way around.
    Prefect
 
       Python-based scheduling framework for defining and executing
-      workflows. The website is at `https://www.prefect.io`_.
+      workflows. The website is at `<https://www.prefect.io>`_.
 
    Project
 
@@ -188,7 +188,7 @@ works/is designed the way it is, and to help you find your way around.
 
       These flavor of measures are usually what you are after. However, if you
       want something different you can specify it in a per-graph manner; see
-      :ref:`plugins/product/graphs` for more info. You can also capture
+      :ref:`plugins/prod/graphs` for more info. You can also capture
       transient behaviors by creating :term:`Collated Output Data` files and
       thus :term:`Batch Summary Data` files from captured :term:`Experimental
       Run` outputs over short stretches of time--SIERRA does not know the
@@ -222,7 +222,7 @@ works/is designed the way it is, and to help you find your way around.
       example, if you want to generate graphs about the different ways that
       robots allocate tasks, you might create a ``LN_task_alloc`` label, so that
       you can enable/disable all task allocation related graphs for one or more
-      controllers easily when :ref:`configuring <plugins/product/graphs>`
+      controllers easily when :ref:`configuring <plugins/prod/graphs>`
       your project.
 
    Controller Category
@@ -243,6 +243,16 @@ works/is designed the way it is, and to help you find your way around.
       empirical data from simulations/real robot experiments, or not, as
       needed. Intended to generate predictions of `something` which can then be
       plotted against empirical results for comparison.
+
+   Imagize
+
+      The process of taking a :term:`Raw Output Data` or :term:`Processed Output
+      Data` file and turning it into a PNG/JPG file.
+
+   Product
+
+      Something which is of interest/value generated duration stage 4. Probably
+      a file of some kind, like a graphical image or video.
 
    Plugin
 

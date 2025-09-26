@@ -22,3 +22,6 @@ class PathSet:
     output_root: pathlib.Path
     batchroot: pathlib.Path
     model_root: tp.Optional[pathlib.Path]
+
+
+__all__ = ["PathSet"]

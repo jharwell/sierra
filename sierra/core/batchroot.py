@@ -5,7 +5,7 @@
 #
 """Functionality for generating root directory paths for a batch experiment.
 
-See :ref:`usage/runtime-tree` for details about the defined root
+See :ref:`usage/run-time-tree` for details about the defined root
 directories in SIERRA.
 """
 

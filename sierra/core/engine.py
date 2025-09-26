@@ -25,7 +25,7 @@ import sierra.core.plugin as pm
 from sierra.core import types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
-from sierra.core.trampoline import cmdline_parser
+from sierra.core.trampoline import cmdline_parser  # noqa: F401
 
 _logger = logging.getLogger(__name__)
 
@@ -298,7 +298,6 @@ def get_local_ip():
 
 
 __all__ = [
-    "cmdline_parser",
     "cmdline_postparse_configure",
     "ExpRunShellCmdsGenerator",
     "ExpShellCmdsGenerator",

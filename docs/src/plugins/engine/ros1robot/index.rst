@@ -25,7 +25,29 @@ SIERRA designates the host machine as the ROS master, and allows you to
 helpful in some situations (e.g., simple robots which can't manage network
 mounted filesystems).
 
-.. _plugins/engine/ros1gazebo/usage:
+.. _plugins/engine/ros1robot/packages:
+
+OS Packages
+===========
+
+.. tabs::
+
+      .. group-tab:: Ubuntu
+
+         Install the following required packages with ``apt install``:
+
+         - ``pssh``
+         - ``iputils-ping``
+
+      .. group-tab:: OSX
+
+         Install the following required packages with ``brew install``:
+
+         - ``pssh``
+
+Note that you also have to install ROS1.
+
+.. _plugins/engine/ros1robot/usage:
 
 Usage
 =====
