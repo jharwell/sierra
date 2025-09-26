@@ -178,3 +178,15 @@ def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaE
 
        criteria: The batch criteria built from cmdline specification.
     """
+
+
+def expsetup_from_def(exp_def: definition.BaseExpDef) -> types.SimpleDict:
+    """
+    Given an experiment definition, compute the experiment setup information.
+    Should contain keys:
+
+        - ``duration`` - Duration in seconds.
+
+        - ``n_ticks_per_sec`` - Ticks per second for controllers/sim.
+
+    """

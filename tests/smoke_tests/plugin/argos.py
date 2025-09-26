@@ -215,13 +215,14 @@ def argos_vc(session, camera_config):
     output_root = batch_root / "exp-outputs"
     video_root = batch_root / "videos"
 
-    # Build and run command
+    # Build and run command. Need prod.graphs for --exp-n-datapoints-factor in
+    # the base command.
     sierra_cmd = (
         f"{session.env['ARGOS_BASE_CMD']} "
         f"--controller=foraging.footbot_foraging "
         f"--batch-criteria population_size.Linear1.C1 "
         f"--pipeline 1 2 3 4 "
-        f"--prod prod.render "
+        f"--prod prod.render prod.graphs "
         f"--engine-vc "
         f"--camera-config={camera_config}"
     )
@@ -270,7 +271,7 @@ def argos_imagize(session):
         f"--batch-criteria population_size.Linear1.C1 "
         f"--pipeline 1 2 3 4 "
         f"--proc proc.statistics proc.imagize "
-        f"--prod prod.render "
+        f"--prod prod.render prod.graphs "
         f"--project-rendering "
     )
 

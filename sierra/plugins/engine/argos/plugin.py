@@ -375,3 +375,19 @@ def pre_exp_diagnostics(
         cmdopts["physics_n_threads"],
         cmdopts["exec_jobs_per_node"],
     )
+
+
+def expsetup_from_def(exp_def: definition.BaseExpDef) -> types.SimpleDict:
+    ret = {}  # type: types.SimpleDict
+
+    for path, attr, value in exp_def:
+        if "experiment" in path:
+            if "length" in attr:
+                ret["duration"] = int(value)
+            if "ticks_per_second" in attr:
+                ret["n_ticks_per_sec"] = int(value)
+
+    if any(k not in ret for k in ["duration", "n_ticks_per_sec"]):
+        raise RuntimeError("Malformed experiment definition")
+
+    return ret

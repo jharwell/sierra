@@ -33,20 +33,14 @@ class EngineCmdline(PluginCmdline):
         self.stage1.add_argument(
             "--exp-setup",
             help="""
-
-                                     Defines experiment run length, :term:`Ticks
-                                     <Tick>` per second for the experiment
-                                     (<experiment> tag), # of datapoints to
-                                     capture/capture interval for each
-                                     simulation. See :ref:`usage/vars/expsetup`
-                                     for a full description.
-
-                                     """
+                 Defines experiment run length, :term:`Ticks <Tick>` per second
+                 for the experiment (<experiment> tag).  See
+                 :ref:`usage/vars/expsetup` for a full description.
+                 """
             + self.stage_usage_doc([1]),
-            default="exp_setup.T{0}.K{1}.N{2}".format(
+            default="exp_setup.T{0}.K{1}".format(
                 config.kARGoS["n_secs_per_run"],
                 config.kARGoS["n_ticks_per_sec"],
-                config.kExperimentalRunData["n_datapoints_1D"],
             ),
         )
 

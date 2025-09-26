@@ -24,23 +24,32 @@ Run`.
 Cmdline Syntax
 --------------
 
-``T{duration}[.K{ticks_per_sec}][.N{n_datapoints}``
+``T{duration}[.K{ticks_per_sec}]``
 
-- ``duration`` - Duration of timesteps in `seconds` (not timesteps).
+- ``duration`` - Duration of timesteps in *seconds* (not timesteps/ticks).
 
-- ``ticks_per_sec`` - How many times each controller will be run per second.
+- ``ticks_per_sec`` - How many times each controller will be run per
+  second. Well, controllers can actually run more often than this if they want,
+  but this should be how many times/sec they output data, so that the #
+  datapoints gathered can (roughly) be calculated as ``duration *
+  ticks_per_sec`` for the purpose of generating :term:`products <Product>`.
 
-- ``n_datapoints`` - # datapoints per :term:`Experimental Run` to be captured;
-  the capture interval (if configurable) should be adjusted in
-  :term:`Project`\-derived class from the engine "Experiment setup class"
-  (e.g., :class:`sierra.plugins.engine.argos.variables.exp_setup.ExpSetup` for
-  :term:`ARGoS`).
+``duration`` must always be specified, but ``ticks_per_sec`` is optional.
+
+.. IMPORTANT:: All :Term:`Experimental Runs <Experimental Run>` *must* respect
+               these parameters or some of the finer points of SIERRA
+               functionality won't work at best, and BAD things will happen at
+               worst. Probably.
 
 Examples
 --------
 
 - ``exp_setup.T1000``: Experimental run will be 1,000 seconds long and have
   1,000*5=5,000 timesteps, with default (50) # datapoints.
+
+- ``exp_setup.T2000.N100``: Experimental run will be 2,000 seconds long and have
+  2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100
+  timesteps).
 
 - ``exp_setup.T2000.N100``: Experimental run will be 2,000 seconds long and have
   2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100

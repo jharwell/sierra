@@ -176,9 +176,4 @@ kGazebo = {
 
 kGNUParallel: types.StrDict = {"cmdfile_stem": "commands", "cmdfile_ext": ".txt"}
 
-kExperimentalRunData = {
-    # Default # datapoints in each .csv of one-dimensional data.
-    "n_datapoints_1D": 50
-}
-
 kEngine = {"ping_timeout": 10}  # seconds

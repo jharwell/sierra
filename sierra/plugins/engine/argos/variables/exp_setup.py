@@ -17,7 +17,7 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.experiment import definition
-from sierra.core import config, types
+from sierra.core import config
 from sierra.core.variables import exp_setup
 
 
@@ -26,35 +26,10 @@ class ExpSetup:
     """
     Defines the simulation duration.
 
-    Attributes:
-        duration: The simulation duration in seconds, NOT timesteps.
     """
 
-    @staticmethod
-    def extract_time_params(exp_def: definition.AttrChangeSet) -> types.IntDict:
-        """
-        Extract and return time parameters for the experiment.
-
-        Returns:
-
-            length (in seconds), ticks_per_second
-        """
-        ret = {"T_in_secs": int(), "n_ticks_per_sec": int()}
-
-        for path, attr, value in exp_def:
-            if "experiment" in path:
-                if "length" in attr:
-                    ret["T_in_secs"] = int(value)
-                if "ticks_per_second" in attr:
-                    ret["n_ticks_per_sec"] = int(value)
-
-        return ret
-
-    def __init__(
-        self, n_secs_per_run: int, n_datapoints: int, n_ticks_per_sec: int
-    ) -> None:
+    def __init__(self, n_secs_per_run: int, n_ticks_per_sec: int) -> None:
         self.n_secs_per_run = n_secs_per_run
-        self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
@@ -96,13 +71,10 @@ def factory(arg: str) -> ExpSetup:
         {
             "n_secs_per_run": config.kARGoS["n_secs_per_run"],
             "n_ticks_per_sec": config.kARGoS["n_ticks_per_sec"],
-            "n_datapoints": config.kExperimentalRunData["n_datapoints_1D"],
         },
     )
 
-    return ExpSetup(
-        attr["n_secs_per_run"], attr["n_datapoints"], attr["n_ticks_per_sec"]
-    )
+    return ExpSetup(attr["n_secs_per_run"], attr["n_ticks_per_sec"])
 
 
 __all__ = [

@@ -134,7 +134,7 @@ Some guidance on selecting parallelism.:
       one per agent, since you can't have single physical agent/robot be part of
       multiple experimental runs simultaneously.
 
-.. _tutorials/plugin/engine/generate:
+.. _tutorials/plugin/engine/exp:
 
 Generating Experiments
 ======================
@@ -511,6 +511,29 @@ In ``generators/engine.py``, you may define the following functions:
           """
           pass
 
+
+.. _tutorials/plugin/engine/prod:
+
+Generating Products
+===================
+
+#. In ``plugin.py``, you may define ``exp_duration()``, which can be used to
+   retrieve the experiment setup information in later pipeline stages for
+   providing nicer X-axis labels for graphs, for example. This function is
+   optional.
+
+   .. code-block:: python
+
+      def expsetup_from_def(exp_def: definition.BaseExpDef) -> types.SimpleDict:
+          """
+          Given an experiment definition, compute the experiment setup
+          information. Should contain keys:
+
+          - ``duration`` - Duration in seconds.
+
+          - ``n_ticks_per_sec`` - Ticks per second for controllers/sim.
+          """
+          pass
 
 A Full Skeleton
 ===============

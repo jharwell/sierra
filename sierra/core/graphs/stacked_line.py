@@ -40,12 +40,14 @@ def generate(
     title: str,
     medium: str,
     backend: str,
+    xticks: tp.Optional[tp.List[float]] = None,
     stats: str = "none",
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
     points: tp.Optional[bool] = False,
     large_text: bool = False,
     legend: tp.Optional[tp.List[str]] = None,
+    xticklabels: tp.Optional[tp.List[str]] = None,
     cols: tp.Optional[tp.List[str]] = None,
     logyscale: bool = False,
     ext: str = config.kStats["mean"].exts["mean"],
@@ -85,11 +87,21 @@ def generate(
 
     df = storage.df_read(input_fpath, medium)
 
+    # Use xticks if provided, otherwise default to using the dataframe index as
+    # the xticks.
+    dfcols = df.columns.tolist()
+    df["xticks"] = xticks if xticks is not None else df.index.to_list()
     dataset = hv.Dataset(
         # Make index a column so we can use it as kdim
         data=df.reset_index(),
         kdims=["index"],
-        vdims=cols if cols else df.columns.tolist(),
+        vdims=cols if cols else dfcols,
+    )
+
+    assert len(df.index) == len(
+        df["xticks"]
+    ), "Length mismatch between xticks,# data points: {0} vs {1}".format(
+        len(df["xticks"]), len(df.index)
     )
 
     model = _read_models(paths.model_root, input_stem, medium)

@@ -11,9 +11,11 @@ import logging
 
 # 3rd party packages
 import json
+import numpy as np
 
 # Project packages
-from sierra.core import types, exproot, graphs
+from sierra.core import types, exproot, graphs, config
+from sierra.core import plugin as pm
 
 _logger = logging.getLogger(__name__)
 
@@ -51,12 +53,31 @@ def generate(
                 # 2025-06-05 [JRH]: We always write stage {3,4} output data
                 # files as .csv because that is currently SIERRA's 'native'
                 # format; this may change in the future.
+                module = pm.pipeline.get_plugin_module(cmdopts["engine"])
+                if hasattr(module, "expsetup_from_def"):
+                    module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
+                    pkl_def = module2.unpickle(pathset.input_root / config.kPickleLeaf)
+
+                    info = module.expsetup_from_def(pkl_def)
+                    xticks = np.linspace(
+                        0,
+                        info["duration"],
+                        int(
+                            info["duration"]
+                            * info["n_ticks_per_sec"]
+                            * cmdopts["exp_n_datapoints_factor"]
+                        ),
+                    )
+                else:
+                    xticks = None
+
                 graphs.stacked_line(
                     paths=paths,
                     input_stem=graph["src_stem"],
                     output_stem=graph["dest_stem"],
                     medium="storage.csv",
                     backend=graph.get("backend", cmdopts["graphs_backend"]),
+                    xticks=xticks,
                     stats=cmdopts["dist_stats"],
                     cols=graph.get("cols", None),
                     title=graph.get("title", ""),

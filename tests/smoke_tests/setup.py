@@ -92,6 +92,8 @@ def session_setup(func):
 
         session.env["COVERAGE_CMD"] = coverage_cmd
 
+        # 2025-09-25 [JRH]: The factor here is from the hard-coded output
+        # interval of 10 in the ARGoS sample project.
         session.env["ARGOS_BASE_CMD"] = (
             f"{coverage_cmd} "
             f"--sierra-root={session.env['SIERRA_ROOT']} "
@@ -108,6 +110,7 @@ def session_setup(func):
             f"--with-robot-rab "
             f"--log-level=TRACE "
             f"--df-verify "
+            f"--exp-n-datapoints-factor=0.1 "
         )
 
         session.env["JSONSIM_BASE_CMD"] = (

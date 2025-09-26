@@ -154,7 +154,10 @@ this plugin is below. Unless stated otherwise, all keys are required.
    .. tab:: Stacked Linegraph
 
       The "stacked" here comes from multiple lines potentially being present
-      (e.g., plotting all columns in a dataframe).
+      (e.g., plotting all columns in a dataframe). This is a time series graph,
+      with the X-axis labels being either dataframe indices or specified in a
+      :term:`Engine` specific way; see :ref:`tutorials/plugin/engine/prod` for
+      specifics of this hook.
 
       .. literalinclude:: linegraph.yaml
 
@@ -176,6 +179,9 @@ this plugin is below. Unless stated otherwise, all keys are required.
       The "stacked" here comes from multiple lines potentially being present
       (e.g., plotting the same column from the same file across all experiments
       in the batch).
+
+      "Nice" X-axis labels are not currently implement for inter-experiment
+      stacked line graphs.
 
       .. literalinclude:: linegraph.yaml
 

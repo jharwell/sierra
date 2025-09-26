@@ -78,18 +78,6 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
     )
 
     cmdline.multistage.add_argument(
-        "--plot-regression-lines",
-        help="""
-             For all 2D generated scatterplots, plot a linear regression line
-             and the equation of the line to the legend.
-             """
-        + cmdline.graphs_applicable_doc(
-            [":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"]
-        )
-        + cmdline.stage_usage_doc([4, 5]),
-    )
-
-    cmdline.multistage.add_argument(
         "--plot-primary-axis",
         type=int,
         help="""
@@ -133,7 +121,7 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
         help="""
              This option specifies that the title, X/Y axis labels/tick labels
              should be larger than the SIERRA default.  This is useful when
-             generating graphs suitable for two column paper format where the
+        generating graphs suitable for two column paper format where the
              default text size for rendered graphs will be too small to see
              easily.  The SIERRA defaults are generally fine for the one
              column/journal paper format.
@@ -181,6 +169,16 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
              See :ref:`plugins/prod/graphs` for more information.
              """,
         default="matplotlib",
+    )
+    cmdline.stage4.add_argument(
+        "--exp-n-datapoints-factor",
+        type=float,
+        help="""
+             Specify an additional multiplicative factor for computing the # of
+             datapoints captured duration an :term:`Experiment` to modify the
+             duration * ticks_per_sec default.
+             """,
+        default=1.0,
     )
     cmdline.stage4.add_argument(
         "--exp-graphs",
@@ -255,12 +253,12 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
         "plot_log_xscale": args.plot_log_xscale,
         "plot_enumerated_xscale": args.plot_enumerated_xscale,
         "plot_log_yscale": args.plot_log_yscale,
-        "plot_regression_lines": args.plot_regression_lines,
         "plot_primary_axis": args.plot_primary_axis,
         "plot_large_text": args.plot_large_text,
         "plot_transpose_graphs": args.plot_transpose_graphs,
         # stage 4
         "graphs_backend": args.graphs_backend,
+        "exp_n_datapoints_factor": args.exp_n_datapoints_factor,
         "exp_graphs": args.exp_graphs,
         "project_no_LN": args.project_no_LN,
         "project_no_HM": args.project_no_HM,

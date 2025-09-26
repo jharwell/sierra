@@ -113,6 +113,7 @@ def _gen_stacked_linegraph(
         model_root=None,
         batchroot=pathset.root,
     )
+
     graphs.stacked_line(
         paths=paths,
         input_stem=graph["dest_stem"],
@@ -121,6 +122,7 @@ def _gen_stacked_linegraph(
         medium="storage.csv",
         title=graph["title"],
         backend=graph.get("backend", cmdopts["graphs_backend"]),
+        xticks=None,
         xlabel=graph.get("xlabel", "Time"),
         ylabel=graph.get("ylabel", None),
         logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),

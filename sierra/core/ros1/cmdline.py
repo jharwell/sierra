@@ -56,15 +56,13 @@ class ROSCmdline(PluginCmdline):
             "--exp-setup",
             help="""
                  Defines experiment run length, ticks per second for the
-                 experiment, # of datapoints to capture/capture interval for
-                 each simulation.  See :ref:`usage/vars/expsetup` for a full
+                 experiment.  See :ref:`usage/vars/expsetup` for a full
                  description.
                  """
             + self.stage_usage_doc([1]),
-            default="exp_setup.T{0}.K{1}.N{2}".format(
+            default="exp_setup.T{0}.K{1}".format(
                 config.kROS["n_secs_per_run"],
                 config.kROS["n_ticks_per_sec"],
-                config.kExperimentalRunData["n_datapoints_1D"],
             ),
         )
 

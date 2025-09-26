@@ -30,9 +30,6 @@ class ExpSetup:
         n_secs_per_run: The :term:`Experimental Run` duration in seconds, NOT
                         :term:`Ticks <Tick>` or timesteps.
 
-        n_datapoints: How many datapoints to capture during the experimental
-                      run.
-
         n_ticks_per_sec: How many times per second robot controllers will be
                          run.
 
@@ -41,13 +38,11 @@ class ExpSetup:
     def __init__(
         self,
         n_secs_per_run: int,
-        n_datapoints: int,
         n_ticks_per_sec: int,
         barrier_start: bool,
         robots_need_timekeeper: bool,
     ) -> None:
         self.n_secs_per_run = n_secs_per_run
-        self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
         self.barrier_start = barrier_start
         self.robots_need_timekeeper = robots_need_timekeeper
@@ -183,13 +178,11 @@ def factory(arg: str, barrier_start: bool, robots_need_timekeeper: bool) -> ExpS
         {
             "n_secs_per_run": config.kROS["n_secs_per_run"],
             "n_ticks_per_sec": config.kROS["n_ticks_per_sec"],
-            "n_datapoints": config.kExperimentalRunData["n_datapoints_1D"],
         },
     )
 
     return ExpSetup(
         attr["n_secs_per_run"],
-        attr["n_datapoints"],
         attr["n_ticks_per_sec"],
         barrier_start,
         robots_need_timekeeper,

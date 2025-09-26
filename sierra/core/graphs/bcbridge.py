@@ -34,6 +34,13 @@ class GraphInfo:
         exp_names: The names of experiment directories to instantiate on the
                    filesystem.
 
+        xticklabels: Labels for the xticks.
+
+        xticks: The x-axis ticks.
+
+        yticklabels: Labels for the yticks.
+
+        yticks: The y-axis ticks.
 
     """
 
