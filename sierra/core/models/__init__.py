@@ -4,16 +4,8 @@
 """Container module for things related to models."""
 
 # Core packages
-import dataclasses
-import typing as tp
 
 # 3rd party packages
-import holoviews as hv
 
 # Project packages
-
-
-@dataclasses.dataclass
-class ModelInfo:
-    dataset: hv.Dataset = None
-    legend: tp.List[str] = dataclasses.field(default_factory=lambda: [])
+from .info import ModelInfo as ModelInfo

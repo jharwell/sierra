@@ -187,8 +187,9 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
 
 def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
     """
-    Parse a text file containing a GNU parallel style list of computational
-    resources to use.
+    Parse a text file containing a list of computational resources to use.
+
+    Assumed to be GNU-parallel style.
     """
     ret = []
 
@@ -330,7 +331,9 @@ def check_connectivity(
     _logger.info("%s@%s online", host_type, hostname)
 
 
-def check_for_simulator(engine: str, execenv: str, name: str) -> str:
+def check_for_simulator(
+    engine: str, execenv: str, name: str
+) -> subprocess.CompletedProcess[bytes]:
     """
     Check if the specified executable name exists/is findable.
 
@@ -356,8 +359,9 @@ def check_for_simulator(engine: str, execenv: str, name: str) -> str:
 
 def get_executable_arch_aware(base: str) -> str:
     """
-    Get the executable name in an :envvar:`SIERRA_ARCH`-aware way as
-    <base>-<arch> if the envvar is set, and as <base> otherwise.
+    Get the executable name in an :envvar:`SIERRA_ARCH`-aware way.
+
+    Returns <base>-<arch> if the envvar is set, and <base> otherwise.
     """
     if "SIERRA_ARCH" in os.environ:
         arch = os.environ["SIERRA_ARCH"]
@@ -372,5 +376,5 @@ __all__ = [
     "parse_nodefile",
     "check_connectivity",
     "check_for_simulator",
-    "get_executable_shellname",
+    "get_executable_arch_aware",
 ]

@@ -46,7 +46,7 @@ def generate(
                 input_root=pathset.stat_root,
                 output_root=pathset.graph_root,
                 batchroot=pathset.parent.parent,
-                model_root=None,
+                model_root=pathset.model_root,
             )
 
             try:

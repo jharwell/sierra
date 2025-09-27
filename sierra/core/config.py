@@ -163,6 +163,7 @@ kProcessWorkerRetries = 3
 kYAML = types.YAMLConfigFileSpec(
     main="main.yaml",
     graphs="graphs.yaml",
+    collate="collate.yaml",
     controllers="controllers.yaml",
     scenarios="scenarios.yaml",
     models="models.yaml",

@@ -126,7 +126,6 @@ class Pipeline:
             "storage": self.args.storage,
             # stage 4
             "prod": self.args.prod,
-            "models_enable": self.args.models_enable,
             # stage 5
             "compare": self.args.compare,
         }
@@ -140,9 +139,7 @@ class Pipeline:
         # Load additional cmdline options from --execenv
         path = "{0}.cmdline".format(cmdopts["execenv"])
         if pm.module_exists(path):
-            self.logger.debug(
-                "Updating cmdopts from --execenv=%s", cmdopts["execenv"]
-            )
+            self.logger.debug("Updating cmdopts from --execenv=%s", cmdopts["execenv"])
             module = pm.module_load_tiered(path)
             cmdopts |= module.to_cmdopts(self.args)
 
@@ -278,20 +275,6 @@ class Pipeline:
         except FileNotFoundError:
             self.logger.fatal("%s must exist!", main_path)
             raise
-
-        if "perf" not in self.main_config["sierra"]:
-            return
-
-        perf_path = pathlib.Path(
-            self.cmdopts["project_config_root"], self.main_config["sierra"]["perf"]
-        )
-        try:
-            perf_config = yaml.load(utils.utf8open(perf_path), yaml.FullLoader)
-
-        except FileNotFoundError:
-            self.logger.warning("%s does not exist!", perf_path)
-            perf_config = {}
-        self.main_config["sierra"].update(perf_config)
 
 
 __all__ = ["Pipeline"]

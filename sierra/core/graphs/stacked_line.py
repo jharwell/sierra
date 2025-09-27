@@ -107,12 +107,14 @@ def generate(
     model = _read_models(paths.model_root, input_stem, medium)
     stat_dfs = _read_stats(stats, paths.input_root, input_stem, medium)
 
-    # Plot specified columns from dataframe.
-    plot = _plot_selected_cols(dataset, model, legend, points)
-
-    # Plot stats if they have been computed
+    # Plot stats if they have been computed FIRST, so they appear behind the
+    # actual data.
     if "conf95" in stats and "stddev" in stat_dfs:
-        plot *= _plot_stats_stddev(dataset, stat_dfs["stddev"])
+        plot = _plot_stats_stddev(dataset, stat_dfs["stddev"])
+        plot *= _plot_selected_cols(dataset, model, legend, points, backend)
+    else:
+        # Plot specified columns from dataframe.
+        plot = _plot_selected_cols(dataset, model, legend, points, backend)
 
     # Let the backend decide # of columns; can override with
     # legend_cols=N in the future if desired.
@@ -181,6 +183,7 @@ def _plot_selected_cols(
     model_info: models.ModelInfo,
     legend: tp.List[str],
     show_points: bool,
+    backend: str,
 ) -> hv.NdOverlay:
     """
     Plot the  selected columns in a dataframe.
@@ -208,6 +211,13 @@ def _plot_selected_cols(
         ]
     )
 
+    if backend == "matplotlib":
+        opts = {
+            "linestyle": "--",
+        }
+    elif backend == "bokeh":
+        opts = {"line_dash": [6, 3]}
+
     # Plot models if they have been computed
     if model_info.dataset:
         plot *= hv.Overlay(
@@ -215,9 +225,9 @@ def _plot_selected_cols(
                 hv.Curve(
                     model_info.dataset,
                     model_info.dataset.kdims[0],
-                    vdim,
-                    label=legend[model_info.dataset.vdims.index(vdim)],
-                )
+                    vdim.name,
+                    label=model_info.legend[model_info.dataset.vdims.index(vdim)],
+                ).opts(**opts)
                 for vdim in model_info.dataset.vdims
             ]
         )
@@ -231,6 +241,7 @@ def _plot_selected_cols(
                     )
                 )
                 for v in model_info.dataset.vdims
+                if len(model_info.dataset[v]) <= 50 or show_points
             ]
         )
 
@@ -319,6 +330,7 @@ def _read_models(
     legendf = model_root / (input_stem + config.kModelsExt["legend"])
 
     if not utils.path_exists(modelf):
+        _logger.trace("Model file %s missing for graph", str(modelf))
         return models.ModelInfo()
 
     info = models.ModelInfo()
@@ -327,15 +339,8 @@ def _read_models(
 
     info.dataset = hv.Dataset(data=df.reset_index(), kdims=["index"], vdims=cols)
 
-    if utils.path_exists(legendf):
-        with utils.utf8open(legendf, "r") as f:
-            info.legend = f.read().splitlines()
-    else:
-        _logger.warning(
-            "No legend file=<batch_model_root>/%s found",
-            legendf.relative_to(model_root),
-        )
-        info.legend = ["Model Prediction"]
+    with utils.utf8open(legendf, "r") as f:
+        info.legend = f.read().splitlines()
 
     _logger.trace(
         "Loaded model='%s',legend='%s'",  # type: ignore

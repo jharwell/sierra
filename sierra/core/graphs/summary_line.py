@@ -129,7 +129,7 @@ def generate(
     plot.opts(legend_position="bottom")
 
     # Plot lines after stats so they show on top
-    plot *= _plot_lines(dataset, model_info, legend)
+    plot *= _plot_lines(dataset, model_info, legend, backend)
 
     # Add X,Y labels
     plot.opts(ylabel=ylabel, xlabel=xlabel)
@@ -175,7 +175,10 @@ def generate(
 
 
 def _plot_lines(
-    dataset: hv.Dataset, model_info: models.ModelInfo, legend: tp.List[str]
+    dataset: hv.Dataset,
+    model_info: models.ModelInfo,
+    legend: tp.List[str],
+    backend: str,
 ) -> hv.NdOverlay:
     # Plot the curve(s)
     plot = hv.Overlay(
@@ -196,18 +199,28 @@ def _plot_lines(
     )
 
     if model_info.dataset:
+        if backend == "matplotlib":
+            opts = {
+                "linestyle": "--",
+            }
+        elif backend == "bokeh":
+            opts = {"line_dash": [6, 3]}
+
         # TODO: This currently only works for a single model being put onto a
         # summary line graph.
         plot *= hv.Overlay(
             [
                 hv.Curve(
                     model_info.dataset,
-                    kdims=dataset.kdims[0],
-                    vdims=dataset.vdims,
-                    label=model_info.legend[0],
-                )
+                    model_info.dataset.kdims[0],
+                    vdim.name,
+                    label=model_info.legend[model_info.dataset.vdims.index(vdim)],
+                ).opts(**opts)
+                for vdim in model_info.dataset.vdims
             ]
         )
+
+        # Plot the points for each curve
         plot *= hv.Overlay(
             [
                 hv.Points(
@@ -217,6 +230,7 @@ def _plot_lines(
                     )
                 )
                 for v in model_info.dataset.vdims
+                if len(model_info.dataset[v]) <= 50
             ]
         )
     return plot
@@ -466,15 +480,8 @@ def _read_model_info(
 
     info.dataset = hv.Dataset(data=df.reset_index(), kdims=["xticks"], vdims=cols)
 
-    if utils.path_exists(legendf):
-        with utils.utf8open(legendf, "r") as f:
-            info.legend = f.read().splitlines()
-    else:
-        _logger.warning(
-            "No legend file=<batch_model_root>/%s found",
-            legendf.relative_to(model_root),
-        )
-        info.legend = ["Model Prediction"]
+    with utils.utf8open(legendf, "r") as f:
+        info.legend = f.read().splitlines()
 
     _logger.trace(
         "Loaded model='%s',legend='%s'",  # type: ignore

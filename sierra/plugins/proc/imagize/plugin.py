@@ -258,7 +258,7 @@ class ImagizeInputGatherer(gather.BaseGatherer):
                         gather.GatherSpec(
                             exp_name=exp_name,
                             item_stem_path=imagizable.relative_to(proj_output_root),
-                            perfcol=None,
+                            collate_col=None,
                         )
                     )
 

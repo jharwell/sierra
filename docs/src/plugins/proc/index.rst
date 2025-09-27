@@ -18,4 +18,4 @@ plugins which come with SIERRA are below.
    imagize.rst
    compress.rst
    decompress.rst
-   models.rst
+   modelrunner.rst

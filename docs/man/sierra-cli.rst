@@ -12,29 +12,8 @@ If an option is given more than once, the last such occurrence is used.
 
 See also :manpage:`sierra-examples`.
 
-:seealso:`sierra-examples`
-
-
 ===========
 SIERRA Core
 ===========
 
 .. include:: /src/usage/cli-core.rst
-
-======================
-:term:`ARGoS` Engine
-======================
-
-.. include:: /src/usage/cli-argos.rst
-
-============================
-:term:`ROS1+Gazebo` Engine
-============================
-
-.. include:: /src/usage/cli-ros1gazebo.rst
-
-===========================
-:term:`ROS1+Robot` Engine
-===========================
-
-.. include:: /src/usage/cli-ros1robot.rst

@@ -5,22 +5,22 @@
 
 .. _plugins/proc/collate:
 
-==============
-Data Collation
-==============
+===============================
+Intra-Experiment Data Collation
+===============================
 
 Motivation
 ==========
 
 When generating products, it is often necessary to perform some sort of
 non-statistical mathematical analysis on the results. These calculations
-*cannot* be done on the intra-experiment processed data files, because any
-calculated statistical distributions from them will be invalid; this can be
-thought of as an average of sums is not the same as a sum of averages.  To
-support such use cases, SIERRA can make the necessary parts of the per-run
-:term:`Raw Output Data` files available in stage 4 for doing such calculations
+*cannot* be done on the intra-experiment :term:`Processed Output Data` files,
+because any calculated statistical distributions from them will be invalid; this
+can be thought of as an average of sums is not the same as a sum of averages.
+To support such use cases, SIERRA can make the necessary parts of the per-run
+:term:`Raw Output Data` files available in stage 3 for doing such calculations
 via :term:`Data Collation`. Of course, like all things in SIERRA, if you don't
-need thus functionality, you can turn it off by deselecting the plugin.
+need this functionality, you can turn it off by deselecting the plugin.
 
 This process in stage 3 can be visualized as follows for a single
 :term:`Experiment`:
@@ -132,6 +132,8 @@ This plugin can be selected by adding ``proc.collate`` to the list passed to
 ``--proc``.  Configuration for this plugin consists of *what* data to collate,
 and some tweaks for *how* that data should be collated.
 
+This plugin does not require additional plugins to be active when it is run.
+
 Cmdline Interface
 -----------------
 
@@ -143,42 +145,21 @@ Cmdline Interface
 Configuration
 -------------
 
-Controls *what* to collate. Collated data is usually "interesting" in some way,
-usually related to system performance. Thus, configuration lives in a
-``perf.yaml`` file. In the ``main.yaml`` for the project:
+Controls *what* to collate. Collated data is usually "interesting" in some way;
+e.g., related to system performance. Configuration lives in a ``collate.yaml``
+file; all fields are required unless otherwise specified.
 
 .. code-block:: YAML
 
-   # Per-project configuration for SIERRA core. This dictionary is
-   # mandatory.
-   sierra:
+   # Contains a list of config items for intra-experiment collation (i.e.,
+   collation at the level of experimental runs).
+   intra-exp:
 
-     # Configuration for performance measures. This key is mandatory
-     # for all experiments. The value is the location of the .yaml
-     # configuration file for performance measures. It is a separate
-     # config file so that multiple scenarios within a single
-     # project which define performance measures in different ways
-     # can be easily accommodated without copy-pasting.
-     perf: 'perf-config.yaml'
-
-In the selected ``perf-config.yaml``; can have any name, but must match whatever
-is specified in ``main.yaml``:
-
-
-.. code-block:: YAML
-
-   # Root key. Must be named as shown. Contains a list of config items.
-   perf:
-
-     # Each config item must have the 'file' and 'cols' fields. 'file' specifies
-     # a filepath, relative to the output directory for each experimental run,
+     # Each config item has 'file' and 'cols' fields. 'file' specifies a
+     # filepath, relative to the output directory for each experimental run,
      # containing the data columns of interest. 'cols' specifies the columns of
      # interest.
-     - file: 'output1D.csv'
+     - file: foo/bar
        cols:
-         - 'col1'
-         - 'col2'
-     - file: 'subdir1/subdir2/output1D.csv'
-       cols:
-         - 'col1'
-     ...
+         - col1
+         - col2

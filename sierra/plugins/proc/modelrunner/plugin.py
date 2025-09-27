@@ -10,7 +10,6 @@ import time
 import datetime
 import typing as tp
 import logging
-import copy
 
 # 3rd party packages
 import yaml
@@ -34,7 +33,7 @@ def proc_batch_exp(
 
     _logger.info("Running %d intra-experiment models...", len(intra))
     start = time.time()
-    IntraExpModelRunner(cmdopts, pathset, intra)(criteria)
+    _run_intra_exp(cmdopts, pathset, intra, criteria)
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
     _logger.info("Intra-experiment models finished in %s", str(sec))
@@ -44,7 +43,7 @@ def proc_batch_exp(
     _logger.info("Running %d inter-experiment models...", len(inter))
     start = time.time()
 
-    InterExpModelRunner(cmdopts, pathset, inter)(criteria)
+    _run_inter_exp(cmdopts, pathset, inter, criteria)
 
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
@@ -53,222 +52,192 @@ def proc_batch_exp(
 
 def _load_models(
     main_config: types.YAMLDict, cmdopts: types.Cmdopts, model_type: str
-) -> tp.List[
-    tp.Union[
-        interface.IConcreteInterExpModel1D,
-        interface.IConcreteIntraExpModel1D,
-    ]
-]:
-    project_models = cmdopts["project_config_root"] / config.kYAML.models
-    loaded = []
+) -> tp.Dict[str, tp.Union[tp.Dict[str, tp.Any]]]:
+    project_models = pathlib.Path(cmdopts["project_config_root"]) / config.kYAML.models
+    loaded = {}
 
-    if not utils.path_exists(project_models):
-        _logger.debug(
-            "No models to load for project %s: %s does not exist",
-            cmdopts["project"],
-            project_models,
-        )
-        return []
-
-    _logger.info("Loading models for project '%s'", cmdopts["project"])
+    _logger.info("Loading %s-exp models for project %s", model_type, cmdopts["project"])
 
     models_config = yaml.load(utils.utf8open(project_models), yaml.FullLoader)
-    pm.models.initialize(
-        cmdopts["project"], pathlib.Path(cmdopts["project_model_root"])
-    )
 
-    # All models present in the .yaml file are enabled/set to run
-    # unconditionally
-    available = pm.models.available_plugins()
+    # This is ALL model plugins found by SIERRA.
+    loaded_model_plugins = [
+        p
+        for p in pm.pipeline.loaded_plugins()
+        if pm.pipeline.loaded_plugins()[p]["type"] == "model"
+    ]
     _logger.debug(
-        "Project %s has %d available model plugins",
-        cmdopts["project"],
-        len(available),
+        "%d loaded model plugins on SIERRA_PLUGIN_PATH", len(loaded_model_plugins)
     )
 
-    for module_name in pm.models.available_plugins():
-        # No models specified--nothing to do
-        if models_config.get("models") is None:
-            continue
+    for plugin_name in loaded_model_plugins:
+        # This is all available models for a specific plugin
+        module = pm.module_load(plugin_name)
+        available_models = getattr(module, "sierra_models")(model_type)
+        _logger.debug(
+            "Loaded model plugin %s has %d %s-exp models: %s",
+            plugin_name,
+            len(available_models) if available_models else 0,
+            model_type,
+            available_models,
+        )
+        if models_config.get(f"{model_type}-exp"):
+            for conf in models_config[f"{model_type}-exp"]:
 
-        for conf in models_config["models"]:
-            if conf["pyfile"] == module_name:
+                # Class name of the model is the last part of the dot-separated
+                # path, and plays no part in module lookup in the python
+                # interpreter.
+                model_name = conf["name"].split(".")[-1]
 
-                _logger.debug("Model %s enabled by configuration", module_name)
-                pm.models.load_plugin(module_name)
-                model_name = f"models.{module_name}"
-                module = pm.models.get_plugin_module(model_name)
-                _logger.debug(
-                    ("Configured model plugin %s has %d models"),
-                    model_name,
-                    len(module.available_models(model_type)),
-                )
+                # The part of the model name which is relative to the plugin
+                # directory in which it should be found.
+                model_module_relpath = ".".join(conf["name"].split(".")[:-1])
+                model_path = "{0}.{1}".format(plugin_name, model_module_relpath)
+                model_fullpath = f"{model_module_relpath}.{model_name}"
+                if pm.module_exists(model_path):
+                    _logger.debug(
+                        "Loading %s-exp model %s using path %s: YAML configuration match",
+                        model_type,
+                        model_name,
+                        model_module_relpath,
+                    )
+                    model_params = {
+                        k: v for k, v in conf.items() if k not in ["name", "targets"]
+                    }
+                    loaded[model_fullpath] = {
+                        "targets": conf["targets"],
+                        "legend": (
+                            conf["legend"]
+                            if "legend" in conf
+                            else ["Model Prediction" for t in conf["targets"]]
+                        ),
+                        "model": getattr(pm.module_load(model_path), model_name)(
+                            model_params
+                        ),
+                    }
 
-                for avail in module.available_models(model_type):
-                    model = getattr(module, avail)(main_config, conf)
-                    loaded.append(model)
-
-            else:
-                _logger.debug("Model %s disabled by configuration", module_name)
+        else:
+            _logger.debug(f"All {model_type}-exp models disabled: no configuration")
 
     if len(loaded) > 0:
         _logger.info(
-            "Loaded %s models for project %s",
+            "Loaded %s-exp %s models for project %s",
             len(loaded),
+            model_type,
             cmdopts["project"],
         )
 
     return loaded
 
 
-class IntraExpModelRunner:
+def _run_intra_exp(
+    cmdopts: types.Cmdopts,
+    pathset: batchroot.PathSet,
+    to_run: tp.Dict[str, tp.Dict[str, tp.Any]],
+    criteria: bc.XVarBatchCriteria,
+) -> None:
     """
-    Runs all enabled intra-experiment models for all experiments in a batch.
+    Run all enabled intra-experiment models for all experiments in a batch.
     """
+    exp_dirnames = criteria.gen_exp_names()
+    exp_to_run = utils.exp_range_calc(
+        cmdopts["exp_range"], pathset.output_root, exp_dirnames
+    )
 
-    def __init__(
-        self,
-        cmdopts: types.Cmdopts,
-        pathset: batchroot.PathSet,
-        to_run: tp.List[
-            tp.Union[
-                interface.IConcreteIntraExpModel1D,
-                interface.IConcreteIntraExpModel2D,
-            ]
-        ],
-    ) -> None:
-        self.cmdopts = cmdopts
-        self.models = to_run
-        self.pathset = pathset
-        self.logger = logging.getLogger(__name__)
-
-    def __call__(self, criteria: bc.XVarBatchCriteria) -> None:
-        exp_dirnames = criteria.gen_exp_names()
-        exp_to_run = utils.exp_range_calc(
-            self.cmdopts["exp_range"], self.pathset.output_root, exp_dirnames
-        )
-
-        for exp in exp_to_run:
-            self._run_models_in_exp(criteria, exp_dirnames, exp)
-
-    def _run_models_in_exp(
-        self,
-        criteria: bc.XVarBatchCriteria,
-        exp_dirnames: tp.List[pathlib.Path],
-        exp: pathlib.Path,
-    ) -> None:
-        exp_index = exp_dirnames.index(exp)
-
-        exproots = exproot.PathSet(self.pathset, exp.name, exp_dirnames[0].name)
+    for exp in exp_to_run:
+        exp_index = exp_dirnames.index(exp.name)
+        exproots = exproot.PathSet(pathset, exp.name, exp_dirnames[0])
 
         utils.dir_create_checked(exproots.model_root, exist_ok=True)
 
-        for model in self.models:
-            self._run_model_in_exp(criteria, self.cmdopts, exproots, exp_index, model)
+        for blob in to_run.values():
+            _run_intra_single_in_exp(criteria, cmdopts, exproots, exp_index, blob)
 
-    def _run_model_in_exp(
-        self,
-        criteria: bc.XVarBatchCriteria,
-        cmdopts: types.Cmdopts,
-        pathset: exproot.PathSet,
-        exp_index: int,
-        model: tp.Union[
-            interface.IConcreteIntraExpModel1D,
-            interface.IConcreteIntraExpModel2D,
-        ],
-    ) -> None:
-        if not model.run_for_exp(criteria, cmdopts, exp_index):
-            self.logger.debug(
-                "Skip running intra-experiment model from '%s' for exp%s",
-                str(model),
-                exp_index,
-            )
-            return
+
+def _run_intra_single_in_exp(
+    criteria: bc.XVarBatchCriteria,
+    cmdopts: types.Cmdopts,
+    pathset: exproot.PathSet,
+    exp_index: int,
+    blob: tp.Dict[str, tp.Union[interface.IIntraExpModel1D, tp.List[str]]],
+) -> None:
+    model = blob["model"]
+    targets = blob["targets"]
+    if not model.should_run(criteria, cmdopts, exp_index):
+        _logger.debug(
+            "Skip running intra-experiment model from '%s' for exp%s",
+            str(model),
+            exp_index,
+        )
+        return
+
+    # Run the model
+    _logger.debug(
+        "Run intra-experiment model %s for %s",
+        str(model),
+        pathset.input_root.name,
+    )
+    dfs = model.run(criteria, exp_index, cmdopts, pathset)
+    legend = blob["legend"]
+
+    for df, target in zip(dfs, targets):
+        path_stem = pathset.model_root / target
+
+        # Write model legend file so the generated graph can find it
+        idx = dfs.index(df)
+        with utils.utf8open(
+            path_stem.with_suffix(config.kModelsExt["legend"]), "w"
+        ) as f:
+            f.write(legend[idx])
+
+        # Write model .csv file
+        storage.df_write(
+            df,
+            path_stem.with_suffix(config.kModelsExt["model"]),
+            "storage.csv",
+            index=False,
+        )
+
+
+def _run_inter_exp(
+    cmdopts: types.Cmdopts,
+    pathset: batchroot.PathSet,
+    to_run: tp.Dict[str, tp.Any],
+    criteria: bc.XVarBatchCriteria,
+) -> None:
+    utils.dir_create_checked(pathset.model_interexp_root, exist_ok=True)
+
+    for blob in to_run.values():
+        model = blob["model"]
+        legend = blob["legend"]
+        targets = blob["targets"]
+
+        if not model.should_run(criteria, cmdopts):
+            _logger.debug("Skip running inter-experiment model '%s'", str(model))
+            continue
 
         # Run the model
-        self.logger.debug(
-            "Run intra-experiment model '%s' for exp%s", str(model), exp_index
-        )
-        dfs = model.run(criteria, exp_index, cmdopts, pathset)
+        _logger.debug("Run inter-experiment model '%s'", str(model))
 
-        for df, csv_stem in zip(dfs, model.target_csv_stems()):
-            path_stem = pathset.model_root / csv_stem
+        dfs = model.run(criteria, cmdopts, pathset)
 
-            # Write model legend file so the generated graph can find it
-            with utils.utf8open(
-                path_stem.with_suffix(config.kModelsExt["legend"]), "w"
-            ) as f:
-                for j, search in enumerate(dfs):
-                    if search.values.all() == df.values.all():
-                        legend = model.legend_names()[j]
-                        f.write(legend)
-                        break
+        for df, csv_stem in zip(dfs, targets):
+            path_stem = pathset.model_interexp_root / csv_stem
+            utils.dir_create_checked(path_stem.parent, exist_ok=True)
 
             # Write model .csv file
             storage.df_write(
                 df,
                 path_stem.with_suffix(config.kModelsExt["model"]),
                 "storage.csv",
-                index=False,
+                index=True,
             )
 
-
-class InterExpModelRunner:
-    """
-    Runs all enabled inter-experiment models in a batch.
-    """
-
-    def __init__(
-        self,
-        cmdopts: types.Cmdopts,
-        pathset: batchroot.PathSet,
-        to_run: tp.List[interface.IConcreteInterExpModel1D],
-    ) -> None:
-        self.pathset = pathset
-        self.cmdopts = cmdopts
-        self.models = to_run
-
-    def __call__(self, criteria: bc.XVarBatchCriteria) -> None:
-
-        cmdopts = copy.deepcopy(self.cmdopts)
-
-        utils.dir_create_checked(self.pathset.model_root, exist_ok=True)
-        utils.dir_create_checked(self.pathset.graph_collate_root, exist_ok=True)
-
-        for model in self.models:
-            if not model.run_for_batch(criteria, cmdopts):
-                self.logger.debug(
-                    "Skip running inter-experiment model '%s'", str(model)
-                )
-                continue
-
-            # Run the model
-            self.logger.debug("Run inter-experiment model '%s'", str(model))
-
-            dfs = model.run(criteria, cmdopts, self.pathset)
-
-            for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                path_stem = self.model_root / csv_stem
-
-                # Write model .csv file
-                storage.df_write(
-                    df,
-                    path_stem.with_suffix(config.kModelsExt["model"]),
-                    "storage.csv",
-                    index=False,
-                )
-
-                # 1D dataframe -> line graph with legend
-                if len(df.index) == 1:
-                    legend_path = path_stem.with_suffix(config.kModelsExt["legend"])
-
-                    # Write model legend file so the generated graph can find it
-                    with utils.utf8open(legend_path, "w") as f:
-                        for i, search in enumerate(dfs):
-                            if search.values.all() == df.values.all():
-                                legend = model.legend_names()[i]
-                                f.write(legend)
-                                break
+            idx = dfs.index(df)
+            with utils.utf8open(
+                path_stem.with_suffix(config.kModelsExt["legend"]), "w"
+            ) as f:
+                f.write(legend[idx])
 
 
-__all__ = ["InterExpModelRunner"]
+__all__ = ["proc_batch_exp"]

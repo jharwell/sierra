@@ -76,7 +76,7 @@ def _gen_summary_linegraph(
         input_root=pathset.stat_collate_root,
         output_root=pathset.graph_collate_root,
         batchroot=pathset.root,
-        model_root=None,
+        model_root=pathset.model_interexp_root,
     )
 
     # 2025-06-05 [JRH]: We always write stage {3,4} output data files as .csv

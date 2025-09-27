@@ -9,10 +9,8 @@ Collation is the process of "lifting" data from :term:`Experimental Runs
 <Experimental Run>` across all :term:`Experiment` for all experiments in a
 :term:`Batch Experiment` into a single file (a reduce operation).  This is
 needed to correctly calculate summary statistics for performance measures in
-stage 4: you can't just run the calculated stddev through the calculations
-because comparing curves of stddev is not meaningful.  Stage 4 needs access to
-raw-(er) run data to construct a *distribution* of values to then calculate
-summary statistics (such as stddev) over.
+stage 3: you can't just run the calculated stddev through the calculations
+because comparing curves of stddev is not meaningful.
 """
 
 # Core packages
@@ -24,6 +22,7 @@ import pathlib
 
 # 3rd party packages
 import pandas as pd
+import yaml
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
@@ -55,10 +54,10 @@ def proc_batch_exp(
         "project": cmdopts["project"],
         "template_input_leaf": pathlib.Path(cmdopts["expdef_template"]).stem,
         "df_verify": cmdopts["df_verify"],
-        "dist_stats": cmdopts["dist_stats"],
         "processing_mem_limit": cmdopts["processing_mem_limit"],
         "storage": cmdopts["storage"],
         "df_homogenize": cmdopts["df_homogenize"],
+        "project_config_root": cmdopts["project_config_root"],
     }
 
     exp_to_proc = utils.exp_range_calc(
@@ -184,6 +183,17 @@ class ExpDataGatherer(gather.BaseGatherer):
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
+        config_path = pathlib.Path(
+            self.gather_opts["project_config_root"], config.kYAML.collate
+        )
+
+        try:
+            collate_config = yaml.load(utils.utf8open(config_path), yaml.FullLoader)
+
+        except FileNotFoundError:
+            self.logger.warning("%s does not exist!", config_path)
+            collate_config = {}
+
         for item in proj_output_root.rglob("*"):
             # Must be a file (duh)
             if not item.is_file():
@@ -197,7 +207,7 @@ class ExpDataGatherer(gather.BaseGatherer):
                 continue
 
             # Any number of perf metrics can be configured, so look for a match.
-            files = self.main_config["sierra"]["perf"]
+            files = collate_config["intra-exp"]
             perf_confs = [f for f in files if f["file"] in item.name]
             if not perf_confs:
                 continue
@@ -210,7 +220,7 @@ class ExpDataGatherer(gather.BaseGatherer):
                         gather.GatherSpec(
                             exp_name=exp_name,
                             item_stem_path=item.relative_to(proj_output_root),
-                            perfcol=col,
+                            collate_col=col,
                         )
                     )
         return to_gather
@@ -232,27 +242,25 @@ def _proc_single_exp(
 
     collated = {}
 
-    key = (spec.gather.item_stem_path, spec.gather.perfcol)
+    key = (spec.gather.item_stem_path, spec.gather.collate_col)
     collated[key] = pd.DataFrame(index=spec.dfs[0].index, columns=spec.exp_run_names)
     for i, df in enumerate(spec.dfs):
         assert (
-            spec.gather.perfcol in df.columns
-        ), f"{spec.gather.perfcol} not in {df.columns}"
+            spec.gather.collate_col in df.columns
+        ), f"{spec.gather.collate_col} not in {df.columns}"
 
-        perf_df = df[spec.gather.perfcol]
-        collated[key][spec.exp_run_names[i]] = perf_df
+        collate_df = df[spec.gather.collate_col]
+        collated[key][spec.exp_run_names[i]] = collate_df
 
-    for perf_file_path, col in collated:
-        df = utils.df_fill(
-            collated[(perf_file_path, col)], process_opts["df_homogenize"]
-        )
-        parent = batch_stat_collate_root / spec.gather.exp_name / perf_file_path.parent
+    for file_path, col in collated:
+        df = utils.df_fill(collated[(file_path, col)], process_opts["df_homogenize"])
+        parent = batch_stat_collate_root / spec.gather.exp_name / file_path.parent
         utils.dir_create_checked(parent, exist_ok=True)
 
         # This preserves the directory structure of stuff in the per-run output
         # run; if something is in a subdir there, it will show up in a subdir in
         # the collated outputs too.
-        fname = f"{perf_file_path.stem}-{col}" + config.kStorageExt["csv"]
+        fname = f"{file_path.stem}-{col}" + config.kStorageExt["csv"]
         storage.df_write(df, parent / fname, "storage.csv", index=False)
 
 

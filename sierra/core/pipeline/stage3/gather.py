@@ -35,17 +35,20 @@ class GatherSpec:
          exp_name: The name of the parent experiment.
 
 
-         perfcol: The name of the performance column associated with the file,
-                  as configured. Will be None for statistics generation, and
-                  non-None for collation.
+         collate-col: The name of the column associated with the file, as
+                      configured. Will be None for statistics generation, and
+                      non-None for collation.
     """
 
     def __init__(
-        self, exp_name: str, item_stem_path: pathlib.Path, perfcol: tp.Union[str, None]
+        self,
+        exp_name: str,
+        item_stem_path: pathlib.Path,
+        collate_col: tp.Union[str, None],
     ):
         self.exp_name = exp_name
         self.item_stem_path = item_stem_path
-        self.perfcol = perfcol
+        self.collate_col = collate_col
 
     def __repr__(self) -> str:
         return f"{self.exp_name}: {self.item_stem_path}"

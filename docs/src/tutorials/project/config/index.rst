@@ -16,7 +16,7 @@ automatically for you!
       .. include:: main.rst
 
 
-   .. tab:: ``config/perf.yaml``
+   .. tab:: ``config/collate.yaml``
 
       See :ref:`plugins/proc/collate/config/yaml`.
 

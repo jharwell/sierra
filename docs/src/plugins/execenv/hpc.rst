@@ -34,6 +34,18 @@ listed on this page:
        if everything ran on a common filesystem prior to running any later
        stages.
 
+
+You may want to built e.g., GoS natively for your HPC cluster for maximum
+efficiency; if your HPC cluster is 1/2 Intel chips and 1/2 AMD chips, you may
+want to compile your :term:`Engine` twice, natively on each chipset. If you do
+this, you can set :envvar:`SIERRA_ARCH` prior to invoking SIERRA so that the
+correct invocation commands can be generated, depending on what the chipset is
+for the nodes you request for your HPC job.
+
+Similarly, you may want to build your :term:`Project` ``.so`` (if your project
+is C/C++) natively on each different type of compute node SIERRA might be run
+on, just like ARGOS, for maximum efficiency with systems.
+
 .. _plugins/execenv/hpc/local:
 
 Local HPC Plugin

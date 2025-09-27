@@ -119,6 +119,7 @@ class PathSet:
         self.output_root = root.to_path() / "exp-outputs"
         self.graph_root = root.to_path() / "graphs"
         self.model_root = root.to_path() / "models"
+        self.model_interexp_root = self.model_root / "inter-exp"
         self.stat_root = root.to_path() / "statistics"
         self.stat_exec_root = self.stat_root / "exec"
         self.imagize_root = root.to_path() / "imagize"

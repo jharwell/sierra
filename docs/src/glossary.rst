@@ -167,7 +167,7 @@ works/is designed the way it is, and to help you find your way around.
       - Taking one column per :term:`Experimental Run` in an :term:`Experiment`.
 
 
-      For use in product generation. See
+      For use in product generation and running models. See
       :ref:`plugins/proc/collate` for more information.
 
    Collated Output Data
@@ -241,7 +241,7 @@ works/is designed the way it is, and to help you find your way around.
 
       A python implementation of a theoretical model of some kind. Can use
       empirical data from simulations/real robot experiments, or not, as
-      needed. Intended to generate predictions of `something` which can then be
+      needed. Intended to generate predictions of *something* which can then be
       plotted against empirical results for comparison.
 
    Imagize

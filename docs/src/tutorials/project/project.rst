@@ -85,9 +85,8 @@ Steps
         .. tab:: ``models.yaml``
 
            Configuration for intra- and inter-experiment models. This file is
-           optional. If it is present, models defined and enabled in it will be
-           run before stage 4 intra- and/or inter-experiment graph generation,
-           if stage 4 is run. See :doc:`models` for documentation.
+           optional. If it is present, models defined in it will be run in
+           stage 3. See :ref:`plugins/proc/modelrunner` for documentation.
 
    - ``generators/`` - Classes to enable SIERRA to generate changes to template
      expdef files needed by your project. This directory is required for all

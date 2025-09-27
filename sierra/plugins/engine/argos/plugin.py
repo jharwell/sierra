@@ -62,7 +62,7 @@ class ExpRunShellCmdsGenerator:
     def exec_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
     ) -> tp.List[types.ShellCmdSpec]:
-        shellname = execenv.get_executable_shellname(config.kARGoS["launch_cmd"])
+        shellname = execenv.get_executable_arch_aware(config.kARGoS["launch_cmd"])
         cmd = "{0} -c {1}{2}".format(
             shellname, str(input_fpath), config.kARGoS["launch_file_ext"]
         )

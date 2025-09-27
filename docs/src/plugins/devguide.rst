@@ -50,8 +50,6 @@ The following schemas are supported, and are checked in order:
 
      - ``"project"``
 
-     - ``"model"``
-
 #.
    - In a directory on :envvar:`SIERRA_PLUGIN_PATH`, there is a
      ``.sierraplugin`` file.
@@ -62,15 +60,25 @@ The following schemas are supported, and are checked in order:
 
      - ``"pipeline"``
 
-       - ``"project"``
+     - ``"project"``
 
-       - ``"model"``
+     - ``"model"``
 
    - If the plugin type is ``"pipeline"``, within the ``__init__.py`` there is a
      ``sierra_plugin_module()`` function which returns the name of the python
      file in the directory which contains the plugin functionality, sans the
      ``.py`` extension, which is implied.
 
+   - If the plugin type is ``"model"``, within the ``__init__.py`` there is a
+     ``sierra_models()`` function with the following signature::
+
+       import typing as tp
+
+       def sierra_models(model_type: str) -> tp.List[str]:
+           """Return a list of model names as python paths for the specified
+           "intra" or "inter" experiment model type. See
+           :ref:`plugins/proc/modelrunner` for more details about this function.
+           """
 
 Configurability
 ===============

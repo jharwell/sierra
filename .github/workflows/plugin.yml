@@ -309,6 +309,7 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
+
   plugin-exec-env-2004:
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -372,6 +373,50 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ci-exec-env-${{ steps.session-name.outputs.safe_session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error
+
+
+  plugin-proc:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    strategy:
+      matrix:
+        python-version:
+          - 3.12
+
+        session:
+          - compression_sanity
+          - modelrunner_sanity
+          - graphs_backend
+
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sample-project-setup
+      - name: Smoke tests
+        run: |
+          uv run -p ${{ matrix.python-version }} \
+          nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-proc-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error

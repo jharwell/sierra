@@ -1,4 +1,5 @@
-These options are for all :term:`Engines <Engine>`.
+These options apply to all :term:`Experiments <Experiment>`,  :term:`Engines
+<Engine>`, etc.
 
 Bootstrap+Multi-stage Options
 -----------------------------

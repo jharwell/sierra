@@ -129,8 +129,7 @@ def session_setup(func):
             f"--jsonsim-path={session.env['SIERRA_SAMPLE_ROOT']}/plugins/jsonsim/jsonsim.py "
             f"--log-level=TRACE "
             f"--df-verify "
-            f"--proc proc.statistics proc.collate proc.compress proc.decompress "
-            f"--compress-remove-after"
+            f"--proc proc.statistics proc.collate "
         )
 
         session.env["ROS1ROBOT_BASE_CMD"] = (

@@ -107,7 +107,7 @@ class DataGatherer(gather.BaseGatherer):
                     gather.GatherSpec(
                         exp_name=exp_name,
                         item_stem_path=item.relative_to(proj_output_root),
-                        perfcol=None,
+                        collate_col=None,
                     )
                 )
                 continue
@@ -124,7 +124,7 @@ class DataGatherer(gather.BaseGatherer):
                     gather.GatherSpec(
                         exp_name=exp_name,
                         item_stem_path=item.relative_to(proj_output_root),
-                        perfcol=None,
+                        collate_col=None,
                     )
                 )
                 continue
@@ -141,7 +141,7 @@ class DataGatherer(gather.BaseGatherer):
                     gather.GatherSpec(
                         exp_name=exp_name,
                         item_stem_path=item.relative_to(proj_output_root),
-                        perfcol=None,
+                        collate_col=None,
                     )
                 )
                 continue

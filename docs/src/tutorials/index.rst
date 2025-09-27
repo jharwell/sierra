@@ -18,16 +18,6 @@ needs.
    project/generators.rst
    project/new-bc.rst
    project/hooks.rst
-   project/models.rst
-
-.. _tutorials/hpc:
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Configuring HPC environments:
-
-   hpc/cluster_setup.rst
-   hpc/local_setup.rst
 
 .. _tutorials/extension:
 

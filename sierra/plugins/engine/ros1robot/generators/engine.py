@@ -62,7 +62,7 @@ def for_single_exp_run(
     random_seed: int,
     cmdopts: types.Cmdopts,
 ) -> None:
-    """Generates changes for a single experimental run."""
+    """Generate changes for a single experimental run."""
     ros1.generators.for_single_exp_run(
         exp_def, run_num, run_output_path, launch_stem_path, random_seed, cmdopts
     )

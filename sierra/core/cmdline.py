@@ -784,18 +784,7 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 4.
         """
-        # Model options
-        models = self.parser.add_argument_group("Models")
-        models.add_argument(
-            "--models-enable",
-            help="""
-                 Enable running of all models; otherwise, no models are run,
-                 even if they appear in the project config file.  The logic
-                 behind having models disabled by default is that most users
-                 won't have them.
-                 """,
-            action="store_true",
-        )
+        pass
 
     def init_stage5(self) -> None:
         """

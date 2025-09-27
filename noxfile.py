@@ -12,7 +12,10 @@ import psutil
 
 # Project packages
 from tests.smoke_tests import core, utils
-from tests.smoke_tests.plugin import argos, jsonsim, ros1robot, ros1gazebo
+from tests.smoke_tests.plugin.engine import argos, jsonsim, ros1robot, ros1gazebo
+from tests.smoke_tests.plugin.proc import modelrunner, compression
+from tests.smoke_tests.plugin.prod import graphs
+
 from tests.smoke_tests.plugin import execenv
 
 nox.options.default_venv_backend = "uv"

@@ -36,6 +36,9 @@ class BasePluginManager:
     def available_plugins(self):
         raise NotImplementedError
 
+    def loaded_plugins(self):
+        return self.loaded
+
     def load_plugin(self, name: str) -> None:
         """Load a plugin module."""
         plugins = self.available_plugins()
@@ -82,6 +85,15 @@ class BasePluginManager:
 
         elif plugin_type == "project":
             self._load_project_plugin(name)
+        elif plugin_type == "model":
+            if not hasattr(init, "sierra_models"):
+                self.logger.warning(
+                    "Cannot load plugin %s: __init__.py does not define sierra_models()",
+                    name,
+                )
+                return
+
+            self._load_model_plugin(name)
         else:
             self.logger.warning(
                 "Unknown plugin type '%s' for %s: cannot load", plugin_type, name
@@ -143,6 +155,7 @@ class BasePluginManager:
             "spec": plugins[name]["module_spec"],
             "parent_dir": plugins[name]["parent_dir"],
             "module": module,
+            "type": "pipeline",
         }
         self.logger.debug(
             "Loaded pipeline plugin %s from %s -> %s",
@@ -168,6 +181,7 @@ class BasePluginManager:
         self.loaded[name] = {
             "spec": plugins[name]["module_spec"],
             "parent_dir": plugins[name]["parent_dir"],
+            "type": "project",
         }
 
         self.logger.debug(
@@ -177,39 +191,32 @@ class BasePluginManager:
             name,
         )
 
+    def _load_model_plugin(self, name: str) -> None:
+        if name in self.loaded:
+            self.logger.warning("Model plugin %s already loaded", name)
+            return
 
-class FilePluginManager(BasePluginManager):
-    """Plugins are ``.py`` files within a root plugin directory.
+        plugins = self.available_plugins()
 
-    Intended for use with :term:`models <Model>`.
+        # The parent directory of the plugin must be on sys.path so it can be
+        # imported, so we put in on there if it isn't.
+        new = str(plugins[name]["parent_dir"])
+        if new not in sys.path:
+            sys.path = [new] + sys.path[0:]
+            self.logger.debug("Updated sys.path with %s", [new])
 
-    """
+        self.loaded[name] = {
+            "spec": plugins[name]["module_spec"],
+            "parent_dir": plugins[name]["parent_dir"],
+            "type": "model",
+        }
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.search_root = None  # type: tp.Optional[pathlib.Path]
-        self.plugins = {}  # type: tp.Dict[str, tp.Dict]
-
-    def initialize(self, project: str, search_root: pathlib.Path) -> None:
-        self.search_root = search_root
-
-    def available_plugins(self) -> tp.Dict[str, tp.Dict]:
-        """Get the available plugins in the configured plugin root."""
-        assert self.search_root is not None, "FilePluginManager not initialized!"
-
-        if self.plugins:
-            return self.plugins
-
-        for candidate in self.search_root.iterdir():
-            if candidate.is_file() and ".py" in candidate.name:
-                name = candidate.stem
-                spec = importlib.util.spec_from_file_location(name, candidate)
-                self.plugins[name] = {
-                    "spec": spec,
-                    "parent_dir": self.search_root,
-                    "type": "pipeline",
-                }
-        return self.plugins
+        self.logger.debug(
+            ("Loaded model plugin %s from %s -> %s"),
+            name,
+            plugins[name]["parent_dir"],
+            name,
+        )
 
 
 class DirectoryPluginManager(BasePluginManager):
@@ -555,10 +562,9 @@ def engine_sanity_checks(engine: str, module) -> None:
 
 # Singletons
 pipeline = DirectoryPluginManager()
-models = FilePluginManager()
+models = DirectoryPluginManager()
 
 __all__ = [
-    "FilePluginManager",
     "DirectoryPluginManager",
     "module_exists",
     "module_load",
