@@ -116,7 +116,7 @@ statistics. E.g.::
           |-- c1-exp3
           |-- collated
 
-``collated/`` contains graphs which are generated across experiments in the
+``inter-exp/`` contains graphs which are generated across experiments in the
 batch from :term:`Batch Summary Data` files.
 
 Cmdline Interface

@@ -123,11 +123,11 @@ def jsonsim_stage4_univar(session):
 
     # Check stage4 generated stuff
     assert (
-        graph_root / "collated"
-    ).is_dir(), f"Directory {graph_root}/collated does not exist"
+        graph_root / "inter-exp"
+    ).is_dir(), f"Directory {graph_root}/inter-exp does not exist"
 
     # Check collated files
-    collated_files = [
+    interexp_files = [
         "SLN-random-noise-col1.png",
         "SLN-random-noise2-col2.png",
         "SM-random-noise3-col2.png",
@@ -136,8 +136,8 @@ def jsonsim_stage4_univar(session):
         "SM-random-noise3-col2.html",
     ]
 
-    for file_name in collated_files:
-        file_path = graph_root / "collated" / file_name
+    for file_name in interexp_files:
+        file_path = graph_root / "inter-exp" / file_name
         assert file_path.is_file(), f"File {file_path} does not exist"
 
     # Check individual experiment files

@@ -18,9 +18,8 @@ Required Steps
    your ``my_var.py`` file under ``<project>/variables/``. The class defined in
    ``my_var.py`` should be a "base class" version of your variable, and
    therefore should take in parameters, and NOT have any hardcoded values in it
-   anywhere (i.e., rely on dynamic class creation via the ``factory()``
-   function). This is to provide maximum flexibility to those using SIERRA, so
-   that they can create `any` kind of instance of your variable, and not just
+   anywhere. This is to provide maximum flexibility to those using SIERRA, so
+   that they can create *any* kind of instance of your variable, and not just
    the ones you have made pre-defined classes for.
 
 #. Define the abstract functions from
@@ -85,7 +84,11 @@ Required Steps
                   configured with on the cmdline and parsed with a parser can be
                   anything, there are some restrictions on special chars which
                   may come into play when using external programs with via
-                  subprocess shell commands (e.g., ``[``, ``]``, etc.).
+                  subprocess shell commands (e.g., ``[``, ``]``, etc.). In
+                  addition, the ``+`` character is not allowed in batch criteria
+                  cmdline arguments; an error is raised if it is detected. This
+                  is because the ``+`` character is used as a separator in
+                  N-dimensional batch criteria directory names.
 
 #. Define a factory function to dynamically create classes from the base class
    definition of ``MyVar`` in ``my_var.py``. It must have the following
@@ -134,7 +137,7 @@ Optional Steps
 ==============
 
 #. Define the :func:`sierra.core.batch_criteria.BatchCriteria.arena_dims()`
-   function. This will enable SIERRA to determine the size of the experimeont
+   function. This will enable SIERRA to determine the size of the experiment
    space from batch criteria, instead of the cmdline.
 
    .. NOTE:: This function is one of the two ways in which the requirement that

@@ -49,7 +49,7 @@ def proc_batch_exp(
         targets: A list of dictionaries, where each dictionary defines an
                  inter-experiment graph to generate.
     """
-    utils.dir_create_checked(pathset.graph_collate_root, exist_ok=True)
+    utils.dir_create_checked(pathset.graph_interexp_root, exist_ok=True)
 
     loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
 

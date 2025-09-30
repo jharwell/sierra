@@ -270,7 +270,7 @@ class UnivarInterScenarioComparator:
 
         """
 
-        csv_ipath_stem = pathset.stat_collate_root / src_stem
+        csv_ipath_stem = pathset.stat_interexp_root / src_stem
 
         # Some experiments might not generate the necessary performance measure
         # CSVs for graph generation, which is OK.
@@ -282,7 +282,7 @@ class UnivarInterScenarioComparator:
             return
 
         preparer = preprocess.IntraExpPreparer(
-            ipath_stem=pathset.stat_collate_root,
+            ipath_stem=pathset.stat_interexp_root,
             ipath_leaf=src_stem,
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,

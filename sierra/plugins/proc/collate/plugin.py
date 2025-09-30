@@ -107,7 +107,7 @@ def _execute_for_batch(
     processed = [
         pool.apply_async(
             _process_worker,
-            (processq, main_config, pathset.stat_collate_root, worker_opts),
+            (processq, main_config, pathset.stat_interexp_root, worker_opts),
         )
         for _ in range(0, pool_opts["parallelism"])
     ]
@@ -144,14 +144,14 @@ def _gather_worker(
 def _process_worker(
     processq: mp.Queue,
     main_config: types.YAMLDict,
-    batch_stat_collate_root: pathlib.Path,
+    batch_stat_interexp_root: pathlib.Path,
     process_opts: types.SimpleDict,
 ) -> None:
     while True:
         # Wait for 3 seconds after the queue is empty before bailing
         try:
             spec = processq.get(True, 3)
-            _proc_single_exp(main_config, batch_stat_collate_root, process_opts, spec)
+            _proc_single_exp(main_config, batch_stat_interexp_root, process_opts, spec)
             processq.task_done()
         except queue.Empty:
             break

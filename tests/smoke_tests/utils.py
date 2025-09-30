@@ -133,15 +133,15 @@ def stage3_univar_check_outputs(
         exp_dir = stat_root / f"c1-exp{i}"
         assert exp_dir.is_dir(), f"Directory {exp_dir} does not exist"
 
-    collated_dir = stat_root / "collated"
-    assert collated_dir.is_dir(), f"Directory {collated_dir} does not exist"
+    interexp_dir = stat_root / "inter-exp"
+    assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
     # Check stage3 generated statistics
     for stat in stats:
-        # Check collated stats
+        # Check interexp stats
         if engine == "argos":
-            collated_file = collated_dir / f"c1-exp0/collected-data-collected_food.csv"
-            assert collated_file.is_file(), f"File {collated_file} does not exist"
+            interexp_file = interexp_dir / f"c1-exp0/collected-data-collected_food.csv"
+            assert interexp_file.is_file(), f"File {interexp_file} does not exist"
 
             # Check individual experiment stats
             for i in range(cardinality):
@@ -229,37 +229,39 @@ def stage3_univar_check_outputs(
                     len(lines[0]) == 3
                 ), f"subdir3/output2D.mean should have 3 columns, got {len(lines[0])}"
 
-            # Check collated files
-            collated_files = [
-                stat_root / f"collated/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
-                stat_root / f"collated/c1-exp{i}/subdir3/output1D-col2.csv",
+            # Check interexp files
+            interexp_files = [
+                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
+                stat_root / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
             ]
 
-            for file_path in collated_files:
+            for file_path in interexp_files:
                 assert file_path.is_file(), f"File {file_path} does not exist"
 
-            # Check collated file dimensions
+            # Check interexp file dimensions
             with open(
-                stat_root / f"collated/c1-exp{i}/subdir1/subdir2/output1D-col1.csv"
+                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv"
             ) as f:
                 reader = csv.reader(f)
                 lines = list(reader)
                 assert (
                     len(lines) == 51
-                ), f"collated/output1D-col1.csv should have 51 rows, got {len(lines)}"
+                ), f"inter-exp/output1D-col1.csv should have 51 rows, got {len(lines)}"
                 assert (
                     len(lines[0]) == 4
-                ), f"collated/output1D-col1.csv should have 4 columns, got {len(lines[0])}"
+                ), f"inter-exp/output1D-col1.csv should have 4 columns, got {len(lines[0])}"
 
-            with open(stat_root / f"collated/c1-exp{i}/subdir3/output1D-col2.csv") as f:
+            with open(
+                stat_root / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv"
+            ) as f:
                 reader = csv.reader(f)
                 lines = list(reader)
                 assert (
                     len(lines) == 51
-                ), f"collated/output1D-col2.csv should have 51 rows, got {len(lines)}"
+                ), f"inter-exp/output1D-col2.csv should have 51 rows, got {len(lines)}"
                 assert (
                     len(lines[0]) == 4
-                ), f"collated/output1D-col2.csv should have 4 columns, got {len(lines[0])}"
+                ), f"inter-exp/output1D-col2.csv should have 4 columns, got {len(lines[0])}"
 
 
 def stage4_univar_check_outputs(
@@ -274,23 +276,23 @@ def stage4_univar_check_outputs(
         exp_dir = graph_root / f"c1-exp{i}"
         assert exp_dir.is_dir(), f"Directory {exp_dir} does not exist"
 
-    collated_dir = graph_root / "collated"
-    assert collated_dir.is_dir(), f"Directory {collated_dir} does not exist"
+    interexp_dir = graph_root / "inter-exp"
+    assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
     # Check stage4 generated .csvs
     for stat in stats:
         if engine == "argos":
             assert (
-                stat_root / f"collated/food-counts.{stat}"
+                stat_root / f"inter-exp/food-counts.{stat}"
             ).is_file(), f"File food-counts.{stat} does not exist"
             assert (
-                stat_root / f"collated/robot-counts-resting.{stat}"
+                stat_root / f"inter-exp/robot-counts-resting.{stat}"
             ).is_file(), f"File robot-counts-resting.{stat} does not exist"
             assert (
-                stat_root / f"collated/robot-counts-walking.{stat}"
+                stat_root / f"inter-exp/robot-counts-walking.{stat}"
             ).is_file(), f"File robot-counts-walking.{stat} does not exist"
             assert (
-                stat_root / f"collated/swarm-energy.{stat}"
+                stat_root / f"inter-exp/swarm-energy.{stat}"
             ).is_file(), f"File swarm-energy.{stat} does not exist"
 
     # Check stage4 generated graphs
@@ -320,31 +322,31 @@ def stage4_univar_check_outputs(
                     file_path = graph_root / f"c1-exp{i}" / file_name
                     assert file_path.is_file(), f"File {file_path} does not exist"
 
-    # Check collated graphs
+    # Check interexp graphs
     if engine == "argos":
         assert (
-            graph_root / "collated/SLN-food-counts.png"
-        ).is_file(), "File collated/SLN-food-counts.png does not exist"
+            graph_root / "inter-exp/SLN-food-counts.png"
+        ).is_file(), "File inter-exp/SLN-food-counts.png does not exist"
         assert (
-            graph_root / "collated/SLN-robot-counts-walking.png"
-        ).is_file(), "File collated/SLN-robot-counts-walking.png does not exist"
+            graph_root / "inter-exp/SLN-robot-counts-walking.png"
+        ).is_file(), "File inter-exp/SLN-robot-counts-walking.png does not exist"
         assert (
-            graph_root / "collated/SLN-robot-counts-resting.png"
-        ).is_file(), "File collated/SLN-robot-counts-resting.png does not exist"
+            graph_root / "inter-exp/SLN-robot-counts-resting.png"
+        ).is_file(), "File inter-exp/SLN-robot-counts-resting.png does not exist"
         assert (
-            graph_root / "collated/SLN-swarm-energy.png"
-        ).is_file(), "File collated/SLN-swarm-energy.png does not exist"
+            graph_root / "inter-exp/SLN-swarm-energy.png"
+        ).is_file(), "File inter-exp/SLN-swarm-energy.png does not exist"
 
     elif engine == "jsonsim":
-        # Check collated files
-        collated_files = [
+        # Check interexp files
+        interexp_files = [
             "SLN-random-noise-col1.png",
             "SLN-random-noise2-col2.png",
             "SM-random-noise3-col2.png",
         ]
 
-        for file_name in collated_files:
-            file_path = graph_root / "collated" / file_name
+        for file_name in interexp_files:
+            file_path = graph_root / "inter-exp" / file_name
             assert file_path.is_file(), f"File {file_path} does not exist"
 
 
@@ -410,9 +412,9 @@ def stage3_bivar_check_outputs(
             dir_path = f"{stat_root}/c1-exp{i}+c2-exp{j}"
             assert os.path.isdir(dir_path), f"Directory {dir_path} does not exist"
 
-    # Check collated directory
-    collated_dir = f"{stat_root}/collated"
-    assert os.path.isdir(collated_dir), f"Directory {collated_dir} does not exist"
+    # Check interexp directory
+    interexp_dir = f"{stat_root}/inter-exp"
+    assert os.path.isdir(interexp_dir), f"Directory {interexp_dir} does not exist"
 
     # Check stage3 generated statistics
     for stat in to_check:
@@ -421,7 +423,7 @@ def stage3_bivar_check_outputs(
                 if engine == "argos":
                     stat_file = f"{stat_root}/c1-exp{i}+c2-exp{j}/collected-data.{stat}"
 
-                    csv_file = f"{stat_root}/collated/c1-exp{i}+c2-exp{j}/collected-data-collected_food.csv"
+                    csv_file = f"{stat_root}/inter-exp/c1-exp{i}+c2-exp{j}/collected-data-collected_food.csv"
                     assert os.path.isfile(stat_file), f"File {stat_file} does not exist"
                     assert os.path.isfile(csv_file), f"File {csv_file} does not exist"
 
@@ -446,17 +448,17 @@ def stage4_bivar_check_outputs(
             dir_path = f"{graph_root}/c1-exp{i}+c2-exp{j}"
             assert os.path.isdir(dir_path), f"Directory {dir_path} does not exist"
 
-    # Check collated directory
-    collated_dir = f"{graph_root}/collated"
-    assert os.path.isdir(collated_dir), f"Directory {collated_dir} does not exist"
+    # Check interexp directory
+    interexp_dir = f"{graph_root}/inter-exp"
+    assert os.path.isdir(interexp_dir), f"Directory {interexp_dir} does not exist"
 
     # Check stage4 generated .csvs
     for stat in to_check:
         if engine == "argos":
-            food_counts = f"{stat_root}/collated/food-counts.{stat}"
-            robot_counts_resting = f"{stat_root}/collated/robot-counts-resting.{stat}"
-            robot_counts_walking = f"{stat_root}/collated/robot-counts-walking.{stat}"
-            swarm_energy = f"{stat_root}/collated/swarm-energy.{stat}"
+            food_counts = f"{stat_root}/inter-exp/food-counts.{stat}"
+            robot_counts_resting = f"{stat_root}/inter-exp/robot-counts-resting.{stat}"
+            robot_counts_walking = f"{stat_root}/inter-exp/robot-counts-walking.{stat}"
+            swarm_energy = f"{stat_root}/inter-exp/swarm-energy.{stat}"
 
             assert os.path.isfile(food_counts), f"File {food_counts} does not exist"
             assert os.path.isfile(
@@ -487,12 +489,12 @@ def stage4_bivar_check_outputs(
             else:
                 assert False, f"Unhandled engine case {engine}"
 
-    # Check collated graphs
+    # Check interexp graphs
     if engine == "argos":
-        hm_food = f"{graph_root}/collated/HM-food-counts2.png"
-        hm_robot_walking = f"{graph_root}/collated/HM-robot-counts-walking2.png"
-        hm_robot_resting = f"{graph_root}/collated/HM-robot-counts-resting2.png"
-        hm_swarm_energy = f"{graph_root}/collated/HM-swarm-energy2.png"
+        hm_food = f"{graph_root}/inter-exp/HM-food-counts2.png"
+        hm_robot_walking = f"{graph_root}/inter-exp/HM-robot-counts-walking2.png"
+        hm_robot_resting = f"{graph_root}/inter-exp/HM-robot-counts-resting2.png"
+        hm_swarm_energy = f"{graph_root}/inter-exp/HM-swarm-energy2.png"
 
         assert os.path.isfile(hm_food), f"File {hm_food} does not exist"
         assert os.path.isfile(

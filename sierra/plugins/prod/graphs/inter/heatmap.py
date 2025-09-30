@@ -34,7 +34,7 @@ def generate(
 
     _logger.info(
         "Heatmaps from <batch_root>/%s",
-        pathset.stat_collate_root.relative_to(pathset.root),
+        pathset.stat_interexp_root.relative_to(pathset.root),
     )
 
     # For each category of heatmaps we are generating
@@ -56,8 +56,8 @@ def generate(
                 raise
 
             graph_pathset = graphs.PathSet(
-                input_root=pathset.stat_collate_root,
-                output_root=pathset.graph_collate_root,
+                input_root=pathset.stat_interexp_root,
+                output_root=pathset.graph_interexp_root,
                 batchroot=pathset.root,
                 model_root=None,
             )

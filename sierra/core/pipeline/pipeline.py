@@ -98,6 +98,13 @@ class Pipeline:
             PipelineStage5(self.main_config, self.cmdopts).run(self.args)
 
     def _init_cmdopts(self, shortforms: types.Cmdopts) -> types.Cmdopts:
+        if "+" in any(
+            [self.args.scenario, self.args.controller, self.args.batch_criteria]
+        ):
+            raise RuntimeError(
+                "{--scenario, --controller, --batch-criteria} cannot contain '+'."
+            )
+
         longforms = {
             # multistage
             "pipeline": self.args.pipeline,

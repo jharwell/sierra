@@ -208,7 +208,8 @@ plugin vs. a ``--engine`` vs. any other plugin type; those are called out below.
    .. group-tab::  Projects
 
       Must define the ``--scenario`` and ``--controller`` cmdline arguments to
-      interact with the SIERRA core.
+      interact with the SIERRA core. Note that values for these cannot contain
+      ``+``, as that is a reserved character for SIERRA directory paths.
 
       .. NOTE:: The ``--scenario`` argument can be used to encode the arena
                 dimensions used in an experiment; this is one of two ways to

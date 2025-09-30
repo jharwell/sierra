@@ -125,7 +125,7 @@ class GraphCollator:
             if stat.all_srcs_exist:
                 storage.df_write(
                     stat.df,
-                    self.pathset.stat_collate_root
+                    self.pathset.stat_interexp_root
                     / (target["dest_stem"] + stat.df_ext),
                     "storage.csv",
                     index=stat.graph_type == "summary_line",
@@ -216,7 +216,7 @@ def proc_batch_exp(
     Generate :term:`Collated Output Data` files from :term:`Batch Summary Data` files.
 
     """
-    utils.dir_create_checked(pathset.stat_collate_root, exist_ok=True)
+    utils.dir_create_checked(pathset.stat_interexp_root, exist_ok=True)
 
     q = mp.JoinableQueue()  # type: mp.JoinableQueue
 

@@ -136,16 +136,16 @@ class BaseComparator:
                     batch_leaf=leaf,
                     controller=c1,
                 )
-                collate_root1 = opts1.stat_collate_root
+                interexp_root1 = opts1.stat_interexp_root
 
                 # Stage 5 only operates on stage4 collated data, so if that
                 # doesn't exist, we can't do anything.
-                if not collate_root1.exists():
+                if not interexp_root1.exists():
                     self.logger.debug(
                         "%s cannot be compared in/across for %s: %s does not exist",
                         leaf.scenario,
                         c1,
-                        collate_root1,
+                        interexp_root1,
                     )
                     continue
 
@@ -162,14 +162,14 @@ class BaseComparator:
                             batch_leaf=leaf2,
                             controller=c2,
                         )
-                        collate_root2 = opts2.stat_collate_root
+                        interexp_root2 = opts2.stat_interexp_root
 
-                        if not collate_root2.exists():
+                        if not interexp_root2.exists():
                             self.logger.debug(
                                 "%s cannot be compared in/across for %s: %s does not exist",
                                 leaf.scenario,
                                 c2,
-                                collate_root2,
+                                interexp_root2,
                             )
                             continue
 

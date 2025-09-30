@@ -40,7 +40,7 @@ statistics. E.g.::
           |-- exec
 
 
-``collated/`` contains :term:`Collated Output Data` files. During stage4,
+``inter-exp/`` contains :term:`Collated Output Data` files. During stage4,
 SIERRA will draw specific columns from :term:`Raw Output Data` files under and
 collate them under here for later processing. ``exec/`` contains statistics
 about SIERRA runtime. Useful for capturing runtime of specific experiments to

@@ -201,7 +201,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         self.logger.debug(
             "Gathering data for %s from %s -> %s", controller, src_stem, dest_stem
         )
-        ipath = pathset.stat_collate_root / (
+        ipath = pathset.stat_interexp_root / (
             src_stem + config.kStats["mean"].exts["mean"]
         )
 
@@ -212,7 +212,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             return
 
         preparer = preprocess.IntraExpPreparer(
-            ipath_stem=pathset.stat_collate_root,
+            ipath_stem=pathset.stat_interexp_root,
             ipath_leaf=src_stem,
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
@@ -413,7 +413,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             "Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem
         )
 
-        csv_ipath = pathset.stat_collate_root / (
+        csv_ipath = pathset.stat_interexp_root / (
             src_stem + config.kStats["mean"].exts["mean"]
         )
 
@@ -434,7 +434,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
 
         if primary_axis == 0:
             preparer = preprocess.IntraExpPreparer(
-                ipath_stem=pathset.stat_collate_root,
+                ipath_stem=pathset.stat_interexp_root,
                 ipath_leaf=src_stem,
                 opath_stem=self.stage5_roots.csv_root,
                 criteria=criteria,
@@ -446,7 +446,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             )
         else:
             preparer = preprocess.IntraExpPreparer(
-                ipath_stem=pathset.stat_collate_root,
+                ipath_stem=pathset.stat_interexp_root,
                 ipath_leaf=src_stem,
                 opath_stem=self.stage5_roots.csv_root,
                 criteria=criteria,

@@ -124,8 +124,8 @@ class PathSet:
         self.stat_exec_root = self.stat_root / "exec"
         self.imagize_root = root.to_path() / "imagize"
         self.video_root = root.to_path() / "videos"
-        self.stat_collate_root = self.stat_root / "collated"
-        self.graph_collate_root = self.graph_root / "collated"
+        self.stat_interexp_root = self.stat_root / "inter-exp"
+        self.graph_interexp_root = self.graph_root / "inter-exp"
         self.scratch_root = root.to_path() / "scratch"
         self.root = root.to_path()
 
@@ -150,8 +150,8 @@ class PathSet:
             self.stat_exec_root,
             self.imagize_root,
             self.video_root,
-            self.stat_collate_root,
-            self.graph_collate_root,
+            self.stat_interexp_root,
+            self.graph_interexp_root,
             self.scratch_root,
         ]
         contents.sort()

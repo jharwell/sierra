@@ -35,7 +35,7 @@ def generate(
 
     _logger.info(
         "Linegraphs from <batchroot>/%s",
-        pathset.stat_collate_root.relative_to(pathset.root),
+        pathset.stat_interexp_root.relative_to(pathset.root),
     )
 
     # For each category of linegraphs we are generating
@@ -73,8 +73,8 @@ def _gen_summary_linegraph(
     legend = "{0}+{1}".format(cmdopts["controller"], cmdopts["scenario"])
 
     paths = graphs.PathSet(
-        input_root=pathset.stat_collate_root,
-        output_root=pathset.graph_collate_root,
+        input_root=pathset.stat_interexp_root,
+        output_root=pathset.graph_interexp_root,
         batchroot=pathset.root,
         model_root=pathset.model_interexp_root,
     )
@@ -108,8 +108,8 @@ def _gen_stacked_linegraph(
 ) -> None:
 
     paths = graphs.PathSet(
-        input_root=pathset.stat_collate_root,
-        output_root=pathset.graph_collate_root,
+        input_root=pathset.stat_interexp_root,
+        output_root=pathset.graph_interexp_root,
         model_root=None,
         batchroot=pathset.root,
     )

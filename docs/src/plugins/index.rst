@@ -23,11 +23,15 @@ supports several different plugin types:
   plugins may be vastly different; refer to individual processing plugins for
   details on requirements, inputs/outputs, etc.
 
+- Generating :term:`Products <Product>`, such as graphs/videos, from
+  :term:`Processed Output Data` files via :ref:`product plugins
+  <plugins/prod>`. The dataflow for each of these
+  plugins may be vastly different; refer to individual processing plugins for
+  details on requirements, inputs/outputs, etc.
 
-.. _plugins/builtin:
-
-Builtin Plugins
-===============
+- Comparing generated products in some way via :ref:`comparison plugins
+  <plugins/compare>`. This could mean combining multiple graphs into a single
+  graph, for example.
 
 To use any of the :ref:`plugins/builtin` in SIERRA you don't need to do anything
 but select them when invoking SIERRA via the appropriate cmdline switch. Details
