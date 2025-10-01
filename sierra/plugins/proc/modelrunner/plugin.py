@@ -3,7 +3,11 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Functionality for runner different types of models.
 
+See :ref:`plugins/proc/modelrunner` for usage documentation.
+
+"""
 # Core packages
 import pathlib
 import time
@@ -29,21 +33,21 @@ def proc_batch_exp(
     pathset: batchroot.PathSet,
     criteria: bc.XVarBatchCriteria,
 ) -> None:
-    intra = _load_models(main_config, cmdopts, "intra")
+    models = _load_models(main_config, cmdopts, "intra")
 
-    _logger.info("Running %d intra-experiment models...", len(intra))
+    _logger.info("Running %d intra-experiment models...", len(models))
     start = time.time()
-    _run_intra_exp(cmdopts, pathset, intra, criteria)
+    _run_intra_exp(cmdopts, pathset, models, criteria)
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
     _logger.info("Intra-experiment models finished in %s", str(sec))
 
-    inter = _load_models(main_config, cmdopts, "inter")
+    models = _load_models(main_config, cmdopts, "inter")
 
-    _logger.info("Running %d inter-experiment models...", len(inter))
+    _logger.info("Running %d inter-experiment models...", len(models))
     start = time.time()
 
-    _run_inter_exp(cmdopts, pathset, inter, criteria)
+    _run_inter_exp(cmdopts, pathset, models, criteria)
 
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
@@ -117,7 +121,7 @@ def _load_models(
                     }
 
         else:
-            _logger.debug(f"All {model_type}-exp models disabled: no configuration")
+            _logger.debug("All %s-exp models disabled: no configuration", model_type)
 
     if len(loaded) > 0:
         _logger.info(

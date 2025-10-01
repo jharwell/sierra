@@ -29,12 +29,13 @@ def core_env_vars(session):
     bc = ["population_size.Linear3.C3"]
     template_stem = "turtlebot3"
     scenario = "OutdoorWorld.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_ros1robot",
         controller="turtlebot3.wander",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root = batch_root / "exp-inputs/"
@@ -72,12 +73,13 @@ def core_builtin_bc(session):
     bc = ["builtin.MonteCarlo.C5"]
     template_stem = "template"
     scenario = "scenario1.10x10x10"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_jsonsim",
         controller="default.default",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root = batch_root / "exp-inputs/"
@@ -179,12 +181,13 @@ def core_parallelism(session):
     bc = ["population_size.Linear3.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root = batch_root / "exp-inputs"
@@ -300,23 +303,25 @@ def core_stage1_bivar(session):
     bc = ["population_size.Linear3.C3", "max_speed.1.9.C5"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root1 = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     bc = ["max_speed.1.9.C5", "population_size.Linear3.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root2 = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root1 = batch_root1 / "exp-inputs/"
@@ -359,12 +364,13 @@ def core_stage2_bivar(session):
     bc = ["population_size.Linear2.C2", "max_speed.1.9.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root1 = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     output_root1 = batch_root1 / "exp-outputs/"
@@ -405,12 +411,13 @@ def core_stage3_bivar(session):
     bc = ["population_size.Linear2.C2", "max_speed.1.9.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     # Define SIERRA command
@@ -474,12 +481,13 @@ def core_stage4_bivar(session):
     bc = ["population_size.Linear3.C3", "max_speed.1.9.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_argos",
         controller="foraging.footbot_foraging2",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     # Test 1: none stats

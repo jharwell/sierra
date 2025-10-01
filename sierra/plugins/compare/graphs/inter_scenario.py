@@ -10,8 +10,6 @@ scenarios.
 """
 
 # Core packages
-import os
-import copy
 import typing as tp
 import argparse
 import logging
@@ -23,10 +21,10 @@ import pathlib
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.plugin as pm
 from sierra.core import types, utils, config, storage, batchroot, graphs
-from sierra.plugins.compare.graphs import outputroot, preprocess, namecalc
+from sierra.plugins.compare.graphs import outputroot, preprocess, namecalc, comparator
 
 
-class UnivarInterScenarioComparator:
+class UnivarInterScenarioComparator(comparator.BaseComparator):
     """Compares a single controller across a set of scenarios.
 
     Graph generation is controlled via a config file parsed in
@@ -67,84 +65,57 @@ class UnivarInterScenarioComparator:
         cli_args: argparse.Namespace,
         main_config: types.YAMLDict,
     ) -> None:
-        self.controller = controller
-        self.scenarios = scenarios
-        self.stage5_roots = stage5_roots
-
-        self.cmdopts = cmdopts
-        self.cli_args = cli_args
-        self.main_config = main_config
+        super().__init__(scenarios, stage5_roots, cmdopts, cli_args, main_config)
         self.logger = logging.getLogger(__name__)
+        self.controller = controller
 
-    def __call__(
-        self, target_graphs: tp.List[types.YAMLDict], legend: tp.List[str]
-    ) -> None:
-        # Obtain the list of experimental run results directories to draw from.
-        batch_leaves = os.listdir(
-            pathlib.Path(
-                self.cmdopts["sierra_root"], self.cmdopts["project"], self.controller
-            )
-        )
-
-        # The FS gives us batch leaves which might not be in the same order as
-        # the list of specified scenarios, so we:
-        #
-        # 1. Remove all batch leaves which do not have a counterpart in the
-        #    scenario list we are comparing across.
-        #
-        # 2. Do matching to get the indices of the batch leaves relative to the
-        #    list, and then sort it.
-        batch_leaves = [
-            leaf for leaf in batch_leaves for s in self.scenarios if s in leaf
-        ]
-        indices = [
-            self.scenarios.index(s)
-            for leaf in batch_leaves
-            for s in self.scenarios
-            if s in leaf
-        ]
-        batch_leaves = [
-            leaf
-            for s, leaf in sorted(zip(indices, batch_leaves), key=lambda pair: pair[0])
-        ]
-
-        # For each controller comparison graph we are interested in, generate it
-        # using data from all scenarios
-        cmdopts = copy.deepcopy(self.cmdopts)
-        for graph in target_graphs:
-            for leaf2 in batch_leaves:
-                if self._leaf_select(leaf2):
-                    leaf = batchroot.ExpRootLeaf.from_name(leaf2)
-                    self._compare_across_scenarios(
-                        cmdopts=cmdopts, graph=graph, batch_leaf=leaf, legend=legend
-                    )
-                else:
-                    self.logger.debug(
-                        "Skipping '%s': not in scenario list %s/does not match %s",
-                        leaf,
-                        self.scenarios,
-                        self.cli_args.batch_criteria,
-                    )
-
-    def _leaf_select(self, candidate: str) -> bool:
-        """Figure out if a batch experiment root should be included in the comparison.
-
-        Inclusion determined by if a scenario that the selected controller has
-        been run on in the past is part of the set passed that the controller
-        should be compared across (i.e., the controller is not compared across
-        all scenarios it has ever been run on).
+    def exp_select(self) -> tp.List[batchroot.ExpRoot]:
+        """
+        Determine if a scenario can be include in the comparison for a controller.
 
         """
-        leaf = batchroot.ExpRootLeaf.from_name(candidate)
-        return leaf.to_str() in candidate and leaf.scenario in self.scenarios
+        selected = []
+        for scenario in self.things:
+            for candidate in (self.project_root / self.controller / scenario).iterdir():
+                root = batchroot.ExpRoot(
+                    sierra_root=self.cmdopts["sierra_root"],
+                    project=self.cmdopts["project"],
+                    controller=self.controller,
+                    leaf=batchroot.ExpRootLeaf.from_name(candidate.name),
+                    scenario=scenario,
+                )
+                if root.to_path().exists():
+                    selected.append(root)
+        return selected
 
-    def _compare_across_scenarios(
+    def compare(
         self,
         cmdopts: types.Cmdopts,
         graph: types.YAMLDict,
-        batch_leaf: batchroot.ExpRootLeaf,
+        roots: tp.List[batchroot.ExpRoot],
         legend: tp.List[str],
     ) -> None:
+        for scenario in self.things:
+            valid_configurations = sum(r.scenario == scenario for r in roots)
+            if valid_configurations > 1:
+                self.logger.warning(
+                    "Skipping ambiguous comparison for scenario %s: was run on multiple selected batch roots %s",
+                    scenario,
+                    [r.to_str() for r in roots],
+                )
+                continue
+
+            if valid_configurations == 0:
+                self.logger.warning(
+                    "Skipping comparison for scenario %s: not run on any selected batch roots %s",
+                    scenario,
+                    [r.to_str() for r in roots],
+                )
+                continue
+
+        # Each controller should have been run on exactly ONE batch experiment
+        # that we selected for controller comparison, by definition.
+        root = next(r for r in roots if r.scenario == scenario)
 
         # We need to generate the root directory paths for each batch experiment
         # (which lives inside of the scenario dir), because they are all
@@ -153,8 +124,9 @@ class UnivarInterScenarioComparator:
         pathset = batchroot.from_exp(
             sierra_root=self.cli_args.sierra_root,
             project=self.cli_args.project,
-            batch_leaf=batch_leaf,
+            batch_leaf=root.leaf,
             controller=self.controller,
+            scenario=root.scenario,
         )
 
         # For each scenario, we have to create the batch criteria for it,
@@ -164,21 +136,21 @@ class UnivarInterScenarioComparator:
             cmdopts,
             pathset.input_root,
             self.cli_args,
-            self.scenarios[0],
+            root.scenario,
         )
 
         self._gen_csvs(
             criteria=criteria,
             pathset=pathset,
             project=self.cli_args.project,
-            batch_leaf=batch_leaf,
+            root=root,
             src_stem=graph["src_stem"],
             dest_stem=graph["dest_stem"],
             index=graph.get("index", -1),
         )
 
         self._gen_graph(
-            batch_leaf=batch_leaf,
+            batch_leaf=root.leaf,
             criteria=criteria,
             cmdopts=cmdopts,
             batch_output_root=pathset.output_root,
@@ -203,7 +175,7 @@ class UnivarInterScenarioComparator:
         inc_exps: tp.Optional[str] = None,
     ) -> None:
         """Generate graph comparing the specified controller across scenarios."""
-        opath_leaf = namecalc.for_sc(batch_leaf, self.scenarios, dest_stem, None)
+        opath_leaf = namecalc.for_sc(batch_leaf, self.things, dest_stem, None)
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
         xticklabels = info.xticklabels
@@ -245,7 +217,7 @@ class UnivarInterScenarioComparator:
         criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         project: str,
-        batch_leaf: batchroot.ExpRootLeaf,
+        root: batchroot.ExpRoot,
         index: int,
         src_stem: str,
         dest_stem: str,
@@ -287,10 +259,10 @@ class UnivarInterScenarioComparator:
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
         )
-        opath_leaf = namecalc.for_sc(batch_leaf, self.scenarios, dest_stem, None)
+        opath_leaf = namecalc.for_sc(root.leaf, self.things, dest_stem, None)
 
         preparer.for_sc(
-            scenario=batch_leaf.scenario,
+            scenario=root.scenario,
             opath_leaf=opath_leaf,
             index=index,
             inc_exps=None,
@@ -318,8 +290,8 @@ class UnivarInterScenarioComparator:
 
             with utils.utf8open(legend_opath, "a") as f:
                 sgp = pm.module_load_tiered(project=project, path="generators.scenario")
-                kw = sgp.to_dict(batch_leaf.scenario)
-                f.write("{0} Prediction\n".format(kw["scenario_tag"]))
+                kw = sgp.to_dict(root.scenario)
+                f.write("{0} Model Prediction\n".format(kw["scenario_tag"]))
 
 
 __all__ = ["UnivarInterScenarioComparator"]

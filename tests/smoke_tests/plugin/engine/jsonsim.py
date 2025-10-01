@@ -26,12 +26,13 @@ def jsonsim_stage1_univar(session):
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
     scenario = "scenario1.10x10x10"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_jsonsim",
         controller="default.default",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root = batch_root / "exp-inputs"
@@ -58,12 +59,13 @@ def jsonsim_stage3_univar(session):
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
     scenario = "scenario1.10x10x10"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_jsonsim",
         controller="default.default",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     stat_root = batch_root / "statistics"
@@ -91,12 +93,13 @@ def jsonsim_stage4_univar(session):
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
     scenario = "scenario1.10x10x10"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_jsonsim",
         controller="default.default",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     graph_root = batch_root / "graphs"

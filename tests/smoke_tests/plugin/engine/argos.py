@@ -52,13 +52,12 @@ def argos_stage1_univar(session):
     for criteria in bc:
         template_stem = "template"
         scenario = "LowBlockCount.10x10x2"
-        leaf = batchroot.ExpRootLeaf(
-            bc=[criteria], template_stem=template_stem, scenario=scenario
-        )
+        leaf = batchroot.ExpRootLeaf(bc=[criteria], template_stem=template_stem)
         batch_root = batchroot.ExpRoot(
             sierra_root=f"{session.env['SIERRA_ROOT']}",
             project="projects.sample_argos",
             controller="foraging.footbot_foraging",
+            scenario=scenario,
             leaf=leaf,
         ).to_path()
 
@@ -113,12 +112,13 @@ def argos_stage3_univar(session, dist_stats):
     bc = ["population_size.Linear3.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     # Build and run command
@@ -168,14 +168,13 @@ def argos_stage4_univar(session, bc, dist_stats):
     # Get batch root path
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(
-        bc=[bc], template_stem=template_stem, scenario=scenario
-    )
+    leaf = batchroot.ExpRootLeaf(bc=[bc], template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     # Build and run command
@@ -204,12 +203,13 @@ def argos_vc(session, camera_config):
     bc = ["population_size.Linear1.C1"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     output_root = batch_root / "exp-outputs"
@@ -253,12 +253,13 @@ def argos_imagize(session):
     bc = ["population_size.Linear1.C1"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     output_root = batch_root / "exp-outputs"
@@ -305,12 +306,13 @@ def argos_cmdline(session):
     bc = ["population_size.Linear3.C3"]
     template_stem = "template"
     scenario = "LowBlockCount.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_argos",
         controller="foraging.footbot_foraging",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root = batch_root / "exp-inputs"

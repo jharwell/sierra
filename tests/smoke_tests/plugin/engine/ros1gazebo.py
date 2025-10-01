@@ -27,12 +27,13 @@ def ros1gazebo_stage1_univar(session):
     bc = ["population_size.Linear3.C3"]
     template_stem = "turtlebot3_house"
     scenario = "HouseWorld.10x10x2"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],
         project="projects.sample_ros1gazebo",
         controller="turtlebot3.wander",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     input_root = batch_root / "exp-inputs"

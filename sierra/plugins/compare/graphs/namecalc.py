@@ -45,9 +45,7 @@ def for_sc(
     need a list of all scenarios in the path to eliminate path collisions in all
     cases.
     """
-    name = "{0}-{1}+{2}".format(
-        new_stem, "+".join(scenarios), leaf.to_path(scenario=False)
-    )
+    name = "{0}-{1}+{2}".format(new_stem, "+".join(scenarios), leaf.to_path())
 
     if indices is not None:
         name += "_" + "".join([str(i) for i in indices])

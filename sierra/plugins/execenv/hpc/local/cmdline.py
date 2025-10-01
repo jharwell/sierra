@@ -3,7 +3,9 @@
 #
 # SPDX-License Identifier: MIT
 #
-
+"""
+Command line definitions for the :ref:`plugins/execenv/hpc/local`.
+"""
 # Core packages
 import typing as tp
 import argparse
