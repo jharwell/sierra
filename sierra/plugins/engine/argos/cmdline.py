@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 #
 """
-Command line parsing and validation for the :term:`ARGoS`.
+Command line definitions for the :term:`ARGoS` :term:`Engine`.
 """
 
 # Core packages

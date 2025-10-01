@@ -784,13 +784,11 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 4.
         """
-        pass
 
     def init_stage5(self) -> None:
         """
         Define cmdline arguments for stage 5.
         """
-        pass
 
 
 def sphinx_cmdline_multistage():

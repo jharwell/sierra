@@ -8,7 +8,6 @@ Batch criteria and scenario are the same across all compared controllers.
 """
 
 # Core packages
-import os
 import glob
 import re
 import typing as tp
@@ -37,33 +36,25 @@ class BaseInterControllerComparator(comparator.BaseComparator):
         self.logger = logging.getLogger(__name__)
 
     def exp_select(self) -> tp.List[batchroot.ExpRoot]:
-        """Determine if a controller can be included in the comparison for a scenario.
-
-        You can only compare controllers within the scenario directly generated
-        from the value of ``--batch-criteria``; other scenarios will (probably)
-        cause file not found errors.
-
-        """
+        """Determine if a controller can be included in the comparison for a scenario."""
         # Obtain the raw list of batch experiments to use. We can just take the
         # scenario list of the first THING, because we have already checked that
         # all things were executed in the same context, and if there were any
         # warnings which will cause crashes at this stage, the user will have
         # been warned.
-        batch_leaves = [
-            batchroot.ExpRootLeaf.from_name(d)
-            for d in os.listdir(self.project_root / self.things[0])
-        ]
         selected = []
-        for leaf in batch_leaves:
-            for controller in self.things:
-                root = batchroot.ExpRoot(
-                    sierra_root=self.cmdopts["sierra_root"],
-                    project=self.cmdopts["project"],
-                    controller=controller,
-                    leaf=leaf,
-                )
-                if root.to_path().exists():
-                    selected.append(root)
+        for controller in self.things:
+            for scenario in (self.project_root / self.things[0]).iterdir():
+                for candidate in scenario.iterdir():
+                    root = batchroot.ExpRoot(
+                        sierra_root=self.cmdopts["sierra_root"],
+                        project=self.cmdopts["project"],
+                        controller=controller,
+                        leaf=batchroot.ExpRootLeaf.from_name(candidate.name),
+                        scenario=str(scenario),
+                    )
+                    if root.to_path().exists():
+                        selected.append(root)
         return selected
 
 
@@ -144,6 +135,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
                 project=self.cli_args.project,
                 batch_leaf=root.leaf,
                 controller=controller,
+                scenario=root.scenario,
             )
 
             # For each scenario, we have to create the batch criteria for it,
@@ -153,7 +145,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
                 cmdopts,
                 pathset.input_root,
                 self.cli_args,
-                root.leaf.scenario,
+                root.scenario,
             )
 
             # We incrementally generate the CSV, adding a new column for each
@@ -347,6 +339,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 project=self.cli_args.project,
                 batch_leaf=root.leaf,
                 controller=controller,
+                scenario=root.scenario,
             )
 
             # For each scenario, we have to create the batch criteria for it,
@@ -356,7 +349,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 cmdopts,
                 pathset.input_root,
                 self.cli_args,
-                root.leaf.scenario,
+                root.scenario,
             )
 
             if self.cli_args.comparison_type == "LNraw":

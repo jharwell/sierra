@@ -36,14 +36,13 @@ def execenv_hpc(session, env, engine):
         bc = ["population_size.Linear3.C3"]
         template_stem = "template"
         scenario = "LowBlockCount.10x10x2"
-        leaf = batchroot.ExpRootLeaf(
-            bc=bc, template_stem=template_stem, scenario=scenario
-        )
+        leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
         batch_root = batchroot.ExpRoot(
             sierra_root=f"{session.env['SIERRA_ROOT']}",
             project="projects.sample_argos",
             controller="foraging.footbot_foraging",
             leaf=leaf,
+            scenario=scenario,
         ).to_path()
 
         sierra_cmd = (
@@ -58,14 +57,13 @@ def execenv_hpc(session, env, engine):
         bc = ["max_speed.1.9.C5"]
         template_stem = "template"
         scenario = "scenario1.10x10x10"
-        leaf = batchroot.ExpRootLeaf(
-            bc=bc, template_stem=template_stem, scenario=scenario
-        )
+        leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
         batch_root = batchroot.ExpRoot(
             sierra_root=f"{session.env['SIERRA_ROOT']}",
             project="projects.sample_jsonsim",
             controller="default.default",
             leaf=leaf,
+            scenario=scenario,
         ).to_path()
 
         sierra_cmd = (
@@ -81,14 +79,13 @@ def execenv_hpc(session, env, engine):
         bc = ["population_size.Linear3.C3"]
         template_stem = "turtlebot3_house"
         scenario = "HouseWorld.10x10x2"
-        leaf = batchroot.ExpRootLeaf(
-            bc=bc, template_stem=template_stem, scenario=scenario
-        )
+        leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
         batch_root = batchroot.ExpRoot(
             sierra_root=session.env["SIERRA_ROOT"],
             project="projects.sample_ros1gazebo",
             controller="turtlebot3.wander",
             leaf=leaf,
+            scenario=scenario,
         ).to_path()
         sierra_cmd = (
             f"{session.env['ROS1GAZEBO_BASE_CMD']} "
@@ -200,12 +197,13 @@ def execenv_prefectserver(session, env):
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
     scenario = "scenario1.10x10x10"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem, scenario=scenario)
+    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_jsonsim",
         controller="default.default",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
     output_root = batch_root / "exp-outputs"
 

@@ -512,15 +512,23 @@ def stage4_bivar_check_outputs(
 def stage5_univar_check_cc_outputs(session, engine: str):
     """Check controller comparison outputs."""
     if engine == "argos":
-        cc_csv_root = f"{session.env['SIERRA_ROOT']}/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs"
-        cc_graph_root = f"{session.env['SIERRA_ROOT']}/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs"
+        cc_csv_root = pathlib.Path(
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs"
+        )
+        cc_graph_root = pathlib.Path(
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs"
+        )
 
         # Check file counts
-        csv_count = len(os.listdir(cc_csv_root))
-        graph_count = len(os.listdir(cc_graph_root))
+        csvs = [d for d in cc_csv_root.iterdir()]
+        graphs = [d for d in cc_graph_root.iterdir()]
 
-        assert csv_count == 18, f"Expected 18 CSV files, found {csv_count}"
-        assert graph_count == 2, f"Expected 2 graph files, found {graph_count}"
+        assert len(csvs) == 18, f"Expected 18 CSV files, found {len(csvs)}"
+        assert len(graphs) == 2, f"Expected 2 graph files, found {len(graphs)}"
+
+        for path in csvs:
+            n_cols = len(next(csv.reader(open(path))))
+            assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_lines}"
 
     else:
         assert False, f"Unhandled engine case {engine}"
@@ -529,15 +537,23 @@ def stage5_univar_check_cc_outputs(session, engine: str):
 def stage5_univar_check_sc_outputs(session, engine: str):
     """Check scenario comparison outputs."""
     if engine == "argos":
-        sc_csv_root = f"{session.env['SIERRA_ROOT']}/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs"
-        sc_graph_root = f"{session.env['SIERRA_ROOT']}/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs"
+        sc_csv_root = pathlib.Path(
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs"
+        )
+        sc_graph_root = pathlib.Path(
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs"
+        )
 
         # Check file counts
-        csv_count = len(os.listdir(sc_csv_root))
-        graph_count = len(os.listdir(sc_graph_root))
+        csvs = [d for d in sc_csv_root.iterdir()]
+        graphs = [d for d in sc_graph_root.iterdir()]
 
-        assert csv_count == 18, f"Expected 18 CSV files, found {csv_count}"
-        assert graph_count == 2, f"Expected 2 graph files, found {graph_count}"
+        assert len(csvs) == 18, f"Expected 18 CSV files, found {len(csvs)}"
+        assert len(graphs) == 2, f"Expected 2 graph files, found {len(graphs)}"
+
+        for path in csvs:
+            n_cols = len(next(csv.reader(open(path))))
+            assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_lines}"
 
     else:
         assert False, f"Unhandled engine case {engine}"

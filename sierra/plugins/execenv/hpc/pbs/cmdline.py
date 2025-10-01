@@ -3,6 +3,7 @@
 #
 # SPDX-License Identifier: MIT
 #
+"""Command line definitions for the :ref:`plugins/execenv/hpc/PBS`."""
 
 # Core packages
 import typing as tp

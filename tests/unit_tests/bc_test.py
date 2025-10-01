@@ -47,7 +47,7 @@ def test_univar_argos():
         {},
         cmdopts,
         pathlib.Path(
-            "/tmp/sierra/projects.sample_argos/foraging.footbot_foraging/template-HighBlockCount.10x10x2+population_size.Log16/exp-inputs/"
+            "/tmp/sierra/projects.sample_argos/foraging.footbot_foraging/HighBlockCount.10x10x2/template-population_size.Log16/exp-inputs/"
         ),
         app.args,
         "HighBlockCount.10x10x2",
@@ -100,7 +100,7 @@ def test_univar_jsonsim():
         {},
         cmdopts,
         pathlib.Path(
-            "/tmp/sierra/projects.sample_jsonsim/default.default/template-scenario2+fuel.1.10.C5/exp-inputs/"
+            "/tmp/sierra/projects.sample_jsonsim/default.default/scenario2/template-fuel.1.10.C5/exp-inputs/"
         ),
         app.args,
         "scenario1",
@@ -149,7 +149,7 @@ def test_bivar_argos():
         {},
         cmdopts,
         pathlib.Path(
-            "/tmp/sierra/projects.sample_argos/foraging.footbot_foraging/template-HighBlockCount.100x100x2+population_size.Log16+max_speed.1.9.C4/exp-inputs"
+            "/tmp/sierra/projects.sample_argos/foraging.footbot_foraging/HighBlockCount.100x100x2/template-population_size.Log16+max_speed.1.9.C4/exp-inputs"
         ),
         app.args,
         "HighBlockCount.100x100x2",

@@ -27,14 +27,13 @@ def ros1robot_stage1_univar(session, bc):
 
     template_stem = "turtlebot3"
     scenario = "OutdoorWorld.10x10x2"
-    leaf = batchroot.ExpRootLeaf(
-        bc=[bc], template_stem=template_stem, scenario=scenario
-    )
+    leaf = batchroot.ExpRootLeaf(bc=[bc], template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
         project="projects.sample_ros1robot",
         controller="turtlebot3.wander",
         leaf=leaf,
+        scenario=scenario,
     ).to_path()
 
     sierra_cmd = (
