@@ -123,7 +123,7 @@ def generate(
 
     # Add statistics according to configuration
     stat_dfs = _read_stats(stats, medium, paths.input_root, input_stem)
-    plot = _plot_stats(dataset, stats, stat_dfs)
+    plot = _plot_stats(dataset, stats, stat_dfs, backend)
 
     # Add legend
     plot.opts(legend_position="bottom")
@@ -237,13 +237,16 @@ def _plot_lines(
 
 
 def _plot_stats(
-    dataset: hv.Dataset, setting: str, stat_dfs: tp.Dict[str, pd.DataFrame]
+    dataset: hv.Dataset,
+    setting: str,
+    stat_dfs: tp.Dict[str, pd.DataFrame],
+    backend: str,
 ) -> hv.NdOverlay:
     """
     Plot statistics for all lines on the graph.
     """
     plot = _plot_conf95_stats(dataset, setting, stat_dfs)
-    plot *= _plot_bw_stats(dataset, setting, stat_dfs)
+    plot *= _plot_bw_stats(dataset, setting, stat_dfs, backend)
 
     return plot
 
@@ -288,7 +291,10 @@ def _plot_conf95_stats(
 
 
 def _plot_bw_stats(
-    dataset: hv.Dataset, setting: str, stat_dfs: tp.Dict[str, pd.DataFrame]
+    dataset: hv.Dataset,
+    setting: str,
+    stat_dfs: tp.Dict[str, pd.DataFrame],
+    backend: str,
 ) -> hv.NdOverlay:
     if setting not in ["bw", "all"]:
         return hv.Overlay()
@@ -302,6 +308,11 @@ def _plot_bw_stats(
         return hv.Overlay()
 
     elements = []
+
+    if backend == "matplotlib":
+        opts = {"linewidth": 2}
+    elif backend == "bokeh":
+        opts = {"line_width": 2}
 
     # For each value dimension (set of datapoints from a batch experiment)
     for i in range(0, len(dataset.vdims)):
@@ -320,7 +331,7 @@ def _plot_bw_stats(
             # Box (Rectangle from q1 to q3).
             # Args: x center, y center, x width, y height
             box = hv.Box(dataset.data["xticks"][j], median, (0.2, (q3 - q1))).opts(
-                linewidth=2
+                **opts
             )
 
             # Median line
@@ -331,15 +342,15 @@ def _plot_bw_stats(
                     dataset.data["xticks"][j] + 0.2,
                     median,
                 )
-            ).opts(color="darkred", linewidth=2)
+            ).opts(color="darkred", **opts)
 
             # Whisker lines (vertical lines from box to min/max)
             lower_whisker = hv.Segments(
                 (dataset.data["xticks"][j], q1, dataset.data["xticks"][j], whislo)
-            ).opts(color="black", linewidth=2)
+            ).opts(color="black", **opts)
             upper_whisker = hv.Segments(
                 (dataset.data["xticks"][j], q3, dataset.data["xticks"][j], whishi)
-            ).opts(color="black", linewidth=2)
+            ).opts(color="black", **opts)
 
             # Whisker caps (horizontal lines at min/max)
             lower_cap = hv.Segments(
@@ -349,7 +360,7 @@ def _plot_bw_stats(
                     dataset.data["xticks"][j] + 0.1,
                     whislo,
                 )
-            ).opts(color="black", linewidth=2)
+            ).opts(color="black", **opts)
             upper_cap = hv.Segments(
                 (
                     dataset.data["xticks"][j] - 0.1,
@@ -357,7 +368,7 @@ def _plot_bw_stats(
                     dataset.data["xticks"][j] + 0.1,
                     whishi,
                 )
-            ).opts(color="black", linewidth=2)
+            ).opts(color="black", **opts)
             # Combine all elements
             elements.append(
                 box

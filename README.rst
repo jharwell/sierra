@@ -53,6 +53,12 @@ To install SIERRA (requires python 3.9+):
 
    pip3 install sierra-research
 
+
+SIERRA requires a recent OSX (tested with 13+) or Linux (tested with ubuntu
+20.04+) and python >= 3.9. For more details, including the requirements for
+project code, see the `SIERRA requirements
+<https://sierra.readthedocs.io/en/master/src/requirements.html>`_.
+
 To get started using SIERRA, see `getting started
 <https://sierra.readthedocs.io/en/master/src/getting_started.html>`_.
 
@@ -94,19 +100,17 @@ Why SIERRA?
 
   to::
 
-    "OK SIERRA: Here is the environment and simulator/agent platform(s) I want
-    to use, the deliverables I want to generate, and the data I want to appear
-    on them for my research query--GO!"
+    "Here is the environment and simulator/platforms(s) I want to use, the
+    deliverables I want to generate, and the data I want to appear on them for
+    my research query--GO!"
 
   Essentially, SIERRA handles the “engineering” parts of research on the
   backend, acting as a compiler of sorts, turning research queries into
-  executable objects by generating experiments, configuring execution
-  environments or engines, running the generated experiments, and processing
-  experimental results to generate statistics, and/or visualizations. It also
-  handles random seeds, algorithm stochasticity, and other low-level
-  details.
+  executable objects, running the "compiled" experiments, and processing results
+  into visualizations or other deliverables.
 
-- It has deep support arbitrary parameter sweeps: numeric, categorical, etc.
+- It has deep support for arbitrary parameter sweeps: numeric, categorical, or
+  any combination thereof.
 
 - It supports a wide range of execution engines/environments, and experiment
   input/output formats via plugins. SIERRA supports mix-and-match between all
@@ -136,21 +140,6 @@ Not sure if SIERRA makes sense for you? Check out some of the `use cases
 was designed.  If aspects of any sound familiar, then there is a strong chance
 SIERRA could help you! See the `SIERRA docs
 <https://sierra.readthedocs.io/en/master/>`_ to get started.
-
-Requirements To Use SIERRA
-==========================
-
-The basic requirements are:
-
-- Recent OSX (tested with 13+) or Linux (tested with ubuntu 20.04+). Windows is
-  not currently supported; if windows support would be helpful for your intended
-  usage, please get in touch. SIERRA is written in pure python and can
-  definitely be made to work on windows.
-
-- python >= 3.9.
-
-For more details, including the requirements for project code, see the `SIERRA
-requirements <https://sierra.readthedocs.io/en/master/src/requirements.html>`_.
 
 Citing
 ======

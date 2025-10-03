@@ -7,8 +7,7 @@ Storage Plugins
 Storage plugins tell SIERRA the storage format for :term:`Raw Output Data` from
 :term:`Experimental Runs <Experimental Run>`, and also set the output format
 that SIERRA writes intermediate files to in stages 3-5 (e.g., the files that are
-used as direct inputs to build graphs). Basically, it sets the I/O format. See
-:ref:`dataflow` for more details.
+used as direct inputs to build graphs). Basically, it sets the I/O format.
 
 Supported formats that come with SIERRA are:
 

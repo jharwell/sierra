@@ -54,6 +54,7 @@ class ExpRootLeaf:
         self.template_stem = template_stem
 
     def to_path(self) -> pathlib.Path:
+        """Get the leaf as a ``pathlib.Path`` object."""
         return pathlib.Path("{0}-{1}".format(self.template_stem, "+".join(self.bc)))
 
     def to_str(self) -> str:

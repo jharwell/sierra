@@ -17,11 +17,6 @@ approach here enables you focus on your goal (what type of graph to generate,
 what you want on it, etc.), rather than the details of *how* that is
 implemented.
 
-This plugin has the following stage 3 plugin recommendations:
-
-- :ref:`plugins/proc/stat` (all graphs). Without this, no statistics can be
-  included on graphs.
-
 .. _plugins/prod/graphs/packages:
 
 OS Packages
@@ -118,6 +113,11 @@ statistics. E.g.::
 
 ``inter-exp/`` contains graphs which are generated across experiments in the
 batch from :term:`Batch Summary Data` files.
+
+This plugin has the following stage 3 plugin recommendations:
+
+- :ref:`plugins/proc/stat` (all graphs). Without this, no statistics can be
+  included on graphs.
 
 Cmdline Interface
 =================
@@ -228,3 +228,201 @@ this plugin is below. Unless stated otherwise, all keys are required.
 .. NOTE:: If the batch criteria has dimension > 1, inter-experiment linegraphs
           are disabled/ignored currently. This will hopefully be fixed in a
           future version of SIERRA. (SIERRA#357).
+
+
+Examples
+========
+
+For these examples, we will use the following SIERRA cmd and YAML configuration
+from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`
+
+.. tabs::
+
+   .. tab:: SIERRA cmd
+
+      ::
+
+         sierra-cli \
+           --sierra-root=/home/jharwell/test \
+           --controller=foraging.footbot_foraging \
+           --engine=engine.argos \
+           --project=projects.sample_argos \
+           --exp-setup=exp_setup.T1000.K5 \
+           --n-runs=4 \
+           --physics-n-engines=1 \
+           --expdef-template=/home/jharwell/git/thesis/sierra-sample-project/exp/argos/template.argos \
+           --scenario=LowBlockCount.10x10x2 \
+           --with-robot-leds \
+           --with-robot-rab \
+           --controller=foraging.footbot_foraging \
+           --batch-criteria population_size.Linear5.C5 \
+           --exp-n-datapoints-factor=0.1 \
+           --dist-stats=none
+
+   .. tab:: YAML config
+
+      .. code-block:: YAML
+
+         - src_stem: collected-data
+           dest_stem: robot-counts
+           cols:
+             - walking
+             - resting
+           title: 'Robot Counts'
+           legend:
+             - 'Walking'
+             - 'Resting'
+
+           xlabel: 'Time'
+           ylabel: '\# Robots'
+           type: 'stacked_line'
+
+         - src_stem: collected-data
+           dest_stem: food-counts
+           cols:
+             - collected_food
+           title: 'Collected Food Counts'
+           legend:
+             - ''
+
+           xlabel: 'Time'
+           ylabel: '\# Items'
+           type: 'stacked_line'
+
+         - src_stem: collected-data
+           dest_stem: swarm-energy
+           cols:
+             - energy
+           title: 'Swarm Energy Over Time'
+           legend:
+             - ''
+
+           xlabel: 'Time'
+           type: 'stacked_line'
+
+Intra-Experiment
+----------------
+
+As mentioned earlier, intra-experiment products are time-series based and
+generated from processed data *within* each experiment. Using the
+above. command and the ``.yaml`` configuration capabilities below we can
+generate graphs easily with ``--graphs-backend=matplotlib``, OR interactive
+widgets with ``--graphs-backend=bokeh``:
+
+.. tabs::
+
+   .. tab:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-intra-none-SLN-food-counts.png
+
+           - .. figure:: figures/graphs-intra-none-SLN-robot-counts.png
+
+         * - .. figure:: figures/graphs-intra-none-SLN-swarm-energy.png
+
+           -
+
+   .. tab:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-intra-none-SLN-food-counts.html
+
+      .. raw:: html
+         :file: figures/graphs-intra-none-SLN-robot-counts.html
+
+      .. raw:: html
+         :file: figures/graphs-intra-none-SLN-swarm-energy.html
+
+
+If we then want to plot 95% confidence intervals by doing
+``--dist-stats=conf95``:
+
+.. tabs::
+
+   .. tab:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-intra-conf95-SLN-food-counts.png
+
+           - .. figure:: figures/graphs-intra-conf95-SLN-robot-counts.png
+
+         * - .. figure:: figures/graphs-intra-conf95-SLN-swarm-energy.png
+
+           -
+
+   .. tab:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-intra-conf95-SLN-food-counts.html
+
+      .. raw:: html
+         :file: figures/graphs-intra-conf95-SLN-robot-counts.html
+
+      .. raw:: html
+         :file: figures/graphs-intra-conf95-SLN-swarm-energy.html
+
+Suppose we want the walking/resting counts to appear on separate graphs. YAML
+configuration becomes:
+
+.. code-block:: YAML
+
+   - src_stem: collected-data
+     dest_stem: robot-counts
+     cols:
+       - walking
+     title: 'Robot Counts'
+     legend:
+       - 'Walking'
+
+   - src_stem: collected-data
+     dest_stem: robot-counts
+     cols:
+       - resting
+     title: 'Robot Counts'
+     legend:
+       - 'Resting'
+
+It's really that easy!
+
+Inter-Experiment
+----------------
+
+After stage 3, some data is in :term:`Processed Output Data` files. In stage 4,
+we can run :term:`Data Collation` on either of these types of files in order to
+further refine their contents but at the level of a experiments within a batch
+rather than experimental runs within an experiment.  After collation,
+inter-experiment products can be generated directly. These products can be
+time-based, showing results from each experiment. Compare the two graphs, each
+representing the same data: a measurement of swarm energy over time. The graph
+on the right is arguably more readable because it summarizes the steady-state
+information more clearly.
+
+.. tabs::
+
+   .. tab:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-inter-SLN-swarm-energy.png
+
+
+           - .. figure:: figures/graphs-inter-SM-swarm-energy.png
+
+   .. tab:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-inter-SLN-swarm-energy.html
+
+      .. raw:: html
+         :file: figures/graphs-inter-SM-swarm-energy.html
+
+
+For the summary graph, the X-axis labels are populated based on the :term:`Batch
+Criteria` used. Obviously, this is for a *single* batch experiment; summary
+graphs for multiple batch experiments can be combined in stage 5. See
+:ref:`plugins/compare/graphs` for info.

@@ -23,99 +23,9 @@ via :term:`Data Collation`. Of course, like all things in SIERRA, if you don't
 need this functionality, you can turn it off by deselecting the plugin.
 
 This process in stage 3 can be visualized as follows for a single
-:term:`Experiment`:
+:term:`Experiment`, using :term:`Experimental Run` as SCOPE:
 
-.. plantuml::
-
-   skinparam defaultTextAlignment center
-
-   !theme cyborg
-
-   ' Configuration
-   skinparam DefaultFontSize 48
-   skinparam DefaultFontColor #black
-   skinparam stateBorderThickness 8
-
-   state "User\nSpecification" as user #lightcoral
-
-   state "run 0" as run0 {
-      state "file0" as file00 #skyblue {
-         state "col0" as col000 #darkturquoise
-         state "col1" as col001 #limegreen
-      }
-      state "file 1" as file01  #skyblue {
-         state "colA" as col010 #green
-         state "colB" as col011 #lightseagreen
-      }
-      state "..." as file0x #skyblue
-   }
-   state "run 1" as run1 {
-      state "file0" as file10 #skyblue {
-         state "col0" as col100 #darkturquoise
-         state "col1" as col101 #limegreen
-      }
-      state "file 1" as file11  #skyblue {
-         state "colA" as col110 #green
-         state "colB" as col111 #lightseagreen
-      }
-      state "..." as file1x #skyblue
-   }
-   state "..." as runx #skyblue
-
-   state "run j" as runj {
-      state "file0" as filej0 #skyblue {
-         state "col0" as colj00 #darkturquoise
-         state "col1" as colj01 #limegreen
-      }
-      state "file1" as filej1  #skyblue {
-         state "colA" as colj10 #green
-         state "colB" as colj11 #lightseagreen
-      }
-      state "..." as filejx #skyblue
-   }
-
-   state "Processed outputs" as inter {
-      state "col0 file" as filep0 #darkturquoise {
-         state "run 0" as colp00
-         state "run 1" as colp01
-         state "..." as colp0x
-         state "run j" as colp0j
-      }
-      state "col1 file" as filep1 #limegreen {
-         state "run 0" as colp10
-         state "run 1" as colp11
-         state "..." as colp1x
-         state "run j" as colp1j
-      }
-      state "colA file" as filep2 #green {
-         state "run 0" as colp20
-         state "run 1" as colp21
-         state "..." as colp2x
-         state "run j" as colp2j
-      }
-      state "colB file" as filep3 #lightseagreen {
-         state "run 0" as colp30
-         state "run 1" as colp31
-         state "..." as colp3x
-         state "run j" as colp3j
-      }
-   }
-
-   filep0 -[hidden]r-> filep1
-   filep2 -[hidden]r-> filep3
-   filep0 -[hidden]d-> filep2
-   filep1 -[hidden]d-> filep3
-
-   user --> run0
-   user --> run1
-   user --> runx
-   user --> runj
-
-   run0 --> inter
-   run1 --> inter
-   runx --> inter
-   runj --> inter
-
+.. figure:: /figures/data-collation.png
 
 Here, the user has specified that the ``col{0,1}`` in ``file0`` produced by all
 experimental runs should be combined into a single file. Thus the
@@ -152,7 +62,7 @@ file; all fields are required unless otherwise specified.
 .. code-block:: YAML
 
    # Contains a list of config items for intra-experiment collation (i.e.,
-   collation at the level of experimental runs).
+   # collation at the level of experimental runs).
    intra-exp:
 
      # Each config item has 'file' and 'cols' fields. 'file' specifies a

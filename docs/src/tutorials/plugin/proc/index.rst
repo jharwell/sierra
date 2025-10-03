@@ -1,14 +1,14 @@
-.. _tutorials/plugin/storage:
+.. _tutorials/plugin/proc:
 
-=============================
-Creating a New Storage Plugin
-=============================
+===================================================
+Creating a New Experiment Results Processing Plugin
+===================================================
 
-For the purposes of this tutorial, I will assume you are creating a new storage
-:term:`Plugin` ``infinite``, and the code for that plugin lives in
-``$HOME/git/plugins/storage/infinite``.
-
-Before beginning, see the :ref:`plugins/devguide` for a general overview of
+For the purposes of this tutorial, I will assume you are creating a new
+:term:`Plugin` ``archive`` for processing :term:`Raw Output Data` files to
+create some kind of unique archival format.  Before we begin, see
+:ref:`exp/stage3-dataflow` to get a brief overview of how data flows through the
+pipeline w.r.t. stage 3, and :ref:`plugins/devguide` for a general overview of
 creating a new plugin.
 
 To begin, create the following filesystem structure in
@@ -27,7 +27,7 @@ These files will be populated as you go through the rest of the tutorial.
    :ref:`plugins/devguide/cmdline`.
 
 #. Create the following filesystem structure in
-   ``$HOME/git/plugins/storage/infinite``:
+   ``$HOME/git/plugins/archive``:
 
    .. tabs::
 
@@ -36,4 +36,4 @@ These files will be populated as you go through the rest of the tutorial.
          .. include:: plugin.rst
 
 #. Put ``$HOME/git/plugins`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then
-   your plugin can be selected as ``--storage=storage.infinite``.
+   your plugin can be selected as ``--proc=plugins.archive``.

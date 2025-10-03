@@ -33,6 +33,9 @@ def proc_batch_exp(
     pathset: batchroot.PathSet,
     criteria: bc.XVarBatchCriteria,
 ) -> None:
+    """
+    Run all intra- and inter-exp models.
+    """
     models = _load_models(main_config, cmdopts, "intra")
 
     _logger.info("Running %d intra-experiment models...", len(models))

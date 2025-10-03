@@ -14,7 +14,6 @@ SIERRA.
    :maxdepth: 1
 
    pipeline.rst
-   cli-core.rst
    run-time-tree.rst
    subprograms.rst
    environment.rst

@@ -136,7 +136,9 @@ jobs:
       - name: Set beta release tag
         if: github.ref == 'refs/heads/devel'
         shell: bash
-        run: echo RELEASE_TAG=$(uv run pyproject-info project.version | tr -d '"').beta >> $GITHUB_ENV
+        run: |
+          uv sync --group ci
+          echo RELEASE_TAG=$(uv run pyproject-info project.version | tr -d '"').beta >> $GITHUB_ENV
 
       - name: Github beta release
         if: github.ref == 'refs/heads/devel'
@@ -150,7 +152,9 @@ jobs:
       - name: Set release tag
         if: github.ref == 'refs/heads/master'
         shell: bash
-        run: echo RELEASE_TAG=$(pyproject-info project.version | tr -d '"') >> $GITHUB_ENV
+        run: |
+          uv sync --group ci
+          echo RELEASE_TAG=$(uv run pyproject-info project.version | tr -d '"').beta >> $GITHUB_ENV
 
       - name: Github release
         if: github.ref == 'refs/heads/master'

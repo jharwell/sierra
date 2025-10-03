@@ -9,10 +9,7 @@ This the "main menu" of the SIERRA reference manual, which captures most, but
 not all of its documentation. For the full experience, look at the online docs
 at :xref:`SIERRA_DOCS`.
 
-Components
-==========
-
-The following manpages are available:
+The following sub-manpages are available/contained in this manpage:
 
 - :manpage:`sierra-cli` - The SIERRA command line interface.
 
@@ -31,8 +28,18 @@ The following manpages are available:
 - :manpage:`sierra-examples` - Examples of SIERRA usage via command line
   invocations demonstrating various features.
 
-- :manpage:`sierra-glossary` - Glossary of SIERRA terminology to make things
-  easier to understand.
+- :manpage:`sierra-glossary` - Glossary of SIERRA terminology.
+
+- :manpage:`sierra-api` - SIERRA API reference (best viewed in a browser).
+
+.. toctree::
+
+   sierra-cli.rst
+   sierra-usage.rst
+   sierra-plugins.rst
+   sierra-examples.rst
+   sierra-glossary.rst
+   sierra-api.rst
 
 Errors
 ======

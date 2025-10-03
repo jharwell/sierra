@@ -1,0 +1,93 @@
+@startuml
+
+skinparam defaultTextAlignment center
+
+!theme cyborg
+
+' Configuration
+skinparam DefaultFontSize 48
+skinparam DefaultFontColor #black
+skinparam stateBorderThickness 8
+skinparam stateFontStyle bold
+
+state "User\nSpecification" as user #lightcoral
+
+state "SCOPE 0" as SCOPE0 {
+   state "file0" as file00 #skyblue {
+      state "col0" as col000 #darkturquoise
+      state "col1" as col001 #limegreen
+   }
+   state "file 1" as file01  #skyblue {
+      state "colA" as col010 #green
+      state "colB" as col011 #lightseagreen
+   }
+   state "..." as file0x #skyblue
+}
+state "SCOPE 1" as SCOPE1 {
+   state "file0" as file10 #skyblue {
+      state "col0" as col100 #darkturquoise
+      state "col1" as col101 #limegreen
+   }
+   state "file 1" as file11  #skyblue {
+      state "colA" as col110 #green
+      state "colB" as col111 #lightseagreen
+   }
+   state "..." as file1x #skyblue
+}
+state "..." as SCOPEx #skyblue
+
+state "SCOPE j" as SCOPEj {
+   state "file0" as filej0 #skyblue {
+      state "col0" as colj00 #darkturquoise
+      state "col1" as colj01 #limegreen
+   }
+   state "file1" as filej1  #skyblue {
+      state "colA" as colj10 #green
+      state "colB" as colj11 #lightseagreen
+   }
+   state "..." as filejx #skyblue
+}
+
+state "Outputs" as inter {
+   state "col0 file" as filep0 #darkturquoise {
+      state "SCOPE 0" as colp00
+      state "SCOPE 1" as colp01
+      state "..." as colp0x
+      state "SCOPE j" as colp0j
+   }
+   state "col1 file" as filep1 #limegreen {
+      state "SCOPE 0" as colp10
+      state "SCOPE 1" as colp11
+      state "..." as colp1x
+      state "SCOPE j" as colp1j
+   }
+   state "colA file" as filep2 #green {
+      state "SCOPE 0" as colp20
+      state "SCOPE 1" as colp21
+      state "..." as colp2x
+      state "SCOPE j" as colp2j
+   }
+   state "colB file" as filep3 #lightseagreen {
+      state "SCOPE 0" as colp30
+      state "SCOPE 1" as colp31
+      state "..." as colp3x
+      state "SCOPE j" as colp3j
+   }
+}
+
+filep0 -[hidden]r-> filep1
+filep2 -[hidden]r-> filep3
+filep0 -[hidden]d-> filep2
+filep1 -[hidden]d-> filep3
+
+user --> SCOPE0
+user --> SCOPE1
+user --> SCOPEx
+user --> SCOPEj
+
+SCOPE0 --> inter
+SCOPE1 --> inter
+SCOPEx --> inter
+SCOPEj --> inter
+
+@enduml

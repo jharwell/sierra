@@ -4827,6 +4827,7 @@ dev = [
     { name = "sphinx-tabs" },
     { name = "sphinxcontrib-napoleon" },
     { name = "sphinxcontrib-plantuml" },
+    { name = "sphinxcontrib-video" },
     { name = "toml" },
     { name = "xenon" },
     { name = "xmldiff" },
@@ -4845,6 +4846,7 @@ docs = [
     { name = "sphinx-tabs" },
     { name = "sphinxcontrib-napoleon" },
     { name = "sphinxcontrib-plantuml" },
+    { name = "sphinxcontrib-video" },
     { name = "toml" },
 ]
 
@@ -4921,6 +4923,7 @@ dev = [
     { name = "sphinx-tabs" },
     { name = "sphinxcontrib-napoleon" },
     { name = "sphinxcontrib-plantuml" },
+    { name = "sphinxcontrib-video" },
     { name = "toml" },
     { name = "xenon" },
     { name = "xmldiff" },
@@ -4938,6 +4941,7 @@ docs = [
     { name = "sphinx-tabs" },
     { name = "sphinxcontrib-napoleon" },
     { name = "sphinxcontrib-plantuml" },
+    { name = "sphinxcontrib-video" },
     { name = "toml" },
 ]
 
@@ -5194,6 +5198,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/3b/44/6716b257b0aa6bfd51a1b31665d1c205fb12cb5ad56de752dfa15657de2f/sphinxcontrib_serializinghtml-2.0.0.tar.gz", hash = "sha256:e9d912827f872c029017a53f0ef2180b327c3f7fd23c87229f7a8e8b70031d4d", size = 16080, upload-time = "2024-07-29T01:10:09.332Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/52/a7/d2782e4e3f77c8450f727ba74a8f12756d5ba823d81b941f1b04da9d033a/sphinxcontrib_serializinghtml-2.0.0-py3-none-any.whl", hash = "sha256:6e2cb0eef194e10c27ec0023bfeb25badbbb5868244cf5bc5bdc04e4464bf331", size = 92072, upload-time = "2024-07-29T01:10:08.203Z" },
+]
+
+[[package]]
+name = "sphinxcontrib-video"
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "sphinx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/16/48/063e167b6e692bc84bbad74df30bcb27e460a7c620af7824729db8dba606/sphinxcontrib_video-0.4.1.tar.gz", hash = "sha256:75a033e71b7de124cc5902430b7ba818a1c6c377be6401d07e9f2329a95d5ca4", size = 11362, upload-time = "2025-02-19T17:06:13.632Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5d/8b/a0271fe65357860ccc52168181891e9fc9d354bfdc9be273e6a77b84f905/sphinxcontrib_video-0.4.1-py3-none-any.whl", hash = "sha256:d63ec68983dac36960557973281a616b5d9e68838369763313fc80533b1ad774", size = 10066, upload-time = "2025-02-19T17:06:12.561Z" },
 ]
 
 [[package]]

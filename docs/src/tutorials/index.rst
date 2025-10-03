@@ -36,3 +36,6 @@ needs.
    plugin/execenv/index.rst
    plugin/storage/index.rst
    plugin/expdef/index.rst
+   plugin/proc/index.rst
+   plugin/prod/index.rst
+   plugin/compare/index.rst

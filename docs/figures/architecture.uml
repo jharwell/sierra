@@ -99,7 +99,7 @@ state "4. Generate\nProducts\n" as stage4  {
    state " "  as plugin4 #white ##white {
    top to bottom direction
       state "Engine" as engine4 #lightcoral
-      state "Product\ngenerators" as products4 #lightcoral
+      state "Product\ngenerator\nset" as products4 #lightcoral
       state "Storage" as storage4 #lightcoral
 
       engine4 -[hidden]d-> products4
@@ -118,7 +118,7 @@ state "5. Compare\nProducts\n" as stage5  {
    }
    state " " as plugin5 #white ##white {
       state "Engine" as engine5 #lightcoral
-      state "Comparator" as comparator5 #lightcoral
+      state "Comparator set" as comparator5 #lightcoral
       state "Storage" as storage5 #lightcoral
 
      engine5 -[hidden]d-> comparator5
