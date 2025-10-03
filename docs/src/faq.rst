@@ -33,7 +33,7 @@ FAQ
 
    A: Run SIERRA just as you did before, but add ``--exec-resume``, which will
    tell SIERRA to pick up where it left off. See :ref:`usage/cli` for
-   the full cmdline reference.
+   more info.
 
 #. Q: How do I run a non-default set of pipeline stages, such as {3,4}?
 

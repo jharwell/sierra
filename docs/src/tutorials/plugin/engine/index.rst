@@ -14,6 +14,9 @@ For the purposes of this tutorial, I will assume you are creating a new
 :term:`Engine` :term:`Plugin` ``matrix``, and the code for that plugin lives
 in ``$HOME/git/plugins/engine/matrix``.
 
+Before beginning, see the :ref:`plugins/devguide` for a general overview of
+creating a new plugin.
+
 If you are creating a new engine, you have two options.
 
 #. Create a stand-alone engine, providing your own definitions for all of the
@@ -29,7 +32,8 @@ Before beginning, create the following filesystem structure in
 ``$HOME/git/plugins/engine/matrix``.
 
 - ``plugin.py`` - This file is required, and is where most of the bits for the
-  plugin will go.
+  plugin will go. You don't *have* to call it this; if you want to use a
+   different name, see :ref:`plugins/devguide/schemas` for options.
 
 - ``cmdline.py`` This file is optional. If your new engine doesn't need any
   additional cmdline arguments, you can skip it.
@@ -562,9 +566,6 @@ Finally--Connect to SIERRA!
 After going through all the sections above and creating your plugin, tell SIERRA
 about it by putting ``$HOME/git/plugins/`` on your :envvar:`SIERRA_PLUGIN_PATH`
 so that your engine can be selected via ``--engine=engine.matrix``.
-
-.. NOTE:: Engine names have the same constraints as python package names
-   (e.g., no dots, so ``matrix.foo`` is not a valid plugin name).
 
 .. NOTE:: If your engine supports/requires a new execution environment, head
           over to :ref:`tutorials/plugin/execenv`.

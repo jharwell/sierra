@@ -42,8 +42,8 @@ In SIERRA, there are 3 main faculties that are used to design experiments:
   (you can have any number, defining an N-D experimental space). Each variable
   can make pretty much any changes it wants to the experimental inputs, giving
   you *massive* flexibility on how to set up your experiments. Variables are
-  combined combinatorically by the sets changes they make to experimental inputs
-  define the N-D experimental space.
+  combined combinatorically by the sets of changes they make to experimental
+  inputs to define the N-D experimental space.
 
 
 Beyond this, the *dependent* variables are those which you select as important
@@ -54,13 +54,15 @@ in THIS column of THIS .csv file under the different conditions present
 throughout the different experiment, and I want the data to appear like THIS on
 THIS type of graph". SIERRA handles the rest!
 
+.. _exp/dataflow:
+
 Dataflow
 ========
 
 This section details SIERRA's builtin data model, as it pertains to data
 generated in :term:`Experimental Runs <Experimental Run>`. That is, once data is
 generated as a result of running things in stage 2, how it is processed and
-transformed into deliverables.
+transformed into deliverables in the later stages of the pipeline.
 
 .. toctree::
 

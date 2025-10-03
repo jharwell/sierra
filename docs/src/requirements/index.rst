@@ -109,10 +109,10 @@ General
    See also :ref:`philosophy`.
 
 #. The post-processing pipeline for experimental data generally conforms to
-   SIERRA's :ref:`datamodel <datamodel>`. If your code isn't conformant, never
-   fear! You can still use SIERRA--you will just have to define your own plugins
-   for :ref:`data processing <plugins/proc>` and :ref:`product generation
-   <plugins/prod>`.
+   SIERRA's :ref:`dataflow model <exp/dataflow>`. If your code isn't conformant,
+   never fear! You can still use SIERRA--you will just have to define your own
+   plugins for :ref:`data processing <plugins/proc>` and :ref:`product
+   generation <plugins/prod>`.
 
 .. _req/expef:
 
@@ -193,15 +193,3 @@ your code does not meet these assumptions, then you will need to make some
    formats are currently understood by SIERRA. If your output format is not in
    the list, never fear! It's easy to create a new storage plugin, see
    :ref:`plugins/storage`.
-
-.. _req/models:
-
-Model Framework Requirements
-============================
-
-When running models during stage 4 (see :ref:`tutorials/project/models`) SIERRA
-requires that:
-
-- All models return :class:`pandas.DataFrame` (if they don't do this natively,
-  then their python bindings will have to do it). This is enforced by the
-  interfaces models must implement.
