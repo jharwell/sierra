@@ -18,7 +18,7 @@ automatically for you!
 
    .. tab:: ``config/collate.yaml``
 
-      See :ref:`plugins/proc/collate/config/yaml`.
+      See :ref:`plugins/proc/collate`.
 
    .. tab:: ``config/controllers.yaml``
 

@@ -26,12 +26,9 @@ jobs:
     - name: Build package
       shell: bash
       run: |
-        uv sync --group dev
+        uv sync -p 3.10 --group dev
         cd docs
-        # In case the zenodo badge from the release we just created hasn't fully
-        # propagated yet. The docs successfully built several times to get to
-        # this point, so I think this is fine to do.
-        sphinx-build -b linkcheck . _build || true
+        uv run -p 3.10 sphinx-build -b linkcheck . _build
         cd ..
         uv build
 

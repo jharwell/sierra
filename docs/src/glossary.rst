@@ -14,8 +14,9 @@ works/is designed the way it is, and to help you find your way around.
    ARGoS
 
       A state-of-the-art multi-physics engine robotics simulator which SIERRA
-      supports as a :term:`Engine`. The ARGoS website is at
-      `https://www.argos-sim.info/index.php <https://www.argos-sim.info/index.php>`_.
+      supports as an :term:`Engine`. The ARGoS website is at
+      `https://www.argos-sim.info/index.php
+      <https://www.argos-sim.info/index.php>`_.
 
 
    Gazebo
@@ -61,7 +62,7 @@ works/is designed the way it is, and to help you find your way around.
                      each as needed.
 
       Specified via ``--project`` on the cmdline. See :ref:`usage/cli` for
-      documentation.
+      more info.
 
    Tick
 
@@ -159,12 +160,22 @@ works/is designed the way it is, and to help you find your way around.
    Data Collation
 
       The process of taking a set of user-specified columns from a set of files
-      and putting them into a single file. Comes in two flavors:
+      and putting them into a single file. Comes in three flavors:
 
       - Taking one column per :term:`Experiment` in the :term:`Batch
-        Experiment`.
+        Experiment`. This is *inter-experiment* collation, and happens during
+        stage 4. See :ref:`plugins/prod` for more info.
 
-      - Taking one column per :term:`Experimental Run` in an :term:`Experiment`.
+      - Taking one column per :term:`Experimental Run` in an
+        :term:`Experiment`. This is *intra-experiment* collation, and happens
+        during stage 3. See :ref:`plugins/proc/collate`.
+
+      - Taking one column per :term:`Batch Experiment` during stage 5. This is
+        *inter-batch* collation. See :ref:`plugins/compare` for more info.
+
+      This can be visualized as follows:
+
+      .. figure:: /figures/data-collation.png
 
 
       For use in product generation and running models. See
@@ -281,3 +292,6 @@ works/is designed the way it is, and to help you find your way around.
 
       - Project  plugins - Plugins which correspond to different
         :term:`Projects <Project>`.
+
+      - Comparator plugins - Plugins which correspond to different way to compare
+        generated :term:`Products <Product>` during stage 5.

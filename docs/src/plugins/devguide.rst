@@ -21,6 +21,9 @@ core. This is in line with the Principle of Least Surprise. If you need/want to
 override some aspect of functionality for a built-in SIERRA plugin, create a new
 plugin with a new name, and use that.
 
+Furthermore, plugin names have the same constraints as python package
+names. E.g., no dots, so ``foo.bar`` is not a valid plugin name.
+
 .. _plugins/devguide/schemas:
 
 Schemas

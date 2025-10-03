@@ -113,28 +113,23 @@ To use:
    stage 3 with ``--proc proc.imagize``.
 
 
-.. _plugins/prod/render/bc:
+Examples
+========
 
-Batch Criteria Rendering
-------------------------
+From the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`, capturing the
+arena overhead:
 
-For bivariate batch criteria, if inter-experiment heatmaps are generated, they
-can be stitched together to make videos of how the two variables of interest
-affect some aspect of behavior over time.
 
-To use:
+.. video:: figures/render-argos-overhead.mp4
+   :autoplay:
+   :loop:
+   :nocontrols:
+   :width: 50%
 
-- Install :program:`ffmpeg` so that it can installed/can be found by the shell
-  during stage 4.
+Or, multiple cameras + interpolation:
 
-- Pass ``--bc-rendering`` during stage 4 when inter-experiment heatmaps are
-  generated. SIERRA will take the generated PNG files previously created in
-  ``<batch_root>/graphs/collated`` and generate a set of a videos in
-  ``<batch_root>/videos/<heatmap name>`` for each heatmap.
-
-.. IMPORTANT::
-
-   Rendering the heatmaps does not happen automatically every time as part of
-   stage 4 because it can take a LONG time and is idempotent. You should only
-   pass ``--bc-rendering`` the first time you run stage 4 (unless you are
-   getting paid by the hour).
+.. video:: figures/render-argos-sw+interp.mp4
+   :autoplay:
+   :loop:
+   :nocontrols:
+   :width: 50%

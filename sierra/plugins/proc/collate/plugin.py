@@ -169,7 +169,8 @@ class ExpDataGatherer(gather.BaseGatherer):
         - Have a suffix which supported by the selected ``--storage`` plugin.
 
         - Have a name (last part of absolute path, including extension) which
-          matches a configured :term:`Performance File`.
+          matches a configured :term:`Product` in a YAML file. E.g., a graph
+          from the :ref:`plugins/prod/graphs` plugin
     """
 
     def __init__(self, *args, **kwargs) -> None:
