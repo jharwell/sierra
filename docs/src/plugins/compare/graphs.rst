@@ -79,7 +79,7 @@ Unless stated otherwise, all keys are required.
 
 .. literalinclude:: cc_and_sc.yaml
 
-.. _plugins/compare/graph/inter-scenario:
+.. _plugins/compare/graphs/inter-scenario:
 
 Inter-Scenario Comparison
 =========================

@@ -34,7 +34,7 @@ Basic Structure
        configuration/inputs from where you tell it to, but all outputs generated
        during at any pipeline stage will appear under here.
 
-     - `--sierra-root`. See :ref:`usage/cli` for more details.
+     - `--sierra-root`. See :ref:`usage/cli` for more info.
 
    * - Batchroot
 
@@ -230,4 +230,4 @@ The meaning of each directory is discussed below.
 
 .. NOTE:: The above tree assumes that the :ref:`parallelism paradigm
           <tutorials/plugin/engine/config>` is ``per-exp``; if you select a
-          different paradigm, then the structure will look different.
+          different paradigm, then the structure will look slightly different.

@@ -152,7 +152,7 @@ file; all fields are required unless otherwise specified.
 .. code-block:: YAML
 
    # Contains a list of config items for intra-experiment collation (i.e.,
-   collation at the level of experimental runs).
+   # collation at the level of experimental runs).
    intra-exp:
 
      # Each config item has 'file' and 'cols' fields. 'file' specifies a

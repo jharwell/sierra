@@ -193,15 +193,3 @@ your code does not meet these assumptions, then you will need to make some
    formats are currently understood by SIERRA. If your output format is not in
    the list, never fear! It's easy to create a new storage plugin, see
    :ref:`plugins/storage`.
-
-.. _req/models:
-
-Model Framework Requirements
-============================
-
-When running models during stage 4 (see :ref:`tutorials/project/models`) SIERRA
-requires that:
-
-- All models return :class:`pandas.DataFrame` (if they don't do this natively,
-  then their python bindings will have to do it). This is enforced by the
-  interfaces models must implement.

@@ -9,62 +9,103 @@
 Stage 4 Dataflow
 ================
 
-Intra-Experiment Products
+At the highest level we have the following in the context of pipeline stages
+3-5:
+
+.. plantuml::
+
+   skinparam defaultTextAlignment center
+
+   !theme cyborg
+   ' Configuration
+    left to right direction
+   skinparam DefaultFontSize 48
+   skinparam DefaultFontColor #black
+   skinparam stateFontStyle bold
+
+   state "3. Process\nExperiment\nOutputs" as stage3  {
+      state "Processed Experiment\nOutputs" as proc #lightcyan
+   }
+
+   state "4. Generate\nProducts\n" as stage4  {
+      state "Products" as products #lightcyan {
+         state "Intra-experiment Products" as intra_prod #lightcoral
+         state "Inter-experiment Products" as inter_prod #lightcoral
+      }
+    }
+    state "5. Compare\nProducts\n" as stage5 {
+       state "Inter-batch Products" as inter_batch  #lightcyan
+    }
+
+    stage3 --> stage4
+    stage4 --> stage5
+
+After :ref:`exp/stage3-dataflow`, data is in :term:`Processed Output Data` files
+and/or :term:`Collated Output Data` files. In stage 4, the :term:`Processed
+Output Data` files can be taken and directly converted to products along one of
+two paths using appropriate plugins:
+
+- Intra-experiment products such as graphs and videos, which are built from a
+  single processed output data file.
+
+- Inter-experiment products such as graphs, which are built by joining together
+  identical sections/slices of the processed output data files for a single
+  experiment.
+
+Like the stage3 dataflow, generally in stage4 things are file-level.
+
+Intra-Experiment Dataflow
 =========================
 
-After :ref:`dataflow/stage3/intra-proc`, data is in :term:`Processed Output
-Data` files and/or :term:`Collated Output Data` files. In stage 4, the
-:term:`Processed Output Data` files can be taken and directly converted to
-intra-experiment products such as graphs and videos with appropriate
-plugins.  Reminder: these files *cannot* be used as inputs into mathematical
-calculations for statistical reasons; the :term:`Collated Output Data` files
-should be used as into mathematical calculations if needed. Of course, like all
-things in SIERRA, if you don't need thus functionality, you can turn it off by
-deselecting the plugin.
+.. plantuml::
 
-As mentioned earlier, intra-experiment products are time-series based and
-generated from processed data *within* each experiment. For example, here is a
-very simple time-based graph generated from one of the sample projects
-containing estimates of swarm energy over time for one experiment. Note the
-confidence intervals automatically added by SIERRA (this can of course also be
-turned off via cmdline).
+   skinparam defaultTextAlignment center
 
-.. figure:: /figures/dataflow-intra-graph-ex0.png
-   :width: 300
+   !theme cyborg
+   ' Configuration
+    left to right direction
+   skinparam DefaultFontSize 48
+   skinparam DefaultFontColor #black
+   skinparam stateFontStyle bold
 
-.. IMPORTANT:: All configuration for the graph above was specified via YAML--no
-               python coding needed!
+   state "Processed Experiment\nOutputs" as proc #lightcyan {
+      state "file 0" as filep0 #darkturquoise
+      state "file 1" as filep1 #limegreen
+      state "..." as filepx #green
+      state "file k" as filepk #lightseagreen
 
-Inter-Experiment Products
+      filepx -[hidden]r-> filepk
+      filep1 -[hidden]r-> filepx
+      filep0 -[hidden]r-> filep1
+
+   }
+
+   state "Intra-Experiment\nProducts" as prod #lightcyan {
+      state "product 0" as productp0 #darkturquoise
+      state "product 1" as productp1 #limegreen
+      state "..." as productpx #green
+      state "product k" as productpk #lightseagreen
+
+      productpx -[hidden]r-> productpk
+      productp1 -[hidden]r-> productpx
+      productp0 -[hidden]r-> productp1
+   }
+
+   filep0 --> productp0
+   filep1 --> productp1
+   filepk --> productpk
+   filepx --> productpx
+
+There isn't really any dataflow for intra-experiment products, because there is
+a 1:1 mapping between the :term:`Processed Output Data` file and the
+:term:`Product`: all the data needed to generate a given product is within a
+single file.
+
+Inter-Experiment Dataflow
 =========================
 
-After :ref:`plugins/proc/dataflow`, data is in :term:`Collated Output Data`
-files and/or :term:`Collated Output Data` files. In stage 4, we can run
-:term:`Data Collation` on either of these types of files in order to further
-refine their contents, following an analogous process as outlined above, but at
-the level of a experiments within a batch rather than experimental runs within
-an experiment. Of course, like all things in SIERRA, if you don't need thus
-functionality, you can turn it off by deselecting the plugin.
-
-After collation, inter-experiment products can be generated directly. These
-products can be time-based, showing results from each experiment, like this:
-
-.. figure:: /figures/dataflow-inter-graph-ex0.png
-   :width: 300
-
-This is a very messy graph because of the width of confidence intervals, but it
-does illustrate SIERRA's ability to combine data across experiments in a batch.
-
-Or they can be summary graphs instead, based on some sort of summary
-measure. For example, an inter-experiment summary linegraph complement to the
-one above would look like this:
-
-.. figure:: /figures/dataflow-inter-graph-ex1.png
-   :width: 300
-
-The X-axis labels are populated based on the :term:`Batch Criteria`
-used. Obviously, this is for a *single* batch experiment; summary graphs for
-multiple batch experiments can be combined in stage 5.
-
-.. IMPORTANT:: All configuration for the graphs above were specified via
-               YAML--no python coding needed!
+Inter-experiment processing in stage4 is :term:`Data Collation`, but this time
+at the level of :term:`Experiments <Experiment>` rather the :term:`Experimental
+Runs <Experimental Run>`. See :ref:`plugins/proc/collate` for a good
+visualization. Once processed, products can be generate directly from the
+inter-experiment files with a 1:1 mapping as above.

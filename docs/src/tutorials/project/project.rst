@@ -115,10 +115,6 @@ Steps
      ``--batch-criteria`` and ``--scenario`` cmdline arguments. This directory
      is optional.
 
-   - ``models/`` - Theoretical models that you want to run against empirical
-     data from experimental runs (presumably to compare predictions with). This
-     directory is optional. See :doc:`models` for documentation.
-
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
      plugin/project. This file is required, because all projects have to define
      the ``--controller`` and ``--scenario`` arguments used by SIERRA. See

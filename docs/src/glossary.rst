@@ -60,8 +60,8 @@ works/is designed the way it is, and to help you find your way around.
                      separate projects with shared python code imported into
                      each as needed.
 
-      Specified via ``--project`` on the cmdline. See :ref:`usage/cli` for
-      documentation.
+      Specified via ``--project`` on the cmdline. See :ref:`usage/cli-cli` for
+      more info.
 
    Tick
 
@@ -162,9 +162,12 @@ works/is designed the way it is, and to help you find your way around.
       and putting them into a single file. Comes in two flavors:
 
       - Taking one column per :term:`Experiment` in the :term:`Batch
-        Experiment`.
+        Experiment`. This is *inter-experiment* collation, and happens during
+        stage 4. See :ref:`plugins/prod` for more info.
 
-      - Taking one column per :term:`Experimental Run` in an :term:`Experiment`.
+      - Taking one column per :term:`Experimental Run` in an
+        :term:`Experiment`. This is *intra-experiment* collation, and happens
+        during stage 3. See :ref:`plugins/proc/collate`.
 
 
       For use in product generation and running models. See
@@ -281,3 +284,6 @@ works/is designed the way it is, and to help you find your way around.
 
       - Project  plugins - Plugins which correspond to different
         :term:`Projects <Project>`.
+
+      - Comparator plugins - Plugins which correspond to different way to compare
+        generated :term:`Products <Product>` during stage 5.

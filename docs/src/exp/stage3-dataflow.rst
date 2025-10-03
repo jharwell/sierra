@@ -22,18 +22,18 @@ At the highest level we have the following in the context of pipeline stages
    left to right direction
    skinparam DefaultFontSize 48
    skinparam DefaultFontColor #black
-
+   skinparam stateFontStyle bold
 
    state "2. Execute\nExperiments\n" as stage2 {
-      state "Raw Output Data" as raw  #skyblue
+      state "Raw Output Data" as raw  #lightcyan
    }
 
    state "3. Process\nExperiment\nOutputs" as stage3  {
-      state "Processed Output Data" as proc #skyblue
+      state "Processed Output Data" as proc #lightcyan
    }
 
    state "4. Generate\nProducts\n" as stage4  {
-      state "Products " as products #skyblue
+      state "Products " as products #lightcyan
    }
 
    raw --> proc
@@ -41,24 +41,24 @@ At the highest level we have the following in the context of pipeline stages
 
 The :term:`Raw Output Data` files from experimental runs is processed during
 stage 3 into :term:`Processed Output Data` files. In stage 4 those processed
-files are turned into products of various sorts. All stage 4 products
-are sourced from a *single* data file, to encourage and enable reusability of
-code across projects. As such, it is the job of active stage 3 plugins to make
-sure all the data needed to generate a given product appear in the same
-file. The process of doing this is called :term:`Data Collation`.
+files are turned into :term:`products <Product>` of various sorts. All stage 4
+products are sourced from a *single* data file, to encourage and enable
+reusability of code across projects. As such, it is the job of active stage 3
+plugins to make sure all the data needed to generate a given product appear in
+the same file. The process of doing this is called :term:`Data Collation`.
 
 .. IMPORTANT:: Stage 3 operates at the level of :term:`Raw Output Data` files
    and :term:`Experimental Runs <Experimental Run>`, while stage 4 operates at
    the level of :term:`Collated Output Data` files, :term:`Processed Output
-   Data` files and :term:`Experiments <Experiment>`. Access at the level of
-   stage 3 in stage 4 is not possible by design.
+   Data` files and :term:`Experiments <Experiment>`.
 
-With that framing in mind, we can dive into the dataflow in detail.  Within
-stage 3 the first type of data processing that occurs is *intra*-experiment data
-processing. If we look at the data from stage 2 for a single :term:`Experimental
-Run` :math:`j` from :term:`Experiment` :math:`i` in :term:`Batch Experiment`
-which produces :math:`k` raw output files, we could represent the output data
-abstractly as:
+With that framing in mind, we can dive into the dataflow in detail.
+
+Within stage 3 the first type of data processing that occurs is
+*intra*-experiment data processing. If we look at the data from stage 2 for a
+single :term:`Experimental Run` :math:`j` from :term:`Experiment` :math:`i` in
+:term:`Batch Experiment` which produces :math:`k` raw output files, we could
+represent the output data abstractly as:
 
 .. plantuml::
 
@@ -70,6 +70,7 @@ abstractly as:
    left to right direction
    skinparam DefaultFontSize 24
    skinparam DefaultFontColor #black
+   skinparam stateFontStyle bold
 
 
    state "run j" as runj #skyblue {
@@ -84,10 +85,7 @@ abstractly as:
       filejx -[hidden]r-> filejk
    }
 
-Intra-Experiment Processing
-===========================
-
-For *intra*-experiment data processing, all of the per-run outputs are matched
+For intra-experiment data processing, all of the per-run outputs are matched
 across :term:`Experimental Runs <Experimental Run>` within an
 :term:`Experiment`, and processed in some way (e.g., :ref:`generating
 statistical distributions <plugins/proc/stat>`). Crucially, the processing is
@@ -108,6 +106,7 @@ This can be visualized as follows:
    skinparam DefaultFontSize 48
    skinparam DefaultFontColor #black
    skinparam stateBorderThickness 8
+   skinparam stateFontStyle bold
 
    state "run 0" as run0 #skyblue {
       state "file 0" as file00 #darkturquoise
@@ -169,5 +168,21 @@ This can be visualized as follows:
    runj -d-> intra
 
 
+An important point here is that within the SIERRA builtin stage3 processing
+plugins not all raw output files get processed in this manner, only those which
+are going to be used during stage 4 to produce something. Generally this means
+that there is a ``.yaml`` file in a :term:`Project` somewhere which has a list
+of :term:`Products <Product>` which a user wants to generate. This list is
+matched against the raw output files, and only matching files are
+processed. Thus, SIERRA is very efficient in its data processing.
+
 .. TIP:: :term:`Processed Output Data` files can be thought of as time-series
          data at the level of :term:`Experimental Runs <Experimental Run>`.
+
+
+
+Some examples of plugins performing this reduce operation:
+
+- :ref:`plugins/proc/collate`
+
+- :ref:`plugins/proc/stat`

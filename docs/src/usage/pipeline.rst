@@ -156,10 +156,6 @@ automatically (independent of the engine/execution environment!), thus greatly
 simplifying reproduction of previous results if you need to tweak a given graph
 (for example).
 
-SIERRA also has a rich model framework allowing you to run arbitrary models,
-generate data, and plot it on the same figure as empirical results,
-automatically. See :ref:`tutorials/project/models` for details.
-
 The following plugins are active in this stage:
 
 .. list-table::
@@ -233,7 +229,7 @@ The following plugins are active in this stage:
                   below will eventually be replaced by a proper plugin.
 
         - Different agent control algorithms which have all been run in the same
-          ``--scenario``. See :ref:`plugins/compare/graphs/intra-scenario` for
+          ``--scenario``. See :ref:`plugins/compare/graphs/inter-controller` for
           details.
 
         - A single ``--controller`` across multiple scenarios. See

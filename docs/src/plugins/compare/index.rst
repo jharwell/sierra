@@ -9,8 +9,8 @@
 Comparison Plugins
 ==================
 
-SIERRA supports a number of :term:`comparators <Comparator>`, all of which can
-be used to compare products/deliverables generated in stage 4 in some way.
+SIERRA supports a number of comparator plugins, all of which can be used to
+compare products/deliverables generated in stage 4 in some way.
 
 Before reading this page, take a look at :ref:`exp/design`, which details how
 SIERRA experiments are architected at a high-level; these plugins tie in heavily
