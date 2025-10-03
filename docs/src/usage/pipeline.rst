@@ -5,9 +5,8 @@ SIERRA Pipeline
 ===============
 
 This page provides a more detailed overview of its pipeline, expanding on the
-architectural diagram shown :ref:`here <main>`, as well as deep-dives for what
-happens in each stage. For reference, here is the high-level view of the
-pipeline:
+architectural diagram, as well as deep-dives for what happens in each stage. For
+reference, here is the high-level view of the pipeline:
 
 .. figure:: /figures/architecture.png
 
@@ -60,8 +59,6 @@ The following plugins are active in this stage:
 
 See also:
 
-- :ref:`plugins`
-
 - :ref:`usage/cli`
 
 Part of default pipeline. For a deep dive into design and functionality, see
@@ -105,10 +102,6 @@ The following plugins are active in this stage:
    * - :ref:`Execution environment <plugins/execenv>`
 
      - Executing shell commands to run the experiments generated during stage 2.
-
-See also:
-
-- :ref:`plugins`
 
 Part of default pipeline.
 
@@ -156,10 +149,6 @@ automatically (independent of the engine/execution environment!), thus greatly
 simplifying reproduction of previous results if you need to tweak a given graph
 (for example).
 
-SIERRA also has a rich model framework allowing you to run arbitrary models,
-generate data, and plot it on the same figure as empirical results,
-automatically. See :ref:`tutorials/project/models` for details.
-
 The following plugins are active in this stage:
 
 .. list-table::
@@ -179,22 +168,17 @@ The following plugins are active in this stage:
 
      -
 
-        .. TODO:: The hard-corded product generation options below will
-                  eventually be replaced by a proper set of plugins. Right now
-                  it is plugin-ish, in the since there are various hooks to
-                  extend/customize.
-
         - Camera-ready linegraphs, heatmaps, 3D surfaces, and scatterplots
-          directly from averaged/statistically processed experimental data using
-          matplotlib.
+          directly from processed experimental data using `matplotlib
+          <https://matplotlib.org>`_ and/or `bokeh <https://bokeh.org>`_.
 
         - Videos built from frames captured during simulation or real robot
           operation.
 
         - Videos built from captured experimental output .csv files.
 
-        - Processing raw experimental outputs into a form suitable for
-          generating products in stage 4.
+        - Processing experimental outputs further into a form suitable for
+          generating products in stage 5.
 
 For some examples, see the "Generating Products" section of
 :xref:`2022-aamas-demo`. See :ref:`plugins/prod/render` for details about
@@ -202,11 +186,11 @@ rendering capabilities.
 
 Part of default pipeline.
 
-Stage 5: Graph Generation for Controller/Scenario Comparison
-============================================================
+Stage 5: Product Comparison
+===========================
 
-SIERRA can perform additional graph generation *AFTER* graph generation for
-batch experiments has been run. This is extremely useful for generating graphs
+SIERRA can perform additional product generation *AFTER* graph generation for
+batch experiments has been run. This is extremely useful for generating things
 which can be dropped immediately into academic papers/customer reports without
 modification.
 
@@ -228,12 +212,8 @@ The following plugins are active in this stage:
    * - :ref:`Comparative Generators <plugins/compare>`
 
      -
-
-        .. TODO:: The hard-corded options for comparative product generation
-                  below will eventually be replaced by a proper plugin.
-
         - Different agent control algorithms which have all been run in the same
-          ``--scenario``. See :ref:`plugins/compare/graphs/intra-scenario` for
+          ``--scenario``. See :ref:`plugins/compare/graphs/inter-controller` for
           details.
 
         - A single ``--controller`` across multiple scenarios. See

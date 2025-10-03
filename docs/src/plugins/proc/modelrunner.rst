@@ -231,7 +231,7 @@ than requiring 1 model per ``.py`` file.
    plugin path can fix this in the unlikely event that it happens.
 
 #. Add any necessary model input configuration according to
-   :ref:`plugins/proc/collate/config`.
+   :ref:`plugins/proc/collate`.
 
 #. Enable your model by adding it to ``<project>/config/models.yaml``, as shown
    in the example above.

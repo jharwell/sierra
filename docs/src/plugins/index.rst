@@ -33,10 +33,10 @@ supports several different plugin types:
   <plugins/compare>`. This could mean combining multiple graphs into a single
   graph, for example.
 
-To use any of the :ref:`plugins/builtin` in SIERRA you don't need to do anything
-but select them when invoking SIERRA via the appropriate cmdline switch. Details
-on configuration, capabilities, etc. is below for each category of plugins
-SIERRA supports.
+To use any of the builtin in SIERRA you don't need to do anything but select
+them when invoking SIERRA via the appropriate cmdline switch. Details on
+configuration, capabilities, etc. is below for each category of plugins SIERRA
+supports.
 
 .. toctree::
    :maxdepth: 1

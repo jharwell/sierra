@@ -117,6 +117,8 @@ class BaseComparator:
         """
         if self.cmdopts["across"] == "controllers":
             self._check_comparability_cc()
+        elif self.cmdopts["across"] == "scenarios":
+            self._check_comparability_sc()
 
     def _check_comparability_cc(self) -> None:
         """
@@ -171,6 +173,7 @@ class BaseComparator:
             for candidate2 in scenario2.iterdir():
                 # Get the dirname of the batch experiment path
                 leaf2 = batchroot.ExpRootLeaf.from_name(candidate2.name)
+
                 opts2 = batchroot.from_exp(
                     sierra_root=self.cmdopts["sierra_root"],
                     project=self.cmdopts["project"],
@@ -189,13 +192,100 @@ class BaseComparator:
                     )
                     return
 
-        # Check that both controllers were run on the same set
-        # of batch criteria
-        if leaf1.bc != leaf2.bc:
-            self.logger.warning(
-                "Cannot compare %s with %s: bc mismatch (%s != %s)",
-                c1,
-                c2,
-                leaf1.bc,
-                leaf2.bc,
+                # Check that both controllers were run on the same set
+                # of batch criteria
+                if leaf1.bc != leaf2.bc:
+                    self.logger.warning(
+                        "Cannot compare %s with %s: bc mismatch (%s != %s)",
+                        c1,
+                        c2,
+                        leaf1.bc,
+                        leaf2.bc,
+                    )
+
+    def _check_comparability_sc(self) -> None:
+        """
+        Check that a set of scenarios can be compared.
+
+        To be comparable, scenarios must have been run using the same controller
+        with the same batch criteria.
+        """
+        controller = self.cmdopts["controller"]
+
+        # Check all scenarios
+        for s1 in self.things:
+            # Check all batch criteria experiments which have used the specified
+            # controller.
+            for candidate in (self.project_root / controller / s1).iterdir():
+                # Get the dirname of the batch experiment path
+                leaf1 = batchroot.ExpRootLeaf.from_name(candidate.name)
+                opts1 = batchroot.from_exp(
+                    sierra_root=self.cmdopts["sierra_root"],
+                    project=self.cmdopts["project"],
+                    batch_leaf=leaf1,
+                    controller=controller,
+                    scenario=s1,
+                )
+                interexp_root1 = opts1.stat_interexp_root
+
+                # Stage 5 only operates on stage4 collated data, so if that
+                # doesn't exist, we can't do anything.
+                if not interexp_root1.exists():
+                    self.logger.debug(
+                        "%s cannot be compared in/across for %s: %s does not exist",
+                        controller,
+                        s1,
+                        interexp_root1,
+                    )
+                    continue
+
+                for s2 in self.things:
+                    self._check_comparability_sc_pairwise(s1, controller, leaf1, s2)
+
+    def _check_comparability_sc_pairwise(
+        self, s1: str, controller: str, leaf1: batchroot.ExpRootLeaf, s2: str
+    ) -> None:
+        """
+        Check if two scenarios can be compared.
+
+        Given a candidate batch experiment for one of them, check that the other
+        one executed the same batch experiment using the same controller.
+        """
+        if s1 == s2:
+            return
+
+        for candidate2 in (self.project_root / controller / s2).iterdir():
+            # Get the dirname of the batch experiment path
+            leaf2 = batchroot.ExpRootLeaf.from_name(candidate2.name)
+
+            opts2 = batchroot.from_exp(
+                sierra_root=self.cmdopts["sierra_root"],
+                project=self.cmdopts["project"],
+                batch_leaf=leaf2,
+                controller=controller,
+                scenario=s2,
             )
+            interexp_root2 = opts2.stat_interexp_root
+
+            if not interexp_root2.exists():
+                self.logger.debug(
+                    "%s cannot be compared in/across for %s: %s does not exist",
+                    leaf1.scenario,
+                    s2,
+                    interexp_root2,
+                )
+                return
+
+            # Check that both controllers were run on the same set
+            # of batch criteria
+            if leaf1.bc != leaf2.bc:
+                self.logger.warning(
+                    "Cannot compare %s with %s: bc mismatch (%s != %s)",
+                    s1,
+                    s2,
+                    leaf1.bc,
+                    leaf2.bc,
+                )
+
+
+__all__ = ["BaseComparator"]

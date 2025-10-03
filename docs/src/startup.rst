@@ -82,8 +82,8 @@ SIERRA! The steps to do so are:
    doesn't change).  If you don't see something suitable, you can
    :ref:`Define A New Batch Criteria <tutorials/project/new-bc>`.
 
-#. Look at the :ref:`usage/cli` to understand how to invoke SIERRA in
-   general.
+#. Look at the :ref:`usage/cli` common cmdline options applicable to all
+   plugins in a given stage.
 
 #. Look at the :ref:`usage/examples` to get ideas on how to craft your
    own SIERRA invocation. If you get stuck, look at :ref:`faq` for
@@ -127,10 +127,6 @@ SIERRA! The steps to do so are:
    command line options, it will refuse to do anything. For less obviously
    incorrect combinations, it will (hopefully) stop when an assert fails before
    doing anything substantial.
-
-   Full documentation of all command line options it accepts is in
-   :ref:`usage/cli`, and there are many useful options that SIERRA
-   accepts, so skimming the CLI docs is **very** worthwhile.
 
 #. Setup the cmdline environment you are going to invoke SIERRA in:
 

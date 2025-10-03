@@ -112,6 +112,12 @@ def generate(
     if "conf95" in stats and "stddev" in stat_dfs:
         plot = _plot_stats_stddev(dataset, stat_dfs["stddev"])
         plot *= _plot_selected_cols(dataset, model, legend, points, backend)
+    elif "bw" in stats and all(k in stat_dfs.keys() for k in config.kStats["bw"].exts):
+        # 2025-10-06 [JRH]: This is a limitation of hv (I think). Manually
+        # specifying bw plots around each datapoint on a graph can easily exceed
+        # the max # of things that can be in a single overlay.
+        _logger.warning("bw statistics not implemented for stacked_line graphs")
+        plot = _plot_selected_cols(dataset, model, legend, points, backend)
     else:
         # Plot specified columns from dataframe.
         plot = _plot_selected_cols(dataset, model, legend, points, backend)
@@ -249,7 +255,7 @@ def _plot_selected_cols(
 
 
 def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOverlay:
-    """Plot the stddev for a all columns in the dataset."""
+    """Plot the stddev for all columns in the dataset."""
     stddevs = pd.DataFrame()
     for c in dataset.vdims:
         stddevs[f"{c}_stddev_l"] = dataset[c] - 2 * stddev_df[c.name].abs()
@@ -267,25 +273,6 @@ def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOve
                 alpha=0.5,
             )
             for vdim in dataset.vdims
-        ]
-    )
-
-
-def _plot_stats_bw(
-    dataset: hv.Dataset, stat_dfs: tp.Dict[str, pd.DataFrame]
-) -> hv.NdOverlay:
-    """Plot the bw plots for a all columns in the dataset."""
-    return hv.Overlay(
-        [
-            hv.BoxWhisker(dataset.data, dataset.kdims[0], v).opts(
-                fig_size=200,
-                box_fill_color="skyblue",
-                box_line_color="navy",
-                title="Box and Whisker Plot by Category",
-                xlabel="Category",
-                ylabel="Value",
-            )
-            for v in dataset.vdims
         ]
     )
 

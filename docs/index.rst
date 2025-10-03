@@ -34,7 +34,7 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 
    src/exp/index.rst
    src/plugins/index.rst
-
+   src/usage/cli.rst
    src/usage/examples.rst
    src/usage/index.rst
    src/tutorials/index.rst

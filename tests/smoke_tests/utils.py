@@ -528,6 +528,7 @@ def stage5_univar_check_cc_outputs(session, engine: str):
 
         for path in csvs:
             n_cols = len(next(csv.reader(open(path))))
+            # +1 for the index column
             assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_lines}"
 
     else:
@@ -553,6 +554,7 @@ def stage5_univar_check_sc_outputs(session, engine: str):
 
         for path in csvs:
             n_cols = len(next(csv.reader(open(path))))
+            # +1 for the index column
             assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_lines}"
 
     else:

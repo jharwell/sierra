@@ -41,14 +41,15 @@ needs_sphinx = "6.0.0"
 # ones.
 extensions = [
     "sphinx.ext.doctest",
-    "autoapi.extension",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
+    "autoapi.extension",
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.graphviz",
+    "sphinxcontrib.video",
     "sphinx_tabs.tabs",
     "sphinx.ext.inheritance_diagram",
     "sphinxarg.ext",
@@ -68,13 +69,10 @@ templates_path = ["_templates"]
 source_suffix = [".rst", ".md"]
 # source_suffix = '.rst'
 
-# The master toctree document.
-master_doc = "index"
-
 # General information about the project.
 project = "SIERRA"
-today = datetime.date.today()
-copyright = f"{today.year}"
+today = str(datetime.date.today())
+copyright = f"{datetime.date.today().year}"
 author = "John Harwell"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -95,6 +93,8 @@ language = "en"
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "flycheck"]
 
+root_doc = "index"
+
 if not os.getenv("READTHEDOCS"):
     if "html" in sys.argv:
         builtins.__sphinx_build_html__ = True
@@ -104,13 +104,15 @@ if not os.getenv("READTHEDOCS"):
         exclude_patterns.extend(
             [
                 "src/tutorials",
-                "src/api.rst",
                 "src/contributing.rst",
                 "src/quickstart.rst",
                 "src/faq.rst",
                 "src/usage/index.rst",
+                "html.rst",
             ]
         )
+        root_doc = "man/sierra"
+
     elif "linkcheck" in sys.argv:
         pass
     else:
@@ -305,7 +307,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "SIERRA.tex", "Sierra Documentation", "John Harwell", "manual"),
+    (root_doc, "SIERRA.tex", "Sierra Documentation", "John Harwell", "manual"),
 ]
 
 
@@ -354,6 +356,20 @@ man_pages = [
         7,
     ),
     (
+        "man/sierra-api",
+        "sierra-api",
+        ("SIERRA API reference."),
+        [author],
+        7,
+    ),
+    (
+        "man/sierra-tutorials",
+        "sierra-tutorials",
+        ("SIERRA tutorials."),
+        [author],
+        7,
+    ),
+    (
         "man/sierra",
         "sierra",
         "reSearch pIpEline for Reproducability, Reusability, and Automation.",
@@ -369,7 +385,7 @@ man_show_urls = True
 #  dir menu entry, description, category)
 texinfo_documents = [
     (
-        master_doc,
+        root_doc,
         "Sierra",
         "Sierra Documentation",
         author,

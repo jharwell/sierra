@@ -10,7 +10,6 @@ Engines
    /src/plugins/engine/argos/index.rst
    /src/plugins/engine/ros1gazebo/index.rst
    /src/plugins/engine/ros1robot/index.rst
-   /src/plugins/engine/argos/index.rst
 
 Execution Environments
 ======================
@@ -40,6 +39,13 @@ Product Generation
 .. toctree::
 
    /src/plugins/prod/index.rst
+
+Comparison
+==========
+
+.. toctree::
+
+   /src/plugins/compare/index.rst
 
 Storage
 =======
