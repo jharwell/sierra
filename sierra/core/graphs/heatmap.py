@@ -199,22 +199,6 @@ def generate2(
     output_fpath = pathset.output_root / "HM-{0}.{1}".format(
         output_stem, config.kStaticImageType
     )
-    # @staticmethod
-    # def set_graph_size(df: pd.DataFrame, fig) -> None:
-    #     """
-    #     Set graph X,Y size based on dataframe dimensions.
-    #     """
-    #     if len(df.index) > len(df.columns):
-    #         xsize = config.kGraphBaseSize
-    #         ysize = xsize * float(len(df.index)) / float(len(df.columns))
-    #     else:
-    #         ysize = config.kGraphBaseSize
-    #         xsize = ysize * float(len(df.columns)) / float(len(df.index))
-
-    #     fig.set_size_inches(xsize, ysize)
-
-    # kCardinality = 2
-
     # Optional arguments
     if large_text:
         text_size = config.kGraphs["text_size_large"]

@@ -36,22 +36,19 @@ turned off via cmdline).
 Inter-Experiment Products
 =========================
 
-After :ref:`plugins/proc/dataflow`, data is in :term:`Collated Output Data`
-files and/or :term:`Collated Output Data` files. In stage 4, we can run
-:term:`Data Collation` on either of these types of files in order to further
-refine their contents, following an analogous process as outlined above, but at
-the level of a experiments within a batch rather than experimental runs within
-an experiment. Of course, like all things in SIERRA, if you don't need thus
-functionality, you can turn it off by deselecting the plugin.
-
-After collation, inter-experiment products can be generated directly. These
-products can be time-based, showing results from each experiment, like this:
+After stage 3, some data is in :term:`Processed Output Data` files. In stage 4,
+we can run :term:`Data Collation` on either of these types of files in order to
+further refine their contents but at the level of a experiments within a batch
+rather than experimental runs within an experiment.  After collation,
+inter-experiment products can be generated directly. These products can be
+time-based, showing results from each experiment, like this:
 
 .. figure:: /figures/dataflow-inter-graph-ex0.png
    :width: 300
 
-This is a very messy graph because of the width of confidence intervals, but it
-does illustrate SIERRA's ability to combine data across experiments in a batch.
+   This is a very messy graph because of the width of confidence intervals, but
+   it does illustrate SIERRA's ability to combine data across experiments in a
+   batch.
 
 Or they can be summary graphs instead, based on some sort of summary
 measure. For example, an inter-experiment summary linegraph complement to the

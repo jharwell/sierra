@@ -106,6 +106,15 @@ Inter-Experiment Dataflow
 
 Inter-experiment processing in stage4 is :term:`Data Collation`, but this time
 at the level of :term:`Experiments <Experiment>` rather the :term:`Experimental
-Runs <Experimental Run>`. See :ref:`plugins/proc/collate` for a good
-visualization. Once processed, products can be generate directly from the
-inter-experiment files with a 1:1 mapping as above.
+Runs <Experimental Run>`:
+
+This process in stage 3 can be visualized as follows for a single
+:term:`Batch Experiment`, using :term:`Experiment` as SCOPE. Input files in this case
+are :term:`Processed Output Data`, and output files are :term:`Collated Output
+Data` at the experiment level. Each output file is a summary of a batch
+experiment along some axis of interest.
+
+.. figure:: /figures/data-collation.png
+
+Once processed, products can be generate directly from the inter-experiment
+files with a 1:1 mapping as above.

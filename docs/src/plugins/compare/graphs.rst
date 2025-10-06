@@ -10,15 +10,12 @@ Graph Comparison
 This page has the following sections:
 
 - `Inter-Controller Comparison`_: How to generate comparison graphs for a set of
-  controllers which have all been run on the *same* scenario and :term:`Batch Criteria`.
+  controllers which have all been run on a *single* scenario and :term:`Batch
+  Criteria`.
 
-- `Inter-Scenario Comparison`_: How to generate comparison graphs for a single
-  controller which has been run across *multiple* scenarios using the same
-  :term:`Batch Criteria`.
-
-- `Inter-Batch Comparison`_: How to generate comparison graphs for multiple
-  :term:`Batch Criteria` which have been run on the *same* scenario using the
-  same controller.
+- `Inter-Scenario Comparison`_: How to generate comparison graphs for a *set* of
+  scenarios which have all been run using a *single* controller and :term:`Batch
+  Criteria`.
 
 All configuration for this plugin is in ``<project>/config/graphs.yaml``
 file.
@@ -69,8 +66,7 @@ it runs::
 each scenario for which ``d0.CRW`` and ``d0.DPO`` were run (scenarios are
 computed by examining the directory tree for stages 1-4). Controller names are
 arbitrary for the purposes of stage 5 and entirely depend on the
-project). ``d0.CRW+d0.DPO-cc-csvs/`` are the :term:`Inter-Batch Data` files used
-to create the graphs.
+project). ``d0.CRW+d0.DPO-cc-csvs/`` are the files used to create the graphs.
 
 Graph YAML Config
 -----------------

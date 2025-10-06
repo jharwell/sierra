@@ -54,6 +54,9 @@ the same file. The process of doing this is called :term:`Data Collation`.
 
 With that framing in mind, we can dive into the dataflow in detail.
 
+Intra-Experiment Dataflow
+=========================
+
 Within stage 3 the first type of data processing that occurs is
 *intra*-experiment data processing. If we look at the data from stage 2 for a
 single :term:`Experimental Run` :math:`j` from :term:`Experiment` :math:`i` in
@@ -167,14 +170,30 @@ This can be visualized as follows:
    runx -d-> intra
    runj -d-> intra
 
+Some examples of plugins performing this reduce operation:
+
+- :ref:`plugins/proc/stat`
+
+Inter-Experiment Dataflow
+=========================
+
+Within stage 3 the second type of data processing that occurs is
+*inter*-experiment data processing. If we look at the data from stage 2 for a
+single :term:`Experimental Run` :math:`j` from :term:`Experiment` :math:`i` in
+:term:`Batch Experiment` which produces :math:`k` raw output files, we could
+represent the output data abstractly as follows, using :term:`Experimental Run`
+as SCOPE:
+
+.. figure:: /figures/data-collation.png
 
 An important point here is that within the SIERRA builtin stage3 processing
 plugins not all raw output files get processed in this manner, only those which
-are going to be used during stage 4 to produce something. Generally this means
-that there is a ``.yaml`` file in a :term:`Project` somewhere which has a list
-of :term:`Products <Product>` which a user wants to generate. This list is
-matched against the raw output files, and only matching files are
-processed. Thus, SIERRA is very efficient in its data processing.
+are going to be used during stage 4 to produce something via a
+user-specification. Generally this means that there is a ``.yaml`` file in a
+:term:`Project` somewhere which has a list of :term:`Products <Product>` which a
+user wants to generate. This list is matched against the raw output files, and
+only matching files are processed. Thus, SIERRA is very efficient in its data
+processing.
 
 .. TIP:: :term:`Processed Output Data` files can be thought of as time-series
          data at the level of :term:`Experimental Runs <Experimental Run>`.
@@ -184,5 +203,3 @@ processed. Thus, SIERRA is very efficient in its data processing.
 Some examples of plugins performing this reduce operation:
 
 - :ref:`plugins/proc/collate`
-
-- :ref:`plugins/proc/stat`

@@ -5,9 +5,8 @@ SIERRA Pipeline
 ===============
 
 This page provides a more detailed overview of its pipeline, expanding on the
-architectural diagram shown :ref:`here <main>`, as well as deep-dives for what
-happens in each stage. For reference, here is the high-level view of the
-pipeline:
+architectural diagram, as well as deep-dives for what happens in each stage. For
+reference, here is the high-level view of the pipeline:
 
 .. figure:: /figures/architecture.png
 

@@ -1,1 +1,2 @@
-.. include:: /src/usage/cli.rst
+.. toctree::
+   /src/usage/cli.rst

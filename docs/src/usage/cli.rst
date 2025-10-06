@@ -1,8 +1,8 @@
 .. _usage/cli:
 
-======================
-Command Line Reference
-======================
+==================================
+SIERRA Core Command Line Reference
+==================================
 
 If an option is given more than once, the last such occurrence is
 used. If both the shortform and longform variants of an option are passed with
@@ -12,8 +12,6 @@ See also :manpage:`sierra-examples`.
 
 SIERRA Core
 ===========
-
-.. include:: /src/usage/cli-core.rst
 
 These options apply to all :term:`Experiments <Experiment>`, :term:`Engines
 <Engine>`, :term:`Batch Criteria`, etc.

@@ -136,7 +136,8 @@ Required Steps
 Optional Steps
 ==============
 
-#. Define the :func:`sierra.core.batch_criteria.BatchCriteria.arena_dims()`
+#. Override the
+   :func:`sierra.core.variables.batch_criteria.BaseBatchCriteria.arena_dims()`
    function. This will enable SIERRA to determine the size of the experiment
    space from batch criteria, instead of the cmdline.
 
