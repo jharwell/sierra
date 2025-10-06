@@ -49,6 +49,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.graphviz",
+    "sphinxcontrib.video",
     "sphinx_tabs.tabs",
     "sphinx.ext.inheritance_diagram",
     "sphinxarg.ext",
@@ -96,7 +97,7 @@ if not os.getenv("READTHEDOCS"):
     if "html" in sys.argv:
         builtins.__sphinx_build_html__ = True
         exclude_patterns = ["man/*.rst"]
-        root_doc = "html"
+        root_doc = "index"
     elif "man" in sys.argv:
         builtins.__sphinx_build_man__ = True
         exclude_patterns.extend(

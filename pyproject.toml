@@ -96,6 +96,7 @@ docs = [
     "sphinx-argparse==0.4.0",
     "sphinx-tabs",
     "sphinxcontrib-napoleon",
+    "sphinxcontrib-video",
     "psutil",
     "sphinx-last-updated-by-git",
     "graphviz",

@@ -109,10 +109,10 @@ General
    See also :ref:`philosophy`.
 
 #. The post-processing pipeline for experimental data generally conforms to
-   SIERRA's :ref:`datamodel <datamodel>`. If your code isn't conformant, never
-   fear! You can still use SIERRA--you will just have to define your own plugins
-   for :ref:`data processing <plugins/proc>` and :ref:`product generation
-   <plugins/prod>`.
+   SIERRA's :ref:`dataflow model <exp/dataflow>`. If your code isn't conformant,
+   never fear! You can still use SIERRA--you will just have to define your own
+   plugins for :ref:`data processing <plugins/proc>` and :ref:`product
+   generation <plugins/prod>`.
 
 .. _req/expef:
 

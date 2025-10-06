@@ -9,7 +9,7 @@ Runtime Directory Tree
    {1,2}, it will abort processing in order to preserve data integrity; this is
    not necessary to do for stages {3,4,5}, because those stages can be recreated
    using the results of stages {1,2}.  This behavior can be overwridden with
-   ``--exp-overwrite``, in which case the use assumes full responsibility for
+   ``--exp-overwrite``, in which case the user assumes full responsibility for
    ensuring the integrity of the experiment.
 
    Always better to check the arguments before hitting ENTER. Measure twice, cut
@@ -107,39 +107,40 @@ it runs::
   $HOME/exp
   |-- fordyca
       |-- CATEGORY.my_controller
-          |-- mytemplate-SS.12x6
-              |-- exp-inputs
-                 |-- c1-exp0
-                     commands.txt
-                     my-template_run0.argos
-                     my-template_run1.argos
-                     my-template_run2.argos
-                     my-template_run3.argos
-                 |-- c1-exp1
-                     commands.txt
-                     my-template_run0.argos
-                     my-template_run1.argos
-                     my-template_run2.argos
-                     my-template_run3.argos
-                 |-- c1-exp2
-                     ...
-                 |-- c1-exp3
-                     ...
-              |-- exp-outputs
-                 |-- c1-exp0
-                     my-template_run0_output/
-                     my-template_run1_output/
-                     my-template_run2_output/
-                     my-template_run3_output/
-                 |-- c1-exp1
-                     commands.txt
-                     my-template_run0_output/
-                     my-template_run1_output/
-                     my-template_run2_output/
-                     my-template_run3_output/
-                 |-- c1-exp2
-                     ...
-                 |-- c1-exp3
+          |-- SS.12x6
+             |-- mytemplate-population_size.Log8
+                 |-- exp-inputs
+                    |-- c1-exp0
+                        commands.txt
+                        my-template_run0.argos
+                        my-template_run1.argos
+                        my-template_run2.argos
+                        my-template_run3.argos
+                    |-- c1-exp1
+                        commands.txt
+                        my-template_run0.argos
+                        my-template_run1.argos
+                        my-template_run2.argos
+                        my-template_run3.argos
+                    |-- c1-exp2
+                        ...
+                    |-- c1-exp3
+                        ...
+                 |-- exp-outputs
+                    |-- c1-exp0
+                        my-template_run0_output/
+                        my-template_run1_output/
+                        my-template_run2_output/
+                        my-template_run3_output/
+                    |-- c1-exp1
+                        commands.txt
+                        my-template_run0_output/
+                        my-template_run1_output/
+                        my-template_run2_output/
+                        my-template_run3_output/
+                    |-- c1-exp2
+                        ...
+                    |-- c1-exp3
                      ...
 
 
@@ -155,9 +156,12 @@ The meaning of each directory is discussed below.
 - ``CATEGORY.my_controller/`` - Each controller gets their own directory in the
   project root, which is **NOT** deleted on subsequent runs.
 
-- ``mytemplate-SS.12x6/`` - The directory for the :term:`Batch Experiment` is
-  named from a combination of the template input file used
-  (``--expdef-template``) and the scenario (``--scenario``).
+- ``SS.12x6/`` - Each scenario gets their own directory inside an associated
+  controller, whic his **NOT** deleted on subsequent runs.
+
+- ``mytemplate-population_size.Log8/`` - The directory for the :term:`Batch
+  Experiment` is named from a combination of the template input file used
+  (``--expdef-template``) and the :term:`Batch Criteria` (``--batch-criteria``).
 
 - ``exp-inputs`` - Root directory for :term:`Experimental<Experiment>` inputs;
   each experiment in the batch gets their own directory in here.

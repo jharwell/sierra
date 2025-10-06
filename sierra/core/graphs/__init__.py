@@ -18,4 +18,6 @@ __all__ = [
     "stacked_line",
     "summary_line",
     "heatmap",
+    "dual_heatmap",
+    "PathSet",
 ]
