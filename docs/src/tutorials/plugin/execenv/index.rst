@@ -24,11 +24,17 @@ If you are creating a new plugin for an existing engine that comes with SIERRA
 If you are creating a new execution environment plugin for a new engine, then
 you can ignore the above.
 
-Before beginning, create the following filesystem structure in
-``$HOME/git/plugins/hpc/HAL``.
+Before beginning, see the :ref:`plugins/devguide` for a general overview of
+creating a new plugin.
+
+Create the following filesystem structure in ``$HOME/git/plugins/hpc/HAL``.
 
 -  ``plugin.py`` - This file is required, and is where most of the bits for the
-   plugin will go.
+   plugin will go. You don't *have* to call it this; if you want to use a
+   different name, see :ref:`plugins/devguide/schemas` for options.
+
+- ``cmdline.py`` This file is optional. If your new engine doesn't need any
+  additional cmdline arguments, you can skip it.
 
 These files will be populated as you go through the rest of the tutorial.
 
@@ -39,6 +45,9 @@ These files will be populated as you go through the rest of the tutorial.
 
 Creating The Cmdline Interface
 ==============================
+
+#. Create additional cmdline arguments for the new execution environment by
+   following :ref:`plugins/devguide/cmdline`.
 
 #. Defining any additional configuration/argument checking beyond what is
    possible in argparse via ``cmdline_postparse_configure()`` in your
@@ -156,6 +165,3 @@ about it by putting ``$HOME/git/plugins`` on your
 plugin path, how you selected your engine will change. E.g., if you put
 ``$HOME/git/`` on :envvar:`SIERRA_PLUGIN_PATH`, then your new plugin will be
 accessible via ``plugins.engine.HAL`` instead.
-
-.. NOTE:: Execution environment plugin names have the same constraints as python
-   package names (e.g., no dots, so ``HAL.dave`` is not a valid plugin name).
