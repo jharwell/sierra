@@ -93,6 +93,8 @@ language = "en"
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "flycheck"]
 
+root_doc = "index"
+
 if not os.getenv("READTHEDOCS"):
     if "html" in sys.argv:
         builtins.__sphinx_build_html__ = True

@@ -26,9 +26,9 @@ jobs:
     - name: Build package
       shell: bash
       run: |
-        uv sync --group dev
+        uv sync -p 3.10 --group dev
         cd docs
-        uv run sphinx-build -b linkcheck . _build
+        uv run -p 3.10 sphinx-build -b linkcheck . _build
         cd ..
         uv build
 
