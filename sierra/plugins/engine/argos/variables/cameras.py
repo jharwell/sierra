@@ -41,17 +41,17 @@ class QTCameraTimeline:
     """
 
     # If this default changes in ARGoS, it will need to be updated here too.
-    kARGOS_N_CAMERAS = 12
+    N_CAMERAS = 12
 
     def __init__(
-        self, setup: exp.ExpSetup, cmdline: str, extents: tp.List[ArenaExtent]
+        self, setup: exp.ExpSetup, cmdline: str, extents: list[ArenaExtent]
     ) -> None:
         self.cmdline = cmdline
         self.extents = extents
         self.setup = setup
         self.element_adds = []  # type: tp.List[definition.ElementAddList]
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """
         No effect.
 
@@ -59,7 +59,7 @@ class QTCameraTimeline:
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         """Remove the ``<camera>`` tag if it exists.
 
         Obviously you *must* call this function BEFORE adding new definitions.
@@ -71,7 +71,7 @@ class QTCameraTimeline:
             )
         ]
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         if not self.element_adds:
             adds = definition.ElementAddList(
                 definition.ElementAdd("./visualization/qt-opengl", "camera", {}, False),
@@ -89,11 +89,12 @@ class QTCameraTimeline:
 
             for ext in self.extents:
                 # generate keyframes for switching between camera perspectives
-                self._gen_keyframes(adds, self.kARGOS_N_CAMERAS, in_ticks)
+                self._gen_keyframes(adds, self.N_CAMERAS, in_ticks)
 
-                info = []
-                for c in range(0, self.kARGOS_N_CAMERAS):
-                    info.append(self._gen_camera_config(ext, c, self.kARGOS_N_CAMERAS))
+                info = [
+                    self._gen_camera_config(ext, c, self.N_CAMERAS)
+                    for c in range(0, self.N_CAMERAS)
+                ]
 
                 for index, up, look_at, pos in info:
                     camera = definition.ElementAdd(
@@ -166,11 +167,11 @@ class QTCameraOverhead:
 
     """
 
-    def __init__(self, extents: tp.List[ArenaExtent]) -> None:
+    def __init__(self, extents: list[ArenaExtent]) -> None:
         self.extents = extents
         self.element_adds = []  # type: tp.List[definition.ElementAddList]
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """No effect.
 
         All tags/attributes are either deleted or added.
@@ -178,7 +179,7 @@ class QTCameraOverhead:
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         """Remove the ``<camera>`` tag if it exists.
 
         Obviously you *must* call this function BEFORE adding new definitions.
@@ -190,7 +191,7 @@ class QTCameraOverhead:
             )
         ]
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         if not self.element_adds:
             adds = definition.ElementAddList(
                 definition.ElementAdd("./visualization/qt-opengl", "camera", {}, False),
@@ -206,10 +207,10 @@ class QTCameraOverhead:
                     "placement",
                     {
                         "index": "0",
-                        "position": "{0}, {1}, {2}".format(
+                        "position": "{}, {}, {}".format(
                             ext.xsize() / 2.0, ext.ysize() / 2.0, height
                         ),
-                        "look_at": "{0}, {1}, 0".format(
+                        "look_at": "{}, {}, 0".format(
                             ext.xsize() / 2.0, ext.ysize() / 2.0
                         ),
                     },
@@ -224,17 +225,17 @@ class QTCameraOverhead:
         pass
 
 
-def factory(cmdopts: types.Cmdopts, extents: tp.List[ArenaExtent]):
+def factory(cmdopts: types.Cmdopts, extents: list[ArenaExtent]):
     """Create cameras for a list of arena extents."""
     if cmdopts["camera_config"] == "overhead":
         return QTCameraOverhead(extents)
-    else:
-        return QTCameraTimeline(
-            exp.factory(cmdopts["exp_setup"]), cmdopts["camera_config"], extents
-        )
+
+    return QTCameraTimeline(
+        exp.factory(cmdopts["exp_setup"]), cmdopts["camera_config"], extents
+    )
 
 
 __all__ = [
-    "QTCameraTimeline",
     "QTCameraOverhead",
+    "QTCameraTimeline",
 ]

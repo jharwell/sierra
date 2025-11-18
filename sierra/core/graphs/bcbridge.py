@@ -10,6 +10,7 @@ Bridge/glue interfaces/bindings for :term:`Batch Criteria` which can be graphed.
 # Core packages
 import pathlib
 import typing as tp
+import dataclasses
 
 # 3rd party packages
 import implements
@@ -18,6 +19,7 @@ import implements
 from sierra.core import types
 
 
+@dataclasses.dataclass
 class GraphInfo:
     """
     Container of info for generating graphs from batch criteria.
@@ -44,23 +46,15 @@ class GraphInfo:
 
     """
 
-    def __init__(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> None:
-        self.cmdopts = cmdopts
-        self.batch_output_root = batch_output_root
-        self.exp_names = exp_names
-
-        self.xticklabels = []  # type: tp.List[str]
-        self.xticks = []  # type: tp.List[float]
-        self.xlabel = ""
-
-        self.yticklabels = []  # type: tp.List[str]
-        self.yticks = []  # type: tp.List[float]
-        self.ylabel = ""
+    cmdopts: types.Cmdopts
+    batch_output_root: tp.Optional[pathlib.Path] = None
+    exp_names: tp.Optional[list[str]] = None
+    xticklabels: list[str] = dataclasses.field(default_factory=list)
+    xticks: list[float] = dataclasses.field(default_factory=list)
+    xlabel: str = ""
+    yticklabels: list[str] = dataclasses.field(default_factory=list)
+    yticks: list[float] = dataclasses.field(default_factory=list)
+    ylabel: str = ""
 
 
 class IGraphable(implements.Interface):
@@ -72,7 +66,7 @@ class IGraphable(implements.Interface):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.Optional[list[str]] = None,
     ) -> GraphInfo:
         """
         Generate graph info for generating graphs from :term:`Batch Criteria`.

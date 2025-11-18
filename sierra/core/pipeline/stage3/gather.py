@@ -17,7 +17,7 @@ import pathlib
 
 # 3rd party packages
 import psutil
-import pandas as pd  # noqa
+import pandas as pd
 
 # Project packages
 from sierra.core import types, utils, storage
@@ -100,7 +100,7 @@ class BaseGatherer:
 
     def calc_gather_items(
         self, run_output_root: pathlib.Path, exp_name: str
-    ) -> tp.List[GatherSpec]:
+    ) -> list[GatherSpec]:
         raise NotImplementedError
 
     def __call__(self, exp_output_root: pathlib.Path) -> None:
@@ -161,7 +161,7 @@ class BaseGatherer:
         self,
         exp_output_root: pathlib.Path,
         spec: GatherSpec,
-        runs: tp.List[pathlib.Path],
+        runs: list[pathlib.Path],
     ) -> ProcessSpec:
         to_process = ProcessSpec(gather=spec)
 
@@ -318,4 +318,4 @@ class BaseGatherer:
                 ), f"Not all columns from {path1} and {path2} have the same length"
 
 
-__all__ = ["GatherSpec", "BaseGatherer"]
+__all__ = ["BaseGatherer", "GatherSpec"]

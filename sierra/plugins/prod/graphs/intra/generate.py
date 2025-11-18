@@ -53,7 +53,7 @@ def proc_batch_exp(
 
     loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
 
-    graphs_config = loader.load_config(cmdopts, config.kYAML.graphs)
+    graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
 
     if "intra-exp" not in graphs_config:
         _logger.warning(
@@ -62,7 +62,7 @@ def proc_batch_exp(
         return
 
     project_config_root = pathlib.Path(cmdopts["project_config_root"])
-    controllers_yaml = project_config_root / config.kYAML.controllers
+    controllers_yaml = project_config_root / config.PROJECT_YAML.controllers
 
     if controllers_yaml.exists():
         with utils.utf8open(controllers_yaml) as f:
@@ -76,7 +76,7 @@ def proc_batch_exp(
     for exp in exp_to_gen:
         exproots = exproot.PathSet(pathset, exp.name)
 
-        if os.path.isdir(exproots.stat_root):
+        if exproots.stat_root.is_dir():
             generator(exproots)
         else:
             _logger.warning(
@@ -150,7 +150,7 @@ class IntraExpGraphGenerator:
 
     def _calc_targets(
         self,
-    ) -> tp.Tuple[tp.List[types.YAMLDict], tp.List[types.YAMLDict]]:
+    ) -> tuple[list[types.YAMLDict], list[types.YAMLDict]]:
         """Calculate what intra-experiment graphs should be generated.
 
         Uses YAML configuration for controller and intra-experiment graphs.
@@ -175,7 +175,7 @@ class IntraExpGraphGenerator:
                             keys.extend(inherit)  # optional
 
         else:
-            keys = list(k for k in self.graphs_config)
+            keys = list(self.graphs_config)
             self.logger.warning(
                 "Missing controller graph config--generating all enabled "
                 "intra-experiment graphs for all controllers: %s",
@@ -197,6 +197,6 @@ class IntraExpGraphGenerator:
 
 
 __all__ = [
-    "proc_batch_exp",
     "IntraExpGraphGenerator",
+    "proc_batch_exp",
 ]

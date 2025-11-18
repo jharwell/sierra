@@ -48,7 +48,7 @@ class GraphCollationInfo:
     """
 
     def __init__(
-        self, df_ext: str, exp_names: tp.List[str], graph_type: str, summary_col: str
+        self, df_ext: str, exp_names: list[str], graph_type: str, summary_col: str
     ) -> None:
         self.df_ext = df_ext
 
@@ -89,7 +89,7 @@ class GraphCollator:
             self.pathset.output_root.relative_to(self.pathset.root),
             target["src_stem"],
         )
-        self.logger.trace(json.dumps(target, indent=4))  # type: ignore
+        self.logger.trace(json.dumps(target, indent=4))
 
         exp_dirs = utils.exp_range_calc(
             self.cmdopts["exp_range"],
@@ -98,19 +98,19 @@ class GraphCollator:
         )
 
         # Always do the mean, even if stats are disabled
-        stat_config = config.kStats["mean"].exts
+        stat_config = config.STATS["mean"].exts
 
         if self.cmdopts["dist_stats"] in ["conf95", "all"]:
-            stat_config.update(config.kStats["conf95"].exts)
+            stat_config.update(config.STATS["conf95"].exts)
 
         if self.cmdopts["dist_stats"] in ["bw", "all"]:
-            stat_config.update(config.kStats["bw"].exts)
+            stat_config.update(config.STATS["bw"].exts)
 
         stats = [
             GraphCollationInfo(
                 df_ext=suffix,
                 exp_names=[e.name for e in exp_dirs],
-                summary_col="{0}+{1}".format(
+                summary_col="{}+{}".format(
                     self.cmdopts["controller"], self.cmdopts["scenario"]
                 ),
                 graph_type=target["type"],
@@ -147,7 +147,7 @@ class GraphCollator:
                 )
 
     def _collate_exp(
-        self, target: dict, exp_dir: str, stats: tp.List[GraphCollationInfo]
+        self, target: dict, exp_dir: str, stats: list[GraphCollationInfo]
     ) -> None:
         exp_stat_root = self.pathset.stat_root / exp_dir
 
@@ -165,22 +165,21 @@ class GraphCollator:
             # generation code which is a procedural switch on graph type.
             if target["type"] == "summary_line":
                 idx = target.get("index", -1)
-                assert "col" in target, "'col' key is required"
-                assert (
-                    target["col"] in data_df.columns.values
-                ), "{0} not in columns of {1}".format(
-                    target["col"], target["src_stem"] + stat.df_ext
-                )
+
+                if "col" not in target:
+                    raise ValueError("'col' key is required")
+
                 datapoint = data_df.loc[data_df.index[idx], target["col"]]
                 stat.df.loc[exp_dir, stat.summary_col] = datapoint
             elif target["type"] == "stacked_line":
-                assert "cols" in target, "'cols' key is required"
+                if "cols" not in target:
+                    raise ValueError("'cols' key is required")
+                if len(target["cols"]) > 1:
+                    raise ValueError(
+                        "Exactly 1 column is required for inter-exp"
+                        "stacked_line graphs"
+                    )
 
-                assert (
-                    target["cols"] in data_df.columns.values
-                ), "{0} not in columns of {1}".format(
-                    target["cols"], target["src_stem"] + stat.df_ext
-                )
                 stat.df[exp_dir] = data_df[target["cols"]]
             elif target["type"] == "heatmap":
                 idx = target.get("index", -1)
@@ -222,7 +221,7 @@ def proc_batch_exp(
 
     loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
 
-    graphs_config = loader.load_config(cmdopts, config.kYAML.graphs)
+    graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
 
     if "inter-exp" not in graphs_config:
         _logger.warning(
@@ -230,7 +229,7 @@ def proc_batch_exp(
         )
         return
 
-    controller_config = loader.load_config(cmdopts, config.kYAML.controllers)
+    controller_config = loader.load_config(cmdopts, config.PROJECT_YAML.controllers)
 
     # For each category of graphs we are generating
     for category in targets.inter_exp_calc(
@@ -261,7 +260,6 @@ def _thread_worker(
 ) -> None:
 
     collator = GraphCollator(main_config, cmdopts, pathset)
-
     while True:
         # Wait for 3 seconds after the queue is empty before bailing
         try:
@@ -273,7 +271,7 @@ def _thread_worker(
 
 
 __all__ = [
-    "GraphCollator",
     "GraphCollationInfo",
+    "GraphCollator",
     "proc_batch_exp",
 ]

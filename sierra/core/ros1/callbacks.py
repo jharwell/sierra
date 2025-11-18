@@ -21,6 +21,8 @@ def population_size_from_pickle(
 ) -> int:
     """Extract population size from unpickled experiment definition."""
     for add in adds_def:
+        if isinstance(add, definition.NullMod):
+            continue
         if "name" in add.attr and "n_agents" in add.attr["name"]:
             return int(add.attr["value"])
 
@@ -40,7 +42,7 @@ def robot_prefix_extract(main_config: types.YAMLDict, cmdopts: types.Cmdopts) ->
 
 
 __all__ = [
-    "population_size_from_pickle",
     "population_size_from_def",
+    "population_size_from_pickle",
     "robot_prefix_extract",
 ]

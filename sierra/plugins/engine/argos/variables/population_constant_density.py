@@ -43,7 +43,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """Generate XML modifications to to maintain constant population density.
 
         Robots are approximated as point masses.
@@ -92,7 +92,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
@@ -106,7 +106,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         tmp = map(float, self.populations(info.cmdopts, info.exp_names))
 
-        info.xticklabels = list(map(lambda x: str(int(round(x, 4))), tmp))
+        info.xticklabels = [str(int(round(x, 4))) for x in tmp]
 
         tmp2 = list(map(float, self.populations(info.cmdopts, info.exp_names)))
 
@@ -123,7 +123,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
 def calc_dims(
     cmdopts: types.Cmdopts, attr: types.CLIArgSpec, **kwargs
-) -> tp.List[utils.ArenaExtent]:
+) -> list[utils.ArenaExtent]:
 
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
@@ -136,21 +136,20 @@ def calc_dims(
             kw["arena_x"] + attr["cardinality"] * attr["arena_size_inc"],
             attr["arena_size_inc"],
         )
-        return list(
+        return [
             utils.ArenaExtent(Vector3D(x, int(x / 2), kw["arena_z"])) for x in r
-        )
-    elif is_1x1:
+        ]
+
+    if is_1x1:
         r = range(
             kw["arena_x"],
             kw["arena_x"] + attr["cardinality"] * attr["arena_size_inc"],
             attr["arena_size_inc"],
         )
 
-        return list(utils.ArenaExtent(Vector3D(x, x, kw["arena_z"])) for x in r)
-    else:
-        raise NotImplementedError(
-            "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]"
-        )
+        return [utils.ArenaExtent(Vector3D(x, x, kw["arena_z"])) for x in r]
+
+    raise NotImplementedError("Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
 
 
 def factory(

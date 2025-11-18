@@ -13,7 +13,6 @@ RUN pip3 install \
     haggis \
     implements \
     jsonpath-ng \
-    netifaces \
     numpy \
     pandas \
     pyarrow \

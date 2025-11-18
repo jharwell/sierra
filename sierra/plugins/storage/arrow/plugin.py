@@ -16,11 +16,11 @@ import pandas as pd
 # Project packages
 
 
-def suffixes() -> tp.Set[str]:
+def suffixes() -> set[str]:
     return {".arrow"}
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
 def df_read(
     path: pathlib.Path, run_output_root: tp.Optional[pathlib.Path] = None, **kwargs
 ) -> pd.DataFrame:
@@ -30,7 +30,7 @@ def df_read(
     return pd.read_feather(path)
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
 def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
     """
     Write a pandas dataframe to a apache .arrow file.

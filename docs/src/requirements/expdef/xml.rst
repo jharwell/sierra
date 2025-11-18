@@ -1,7 +1,3 @@
-SIERRA uses some special XML tokens during stage 1, and although it is unlikely
-that including these tokens would cause problems, because SIERRA looks for them
-in *specific* places in the ``--expdef-template``, they should be avoided.
-
 - ``__CONTROLLER__`` - Tag used when as a placeholder for selecting which
   controller present in an input file (if there are multiple) a user wants to
   use for a specific :term:`Experiment`. Can appear in XML attributes. This

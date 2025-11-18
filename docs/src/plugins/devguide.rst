@@ -219,8 +219,3 @@ plugin vs. a ``--engine`` vs. any other plugin type; those are called out below.
                 communicate to SIERRA that size of the experimental arena for
                 each :term:`Experiment`. See :ref:`req/exp/arena-size` for more
                 details.
-
-   .. group-tab:: Engines
-
-      Must define ``--exp-setup`` and make it available to SIERRA via the
-      ``to_cmdopts()`` function.

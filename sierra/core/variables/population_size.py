@@ -15,6 +15,7 @@ import pathlib
 # Project packages
 from sierra.core import types
 from sierra.core.variables import batch_criteria as bc
+from sierra.core.graphs import bcbridge
 
 
 class PopulationSize(bc.UnivarBatchCriteria):
@@ -29,31 +30,32 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
-        exp_names: tp.List[str],
-    ) -> tp.List[float]:
+        exp_names: list[str],
+    ) -> list[float]:
 
         ret = list(map(float, self.populations(cmdopts, exp_names)))
 
         if cmdopts["plot_log_xscale"]:
             return [int(math.log2(x)) for x in ret]
-        elif cmdopts["plot_enumerated_xscale"]:
+
+        if cmdopts["plot_enumerated_xscale"]:
             return list(range(0, len(ret)))
-        else:
-            return ret
+
+        return ret
 
     def graph_xticklabels(
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
-        exp_names: tp.List[str],
-    ) -> tp.List[str]:
+        exp_names: list[str],
+    ) -> list[str]:
 
         if exp_names is None:
             exp_names = self.gen_exp_names()
 
         ret = map(float, self.populations(cmdopts, exp_names))
 
-        return list(map(lambda x: str(int(round(x, 4))), ret))
+        return [str(int(round(x, 4))) for x in ret]
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         if cmdopts["plot_log_xscale"]:
@@ -61,12 +63,34 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
         return "System Size"
 
+    def graph_info(
+        self,
+        cmdopts: types.Cmdopts,
+        batch_output_root: tp.Optional[pathlib.Path] = None,
+        exp_names: tp.Optional[list[str]] = None,
+    ) -> bcbridge.GraphInfo:
+        """Return graph info for base classes to use if they wish."""
+        info = bcbridge.GraphInfo(
+            cmdopts,
+            batch_output_root,
+            exp_names if exp_names else self.gen_exp_names(),
+        )
 
-def parse(arg: str) -> tp.List[int]:
+        info.xlabel = self.graph_xlabel(info.cmdopts)
+        info.xticklabels = self.graph_xticklabels(
+            info.cmdopts, info.batch_output_root, info.exp_names
+        )
+        info.xticks = self.graph_xticks(
+            info.cmdopts, info.batch_output_root, info.exp_names
+        )
+        return info
+
+
+def parse(arg: str) -> list[int]:
     """Generate the system sizes for each experiment in a batch."""
     spec = {
-        "max_size": int(),
-        "model": str(),
+        "max_size": 0,
+        "model": "",
         "cardinality": None,
     }  # type: tp.Dict[str, tp.Union[str, tp.Optional[int]]]
 
@@ -101,17 +125,18 @@ def parse(arg: str) -> tp.List[int]:
             ), "Bad cardinality in criteria section '{sections[1]}'"
             spec["cardinality"] = int(res.group(0)[1:])
         else:
-            spec["cardinality"] = int(spec["max_size"] / 10.0)  # type: ignore
+            spec["cardinality"] = int(spec["max_size"] / 10.0)
     elif spec["model"] == "Log":
         spec["cardinality"] = len(range(0, int(math.log2(max_size)) + 1))
 
     if spec["model"] == "Linear":
         increment = int(spec["max_size"] / spec["cardinality"])
         return [increment * x for x in range(1, spec["cardinality"] + 1)]
-    elif spec["model"] == "Log":
+
+    if spec["model"] == "Log":
         return [int(2**x) for x in range(0, spec["cardinality"])]
-    else:
-        raise AssertionError
+
+    raise ValueError("Bad value for model: {}".format(spec["model"]))
 
 
 __all__ = [

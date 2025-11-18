@@ -4,10 +4,10 @@
 Experiment Definition Plugins
 =============================
 
-SIERRA is capable of reading ``--expdef-template`` from a number of formats.
-Before diving into the details of the plugins, it is important to clarify
-terminology around the different components in files passed to
-``--expdef-template``:
+SIERRA is capable of reading ``--expdef-template`` from a number of formats via
+``--expdef`` plugins.  Before diving into the details of the plugins, it is
+important to clarify terminology around the different components in files passed
+to ``--expdef-template``:
 
 - Attribute - The value part of a <key, value> pair within an
   ``--expdef-template`` which maps to a native primitive such as a bool, int, or
@@ -35,5 +35,6 @@ are:
 
    xml.rst
    json.rst
+   yaml.rst
 
 Additional formats can be supported via :ref:`tutorials/plugin/expdef`.

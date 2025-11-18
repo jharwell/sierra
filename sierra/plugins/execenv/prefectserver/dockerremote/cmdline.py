@@ -17,7 +17,7 @@ from sierra.plugins import PluginCmdline
 
 
 def build(
-    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+    parents: list[argparse.ArgumentParser], stages: list[int]
 ) -> PluginCmdline:
     """
     Get a cmdline for the ``prefectserver.dockerremote`` execution environment.

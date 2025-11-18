@@ -14,6 +14,7 @@ import typing as tp
 import logging
 import pathlib
 import argparse
+from dataclasses import dataclass
 
 # 3rd party packages
 
@@ -45,17 +46,17 @@ class ExpRootLeaf:
         return ExpRootLeaf(bc, template_stem)
 
     @staticmethod
-    def from_components(bc: tp.List[str], template_stem: str) -> "ExpRootLeaf":
+    def from_components(bc: list[str], template_stem: str) -> "ExpRootLeaf":
         """Create the leaf representation directory from the components."""
         return ExpRootLeaf(bc, template_stem)
 
-    def __init__(self, bc: tp.List[str], template_stem: str) -> None:
+    def __init__(self, bc: list[str], template_stem: str) -> None:
         self.bc = bc
         self.template_stem = template_stem
 
     def to_path(self) -> pathlib.Path:
         """Get the leaf as a ``pathlib.Path`` object."""
-        return pathlib.Path("{0}-{1}".format(self.template_stem, "+".join(self.bc)))
+        return pathlib.Path("{}-{}".format(self.template_stem, "+".join(self.bc)))
 
     def to_str(self) -> str:
         return str(self.to_path())
@@ -117,6 +118,7 @@ class ExpRoot:
         return str(self.to_path())
 
 
+@dataclass
 class PathSet:
     """
     The set of filesystem paths under ``--sierra-root`` that SIERRA uses.
@@ -124,20 +126,43 @@ class PathSet:
     Collected here in the interest of DRY.
     """
 
-    def __init__(self, root: ExpRoot) -> None:
-        self.input_root = root.to_path() / "exp-inputs"
-        self.output_root = root.to_path() / "exp-outputs"
-        self.graph_root = root.to_path() / "graphs"
-        self.model_root = root.to_path() / "models"
-        self.model_interexp_root = self.model_root / "inter-exp"
-        self.stat_root = root.to_path() / "statistics"
-        self.stat_exec_root = self.stat_root / "exec"
-        self.imagize_root = root.to_path() / "imagize"
-        self.video_root = root.to_path() / "videos"
-        self.stat_interexp_root = self.stat_root / "inter-exp"
-        self.graph_interexp_root = self.graph_root / "inter-exp"
-        self.scratch_root = root.to_path() / "scratch"
-        self.root = root.to_path()
+    input_root: pathlib.Path
+    output_root: pathlib.Path
+    graph_root: pathlib.Path
+    model_root: pathlib.Path
+    model_interexp_root: pathlib.Path
+    stat_root: pathlib.Path
+    stat_exec_root: pathlib.Path
+    imagize_root: pathlib.Path
+    video_root: pathlib.Path
+    stat_interexp_root: pathlib.Path
+    graph_interexp_root: pathlib.Path
+    scratch_root: pathlib.Path
+    root: pathlib.Path
+
+    @classmethod
+    def from_root(cls, root: ExpRoot) -> "PathSet":
+        """Create PathSet from an ExpRoot."""
+        root_path = root.to_path()
+        model_root = root_path / "models"
+        stat_root = root_path / "statistics"
+        graph_root = root_path / "graphs"
+
+        return cls(
+            input_root=root_path / "exp-inputs",
+            output_root=root_path / "exp-outputs",
+            graph_root=graph_root,
+            model_root=model_root,
+            model_interexp_root=model_root / "inter-exp",
+            stat_root=stat_root,
+            stat_exec_root=stat_root / "exec",
+            imagize_root=root_path / "imagize",
+            video_root=root_path / "videos",
+            stat_interexp_root=stat_root / "inter-exp",
+            graph_interexp_root=graph_root / "inter-exp",
+            scratch_root=root_path / "scratch",
+            root=root_path,
+        )
 
     def __str__(self) -> str:
         """
@@ -145,7 +170,7 @@ class PathSet:
 
         No recursion. Everything is shown in a one-level breakdown relative to
         the batch root. Could be improved by using recursion, but this is
-        sufficient for now, pending the plugin/pipeline overhaul.
+        sufficient for now.
         """
         # pointers:
         tee = "├── "
@@ -211,13 +236,13 @@ def from_exp(
     """
     root = ExpRoot(sierra_root, project, controller, scenario, batch_leaf)
     logging.info("Generated batchroot %s", root.to_path())
-    return PathSet(root)
+    return PathSet.from_root(root)
 
 
 __all__ = [
-    "from_exp",
-    "from_cmdline",
-    "PathSet",
     "ExpRoot",
     "ExpRootLeaf",
+    "PathSet",
+    "from_cmdline",
+    "from_exp",
 ]

@@ -33,7 +33,8 @@ Core
 
    - ``~/.sierrarc``
 
-   .. NOTE:: You can't pass shortform cmdline arguments in the rcfile.
+   .. NOTE:: You can't pass shortform cmdline arguments in the rcfile, or
+             arguments which are marked as required in their cmdline definition.
 
    .. versionadded:: 1.3.18
 

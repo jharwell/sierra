@@ -25,7 +25,7 @@ def jsonsim_stage1_univar(session):
     # Get batch root path
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
-    scenario = "scenario1.10x10x10"
+    scenario = "scenario1"
     leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
@@ -58,7 +58,7 @@ def jsonsim_stage3_univar(session):
     """Check that stage 3 outputs what it is supposed to."""
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
-    scenario = "scenario1.10x10x10"
+    scenario = "scenario1"
     leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
@@ -92,7 +92,7 @@ def jsonsim_stage4_univar(session):
     """Check that stage 4 outputs what it is supposed to."""
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
-    scenario = "scenario1.10x10x10"
+    scenario = "scenario1"
     leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",

@@ -67,7 +67,7 @@ class ExpShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         shell = shutil.which("bash")
 
         return [
@@ -87,10 +87,10 @@ class ExpShellCmdsGenerator:
             ),
         ]
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         jobid = os.environ["SLURM_JOB_ID"]
         nodelist = pathlib.Path(exec_opts["exp_input_root"], f"{jobid}-nodelist.txt")
 
@@ -130,4 +130,4 @@ class ExpShellCmdsGenerator:
         return [unique_nodes, parallel_spec]
 
 
-__all__ = ["cmdline_postparse_configure", "ExpShellCmdsGenerator"]
+__all__ = ["ExpShellCmdsGenerator", "cmdline_postparse_configure"]

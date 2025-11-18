@@ -49,13 +49,13 @@ class ExpSetup:
 
         self.element_adds = None
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         return []
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         if not self.element_adds:
             adds = definition.ElementAddList(
                 definition.ElementAdd(
@@ -176,8 +176,8 @@ def factory(arg: str, barrier_start: bool, robots_need_timekeeper: bool) -> ExpS
     attr = exp_setup.parse(
         arg,
         {
-            "n_secs_per_run": config.kROS["n_secs_per_run"],
-            "n_ticks_per_sec": config.kROS["n_ticks_per_sec"],
+            "n_secs_per_run": config.ROS["n_secs_per_run"],
+            "n_ticks_per_sec": config.ROS["n_ticks_per_sec"],
         },
     )
 

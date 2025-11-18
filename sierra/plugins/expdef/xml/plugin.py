@@ -45,14 +45,12 @@ class Writer:
             )
             return
 
-        self.logger.trace("Write tree@%s to %s", src_root, opath)  # type: ignore
+        self.logger.trace("Write tree@%s to %s", src_root, opath)
 
         # Renaming tree root is not required
         if "rename_to" in config and config["rename_to"] is not None:
             tree.tag = config["rename_to"]
-            self.logger.trace(
-                "Rename tree root -> %s", config["rename_to"]  # type: ignore
-            )
+            self.logger.trace("Rename tree root -> %s", config["rename_to"])
 
         # Adding new children not required
         if all(
@@ -80,9 +78,7 @@ class Writer:
         assert graft_parent is not None, f"Bad parent '{graft_parent}' for grafting"
 
         for g in config["child_grafts"]:
-            self.logger.trace(
-                "Graft tree@'%s' as child under '%s'", g, graft_parent  # type: ignore
-            )
+            self.logger.trace("Graft tree@'%s' as child under '%s'", g, graft_parent)
             elt = self.root.find(g)
             graft_parent.append(elt)
 
@@ -96,6 +92,11 @@ class Writer:
 
         parent = tree.find(config["new_children_parent"])
 
+        assert (
+            parent is not None
+        ), f"Could not find parent '{0}' of new children".format(
+            config["new_children_parent"]
+        )
         for spec in config["new_children"]:
             if spec.as_root_elt:
                 # Special case: Adding children to an empty tree
@@ -112,14 +113,14 @@ class Writer:
             ET.SubElement(elt, spec.tag, spec.attr)
 
             self.logger.trace(
-                "Create child element '%s' under '%s'",  # type: ignore
+                "Create child element '%s' under '%s'",
                 spec.tag,
                 spec.path,
             )
 
     def _prepare_tree(
         self, base_opath: pathlib.Path, config: dict
-    ) -> tp.Tuple[tp.Optional[ET.Element], str, pathlib.Path]:
+    ) -> tuple[tp.Optional[ET.Element], str, pathlib.Path]:
         assert "src_parent" in config, "'src_parent' key is required"
         assert (
             "src_tag" in config and config["src_tag"] is not None
@@ -128,7 +129,7 @@ class Writer:
         if config["src_parent"] is None:
             src_root = config["src_tag"]
         else:
-            src_root = "{0}/{1}".format(config["src_parent"], config["src_tag"])
+            src_root = "{}/{}".format(config["src_parent"], config["src_tag"])
 
         tree_out = self.tree.getroot().find(src_root)
 
@@ -170,7 +171,7 @@ class ExpDef:
 
         self.logger = logging.getLogger(__name__)
 
-    def n_mods(self) -> tp.Tuple[int, int]:
+    def n_mods(self) -> tuple[int, int]:
         return len(self.element_adds), len(self.attr_chgs)
 
     def write_config_set(self, config: definition.WriterConfig) -> None:
@@ -188,7 +189,7 @@ class ExpDef:
         writer = Writer(self.tree)
         writer(self.write_config, base_opath)
 
-    def flatten(self, keys: tp.List[str]) -> None:
+    def flatten(self, keys: list[str]) -> None:
         raise NotImplementedError("The XML expdef plugin does not support flattening")
 
     def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
@@ -216,9 +217,7 @@ class ExpDef:
             return False
 
         el.attrib[attr] = value
-        self.logger.trace(
-            "Modify attr: '%s/%s' = '%s'", path, attr, value  # type: ignore
-        )
+        self.logger.trace("Modify attr: '%s/%s' = '%s'", path, attr, value)
 
         self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
@@ -242,9 +241,7 @@ class ExpDef:
             return False
 
         el.set(attr, value)
-        self.logger.trace(
-            "Add new attribute: '%s/%s' = '%s'", path, attr, value  # type: ignore
-        )
+        self.logger.trace("Add new attribute: '%s/%s' = '%s'", path, attr, value)
         self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
 
@@ -266,15 +263,14 @@ class ExpDef:
         for child in el:
             if child.tag == tag:
                 child.tag = value
-                self.logger.trace(
-                    "Modify element: '%s/%s' = '%s'", path, tag, value  # type: ignore
-                )
+                self.logger.trace("Modify element: '%s/%s' = '%s'", path, tag, value)
                 return True
 
         self.logger.warning("No such element '%s' found in '%s'", tag, path)
         return False
 
     def element_remove(self, path: str, tag: str, noprint: bool = False) -> bool:
+        """Remove the first matching element in ``path`` matching ``tag``."""
         parent = self.root.find(path)
 
         if parent is None:
@@ -310,9 +306,7 @@ class ExpDef:
 
         for victim in victims:
             parent.remove(victim)
-            self.logger.trace(
-                "Remove matching element: '%s/%s'", path, tag  # type: ignore
-            )
+            self.logger.trace("Remove matching element: '%s/%s'", path, tag)
 
         return True
 
@@ -344,7 +338,7 @@ class ExpDef:
 
             ET.SubElement(parent, tag, attrib=attr if attr else {})
             self.logger.trace(
-                "Add new unique element: '%s/%s' = '%s'",  # type: ignore
+                "Add new unique element: '%s/%s' = '%s'",
                 path,
                 tag,
                 str(attr),
@@ -354,9 +348,7 @@ class ExpDef:
             # the same 'tag' don't overwrite each other.
             child = ET.Element(tag, attrib=attr if attr else {})
             parent.append(child)
-            self.logger.trace(
-                "Add new element: '%s/%s' = '%s'", path, tag, str(attr)  # type: ignore
-            )
+            self.logger.trace("Add new element: '%s/%s' = '%s'", path, tag, str(attr))
 
         self.element_adds.append(definition.ElementAdd(path, tag, attr, allow_dup))
         return True

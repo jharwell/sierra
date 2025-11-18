@@ -22,14 +22,14 @@ class PluginCmdline(cmdline.BaseCmdline):
 
     def __init__(
         self,
-        parents: tp.List[argparse.ArgumentParser],
-        stages: tp.List[int],
+        parents: list[argparse.ArgumentParser],
+        stages: list[int],
     ) -> None:
         super().__init__()
         self._scaffold_cli(parents)
         self._init_cli(stages)
 
-    def _scaffold_cli(self, parents: tp.List[argparse.ArgumentParser]) -> None:
+    def _scaffold_cli(self, parents: list[argparse.ArgumentParser]) -> None:
         """
         Scaffold CLI by defining the parser and common argument groups.
         """
@@ -71,7 +71,7 @@ class PluginCmdline(cmdline.BaseCmdline):
                         """,
         )
 
-    def _init_cli(self, stages: tp.List[int]) -> None:
+    def _init_cli(self, stages: list[int]) -> None:
         """Define cmdline arguments for stages 1-5."""
         if -1 in stages:
             self.init_shortforms()

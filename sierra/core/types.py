@@ -5,7 +5,7 @@
 # Core packages
 import typing as tp
 import sys
-from types import ModuleType  # noqa: F401 pylint: disable=unused-import
+from types import ModuleType
 from dataclasses import dataclass
 import pathlib
 
@@ -24,13 +24,13 @@ else:
 # Type Definitions
 ################################################################################
 
-Cmdopts: TypeAlias = tp.Dict[str, tp.Any]
+Cmdopts: TypeAlias = dict[str, tp.Any]
 """Dictionary of parsed cmdline options."""
 
-YAMLDict: TypeAlias = tp.Union[None, bool, str, float, int, tp.Dict[str, "YAMLDict"]]
+YAMLDict: TypeAlias = tp.Union[None, bool, str, float, int, dict[str, "YAMLDict"]]
 """Parsed YAML dictionary."""
 
-SimpleDict: TypeAlias = tp.Dict[str, tp.Union[str, int]]
+SimpleDict: TypeAlias = dict[str, tp.Union[str, int]]
 """Dictionary str -> {str|int} mappings."""
 
 # 2024-12-03 [JRH]: Once SIERRA moves to 3.10+ this (and many other instances)
@@ -39,17 +39,17 @@ SimpleDict: TypeAlias = tp.Dict[str, tp.Union[str, int]]
 JSON: TypeAlias = tp.Union[dict[str, "JSON"], list["JSON"], str, int, float, bool, None]
 """Dictionary of parsed JSON."""
 
-StrDict: TypeAlias = tp.Dict[str, str]
+StrDict: TypeAlias = dict[str, str]
 """Dictionary containing str -> str mappings."""
 
-IntDict: TypeAlias = tp.Dict[str, int]
+IntDict: TypeAlias = dict[str, int]
 """Dictionary containing str -> int mappings."""
 
-CLIArgSpec: TypeAlias = tp.Dict[str, tp.Any]
+CLIArgSpec: TypeAlias = dict[str, tp.Any]
 """Dictionary containing str -> anything mappings for parsing stuff from the
 cmdline into components."""
 
-PathList: TypeAlias = tp.List[pathlib.Path]
+PathList: TypeAlias = list[pathlib.Path]
 """List of paths."""
 
 
@@ -105,7 +105,7 @@ class OSPackagesSpec:
 
     kernel: str
     name: str
-    pkgs: tp.Dict[str, bool]
+    pkgs: dict[str, bool]
 
 
 @dataclass
@@ -116,17 +116,17 @@ class StatisticsSpec:
 
 
 __all__ = [
-    "ShellCmdSpec",
-    "YAMLConfigFileSpec",
-    "ParsedNodefileSpec",
-    "OSPackagesSpec",
-    "StatisticsSpec",
-    "Cmdopts",
-    "YAMLDict",
-    "SimpleDict",
     "JSON",
-    "StrDict",
-    "IntDict",
     "CLIArgSpec",
+    "Cmdopts",
+    "IntDict",
+    "OSPackagesSpec",
+    "ParsedNodefileSpec",
     "PathList",
+    "ShellCmdSpec",
+    "SimpleDict",
+    "StatisticsSpec",
+    "StrDict",
+    "YAMLConfigFileSpec",
+    "YAMLDict",
 ]

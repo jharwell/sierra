@@ -14,10 +14,6 @@
           </popup>
          </menu>
 
-      In the above, ``{menu, popup, menuitem1 menuitem2 menuitem}`` are tags,
-      and each identify unique elements. ``{id, value, onclick}`` are tags
-      identifying attributes.
-
    .. group-tab:: JSON
 
       .. code-block:: JSON
@@ -35,6 +31,21 @@
           }}
 
 
-      In the above, ``{menu, popup, menuitem1 menuitem2 menuitem}`` are tags,
-      and each identify unique elements. ``{id, value, onclick}`` are tags
-      identifying attributes.
+   .. group-tab:: YAML
+
+      .. code-block:: YAML
+
+         menu:
+           id: file
+           value: File
+           popup:
+             menuitem:
+                - value: New
+                  onclick: CreateNewDoc()
+                - value: Open
+                  onclick: OpenDoc()
+                - value: Close
+                  onclick: CloseDoc()
+
+In the above, ``{menu, popup, menuitem}`` are tags, and each identify
+unique elements. ``{id, value, onclick}`` are tags identifying attributes.

@@ -60,7 +60,7 @@ class SimpleBatchScaffoldSpec:
                     len(self.adds[0]),
                 )
         else:
-            raise RuntimeError(("This spec can't be used with compound scaffolding"))
+            raise RuntimeError("This spec can't be used with compound scaffolding")
 
     def __iter__(
         self,
@@ -106,7 +106,7 @@ class CompoundBatchScaffoldSpec:
                 )
 
         else:
-            raise RuntimeError(("This spec can only be used with compound scaffolding"))
+            raise RuntimeError("This spec can only be used with compound scaffolding")
 
     def __len__(self) -> int:
         return self.n_exps
@@ -141,7 +141,7 @@ class ExperimentSpec:
         exp_name = criteria.gen_exp_names()[exp_num]
 
         self.exp_input_root = batch_input_root / exp_name
-        self.exp_def_fpath = self.exp_input_root / config.kPickleLeaf
+        self.exp_def_fpath = self.exp_input_root / config.PICKLE_LEAF
 
         self.logger = logging.getLogger(__name__)
         self.criteria = criteria
@@ -182,11 +182,11 @@ def scaffold_spec_factory(
             criteria.name,
         )
         return CompoundBatchScaffoldSpec(criteria, **kwargs)
-    else:
-        logging.debug(
-            "Create simple batch experiment scaffolding spec for '%s'", criteria.name
-        )
-        return SimpleBatchScaffoldSpec(criteria, **kwargs)
+
+    logging.debug(
+        "Create simple batch experiment scaffolding spec for '%s'", criteria.name
+    )
+    return SimpleBatchScaffoldSpec(criteria, **kwargs)
 
 
 __all__ = ["ExperimentSpec"]

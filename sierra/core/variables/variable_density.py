@@ -15,7 +15,7 @@ import numpy as np
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
 from sierra.core import types
-from sierra.core.experiment import definition  # noqa: F401
+from sierra.core.experiment import definition
 
 
 class VariableDensity(UnivarBatchCriteria):
@@ -31,7 +31,7 @@ class VariableDensity(UnivarBatchCriteria):
         cli_arg: str,
         main_config: types.YAMLDict,
         batch_input_root: pathlib.Path,
-        densities: tp.List[float],
+        densities: list[float],
         extent: ArenaExtent,
     ) -> None:
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
@@ -40,7 +40,7 @@ class VariableDensity(UnivarBatchCriteria):
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
 
-def parse(arg: str) -> tp.List[float]:
+def parse(arg: str) -> list[float]:
     """Enforces specification of a :class:`VariableDensity` derived batch criteria."""
     spec = {}  # type: tp.Dict[str, tp.Union[float, int]]
     sections = arg.split(".")
@@ -64,9 +64,7 @@ def parse(arg: str) -> tp.List[float]:
 
     spec["cardinality"] = int(res.group(0)[1:])
 
-    return list(
-        x for x in np.linspace(spec["min"], spec["max"], num=spec["cardinality"])
-    )
+    return list(np.linspace(spec["min"], spec["max"], num=spec["cardinality"]))
 
 
 def _parse_density(chunk: str, which: str) -> float:

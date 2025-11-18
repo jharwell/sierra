@@ -61,18 +61,17 @@ def proc_batch_exp(
 
 def _build_tasklist_for_exp(
     exp_output_root: pathlib.Path,
-) -> tp.List[tp.Tuple[pathlib.Path, pathlib.Path]]:
+) -> list[tuple[pathlib.Path, pathlib.Path]]:
     """Add all compressed files from experiment to queue for processing.
 
     Enqueueing for processing is done at the file-level rather than
     per-experiment, so that for systems with more CPUs than experiments you
     still get maximum pthroughput.
     """
-    res = []
-    for f in exp_output_root.rglob("*.tar.gz"):
-        res.append((exp_output_root, f.relative_to(exp_output_root)))
-
-    return res
+    return [
+        (exp_output_root, f.relative_to(exp_output_root))
+        for f in exp_output_root.rglob("*.tar.gz")
+    ]
 
 
 def _worker(exp_output_root: pathlib.Path, relpath: pathlib.Path) -> None:

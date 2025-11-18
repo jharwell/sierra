@@ -15,6 +15,7 @@ import subprocess
 import prefect
 
 # Project packages
+from sierra.core import utils
 
 
 @prefect.task(tags=["sierra-exec-jobs-per-node"])
@@ -32,8 +33,8 @@ def exec_exp_run(
     flow_run_id = prefect.runtime.task_run.id
 
     with (
-        open(str(scratch_path) + f"_{flow_run_id}_stdout", "w") as stdout,
-        open(str(scratch_path) + f"_{flow_run_id}_stderr", "w") as stderr,
+        utils.utf8open(str(scratch_path) + f"_{flow_run_id}_stdout", "w") as stdout,
+        utils.utf8open(str(scratch_path) + f"_{flow_run_id}_stderr", "w") as stderr,
     ):
         subprocess.run(
             cmd,
@@ -57,7 +58,7 @@ def sierra(
         scratch_root: Path to the scratch directory for the :term:`Experiment`.
     """
     commands = []
-    with open(input_root / "commands.txt") as f:
+    with utils.utf8open(input_root / "commands.txt") as f:
         commands = [line.strip() for line in f.readlines()]
 
     scratch_stdouts = [scratch_root / f"_run{i}" for i in range(0, len(commands))]

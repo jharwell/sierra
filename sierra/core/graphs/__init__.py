@@ -15,9 +15,9 @@ from .heatmap import generate2 as dual_heatmap
 from .pathset import PathSet
 
 __all__ = [
+    "PathSet",
+    "dual_heatmap",
+    "heatmap",
     "stacked_line",
     "summary_line",
-    "heatmap",
-    "dual_heatmap",
-    "PathSet",
 ]

@@ -16,7 +16,7 @@ import psutil
 import sierra.version
 from sierra.core import utils
 
-kVersionMsg = (
+VERSION_MSG = (
     "reSearch pIpEline for Reproducibility, Reusability and "
     f"Automation (SIERRA) v{sierra.version.__version__}.\n"
     "License: MIT.\n"
@@ -36,7 +36,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     """
 
-    kHelpMsg = (
+    HELP_MSG = (
         "Usage:\n\nsierra-cli [-v | --version] [OPTION]...\n\n"
         "What command line options SIERRA accepts depends on the loaded\n"
         "plugin set. 'man sierra-cli' will give you the full set of options\n"
@@ -51,7 +51,7 @@ class ArgumentParser(argparse.ArgumentParser):
         if file is None:
             file = sys.stdout
 
-        file.write(self.kHelpMsg + "\n")
+        file.write(self.HELP_MSG + "\n")
 
 
 class BaseCmdline:
@@ -75,23 +75,20 @@ class BaseCmdline:
         self.stage5_desc = "Stage 5 options", "Options for product comparison"
 
     @staticmethod
-    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
+    def stage_usage_doc(stages: list[int], omitted: str = "If omitted: N/A.") -> str:
         lst = ",".join(map(str, stages))
-        header = "\n.. TIP:: Used by stage {0}; can be omitted otherwise. {1}\n".format(
+        return "\n.. TIP:: Used by stage {}; can be omitted otherwise. {}\n".format(
             lst, omitted
         )
-        return header
 
     @staticmethod
-    def bc_applicable_doc(criteria: tp.List[str]) -> str:
-        lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
+    def bc_applicable_doc(criteria: list[str]) -> str:
+        lst = "".join("   - " + bc + "\n" for bc in criteria)
         return f"\n.. TIP:: Applicable batch criteria:\n\n{lst}\n"
 
     @staticmethod
-    def graphs_applicable_doc(graphs: tp.List[str]) -> str:
-        lst = "".join(
-            map(lambda graph: "   - " + utils.sphinx_ref(graph) + "\n", graphs)
-        )
+    def graphs_applicable_doc(graphs: list[str]) -> str:
+        lst = "".join("   - " + utils.sphinx_ref(graph) + "\n" for graph in graphs)
         return f"\n.. TIP:: Applicable graphs:\n\n{lst}\n"
 
 
@@ -357,14 +354,14 @@ class CoreCmdline(BaseCmdline):
     """Defines the core command line arguments for SIERRA using :class:`argparse`."""
 
     def __init__(
-        self, parents: tp.Optional[tp.List[ArgumentParser]], stages: tp.List[int]
+        self, parents: tp.Optional[list[ArgumentParser]], stages: list[int]
     ) -> None:
         super().__init__()
 
         self.scaffold_cli(parents)
         self.init_cli(stages)
 
-    def scaffold_cli(self, parents: tp.Optional[tp.List[ArgumentParser]]) -> None:
+    def scaffold_cli(self, parents: tp.Optional[list[ArgumentParser]]) -> None:
         """
         Scaffold CLI by defining the parser and common argument groups.
         """
@@ -407,7 +404,7 @@ class CoreCmdline(BaseCmdline):
                         """,
         )
 
-    def init_cli(self, stages: tp.List[int]) -> None:
+    def init_cli(self, stages: list[int]) -> None:
         """Define cmdline arguments for stages 1-5."""
         if -1 in stages:
             self.init_multistage()
@@ -537,6 +534,7 @@ class CoreCmdline(BaseCmdline):
 
         self.multistage.add_argument(
             "--batch-criteria",
+            "--bc",
             metavar="[<category>.<definition>,...]",
             help="""
                  Definition of criteria(s) to use to define the experiment.

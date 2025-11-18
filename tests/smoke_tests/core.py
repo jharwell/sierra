@@ -72,7 +72,7 @@ def core_builtin_bc(session):
     # Generate batch root path for Monte Carlo
     bc = ["builtin.MonteCarlo.C5"]
     template_stem = "template"
-    scenario = "scenario1.10x10x10"
+    scenario = "scenario1"
     leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=session.env["SIERRA_ROOT"],

@@ -13,11 +13,8 @@ jobs:
     container: ${{ inputs.container }}
     strategy:
       matrix:
-        # 2024/08/26: Test the earliest and latest supported version, to speed
-        # up CI. Well, that's what it should do, but linting doesn't work for >
-        # 3.10 (see pyproject.toml for details).
         python-version:
-          - "3.10"
+          - "3.12"
 
         session:
           - lint
@@ -29,6 +26,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run nox
         run: |
+          #
+          # 2025-11-19 [JRH]: Manually installing astroid to its latest version
+          # is necessary to get pylint to work. Maybe someday this won't be
+          # needed.
           uv sync -p ${{ matrix.python-version }} --group dev && \
           uv run -p ${{ matrix.python-version }} nox \
             --pythons ${{ matrix.python-version }} \

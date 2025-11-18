@@ -55,7 +55,7 @@ class BatchExpDefGenerator:
         # configuration file.
         self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
 
-        assert self.batch_config_template.is_file(), "'{0}' is not a valid file".format(
+        assert self.batch_config_template.is_file(), "'{}' is not a valid file".format(
             self.batch_config_template
         )
 
@@ -76,7 +76,7 @@ class BatchExpDefGenerator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def generate_defs(self) -> tp.List[definition.BaseExpDef]:
+    def generate_defs(self) -> list[definition.BaseExpDef]:
         """Generate and return the batch experiment definition.
 
         Returns:
@@ -224,6 +224,7 @@ class BatchExpCreator:
             exp_pathset = exproot.PathSet(
                 self.pathset, self.criteria.gen_exp_names()[i]
             )
+
             ExpCreator(
                 self.cmdopts,
                 self.criteria,
@@ -235,9 +236,9 @@ class BatchExpCreator:
     def _init_cmdfile(self, paradigm: str) -> None:
         # Commands file stored in batch input root
         if paradigm == "per-batch":
-            path = self.pathset.root / config.kGNUParallel["cmdfile_stem"]
-            if utils.path_exists(path.with_suffix(config.kGNUParallel["cmdfile_ext"])):
-                path.with_suffix(config.kGNUParallel["cmdfile_ext"]).unlink()
+            path = self.pathset.root / config.GNU_PARALLEL["cmdfile_stem"]
+            if utils.path_exists(path.with_suffix(config.GNU_PARALLEL["cmdfile_ext"])):
+                path.with_suffix(config.GNU_PARALLEL["cmdfile_ext"]).unlink()
 
 
 class ExpCreator:
@@ -270,13 +271,13 @@ class ExpCreator:
         self.logger = logging.getLogger(__name__)
 
         # If random seeds where previously generated, use them if configured
-        self.seeds_fpath = self.pathset.input_root / config.kRandomSeedsLeaf
+        self.seeds_fpath = self.pathset.input_root / config.RANDOM_SEEDS_LEAF
         self.preserve_seeds = self.cmdopts["preserve_seeds"]
         self.random_seeds = None
 
         if self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
-                with open(self.seeds_fpath, "rb") as f:
+                with self.seeds_fpath.open("rb") as f:
                     self.random_seeds = pickle.load(f)
 
             if self.random_seeds is not None:
@@ -284,7 +285,7 @@ class ExpCreator:
                     self.logger.trace(
                         "Using existing random seeds for experiment%s", self.exp_num
                     )
-                elif len(self.random_seeds) != self.cmdopts["n_runs"]:
+                elif len(self.random_seeds) != int(self.cmdopts["n_runs"]):
                     # OK to overwrite the saved random seeds--they changed the
                     # experiment definition.
                     self.logger.warning(
@@ -304,7 +305,7 @@ class ExpCreator:
                 "Generating new random seeds for experiment%s", self.exp_num
             )
             self.random_seeds = random.sample(
-                range(0, int(time.time())), self.cmdopts["n_runs"]
+                range(0, int(time.time())), int(self.cmdopts["n_runs"])
             )
 
     def from_def(
@@ -332,7 +333,7 @@ class ExpCreator:
         self.logger.debug(
             "Creating %s runs in exp%s", self.cmdopts["n_runs"], self.exp_num
         )
-        for run_num in range(self.cmdopts["n_runs"]):
+        for run_num in range(int(self.cmdopts["n_runs"])):
             per_run = copy.deepcopy(exp_def)
             self._create_exp_run(
                 per_run, generator, run_num, cmdfile_path, parallelism_paradigm
@@ -346,8 +347,8 @@ class ExpCreator:
         # Save seeds
         if not utils.path_exists(self.seeds_fpath) or not self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
-                os.remove(self.seeds_fpath)
-            with open(self.seeds_fpath, "ab") as f:
+                self.seeds_fpath.unlink()
+            with self.seeds_fpath.open("ab") as f:
                 utils.pickle_dump(self.random_seeds, f)
 
     def _create_exp_run(
@@ -388,7 +389,7 @@ class ExpCreator:
         configurer = engine.ExpConfigurer(self.cmdopts)
         configurer.for_exp_run(self.pathset.input_root, run_output_root)
 
-        ext = config.kGNUParallel["cmdfile_ext"]
+        ext = config.GNU_PARALLEL["cmdfile_ext"]
         if parallelism_paradigm in ["per-exp", "per-batch"]:
             # Update commands file with the command for the configured
             # experimental run.
@@ -408,7 +409,7 @@ class ExpCreator:
             master_fpath = f"{cmdfile_path}_run{run_num}_master{ext}"
             slave_fpath = f"{cmdfile_path}_run{run_num}_slave{ext}"
 
-            self.logger.trace("Updating slave cmdfile %s", slave_fpath)  # type: ignore
+            self.logger.trace("Updating slave cmdfile %s", slave_fpath)
             with utils.utf8open(slave_fpath, "w") as cmds_file:
                 self._update_cmdfile(
                     cmds_file,
@@ -420,9 +421,7 @@ class ExpCreator:
                     "slave",
                 )
 
-            self.logger.trace(
-                "Updating master cmdfile %s", master_fpath  # type: ignore
-            )
+            self.logger.trace("Updating master cmdfile %s", master_fpath)
             with utils.utf8open(master_fpath, "w") as cmdfile:
                 self._update_cmdfile(
                     cmdfile,
@@ -442,21 +441,21 @@ class ExpCreator:
     def _init_cmdfile(self, paradigm: str) -> pathlib.Path:
         # Commands file stored in batch input root
         if paradigm == "per-batch":
-            path = self.pathset.parent / config.kGNUParallel["cmdfile_stem"]
+            path = self.pathset.parent / config.GNU_PARALLEL["cmdfile_stem"]
         # Commands file stored in input root for each experiment.
-        elif paradigm == "per-exp":
-            path = self.pathset.input_root / config.kGNUParallel["cmdfile_stem"]
-        elif paradigm == "per-run":
-            path = self.pathset.input_root / config.kGNUParallel["cmdfile_stem"]
+        elif paradigm in {"per-exp", "per-run"}:
+            path = self.pathset.input_root / config.GNU_PARALLEL["cmdfile_stem"]
+        else:
+            raise ValueError(f"Bad value for parallelism paradigm: {paradigm}")
 
         # Clear out commands file if it exists and is per-batch/per-exp, because
         # those files are appended to as we generate each experiment. We
         # don't need to do that for per-run parallelism, because those files are
         # not.
         if paradigm == "per-exp" and utils.path_exists(
-            path.with_suffix(config.kGNUParallel["cmdfile_ext"])
+            path.with_suffix(config.GNU_PARALLEL["cmdfile_ext"])
         ):
-            path.with_suffix(config.kGNUParallel["cmdfile_ext"]).unlink()
+            path.with_suffix(config.GNU_PARALLEL["cmdfile_ext"]).unlink()
 
         return path
 
@@ -476,21 +475,21 @@ class ExpCreator:
             spec.shell for spec in pre_specs
         ), "All pre-exp commands are run in a shell"
         pre_cmds = [spec.cmd for spec in pre_specs]
-        self.logger.trace("Pre-experiment cmds: %s", pre_cmds)  # type: ignore
+        self.logger.trace("Pre-experiment cmds: %s", pre_cmds)
 
         exec_specs = cmds_generator.exec_run_cmds(for_host, launch_stem_path, run_num)
         assert all(
             spec.shell for spec in exec_specs
         ), "All exec-exp commands are run in a shell"
         exec_cmds = [spec.cmd for spec in exec_specs]
-        self.logger.trace("Exec-experiment cmds: %s", exec_cmds)  # type: ignore
+        self.logger.trace("Exec-experiment cmds: %s", exec_cmds)
 
         post_specs = cmds_generator.post_run_cmds(for_host, run_output_root)
         assert all(
             spec.shell for spec in post_specs
         ), "All post-exp commands are run in a shell"
         post_cmds = [spec.cmd for spec in post_specs]
-        self.logger.trace("Post-experiment cmds: %s", post_cmds)  # type: ignore
+        self.logger.trace("Post-experiment cmds: %s", post_cmds)
 
         if len(pre_cmds + exec_cmds + post_cmds) == 0:
             self.logger.debug("Skipping writing %s cmds file: no cmds", for_host)
@@ -515,14 +514,12 @@ class ExpCreator:
         # of your configured agents doing things simultaneously in an
         # experiment.
         if paradigm in ["per-exp", "per-batch"]:
-            line = " ".join(pre_cmds + exec_cmds + post_cmds) + "\n"
-            cmdfile.write(line)
+            cmdfile.write(" ".join(pre_cmds + exec_cmds + post_cmds) + "\n")
         elif paradigm == "per-run":
             for e in exec_cmds:
-                line = " ".join(pre_cmds + [e] + post_cmds) + "\n"
-                cmdfile.write(line)
+                cmdfile.write(" ".join([*pre_cmds, e, *post_cmds]) + "\n")
         else:
             raise ValueError(f"Bad paradigm {paradigm}")
 
 
-__all__ = ["ExpCreator", "BatchExpCreator", "BatchExpDefGenerator"]
+__all__ = ["BatchExpCreator", "BatchExpDefGenerator", "ExpCreator"]

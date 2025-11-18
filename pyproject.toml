@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.1"
+version = "1.5.3"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -20,8 +20,9 @@ dependencies = [
     "haggis",
     "implements",
     "jsonpath-ng",
+    "yamlpath",
+    "ruamel.yaml",
     "matplotlib",
-    "netifaces",
     "numpy",
     "pandas",
     "pyarrow",
@@ -59,9 +60,6 @@ classifiers = [
 
 [dependency-groups]
 analysis = [
-     # Only compatible with python <= 3.10. Latest version (3.3.6) not
-     # compatible with 3.11 or 3.12, so pinning for now. Hopefully
-     # this will be fixed eventually.
     'pylint',
     'pytype',
     'pydocstyle',
@@ -79,6 +77,7 @@ ci = [
     'pytest-cov',
     'xmldiff',
     'jsondiff',
+    "deepdiff",
     'coverage',
     'coveralls',
     'pyproject-parser[cli]',
@@ -86,21 +85,19 @@ ci = [
 ]
 
 docs = [
-     # This matching results in badly formatted tables in some
-     # manpages, so will need to be updated with a later version that
-     # has a fix.
-    "sphinx==7.4.0",
-    "docutils>=0.18.1,<0.21",
-
+    "sphinx",
+    "docutils",
     "sphinx-rtd-theme",
-    "sphinx-argparse==0.4.0",
+    "sphinx-argparse",
     "sphinx-tabs",
     "sphinxcontrib-napoleon",
     "sphinxcontrib-video",
     "psutil",
     "sphinx-last-updated-by-git",
     "graphviz",
-    "sphinx-autoapi",
+
+    # 2025-11-21 [JRH]: Pinning to avoid errors with sphinx-autoapi. 
+    "sphinx-autoapi==3.1.0",
     "toml",
     "sphinx-autobuild",
     "sphinxcontrib-plantuml"
@@ -148,3 +145,122 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
+
+[tool.ruff]
+# File discovery and exclusions
+extend-exclude = [
+]
+
+# Line length and formatting
+line-length = 100
+indent-width = 4
+
+# Python version
+target-version = "py39"
+
+[tool.ruff.lint]
+# Enable comprehensive rule sets
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    # "I",      # isort. Disabled for now because it messes with the
+    # nice ordering already in place.
+    "N",      # pep8-naming
+    "PL",     # pylint
+    "C90",    # mccabe complexity
+    "UP",     # pyupgrade (modernization)
+    "B",      # flake8-bugbear
+    "A",      # flake8-builtins
+    "COM",    # flake8-commas
+    "C4",     # flake8-comprehensions
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "SIM",    # flake8-simplify
+    # "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate (commented-out code)
+    "PD",     # pandas-vet
+    "PGH",    # pygrep-hooks
+    "FLY",    # flynt (string formatting)
+    "PERF",   # perflint (performance)
+    "RUF",    # ruff-specific rules
+]
+
+# Disable rules based on your pylintrc
+ignore = [
+    "E501",      # line-too-long (handled by formatter)
+    "D",         # pydocstyle (missing-function-docstring was disabled)
+    "ARG001",    # unused-function-argument (was unused-argument)
+    "F401",      # unused-import
+    "PLR0904",   # too-many-public-methods (more lenient in modern code)
+    "PLR2004",   # Magic numbers
+    "PD901",     # Naming dataframes 'df',
+    "PERF203",   # Using try-catch inside a loop
+    "COM812",    # trailing-comma (conflicts with formatter)
+    "ISC001",    # implicit-str-concat (conflicts with formatter),
+    "UP032",     # f-string (convert to f-strings)
+    "N806",      # Variable in function should be lowercase (allows X, Y, etc.)
+    "N803",      # Argument name should be lowercase (allows q, bc, etc.)
+]
+
+# Allow auto-fixing for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Per-file ignores (if needed)
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+[tool.ruff.lint.pylint]
+# Design limits from your DESIGN section
+max-args = 7
+max-branches = 12
+max-returns = 6
+max-statements = 50
+max-locals = 15
+# max-attributes = 10
+max-bool-expr = 5
+max-public-methods = 20
+max-nested-blocks = 5
+
+# Module limits
+# max-module-lines = 1500
+
+[tool.ruff.lint.mccabe]
+# Complexity threshold
+max-complexity = 10
+
+[tool.ruff.lint.flake8-quotes]
+# String quote consistency (from your STRING section)
+inline-quotes = "double"
+docstring-quotes = "double"
+
+[tool.ruff.lint.flake8-builtins]
+# Allow certain redefined builtins if needed
+builtins-ignorelist = []
+
+[tool.ruff.lint.pep8-naming]
+# Naming conventions from your BASIC section
+# Most of your naming rules are already covered by default
+
+# Allow specific variable names (your good-names)
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.format]
+# Formatting configuration
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# Respect magic trailing commas
+docstring-code-format = true
+docstring-code-line-length = 80
+
+[tool.pytype]
+# 2025-11-20 [JRH]: Because the logging.trace() callings get flagged
+# otherwise. This is terrible because it can hide some true positives,
+# but I cannot get the typeshed/stub stuff to work for pytype.
+disable= ["module-attr", "attribute-error"]

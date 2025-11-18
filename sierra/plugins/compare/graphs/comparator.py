@@ -48,7 +48,7 @@ class BaseComparator:
 
     def __init__(
         self,
-        things: tp.List[str],
+        things: list[str],
         stage5_roots: outputroot.PathSet,
         cmdopts: types.Cmdopts,
         cli_args: argparse.Namespace,
@@ -67,10 +67,22 @@ class BaseComparator:
         self.logger.debug("csv_root=%s", str(self.stage5_roots.csv_root))
         self.logger.debug("graph_root=%s", str(self.stage5_roots.graph_root))
 
+    def exp_select(self) -> list[batchroot.ExpRoot]:
+        raise NotImplementedError
+
+    def compare(
+        self,
+        cmdopts: types.Cmdopts,
+        graph: types.YAMLDict,
+        roots: list[batchroot.ExpRoot],
+        legend: list[str],
+    ) -> None:
+        raise NotImplementedError
+
     def __call__(
         self,
-        target_graphs: tp.List[types.YAMLDict],
-        legend: tp.List[str],
+        target_graphs: list[types.YAMLDict],
+        legend: list[str],
     ) -> None:
         self._check_comparability()
 
@@ -94,9 +106,9 @@ class BaseComparator:
         for graph in target_graphs:
             try:
                 if self.cmdopts["across"] == "controllers":
-                    graph = strictyaml.load(yaml.dump(graph), schema.cc).data
+                    loaded = strictyaml.load(yaml.dump(graph), schema.cc).data
                 elif self.cmdopts["across"] == "scenarios":
-                    graph = strictyaml.load(yaml.dump(graph), schema.sc).data
+                    loaded = strictyaml.load(yaml.dump(graph), schema.sc).data
                 elif self.cmdopts["across"] == "criterias":
                     raise NotImplementedError
             except strictyaml.YAMLError as e:
@@ -104,7 +116,7 @@ class BaseComparator:
                 raise
 
             self.compare(
-                cmdopts=self.cmdopts, graph=graph, roots=selected, legend=legend
+                cmdopts=self.cmdopts, graph=loaded, roots=selected, legend=legend
             )
 
     def _check_comparability(self) -> None:
@@ -148,7 +160,7 @@ class BaseComparator:
                     if not interexp_root1.exists():
                         self.logger.debug(
                             "%s cannot be compared in/across for %s: %s does not exist",
-                            leaf1.scenario,
+                            scenario,
                             c1,
                             interexp_root1,
                         )
@@ -186,7 +198,7 @@ class BaseComparator:
                 if not interexp_root2.exists():
                     self.logger.debug(
                         "%s cannot be compared in/across for %s: %s does not exist",
-                        leaf1.scenario,
+                        scenario2,
                         c2,
                         interexp_root2,
                     )
@@ -270,7 +282,7 @@ class BaseComparator:
             if not interexp_root2.exists():
                 self.logger.debug(
                     "%s cannot be compared in/across for %s: %s does not exist",
-                    leaf1.scenario,
+                    candidate2,
                     s2,
                     interexp_root2,
                 )

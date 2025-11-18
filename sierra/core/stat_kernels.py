@@ -1,9 +1,8 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Kernels for the different types of statistics generated from experiments.
+"""Kernels for the different types of statistics generated from experiments."""
 
-"""
 # Core packages
 import typing as tp
 import math
@@ -16,7 +15,9 @@ import numpy as np
 from sierra.core import config
 
 
-class conf95:
+def conf95(
+    groupby: pd.core.groupby.generic.DataFrameGroupBy,
+) -> dict[str, pd.DataFrame]:
     """Generate stddev statistics plotting for 95% confidence intervals.
 
     Applicable to:
@@ -25,41 +26,19 @@ class conf95:
     - :func:`~sierra.core.graphs.summary_line`
 
     """
-    @staticmethod
-    def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
-                                                                                   pd.DataFrame]:
-        return _conf95_kernel(groupby, groupby=True)
-
-    @staticmethod
-    def from_pm(dfs: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
-        ret = {}
-
-        for exp in dfs.keys():
-            ret[exp] = _conf95_kernel(dfs[exp], groupby=False)
-
-        return ret
+    return _conf95_kernel(groupby, groupby=True)
 
 
-class mean:
+def mean(
+    groupby: pd.core.groupby.generic.DataFrameGroupBy,
+) -> dict[str, pd.DataFrame]:
     """
     Generate mean statistics only. Applicable to line graphs and heatmaps.
     """
-    @staticmethod
-    def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
-                                                                                   pd.DataFrame]:
-        return _mean_kernel(groupby, groupby=True)
-
-    @staticmethod
-    def from_pm(dfs: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
-        ret = {}
-
-        for exp in dfs.keys():
-            ret[exp] = _mean_kernel(dfs[exp], groupby=False)
-
-        return ret
+    return _mean_kernel(groupby, groupby=True)
 
 
-class bw:
+def bw(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> dict[str, pd.DataFrame]:
     """
     Generate statistics for plotting box and whisker plots around data points.
 
@@ -67,22 +46,10 @@ class bw:
 
     - :func:`~sierra.core.graphs.summary_line`
     """
-    @staticmethod
-    def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:
-        return _bw_kernel(groupby, groupby=True, n_runs=groupby.size().values[0])
-
-    @staticmethod
-    def from_pm(dfs: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.core.groupby.generic.DataFrameGroupBy]:
-        ret = {}
-        for exp in dfs.keys():
-            ret[exp] = _bw_kernel(dfs[exp],
-                                  groupby=False,
-                                  n_runs=len(dfs[exp].columns))
-
-        return ret
+    return _bw_kernel(groupby, groupby=True, n_runs=groupby.size().to_numpy()[0])
 
 
-def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
+def _conf95_kernel(df_like, groupby: bool) -> dict[str, pd.DataFrame]:
     # This is (apparently?) a bug in pandas: if the dataframe only has a single
     # row, then passing axis=1 when calculating mean, median, etc., does not
     # work, as the functions do NOT do their calculating across the single row,
@@ -92,12 +59,12 @@ def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStats['mean'].exts['mean']: _fillna(df_like.mean().round(8)),
-        config.kStats['conf95'].exts['stddev']: _fillna(df_like.std().round(8))
+        config.STATS["mean"].exts["mean"]: _fillna(df_like.mean().round(8)),
+        config.STATS["conf95"].exts["stddev"]: _fillna(df_like.std().round(8)),
     }
 
 
-def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
+def _mean_kernel(df_like, groupby: bool) -> dict[str, pd.DataFrame]:
     # This is (apparently?) a bug in pandas: if the dataframe only has a single
     # row, then passing axis=1 when calculating mean, median, etc., does not
     # work, as the functions do NOT do their calculating across the single row,
@@ -106,12 +73,10 @@ def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
     if not groupby:
         df_like = df_like.iloc[0, :]
 
-    return {
-        config.kStats['mean'].exts['mean']: _fillna(df_like.mean().round(8))
-    }
+    return {config.STATS["mean"].exts["mean"]: _fillna(df_like.mean().round(8))}
 
 
-def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame]:
+def _bw_kernel(df_like, groupby: bool, n_runs: int) -> dict[str, pd.DataFrame]:
     # This is (apparently?) a bug in pandas: if the dataframe only has a single
     # row, then passing axis=1 when calculating mean, median, etc., does not
     # work, as the functions do NOT do their calculating across the single row,
@@ -137,32 +102,30 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame
     csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_runs)
 
     return {
-        config.kStats['mean'].exts['mean']: csv_mean,
-        config.kStats['bw'].exts['median']: csv_median,
-        config.kStats['bw'].exts['q1']: csv_q1,
-        config.kStats['bw'].exts['q3']: csv_q3,
-        config.kStats['bw'].exts['cilo']: csv_cilo,
-        config.kStats['bw'].exts['cihi']: csv_cihi,
-        config.kStats['bw'].exts['whislo']: csv_whislo,
-        config.kStats['bw'].exts['whishi']: csv_whishi
+        config.STATS["mean"].exts["mean"]: csv_mean,
+        config.STATS["bw"].exts["median"]: csv_median,
+        config.STATS["bw"].exts["q1"]: csv_q1,
+        config.STATS["bw"].exts["q3"]: csv_q3,
+        config.STATS["bw"].exts["cilo"]: csv_cilo,
+        config.STATS["bw"].exts["cihi"]: csv_cihi,
+        config.STATS["bw"].exts["whislo"]: csv_whislo,
+        config.STATS["bw"].exts["whishi"]: csv_whishi,
     }
 
 
-def _fillna(df_like: tp.Union[pd.DataFrame, np.float64, float]) -> tp.Union[pd.DataFrame,
-                                                                            np.float64]:
+def _fillna(
+    df_like: tp.Union[pd.DataFrame, np.float64, float],
+) -> tp.Union[pd.DataFrame, np.float64]:
     # This is the general case for generating stats from a set of dataframes.
     if isinstance(df_like, pd.DataFrame):
         return df_like.fillna(0)
+
     # This case is for performance measure stats which operate on pd.Series,
     # which returns a single scalar.
-    elif isinstance(df_like, (np.float64, float)):
+    if isinstance(df_like, (np.float64, float)):
         return np.nan_to_num(df_like, nan=0)
 
     raise TypeError(f"Unknown type={type(df_like)}, value={df_like}")
 
 
-__all__ = [
-    'conf95',
-    'mean',
-    'bw'
-]
+__all__ = ["bw", "conf95", "mean"]

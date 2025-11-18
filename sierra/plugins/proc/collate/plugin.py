@@ -73,7 +73,7 @@ def proc_batch_exp(
 def _execute_for_batch(
     main_config: types.YAMLDict,
     pathset: batchroot.PathSet,
-    exp_to_proc: tp.List[pathlib.Path],
+    exp_to_proc: list[pathlib.Path],
     worker_opts: types.SimpleDict,
     pool_opts: types.SimpleDict,
     pool,
@@ -179,13 +179,12 @@ class ExpDataGatherer(gather.BaseGatherer):
 
     def calc_gather_items(
         self, run_output_root: pathlib.Path, exp_name: str
-    ) -> tp.List[gather.GatherSpec]:
-        to_gather = []
+    ) -> list[gather.GatherSpec]:
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
         config_path = pathlib.Path(
-            self.gather_opts["project_config_root"], config.kYAML.collate
+            self.gather_opts["project_config_root"], config.PROJECT_YAML.collate
         )
 
         try:
@@ -195,6 +194,7 @@ class ExpDataGatherer(gather.BaseGatherer):
             self.logger.warning("%s does not exist!", config_path)
             collate_config = {}
 
+        to_gather = []
         for item in proj_output_root.rglob("*"):
             # Must be a file (duh)
             if not item.is_file():
@@ -216,14 +216,16 @@ class ExpDataGatherer(gather.BaseGatherer):
             # If we get a file match, then all the columns from that file should
             # be added to the set of things to collate.
             for conf in perf_confs:
-                for col in conf["cols"]:
-                    to_gather.append(
+                to_gather.extend(
+                    [
                         gather.GatherSpec(
                             exp_name=exp_name,
                             item_stem_path=item.relative_to(proj_output_root),
                             collate_col=col,
                         )
-                    )
+                        for col in conf["cols"]
+                    ]
+                )
         return to_gather
 
 
@@ -253,19 +255,20 @@ def _proc_single_exp(
         collate_df = df[spec.gather.collate_col]
         collated[key][spec.exp_run_names[i]] = collate_df
 
-    for file_path, col in collated:
-        df = utils.df_fill(collated[(file_path, col)], process_opts["df_homogenize"])
+    for k, v in collated.items():
+        file_path, col = k
+        df = utils.df_fill(v, process_opts["df_homogenize"])
         parent = batch_stat_collate_root / spec.gather.exp_name / file_path.parent
         utils.dir_create_checked(parent, exist_ok=True)
 
         # This preserves the directory structure of stuff in the per-run output
         # run; if something is in a subdir there, it will show up in a subdir in
         # the collated outputs too.
-        fname = f"{file_path.stem}-{col}" + config.kStorageExt["csv"]
+        fname = f"{file_path.stem}-{col}" + config.STORAGE_EXT["csv"]
         storage.df_write(df, parent / fname, "storage.csv", index=False)
 
 
 __all__ = [
-    "proc_batch_exp",
     "ExpDataGatherer",
+    "proc_batch_exp",
 ]

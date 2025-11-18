@@ -33,7 +33,7 @@ Before beginning, create the following filesystem structure in
 
 - ``plugin.py`` - This file is required, and is where most of the bits for the
   plugin will go. You don't *have* to call it this; if you want to use a
-   different name, see :ref:`plugins/devguide/schemas` for options.
+  different name, see :ref:`plugins/devguide/schemas` for options.
 
 - ``cmdline.py`` This file is optional. If your new engine doesn't need any
   additional cmdline arguments, you can skip it.

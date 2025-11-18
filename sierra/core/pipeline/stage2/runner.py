@@ -11,7 +11,7 @@ import sys
 import datetime
 import logging
 import pathlib
-import typing as tp  # noqa: F401
+import typing as tp
 
 # 3rd party packages
 
@@ -40,7 +40,7 @@ class ExpShell:
         self.exec_strict = exec_strict
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
-        self.logger.trace("Cmd: %s", spec.cmd)  # type: ignore
+        self.logger.trace("Cmd: %s", spec.cmd)
 
         # We use a special marker at the end of the cmd's output to know when
         # the environment dump starts.
@@ -86,13 +86,11 @@ class ExpShell:
                 "\n" + "\n".join(stderr_str.split("\n")[-10:]),
             )
             if self.exec_strict:
-                raise RuntimeError(
-                    ("Command failed and strict checking was " "requested")
-                )
+                raise RuntimeError("Command failed and strict checking was requested")
 
             return False
-        else:
-            return True
+
+        return True
 
     def _update_env(self, stdout) -> None:
         record = False
@@ -296,9 +294,9 @@ class SequentialRunner:
             "work_dir": exp_input_root,
             "exp_scratch_root": str(exp_scratch_root),
             "cmdfile_stem_path": str(
-                exp_input_root / config.kGNUParallel["cmdfile_stem"]
+                exp_input_root / config.GNU_PARALLEL["cmdfile_stem"]
             ),
-            "cmdfile_ext": config.kGNUParallel["cmdfile_ext"],
+            "cmdfile_ext": config.GNU_PARALLEL["cmdfile_ext"],
             "exec_resume": self.cmdopts["exec_resume"],
             "n_jobs": self.cmdopts["exec_jobs_per_node"],
             "nodefile": self.cmdopts["nodefile"],
@@ -331,7 +329,7 @@ class ParallelRunner:
         pathset: batchroot.PathSet,
         cmdopts: types.Cmdopts,
         exec_times_fpath: pathlib.Path,
-        exp_all: tp.List[pathlib.Path],
+        exp_all: list[pathlib.Path],
         shell: ExpShell,
     ) -> None:
 
@@ -342,7 +340,7 @@ class ParallelRunner:
         self.pathset = pathset
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, exp_to_run: tp.List[pathlib.Path]) -> None:
+    def __call__(self, exp_to_run: list[pathlib.Path]) -> None:
         """Execute all experimental runs for all experiments."""
 
         self.logger.info("Kicking off all experiments in <batchroot>")
@@ -357,9 +355,9 @@ class ParallelRunner:
             "work_dir": str(self.pathset.root),
             "batch_scratch_root": str(self.pathset.scratch_root),
             "cmdfile_stem_path": str(
-                self.pathset.root / config.kGNUParallel["cmdfile_stem"]
+                self.pathset.root / config.GNU_PARALLEL["cmdfile_stem"]
             ),
-            "cmdfile_ext": config.kGNUParallel["cmdfile_ext"],
+            "cmdfile_ext": config.GNU_PARALLEL["cmdfile_ext"],
             "exec_resume": self.cmdopts["exec_resume"],
             "n_jobs": self.cmdopts["exec_jobs_per_node"],
         }
@@ -398,4 +396,4 @@ class ParallelRunner:
             f.write(": " + str(sec) + "\n")
 
 
-__all__ = ["BatchExpRunner", "SequentialRunner", "ParallelRunner", "ExpShell"]
+__all__ = ["BatchExpRunner", "ExpShell", "ParallelRunner", "SequentialRunner"]

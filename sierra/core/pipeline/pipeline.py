@@ -90,7 +90,7 @@ class Pipeline:
             PipelineStage1(
                 self.cmdopts,
                 self.pathset,
-                self.controller,  # type: ignore
+                self.controller,
                 self.batch_criteria,
             ).run()
 
@@ -115,7 +115,7 @@ class Pipeline:
         longforms = {
             # multistage
             "pipeline": self.args.pipeline,
-            "sierra_root": os.path.expanduser(self.args.sierra_root),
+            "sierra_root": pathlib.Path(self.args.sierra_root).expanduser(),
             "scenario": self.args.scenario,
             "expdef_template": self.args.expdef_template,
             "project": self.args.project,
@@ -151,14 +151,14 @@ class Pipeline:
         cmdopts |= module.to_cmdopts(self.args)
 
         # Load additional cmdline options from --execenv
-        path = "{0}.cmdline".format(cmdopts["execenv"])
+        path = "{}.cmdline".format(cmdopts["execenv"])
         if pm.module_exists(path):
             self.logger.debug("Updating cmdopts from --execenv=%s", cmdopts["execenv"])
             module = pm.module_load_tiered(path)
             cmdopts |= module.to_cmdopts(self.args)
 
         # Load additional cmdline options from --expdef
-        path = "{0}.cmdline".format(cmdopts["expdef"])
+        path = "{}.cmdline".format(cmdopts["expdef"])
         if pm.module_exists(path):
             self.logger.debug("Updating cmdopts from --expdef=%s", cmdopts["expdef"])
             module = pm.module_load_tiered(path)
@@ -166,28 +166,28 @@ class Pipeline:
 
         # Load additional cmdline options from --proc plugins
         for p in cmdopts["proc"]:
-            path = "{0}.cmdline".format(p)
+            path = "{}.cmdline".format(p)
             if pm.module_exists(path):
                 self.logger.debug("Updating cmdopts from --proc=%s", p)
                 module = pm.module_load_tiered(path)
                 cmdopts |= module.to_cmdopts(self.args)
 
         for p in cmdopts["prod"]:
-            path = "{0}.cmdline".format(p)
+            path = "{}.cmdline".format(p)
             if pm.module_exists(path):
                 self.logger.debug("Updating cmdopts from --prod=%s", p)
                 module = pm.module_load_tiered(path)
                 cmdopts |= module.to_cmdopts(self.args)
 
         for p in cmdopts["compare"]:
-            path = "{0}.cmdline".format(p)
+            path = "{}.cmdline".format(p)
             if pm.module_exists(path):
                 self.logger.debug("Updating cmdopts from --compare=%s", p)
                 module = pm.module_load_tiered(path)
                 cmdopts |= module.to_cmdopts(self.args)
 
         # Load additional cmdline options from --storage
-        path = "{0}.cmdline".format(cmdopts["storage"])
+        path = "{}.cmdline".format(cmdopts["storage"])
         if pm.module_exists(path):
             self.logger.debug("Updating cmdopts from --storage=%s", cmdopts["storage"])
             module = pm.module_load_tiered(path)
@@ -197,7 +197,7 @@ class Pipeline:
         # because all projects have to define --controller and --scenario
         # at a minimum.
         self.logger.debug("Updating cmdopts from --project=%s", cmdopts["project"])
-        path = "{0}.cmdline".format(cmdopts["project"])
+        path = "{}.cmdline".format(cmdopts["project"])
         module = pm.module_load(path)
         cmdopts |= module.to_cmdopts(self.args)
 
@@ -234,20 +234,18 @@ class Pipeline:
         }
         ret = {}
 
-        for k in shortform_map:
+        for k, v in shortform_map.items():
             passed = getattr(self.args, k, None)
             if not passed:
                 self.logger.trace(
-                    ("No shortform args for -%s -> --%s passed to SIERRA"),
-                    k,
-                    shortform_map[k],
+                    ("No shortform args for -%s -> --%s passed to SIERRA"), k, v
                 )
                 continue
 
             self.logger.trace(
                 "Collected shortform args for -%s -> --%s: %s",
                 k,
-                shortform_map[k],
+                v,
                 passed,
             )
 
@@ -261,17 +259,15 @@ class Pipeline:
                 if len(p) == 1 and "=" not in p[0]:  # boolean
                     # Boolean shortfrom flags should store False if they contain
                     # "no", as a user would expect.
-                    key = "{0}_{1}".format(
-                        shortform_map[k], p[0].replace("-", "_").replace("no_", "")
-                    )
+                    key = "{}_{}".format(v, p[0].replace("-", "_").replace("no_", ""))
                     ret[key] = "no" not in p[0]
 
                 elif len(p) == 1 and "=" in p[0]:
                     arg, value = p[0].split("=")
-                    key = "{0}_{1}".format(shortform_map[k], arg.replace("-", "_"))
+                    key = "{}_{}".format(v, arg.replace("-", "_"))
                     ret[key] = value
                 else:
-                    key = "{0}_{1}".format(shortform_map[k], p[1:].replace("-", "_"))
+                    key = "{}_{}".format(v, p[1:].replace("-", "_"))
                     ret[key] = p[1:]
 
         return ret
@@ -281,7 +277,9 @@ class Pipeline:
             "Loading project config from '%s'", self.cmdopts["project_config_root"]
         )
 
-        main_path = pathlib.Path(self.cmdopts["project_config_root"], config.kYAML.main)
+        main_path = pathlib.Path(
+            self.cmdopts["project_config_root"], config.PROJECT_YAML.main
+        )
         try:
             with utils.utf8open(main_path) as f:
                 self.main_config = yaml.load(f, yaml.FullLoader)

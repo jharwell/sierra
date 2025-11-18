@@ -20,7 +20,7 @@ def inter_exp_calc(
     loaded_graphs: types.YAMLDict,
     controller_config: tp.Optional[types.YAMLDict],
     cmdopts: types.Cmdopts,
-) -> tp.List[types.YAMLDict]:
+) -> list[types.YAMLDict]:
     """Calculate what inter-experiment graphs to generate.
 
     This also defines what CSV files need to be collated, as one graph is
@@ -31,7 +31,7 @@ def inter_exp_calc(
     keys = []
 
     if controller_config:
-        for category in list(controller_config.keys()):
+        for category in list(dict(controller_config).keys()):
             if category not in cmdopts["controller"]:
                 continue
             for controller in controller_config[category]["controllers"]:
@@ -45,7 +45,7 @@ def inter_exp_calc(
                         keys.extend(inherit)  # optional
         _logger.debug("Loaded %s inter-experiment categories: %s", len(keys), keys)
     else:
-        keys = list(k for k in loaded_graphs)
+        keys = list(loaded_graphs)
         _logger.debug(
             "Missing controller graph config--generating all "
             "inter-experiment graphs for all controllers: %s",

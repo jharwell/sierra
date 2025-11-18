@@ -37,7 +37,7 @@ class ControllerGenerator:
         cmdopts: types.Cmdopts,
         spec: expspec.ExperimentSpec,
     ) -> None:
-        controllers_yaml = config_root / config.kYAML.controllers
+        controllers_yaml = config_root / config.PROJECT_YAML.controllers
         self.logger = logging.getLogger(__name__)
         self.name = controller
 
@@ -48,7 +48,7 @@ class ControllerGenerator:
             self.logger.warning("%s does not exist!", controllers_yaml)
             self.controller_config = {}
 
-        main_yaml = config_root / config.kYAML.main
+        main_yaml = config_root / config.PROJECT_YAML.main
         with utils.utf8open(main_yaml) as f:
             self.main_config = yaml.load(f, yaml.FullLoader)
 
@@ -59,12 +59,10 @@ class ControllerGenerator:
             n_components = len(controller.split("."))
             if n_components != 2:
                 raise RuntimeError(
-                    (
-                        "Expected 2 controller components, got "
-                        f"{n_components}. Arguments to --controller "
-                        "must be of the form CATEGORY.TYPE (i.e., 2 "
-                        "components separated by a '.')."
-                    )
+                    "Expected 2 controller components, got "
+                    f"{n_components}. Arguments to --controller "
+                    "must be of the form CATEGORY.TYPE (i.e., 2 "
+                    "components separated by a '.')."
                 )
 
         self.category, self.name = controller.split(".")
@@ -106,7 +104,7 @@ class ControllerGenerator:
             # haven't added any tags to the experiment definition yet, and if
             # the engine relies on added tags to calculate population sizes,
             # then this won't work.
-            controllers = config.kYAML.controllers
+            controllers = config.PROJECT_YAML.controllers
             assert hasattr(self.spec.criteria, "n_agents"), (
                 f"When using __UUID__ and element_add in {controllers}, the batch "
                 "criteria must implement bc.IQueryableBatchCriteria"
@@ -126,23 +124,29 @@ class ControllerGenerator:
             pp_add = self._pp_for_element_add(to_pp)
             exp_def.element_add(pp_add.path, pp_add.tag, pp_add.attr, False)
 
-    def _generate_controller_support(self, exp_def: definition.BaseExpDef) -> None:
+    def _generate_controller_support(
+        self,
+        exp_def: definition.BaseExpDef,
+    ) -> None:
         # Setup controller support code (if any)
-        xml_mods = self.controller_config.get(self.category, {}).get("xml", {})
+        for fmt in ["xml", "json", "yaml"]:
+            mods = self.controller_config.get(self.category, {}).get(fmt, {})
+            if mods is None:
+                continue
 
-        chgs = xml_mods.get("attr_change", {})
-        for t in chgs:
-            exp_def.attr_change(t[0], t[1], t[2])
+            chgs = mods.get("attr_change", {})
+            for t in chgs:
+                exp_def.attr_change(t[0], t[1], t[2])
 
-        chgs = xml_mods.get("element_change", {})
-        for t in chgs:
-            exp_def.element_change(t[0], t[1], t[2])
+            chgs = mods.get("element_change", {})
+            for t in chgs:
+                exp_def.element_change(t[0], t[1], t[2])
 
-        adds = xml_mods.get("element_add", {})
-        for t in adds:
-            self._do_element_add(
-                exp_def, definition.ElementAdd(t[0], t[1], eval(t[2]), False)
-            )
+            adds = mods.get("element_add", {})
+            for t in adds:
+                self._do_element_add(
+                    exp_def, definition.ElementAdd(t[0], t[1], eval(t[2]), False)
+                )
 
     def _generate_controller(self, exp_def: definition.BaseExpDef) -> None:
         if self.category not in self.controller_config:
@@ -162,7 +166,8 @@ class ControllerGenerator:
             return
 
         self.logger.debug(
-            "Applying changes from %s (all experiments)", config.kYAML.controllers
+            "Applying changes from %s (all experiments)",
+            config.PROJECT_YAML.controllers,
         )
 
         for controller in self.controller_config[self.category]["controllers"]:
@@ -214,7 +219,7 @@ class JointGenerator:
     def __init__(
         self, controller: ControllerGenerator, scenario: ScenarioGenerator
     ) -> None:
-        self.name = "+".join([controller.name, scenario.name])
+        self.name = f"{controller.name}+{scenario.name}"
         self.controller = controller
         self.scenario = scenario
 
@@ -225,6 +230,6 @@ class JointGenerator:
 
 __all__ = [
     "ControllerGenerator",
-    "ScenarioGenerator",
     "JointGenerator",
+    "ScenarioGenerator",
 ]

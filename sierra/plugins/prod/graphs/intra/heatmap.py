@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 def generate(
     cmdopts: types.Cmdopts,
     pathset: exproot.PathSet,
-    targets: tp.List[types.YAMLDict],
+    targets: list[types.YAMLDict],
 ) -> None:
     """
     Generate heatmaps from: term:`Processed Output Data` files.
@@ -41,7 +41,7 @@ def generate(
             if graph["type"] != "heatmap":
                 continue
 
-            _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
+            _logger.trace("\n" + json.dumps(graph, indent=4))
 
             graph_pathset = graphs.PathSet(
                 input_root=pathset.stat_root,

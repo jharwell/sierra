@@ -42,7 +42,7 @@ class IIntraExpModel1D(implements.Interface):
         exp_num: int,
         cmdopts: types.Cmdopts,
         pathset: exproot.PathSet,
-    ) -> tp.List[pd.DataFrame]:
+    ) -> list[pd.DataFrame]:
         """Run the model and generate a list of dataframes.
 
         Each dataframe can (potentially) target different graphs. All dataframes
@@ -92,7 +92,7 @@ class IInterExpModel1D(implements.Interface):
         criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
-    ) -> tp.List[pd.DataFrame]:
+    ) -> list[pd.DataFrame]:
         """Run the model and generate list of dataframes.
 
         Each returned dataframe must have:
@@ -125,6 +125,6 @@ class IInterExpModel1D(implements.Interface):
 
 
 __all__ = [
-    "IIntraExpModel1D",
     "IInterExpModel1D",
+    "IIntraExpModel1D",
 ]

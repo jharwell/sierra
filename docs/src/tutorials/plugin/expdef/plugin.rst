@@ -21,7 +21,7 @@ Within this file, you must define the following functions, which must be named
 
         def root_querypath() -> str:
             """Get unique string identifying the root element for the backend
-            file type. This is needed when scaffolded batch experiments so
+            file type. This is needed when scaffolding batch experiments so
             SIERRA can do so in a format-agnostic way.
             """
             return "mystring"

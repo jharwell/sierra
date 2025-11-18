@@ -56,7 +56,7 @@ def for_all_exp(
             {
                 "src_parent": ".",
                 "src_tag": "params",
-                "opath_leaf": config.kROS["param_file_ext"],
+                "opath_leaf": config.ROS["param_file_ext"],
                 "new_children": None,
                 "new_children_parent": None,
                 "rename_to": None,
@@ -140,7 +140,7 @@ def _generate_single_exp_run_random(
     cmdopts: types.Cmdopts,
 ) -> None:
     """Generate XML changes for random seeding for an experimental run."""
-    _logger.trace("Generating random seed changes for run%s", run_num)  # type: ignore
+    _logger.trace("Generating random seed changes for run%s", run_num)
 
     # Master gets the random seed
     exp_def.element_add(
@@ -166,11 +166,9 @@ def _generate_single_exp_run_paramfile(
     cmdopts: types.Cmdopts,
 ) -> None:
     """Generate XML changes for the parameter file for an experimental run."""
-    _logger.trace(
-        "Generating parameter file changes for run%s", run_num  # type: ignore
-    )
+    _logger.trace("Generating parameter file changes for run%s", run_num)
 
-    param_file = launch_stem_path.with_suffix(config.kROS["param_file_ext"])
+    param_file = launch_stem_path.with_suffix(config.ROS["param_file_ext"])
 
     # Master node gets a copy of the parameter file
     exp_def.element_add(

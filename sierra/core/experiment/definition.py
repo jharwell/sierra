@@ -82,7 +82,7 @@ class WriterConfig:
           specified as a list of query path strings.  This key is optional.
     """
 
-    def __init__(self, values: tp.List[dict]) -> None:
+    def __init__(self, values: list[dict]) -> None:
         assert isinstance(values, list), "values must be a list of dicts"
 
         self.values = values
@@ -103,13 +103,13 @@ class BaseExpDef(implements.Interface):
         """Write the definition stored in the object to the filesystem."""
         raise NotImplementedError
 
-    def n_mods(self) -> tp.Tuple[int, int]:
+    def n_mods(self) -> tuple[int, int]:
         """
         Get the # (adds, changes) as a tuple.
         """
         raise NotImplementedError
 
-    def flatten(self, keys: tp.List[str]) -> None:
+    def flatten(self, keys: list[str]) -> None:
         """
         Replace the specified filepath attributes with their contents.
 
@@ -374,7 +374,7 @@ class AttrChangeSet:
         exp_def = AttrChangeSet()
 
         try:
-            with open(fpath, "rb") as f:
+            with fpath.open("rb") as f:
                 while True:
                     exp_def |= AttrChangeSet(*pickle.load(f))
         except EOFError:
@@ -407,12 +407,12 @@ class AttrChangeSet:
         self.changes.add(chg)
 
     def pickle(self, fpath: pathlib.Path, delete: bool = False) -> None:
-        from sierra.core import utils
+        from sierra.core import utils  # noqa: PLC0415
 
         if delete and utils.path_exists(fpath):
             fpath.unlink()
 
-        with open(fpath, "ab") as f:
+        with fpath.open("ab") as f:
             utils.pickle_dump(self.changes, f)
 
 
@@ -445,12 +445,12 @@ class ElementRmList:
         self.rms.append(other)
 
     def pickle(self, fpath: pathlib.Path, delete: bool = False) -> None:
-        from sierra.core import utils
+        from sierra.core import utils  # noqa: PLC0415
 
         if delete and utils.path_exists(fpath):
             fpath.unlink()
 
-        with open(fpath, "ab") as f:
+        with fpath.open("ab") as f:
             utils.pickle_dump(self.rms, f)
 
 
@@ -473,7 +473,7 @@ class ElementAddList:
         exp_def = ElementAddList()
 
         try:
-            with open(fpath, "rb") as f:
+            with fpath.open("rb") as f:
                 while True:
                     exp_def.append(*pickle.load(f))
         except EOFError:
@@ -502,23 +502,23 @@ class ElementAddList:
         self.adds.insert(0, other)
 
     def pickle(self, fpath: pathlib.Path, delete: bool = False) -> None:
-        from sierra.core import utils
+        from sierra.core import utils  # noqa: PLC0415
 
         if delete and utils.path_exists(fpath):
             fpath.unlink()
 
-        with open(fpath, "ab") as f:
+        with fpath.open("ab") as f:
             utils.pickle_dump(self.adds, f)
 
 
 __all__ = [
-    "BaseExpDef",
-    "WriterConfig",
     "AttrChange",
-    "NullMod",
     "AttrChangeSet",
+    "BaseExpDef",
     "ElementAdd",
     "ElementAddList",
     "ElementRm",
     "ElementRmList",
+    "NullMod",
+    "WriterConfig",
 ]

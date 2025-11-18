@@ -10,8 +10,8 @@ Graphs one datapoint per :term:`Experiment`.
 
 # Core packages
 import typing as tp
-import logging
 import pathlib
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -26,7 +26,7 @@ from . import pathset
 _logger = logging.getLogger(__name__)
 
 
-def generate(
+def generate(  # noqa: PLR0913
     paths: pathset.PathSet,
     input_stem: str,
     output_stem: str,
@@ -35,9 +35,9 @@ def generate(
     xlabel: str,
     ylabel: str,
     backend: str,
-    legend: tp.List[str],
-    xticks: tp.List[float],
-    xticklabels: tp.Optional[tp.List[str]] = None,
+    legend: list[str],
+    xticks: list[float],
+    xticklabels: tp.Optional[list[str]] = None,
     large_text: bool = False,
     logyscale: bool = False,
     stats: str = "none",
@@ -86,12 +86,14 @@ def generate(
     """
     hv.extension(backend)
     if backend == "matplotlib":
-        ofile_ext = config.kStaticImageType
+        ofile_ext = config.GRAPHS["static_type"]
     elif backend == "bokeh":
-        ofile_ext = config.kInteractiveImageType
+        ofile_ext = config.GRAPHS["interactive_type"]
+    else:
+        raise ValueError(f"Bad value for backend: {backend}")
 
-    input_fpath = paths.input_root / (input_stem + config.kStats["mean"].exts["mean"])
-    output_fpath = paths.output_root / ("SM-{0}.{1}".format(output_stem, ofile_ext))
+    input_fpath = paths.input_root / (input_stem + config.STATS["mean"].exts["mean"])
+    output_fpath = paths.output_root / f"SM-{output_stem}.{ofile_ext}"
 
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -101,10 +103,11 @@ def generate(
         )
         return False
 
-    if large_text:
-        text_size = config.kGraphs["text_size_large"]
-    else:
-        text_size = config.kGraphs["text_size_small"]
+    text_size = (
+        config.GRAPHS["text_size_large"]
+        if large_text
+        else config.GRAPHS["text_size_small"]
+    )
 
     df = storage.df_read(input_fpath, medium, index_col="Experiment ID")
     # Column 0 is the 'Experiment ID' index, which we don't want included as
@@ -115,7 +118,7 @@ def generate(
     dataset = hv.Dataset(data=df.reset_index(), kdims=["xticks"], vdims=cols)
     assert len(df.index) == len(
         xticks
-    ), "Length mismatch between xticks,# data points: {0} vs {1}".format(
+    ), "Length mismatch between xticks,# data points: {} vs {}".format(
         len(xticks), len(df.index)
     )
 
@@ -153,18 +156,18 @@ def generate(
 
     if backend == "matplotlib":
         hv.save(
-            plot.opts(fig_inches=config.kGraphs["base_size"]),
+            plot.opts(fig_inches=config.GRAPHS["base_size"]),
             output_fpath,
-            fig=config.kStaticImageType,
-            dpi=config.kGraphs["dpi"],
+            fig=config.GRAPHS["static_type"],
+            dpi=config.GRAPHS["dpi"],
         )
         plt.close("all")
     elif backend == "bokeh":
         fig = hv.render(plot)
-        fig.width = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
-        fig.height = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        fig.width = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
+        fig.height = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with open(output_fpath, "w") as f:
+        with utils.utf8open(output_fpath, "w") as f:
             f.write(html)
 
     _logger.debug(
@@ -177,7 +180,7 @@ def generate(
 def _plot_lines(
     dataset: hv.Dataset,
     model_info: models.ModelInfo,
-    legend: tp.List[str],
+    legend: list[str],
     backend: str,
 ) -> hv.NdOverlay:
     # Plot the curve(s)
@@ -239,7 +242,7 @@ def _plot_lines(
 def _plot_stats(
     dataset: hv.Dataset,
     setting: str,
-    stat_dfs: tp.Dict[str, pd.DataFrame],
+    stat_dfs: dict[str, pd.DataFrame],
     backend: str,
 ) -> hv.NdOverlay:
     """
@@ -252,19 +255,19 @@ def _plot_stats(
 
 
 def _plot_conf95_stats(
-    dataset: hv.Dataset, setting: str, stat_dfs: tp.Dict[str, pd.DataFrame]
+    dataset: hv.Dataset, setting: str, stat_dfs: dict[str, pd.DataFrame]
 ) -> hv.NdOverlay:
     if setting not in ["conf95", "all"]:
         return hv.Overlay()
 
-    if not all(k in stat_dfs.keys() for k in config.kStats["conf95"].exts):
+    if not all(k in stat_dfs for k in config.STATS["conf95"].exts):
         _logger.warning(
             (
                 "Cannot plot 95%% confidence intervals: "
                 "missing some statistics: %s vs %s"
             ),
             stat_dfs.keys(),
-            config.kStats["conf95"].exts,
+            config.STATS["conf95"].exts,
         )
         return hv.Overlay()
 
@@ -293,17 +296,17 @@ def _plot_conf95_stats(
 def _plot_bw_stats(
     dataset: hv.Dataset,
     setting: str,
-    stat_dfs: tp.Dict[str, pd.DataFrame],
+    stat_dfs: dict[str, pd.DataFrame],
     backend: str,
 ) -> hv.NdOverlay:
     if setting not in ["bw", "all"]:
         return hv.Overlay()
 
-    if not all(k in stat_dfs.keys() for k in config.kStats["bw"].exts):
+    if not all(k in stat_dfs for k in config.STATS["bw"].exts):
         _logger.warning(
             ("Cannot plot box-and-whisker plots: missing some statistics: %s vs %s"),
             stat_dfs.keys(),
-            config.kStats["bw"].exts,
+            config.STATS["bw"].exts,
         )
         return hv.Overlay()
 
@@ -313,13 +316,15 @@ def _plot_bw_stats(
         opts = {"linewidth": 2}
     elif backend == "bokeh":
         opts = {"line_width": 2}
+    else:
+        raise ValueError(f"Bad value for backend: {backend}")
 
     # For each value dimension (set of datapoints from a batch experiment)
-    for i in range(0, len(dataset.vdims)):
+    for _, v in enumerate(dataset.vdims):
 
         # For each datapoint captured from an experiment in the batch
         for j in range(0, len(dataset.data.values)):
-            col = dataset.vdims[i].name
+            col = v.name
 
             # Read stats from file
             q1 = stat_dfs["q1"][col].iloc[j]
@@ -385,8 +390,8 @@ def _plot_bw_stats(
 def _plot_ticks(
     plot: hv.NdOverlay,
     logyscale: bool,
-    xticks: tp.List[float],
-    xticklabels: tp.List[str],
+    xticks: list[float],
+    xticklabels: list[str],
 ) -> hv.NdOverlay:
     if logyscale:
         plot.opts(logy=True)
@@ -394,16 +399,14 @@ def _plot_ticks(
     # For ordered, qualitative data
 
     if xticklabels is not None:
-        plot.opts(
-            xticks=list((i, j) for i, j in zip(xticks, xticklabels)), xrotation=90
-        )
+        plot.opts(xticks=list(zip(xticks, xticklabels)), xrotation=90)
 
     return plot
 
 
 def _read_stats(
     setting: str, medium: str, stats_root: pathlib.Path, input_stem: str
-) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+) -> dict[str, list[pd.DataFrame]]:
     dfs = {}
 
     dfs.update(_read_conf95_stats(setting, medium, stats_root, input_stem))
@@ -417,10 +420,10 @@ def _read_conf95_stats(
     medium: str,
     stats_root: pathlib.Path,
     input_stem: str,
-) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+) -> dict[str, list[pd.DataFrame]]:
     dfs = {}
 
-    exts = config.kStats["conf95"].exts
+    exts = config.STATS["conf95"].exts
     if setting in ["conf95", "all"]:
         for k in exts:
             ipath = stats_root / (input_stem + exts[k])
@@ -438,10 +441,10 @@ def _read_bw_stats(
     medium: str,
     stats_root: pathlib.Path,
     input_stem: str,
-) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+) -> dict[str, list[pd.DataFrame]]:
     dfs = {}
 
-    exts = config.kStats["bw"].exts
+    exts = config.STATS["bw"].exts
 
     if setting in ["bw", "all"]:
         for k in exts:
@@ -461,15 +464,15 @@ def _read_model_info(
     model_root: tp.Optional[pathlib.Path],
     input_stem: str,
     medium: str,
-    xticks: tp.List[float],
+    xticks: list[float],
 ) -> models.ModelInfo:
 
     if model_root is None:
         return models.ModelInfo()
 
-    _logger.trace("Model root='%s'", model_root)  # type: ignore
+    _logger.trace("Model root='%s'", model_root)
 
-    exts = config.kModelsExt
+    exts = config.MODELS_EXT
     modelf = model_root / (input_stem + exts["model"])
     legendf = model_root / (input_stem + exts["legend"])
 
@@ -477,7 +480,7 @@ def _read_model_info(
         _logger.trace(
             "No model file=<batch_model_root>/%s found",
             modelf.relative_to(model_root),
-        )  # type: ignore
+        )
         return models.ModelInfo()
 
     info = models.ModelInfo()
@@ -495,7 +498,7 @@ def _read_model_info(
         info.legend = f.read().splitlines()
 
     _logger.trace(
-        "Loaded model='%s',legend='%s'",  # type: ignore
+        "Loaded model='%s',legend='%s'",
         modelf.relative_to(model_root),
         legendf.relative_to(model_root),
     )

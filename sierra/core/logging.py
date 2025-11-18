@@ -23,13 +23,17 @@ from haggis import logs
 
 def initialize(log_level: str) -> None:
     """Initialize logging in SIERRA."""
-    logs.add_logging_level(level_name='TRACE',
-                           level_num=logging.DEBUG - 5,
-                           method_name=None,
-                           if_exists=None)
+    logs.add_logging_level(
+        level_name="TRACE",
+        level_num=logging.DEBUG - 5,
+        method_name=None,
+        if_exists=None,
+    )
     # Needed for static analysis (mypy and/or pylint)
-    setattr(logging, '_HAS_DYNAMIC_ATTRIBUTES', True)
+    logging._HAS_DYNAMIC_ATTRIBUTES = True
 
     # Get nice colored logging output!
-    coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',
-                            level=eval("logging." + log_level))
+    coloredlogs.install(
+        fmt="%(asctime)s %(levelname)s %(name)s - %(message)s",
+        level=eval("logging." + log_level),
+    )

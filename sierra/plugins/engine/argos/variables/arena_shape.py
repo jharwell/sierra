@@ -14,7 +14,7 @@ from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
 from sierra.core.experiment import definition
 
-kWALL_WIDTH = 0.4
+WALL_WIDTH = 0.4
 
 
 @implements.implements(IBaseVariable)
@@ -29,11 +29,11 @@ class ArenaShape:
 
     """
 
-    def __init__(self, extents: tp.List[ArenaExtent]) -> None:
+    def __init__(self, extents: list[ArenaExtent]) -> None:
         self.extents = extents
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """Generate changes necessary setup ARGoS with the specified arena sizes."""
         if not self.attr_changes:
             for extent in self.extents:
@@ -52,7 +52,7 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena",
                 "center",
-                "{0:.9f},{1:.9f},{2}".format(xsize / 2.0, ysize / 2.0, zsize / 2.0),
+                "{:.9f},{:.9f},{}".format(xsize / 2.0, ysize / 2.0, zsize / 2.0),
             ),
         )
 
@@ -69,8 +69,8 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/distribute/position",
                 "max",
-                "{0:.9f}, {1:.9f}, 0".format(
-                    xsize - 2.0 * kWALL_WIDTH * 1.1, ysize - 2.0 * kWALL_WIDTH * 1.1
+                "{:.9f}, {:.9f}, 0".format(
+                    xsize - 2.0 * WALL_WIDTH * 1.1, ysize - 2.0 * WALL_WIDTH * 1.1
                 ),
             )
         )
@@ -78,8 +78,8 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/distribute/position",
                 "min",
-                "{0:.9f}, {1:.9f}, 0".format(
-                    2.0 * kWALL_WIDTH * 1.1, 2.0 * kWALL_WIDTH * 1.1
+                "{:.9f}, {:.9f}, 0".format(
+                    2.0 * WALL_WIDTH * 1.1, 2.0 * WALL_WIDTH * 1.1
                 ),
             )
         )
@@ -88,7 +88,7 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/*[@id='wall_north']",
                 "size",
-                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH),
+                "{:.9f}, {:.9f}, 0.5".format(xsize, WALL_WIDTH),
             )
         )
 
@@ -96,14 +96,14 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/*[@id='wall_north']/body",
                 "position",
-                "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize),
+                "{:.9f}, {:.9f}, 0".format(xsize / 2.0, ysize),
             )
         )
         chgs.add(
             definition.AttrChange(
                 ".//arena/*[@id='wall_south']",
                 "size",
-                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH),
+                "{:.9f}, {:.9f}, 0.5".format(xsize, WALL_WIDTH),
             )
         )
 
@@ -111,21 +111,21 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/*[@id='wall_north']/body",
                 "position",
-                "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize),
+                "{:.9f}, {:.9f}, 0".format(xsize / 2.0, ysize),
             )
         )
         chgs.add(
             definition.AttrChange(
                 ".//arena/*[@id='wall_south']",
                 "size",
-                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH),
+                "{:.9f}, {:.9f}, 0.5".format(xsize, WALL_WIDTH),
             )
         )
         chgs.add(
             definition.AttrChange(
                 ".//arena/*[@id='wall_south']/body",
                 "position",
-                "{0:.9f}, 0, 0 ".format(xsize / 2.0),
+                "{:.9f}, 0, 0 ".format(xsize / 2.0),
             )
         )
 
@@ -140,14 +140,14 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/*[@id='wall_east']",
                 "size",
-                "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH, ysize + kWALL_WIDTH),
+                "{:.9f}, {:.9f}, 0.5".format(WALL_WIDTH, ysize + WALL_WIDTH),
             )
         )
         chgs.add(
             definition.AttrChange(
                 ".//arena/*[@id='wall_east']/body",
                 "position",
-                "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0, ysize / 2.0),
+                "{:.9f}, {:.9f}, 0".format(xsize - WALL_WIDTH / 2.0, ysize / 2.0),
             )
         )
 
@@ -155,23 +155,23 @@ class ArenaShape:
             definition.AttrChange(
                 ".//arena/*[@id='wall_west']",
                 "size",
-                "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH, ysize + kWALL_WIDTH),
+                "{:.9f}, {:.9f}, 0.5".format(WALL_WIDTH, ysize + WALL_WIDTH),
             )
         )
         chgs.add(
             definition.AttrChange(
                 ".//arena/*[@id='wall_west']/body",
                 "position",
-                "0, {0:.9f}, 0".format(ysize / 2.0),
+                "0, {:.9f}, 0".format(ysize / 2.0),
             )
         )
 
         return chgs
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         return []
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         return []
 
     def gen_files(self) -> None:

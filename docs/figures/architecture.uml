@@ -38,7 +38,7 @@ state "Active\nComputing\nresources" as resources #Cornflowerblue
 state "1. Generate\nExperimental\nInputs" as stage1  {
    state "Experiment\nInput\nTemplate" as input1 #lightcyan
    state "Experiment\nInput\nFiles" as output1 #skyblue {
-      state " .xml,.json,\n.launch,...  " as plugins1 #lightcoral
+      state " .xml,.json,\n.yaml,.launch,...  " as plugins1 #lightcoral
       }
    state " " as plugin1 #white ##white {
       state "Engine" as engine1 #lightcoral
@@ -54,7 +54,7 @@ state "1. Generate\nExperimental\nInputs" as stage1  {
 ' Stage 2
 state "2. Execute\nExperiments\n" as stage2  {
    state "Experiment\nInput Files" as input2 #lightcyan {
-   state "  .xml,.json,\n.launch,...  " as plugins_in2 #lightcoral
+   state "  .xml,.json,\n.yaml,.launch,...  " as plugins_in2 #lightcoral
    }
    state "Experimental\nOutputs" as output2 #skyblue {
       state ".csv,.arrow,..." as plugins_out2 #lightcoral

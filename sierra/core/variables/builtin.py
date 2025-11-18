@@ -45,7 +45,7 @@ class MonteCarlo(bc.UnivarBatchCriteria):
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
         self.cardinality = cardinality  # type: int
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         if not self.attr_changes:
             self.attr_changes = [
                 definition.AttrChangeSet(definition.NullMod())
@@ -54,14 +54,11 @@ class MonteCarlo(bc.UnivarBatchCriteria):
 
         return self.attr_changes
 
-    def n_agents(self, exp_num: int) -> int:
-        return self.size_list[exp_num]
-
     def graph_info(
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
@@ -94,7 +91,7 @@ def _mc_parse(arg: str) -> int:
     return int(res.group(0)[1:])
 
 
-def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> tp.List[float]:
+def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> list[float]:
     """
     Generate an array from a linspace spec of the form ``<min>.<max>.C<cardinality>``.
 
@@ -116,7 +113,7 @@ def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> tp.List[
     _min = float(res.group(1)) * scale_factor
     _max = float(res.group(2)) * scale_factor
     cardinality = int(res.group(3))
-    return list(x for x in np.linspace(_min, _max, cardinality))
+    return list(np.linspace(_min, _max, cardinality))
 
 
 def factory(

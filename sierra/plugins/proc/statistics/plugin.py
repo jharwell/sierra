@@ -50,7 +50,7 @@ class DataGatherer(gather.BaseGatherer):
         super().__init__(main_config, gather_opts, processq)
         self.logger = logging.getLogger(__name__)
         config_path = pathlib.Path(gather_opts["project_config_root"]) / pathlib.Path(
-            config.kYAML.graphs
+            config.PROJECT_YAML.graphs
         )
         if utils.path_exists(config_path):
             _logger.debug("Filtering gathered data by graph generation targets")
@@ -58,12 +58,12 @@ class DataGatherer(gather.BaseGatherer):
         else:
             _logger.debug(
                 "%s does not exist for project: not filtering gathered data",
-                config.kYAML.graphs,
+                config.PROJECT_YAML.graphs,
             )
 
     def calc_gather_items(
         self, run_output_root: pathlib.Path, exp_name: str
-    ) -> tp.List[gather.GatherSpec]:
+    ) -> list[gather.GatherSpec]:
         to_gather = []
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
@@ -101,7 +101,7 @@ class DataGatherer(gather.BaseGatherer):
                 self.logger.trace(
                     "Gathering %s: match in %s [intra/inter]",
                     item.relative_to(proj_output_root),
-                    config.kYAML.graphs,
+                    config.PROJECT_YAML.graphs,
                 )
                 to_gather.append(
                     gather.GatherSpec(
@@ -118,7 +118,7 @@ class DataGatherer(gather.BaseGatherer):
                 self.logger.trace(
                     "Gathering %s: match in %s [intra]",
                     item.relative_to(proj_output_root),
-                    config.kYAML.graphs,
+                    config.PROJECT_YAML.graphs,
                 )
                 to_gather.append(
                     gather.GatherSpec(
@@ -135,7 +135,7 @@ class DataGatherer(gather.BaseGatherer):
                 self.logger.trace(
                     "Gathering %s: match in %s [inter]",
                     item.relative_to(proj_output_root),
-                    config.kYAML.graphs,
+                    config.PROJECT_YAML.graphs,
                 )
                 to_gather.append(
                     gather.GatherSpec(
@@ -205,7 +205,7 @@ def proc_batch_exp(
 def _execute_for_batch(
     main_config: types.YAMLDict,
     pathset: batchroot.PathSet,
-    exp_to_proc: tp.List[pathlib.Path],
+    exp_to_proc: list[pathlib.Path],
     stat_opts: types.SimpleDict,
     pool_opts: types.SimpleDict,
     gatherer_type,
@@ -278,7 +278,7 @@ def _gather_worker(
     gatherq: mp.Queue,
     processq: mp.Queue,
     main_config: types.YAMLDict,
-    stat_opts: tp.Dict[str, str],
+    stat_opts: dict[str, str],
 ) -> None:
     gatherer = gatherer_type(main_config, stat_opts, processq)
 
@@ -290,7 +290,7 @@ def _gather_worker(
     timeout = 3
     got_item = False
     n_tries = 0
-    while n_tries < config.kGatherWorkerRetries:
+    while n_tries < config.GATHER_WORKER_RETRIES:
         try:
             exp_output_root = gatherq.get(True, timeout)
             gatherer(exp_output_root)
@@ -311,7 +311,7 @@ def _process_worker(
     processq: mp.Queue,
     main_config: types.YAMLDict,
     pathset: batchroot.PathSet,
-    stat_opts: tp.Dict[str, str],
+    stat_opts: dict[str, str],
 ) -> None:
     # Wait for 2 seconds after the queue is empty before bailing, at the
     # start. If that is not long enough then exponentially increase from
@@ -321,7 +321,7 @@ def _process_worker(
     timeout = 3
     got_item = False
     n_tries = 0
-    while n_tries < config.kProcessWorkerRetries:
+    while n_tries < config.PROCESS_WORKER_RETRIES:
         try:
             spec = processq.get(True, timeout)
 
@@ -370,21 +370,25 @@ def _proc_single_exp(
     dfs = {}
 
     if stat_opts["dist_stats"] in ["none", "all"]:
-        dfs.update(stat_kernels.mean.from_groupby(by_row_index))
+        dfs.update(stat_kernels.mean(by_row_index))
 
     if stat_opts["dist_stats"] in ["conf95", "all"]:
-        dfs.update(stat_kernels.conf95.from_groupby(by_row_index))
+        dfs.update(stat_kernels.conf95(by_row_index))
 
     if stat_opts["dist_stats"] in ["bw", "all"]:
-        dfs.update(stat_kernels.bw.from_groupby(by_row_index))
+        dfs.update(stat_kernels.bw(by_row_index))
 
     for ext, df in dfs.items():
         opath = exp_stat_root / spec.gather.item_stem_path
         utils.dir_create_checked(opath.parent, exist_ok=True)
         opath = opath.with_suffix(ext)
 
-        df = utils.df_fill(df, stat_opts["df_homogenize"])
-        storage.df_write(df, opath, "storage.csv", index=False)
+        storage.df_write(
+            utils.df_fill(df, stat_opts["df_homogenize"]),
+            opath,
+            "storage.csv",
+            index=False,
+        )
 
 
 __all__ = ["proc_batch_exp"]

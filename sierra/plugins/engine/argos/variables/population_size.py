@@ -41,8 +41,8 @@ class PopulationSize(population_size.PopulationSize):
 
     @staticmethod
     def gen_attr_changelist_from_list(
-        sizes: tp.List[int],
-    ) -> tp.List[definition.AttrChangeSet]:
+        sizes: list[int],
+    ) -> list[definition.AttrChangeSet]:
         return [
             definition.AttrChangeSet(
                 definition.AttrChange(".//arena/distribute/entity", "quantity", str(s))
@@ -55,7 +55,7 @@ class PopulationSize(population_size.PopulationSize):
         cli_arg: str,
         main_config: types.YAMLDict,
         batch_input_root: pathlib.Path,
-        size_list: tp.List[int],
+        size_list: list[int],
     ) -> None:
         population_size.PopulationSize.__init__(
             self, cli_arg, main_config, batch_input_root
@@ -63,7 +63,7 @@ class PopulationSize(population_size.PopulationSize):
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """
         Generate list of sets of changes for swarm sizes to define a batch experiment.
         """
@@ -76,27 +76,6 @@ class PopulationSize(population_size.PopulationSize):
 
     def n_agents(self, exp_num: int) -> int:
         return self.size_list[exp_num]
-
-    def graph_info(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> bcbridge.GraphInfo:
-        info = bcbridge.GraphInfo(
-            cmdopts,
-            batch_output_root,
-            exp_names if exp_names else self.gen_exp_names(),
-        )
-
-        info.xlabel = super().graph_xlabel(info.cmdopts)
-        info.xticklabels = super().graph_xticklabels(
-            info.cmdopts, info.batch_output_root, info.exp_names
-        )
-        info.xticks = super().graph_xticks(
-            info.cmdopts, info.batch_output_root, info.exp_names
-        )
-        return info
 
 
 def factory(

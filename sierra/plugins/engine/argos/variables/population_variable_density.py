@@ -40,7 +40,7 @@ class PopulationVariableDensity(vd.VariableDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """Generate XML modifications to achieve the desired population densities.
 
         Robots are approximated as point masses.
@@ -80,7 +80,7 @@ class PopulationVariableDensity(vd.VariableDensity):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
@@ -92,7 +92,7 @@ class PopulationVariableDensity(vd.VariableDensity):
             p / self.extent.area()
             for p in self.populations(info.cmdopts, info.exp_names)
         ]
-        info.xticklabels = list(map(lambda x: str(round(x, 4)), info.xticks))
+        info.xticklabels = [str(round(x, 4)) for x in info.xticks]
         info.xlabel = "Population Density"
         return info
 

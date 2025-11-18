@@ -23,7 +23,10 @@ from tests.smoke_tests import utils, setup
 
 @nox.session(python=utils.versions, tags=["hpc"])
 @nox.parametrize("env", ["hpc.local", "hpc.adhoc", "hpc.slurm", "hpc.pbs"])
-@nox.parametrize("engine", ["engine.argos", "plugins.jsonsim", "engine.ros1gazebo"])
+@nox.parametrize(
+    "engine",
+    ["engine.argos", "engine.ros1gazebo", "plugins.jsonsim", "plugins.yamlsim"],
+)
 @setup.session_setup
 @setup.session_teardown
 def execenv_hpc(session, env, engine):
@@ -56,7 +59,7 @@ def execenv_hpc(session, env, engine):
     elif engine == "plugins.jsonsim":
         bc = ["max_speed.1.9.C5"]
         template_stem = "template"
-        scenario = "scenario1.10x10x10"
+        scenario = "scenario1"
         leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
         batch_root = batchroot.ExpRoot(
             sierra_root=f"{session.env['SIERRA_ROOT']}",
@@ -70,6 +73,27 @@ def execenv_hpc(session, env, engine):
             f"{session.env['JSONSIM_BASE_CMD']} "
             f"--controller=default.default "
             f"--batch-criteria max_speed.1.9.C5 "
+            f"--pipeline 1 2 "
+            f"--exec-jobs-per-node 4"
+        )
+        cardinality = 5
+    elif engine == "plugins.yamlsim":
+        bc = ["max_speed.1.9.C5"]
+        template_stem = "template"
+        scenario = "scenario1"
+        leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
+        batch_root = batchroot.ExpRoot(
+            sierra_root=f"{session.env['SIERRA_ROOT']}",
+            project="projects.sample_yamlsim",
+            controller="default.default",
+            leaf=leaf,
+            scenario=scenario,
+        ).to_path()
+
+        sierra_cmd = (
+            f"{session.env['YAMLSIM_BASE_CMD']} "
+            f"--controller=default.default "
+            f"--batch-criteria tolerance.1.9.C5 "
             f"--pipeline 1 2 "
             f"--exec-jobs-per-node 4"
         )
@@ -196,7 +220,7 @@ def execenv_prefectserver(session, env):
     """
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
-    scenario = "scenario1.10x10x10"
+    scenario = "scenario1"
     leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",
@@ -205,7 +229,6 @@ def execenv_prefectserver(session, env):
         leaf=leaf,
         scenario=scenario,
     ).to_path()
-    output_root = batch_root / "exp-outputs"
 
     # Base command
     sierra_cmd = (
@@ -229,7 +252,6 @@ def execenv_prefectserver(session, env):
         if prefect_dir.exists():
             shutil.rmtree(prefect_dir)
 
-        # Run with prefect local server
         session.run(*f"{sierra_cmd} --execenv=prefectserver.local".split(), silent=True)
 
     elif env == "prefectserver.dockerremote":

@@ -24,8 +24,8 @@ class EngineCmdline(ros1.cmdline.ROSCmdline):
 
     def __init__(
         self,
-        parents: tp.List[argparse.ArgumentParser],
-        stages: tp.List[int],
+        parents: list[argparse.ArgumentParser],
+        stages: list[int],
     ) -> None:
         super().__init__(parents, stages)
 
@@ -73,7 +73,7 @@ class EngineCmdline(ros1.cmdline.ROSCmdline):
                  ``--exp-setup``).
                  """
             + self.stage_usage_doc([1]),
-            default=config.kGazebo["physics_iter_per_tick"],
+            default=config.GAZEBO["physics_iter_per_tick"],
         )
 
         self.stage1.add_argument(
@@ -135,9 +135,7 @@ class EngineCmdline(ros1.cmdline.ROSCmdline):
         )
 
 
-def build(
-    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline parser supporting the :term:`ROS1+Gazebo` engine.
 

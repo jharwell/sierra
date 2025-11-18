@@ -36,12 +36,12 @@ To begin, create the following filesystem structure in
    plugin will go. You don't *have* to call it this; if you want to use a
    different name, see :ref:`plugins/devguide/schemas` for options.
 
-- ``cmdline.py`` This file is optional. If your new engine doesn't need any
+- ``cmdline.py`` This file is optional. If your new plugin doesn't need any
   additional cmdline arguments, you can skip it.
 
 These files will be populated as you go through the rest of the tutorial.
 
-#. Create additional cmdline arguments for the new engine by following
+#. Create additional cmdline arguments for the new plugin by following
    :ref:`plugins/devguide/cmdline`.
 
 

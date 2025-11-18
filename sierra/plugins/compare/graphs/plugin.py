@@ -46,7 +46,7 @@ def proc_exps(
         cmdopts["bc_cardinality"] <= 2
     ), "This plugin only supports batch criteria with cardinality <=2"
 
-    path = pathlib.Path(cmdopts["project_config_root"], config.kYAML.graphs)
+    path = pathlib.Path(cmdopts["project_config_root"], config.PROJECT_YAML.graphs)
     with utils.utf8open(path) as f:
         graphs_config = yaml.load(f, yaml.FullLoader)
 

@@ -15,7 +15,7 @@ from sierra.core.experiment import definition
 class IBaseVariable(implements.Interface):
     """Interface that all variables must implement."""
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """Generate expdef attributes to change in a batch experiment definition.
 
         Modifications are sets, one per experiment in the batch, because the
@@ -24,7 +24,7 @@ class IBaseVariable(implements.Interface):
         """
         raise NotImplementedError
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         """Generate expdef tags to remove from the batch experiment definition.
 
         Modifications are lists, one per experiment in the batch, because the
@@ -33,7 +33,7 @@ class IBaseVariable(implements.Interface):
 
         raise NotImplementedError
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         """Generate expdef elelemnts to add to the batch experiment definition.
 
         Modifications are lists, one per experiment in the batch, because the

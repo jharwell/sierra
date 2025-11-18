@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 
 
 def generate(
-    cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: tp.List[types.YAMLDict]
+    cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: list[types.YAMLDict]
 ) -> None:
     """
     Generate linegraphs from: term:`Processed Output Data` files.
@@ -40,7 +40,7 @@ def generate(
             if graph["type"] != "stacked_line":
                 continue
 
-            _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
+            _logger.trace("\n" + json.dumps(graph, indent=4))
 
             paths = graphs.PathSet(
                 input_root=pathset.stat_root,
@@ -56,7 +56,7 @@ def generate(
                 module = pm.pipeline.get_plugin_module(cmdopts["engine"])
                 if hasattr(module, "expsetup_from_def"):
                     module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
-                    pkl_def = module2.unpickle(pathset.input_root / config.kPickleLeaf)
+                    pkl_def = module2.unpickle(pathset.input_root / config.PICKLE_LEAF)
 
                     info = module.expsetup_from_def(pkl_def)
                     xticks = np.linspace(
@@ -90,11 +90,11 @@ def generate(
                 )
             except KeyError:
                 _logger.fatal(
-                    ("Could not generate linegraph. Possible reasons include: ")
+                    "Could not generate linegraph. Possible reasons include: "
                 )
 
                 _logger.fatal(
-                    ("1. The YAML configuration entry is missing required fields")
+                    "1. The YAML configuration entry is missing required fields"
                 )
                 missing_cols = graph.get("cols", "MISSING_KEY")
                 missing_stem = graph.get("src_stem", "MISSING_KEY")

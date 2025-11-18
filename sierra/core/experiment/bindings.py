@@ -40,7 +40,7 @@ class IBatchShellCmdsGenerator(implements.Interface):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         raise NotImplementedError
 
-    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
         """Generate shell commands to setup the environment for a :term:`Batch Experiment`.
 
         These commands can include setting up things which are common to/should
@@ -52,7 +52,7 @@ class IBatchShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         """Generate shell commands to execute an :term:`Experiment`.
 
         These commands are run in the *same* sub-shell as the pre- and
@@ -83,7 +83,7 @@ class IBatchShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
         """Generate cmds to run after the :term:`Batch Experiment` has finished.
 
         Commands are run during stage 2 after all experiments have finished.
@@ -122,7 +122,7 @@ class IExpShellCmdsGenerator(implements.Interface):
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         raise NotImplementedError
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         """Generate shell commands to setup the environment for an :term:`Experiment`.
 
         These commands can include setting up things which are common to/should
@@ -138,7 +138,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         """Generate shell commands to execute an :term:`Experiment`.
 
         This is (usually) a single GNU parallel command, but it does not have to
@@ -179,7 +179,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         """Generate shell cmds to run after an :term:`Experiment` has finished.
 
         Commands are run during stage 2 after all :term:`Experimental Runs
@@ -232,7 +232,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def pre_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         """Generate shell commands to setup the experimental run environment.
 
         These commands are run in stage 2 prior to each experimental run in the
@@ -256,7 +256,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def exec_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         """Generate shell commands to execute a single :term:`Experimental Run`.
 
         This is (usually) a command to launch the simulation environment or
@@ -279,7 +279,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def post_run_cmds(
         self, host: str, run_output_root: pathlib.Path
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         """Generate shell commands to run after an experimental run has finished.
 
         These commands are run during stage 2 in the `same` sub-shell as the
@@ -359,8 +359,8 @@ class IExpConfigurer(implements.Interface):
 
 
 __all__ = [
-    "IExpRunShellCmdsGenerator",
-    "IExpShellCmdsGenerator",
     "IBatchShellCmdsGenerator",
     "IExpConfigurer",
+    "IExpRunShellCmdsGenerator",
+    "IExpShellCmdsGenerator",
 ]

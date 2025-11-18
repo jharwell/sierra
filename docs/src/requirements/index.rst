@@ -119,6 +119,11 @@ General
 Experiment Definition Format-based Restrictions
 -----------------------------------------------
 
+SIERRA uses some special XML tokens during stage 1, and although it is unlikely
+that including these tokens would cause problems, because SIERRA looks for them
+in *specific* places in the ``--expdef-template``. Restrictions differ according
+to the active ``--expdef`` plugin.
+
 .. tabs::
 
    .. tab:: XML
@@ -128,6 +133,10 @@ Experiment Definition Format-based Restrictions
    .. tab:: JSON
 
       .. include:: expdef/json.rst
+
+   .. tab:: YAML
+
+      .. include:: expdef/yaml.rst
 
 .. _req/engine:
 

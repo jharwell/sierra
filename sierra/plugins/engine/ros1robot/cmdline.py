@@ -23,8 +23,8 @@ class EngineCmdline(cmdline.ROSCmdline):
 
     def __init__(
         self,
-        parents: tp.Optional[tp.List[argparse.ArgumentParser]],
-        stages: tp.List[int],
+        parents: tp.Optional[list[argparse.ArgumentParser]],
+        stages: list[int],
     ) -> None:
         super().__init__(parents, stages)
 
@@ -109,13 +109,11 @@ class EngineCmdline(cmdline.ROSCmdline):
                  """
             + self.stage_usage_doc([2]),
             type=int,
-            default=config.kROS["inter_run_pause"],
+            default=config.ROS["inter_run_pause"],
         )
 
 
-def build(
-    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline parser supporting the :term:`ROS1+Robot` engine.
 

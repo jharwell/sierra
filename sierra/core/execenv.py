@@ -20,7 +20,7 @@ import implements
 
 # Project packages
 from sierra.core import utils, types, config
-from sierra.core.trampoline import cmdline_parser  # noqa: F401
+from sierra.core.trampoline import cmdline_parser
 from sierra.core.experiment import bindings
 import sierra.core.plugin as pm
 
@@ -54,7 +54,7 @@ class ExpShellCmdsGenerator:
 
             self.env = None
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.env:
@@ -62,7 +62,7 @@ class ExpShellCmdsGenerator:
 
         return cmds
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.env:
@@ -70,7 +70,7 @@ class ExpShellCmdsGenerator:
 
         return cmds
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.env:
@@ -107,7 +107,7 @@ class BatchShellCmdsGenerator:
 
             self.env = None
 
-    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.env:
@@ -115,7 +115,7 @@ class BatchShellCmdsGenerator:
 
         return cmds
 
-    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.env:
@@ -123,7 +123,7 @@ class BatchShellCmdsGenerator:
 
         return cmds
 
-    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.env:
@@ -185,20 +185,20 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
         )
 
 
-def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
+def parse_nodefile(nodefile: str) -> list[types.ParsedNodefileSpec]:
     """
     Parse a text file containing a list of computational resources to use.
 
     Assumed to be GNU-parallel style.
     """
-    ret = []
+    ret = []  # type: list[types.ParsedNodefileSpec]
 
     with utils.utf8open(nodefile, "r") as f:
         lines = f.readlines()
 
         for line in lines:
             if parsed := _parse_nodefile_line(line):
-                ret.append(parsed)
+                ret.extend([parsed])
 
     return ret
 
@@ -263,16 +263,16 @@ def check_connectivity(
     nc_diag = f"{host_type},port={port} via {hostname}"
 
     res = None
+    res2 = None
     if cmdopts["online_check_method"] == "ping+ssh":
         try:
             _logger.debug("Attempt to ping %s, type=%s", hostname, host_type)
-            timeout = config.kEngine["ping_timeout"]
+            timeout = config.ENGINE["ping_timeout"]
             res = subprocess.run(
                 f"ping -c 3 -W {timeout} {hostname}",
                 shell=True,
                 check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
             )
         except subprocess.CalledProcessError:
             _logger.fatal("Unable to ping %s, type=%s", hostname, host_type)
@@ -286,13 +286,12 @@ def check_connectivity(
     elif cmdopts["online_check_method"] == "nc+ssh":
         try:
             _logger.debug("Check for ssh tunnel to %s", nc_diag)
-            timeout = config.kEngine["ping_timeout"]
+            timeout = config.ENGINE["ping_timeout"]
             res = subprocess.run(
                 f"nc -z {hostname} {port}",
                 shell=True,
                 check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
             )
         except subprocess.CalledProcessError:
             _logger.fatal("No ssh tunnel to %s", nc_diag)
@@ -317,8 +316,7 @@ def check_connectivity(
             ),
             shell=True,
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
         )
     except subprocess.CalledProcessError:
         _logger.fatal("Unable to connect to %s", ssh_diag)
@@ -346,15 +344,19 @@ def check_for_simulator(
     version_cmd = f"{shellname} -v"
     _logger.debug("Check version for '%s' via '%s'", shellname, version_cmd)
 
+    # Don't check the return code, because some siulators return -1 with -v
+    # (sigh).
     if shutil.which(shellname):
-        res = subprocess.run(
-            version_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        return subprocess.run(
+            version_cmd,
+            capture_output=True,
+            shell=True,
+            check=False,
         )
-        return res
-    else:
-        raise RuntimeError(
-            f"Bad --execenv '{execenv}' for engine '{engine}': cannot find '{name}'"
-        )
+
+    raise RuntimeError(
+        f"Bad --execenv '{execenv}' for engine '{engine}': cannot find '{name}'"
+    )
 
 
 def get_executable_arch_aware(base: str) -> str:
@@ -366,15 +368,15 @@ def get_executable_arch_aware(base: str) -> str:
     if "SIERRA_ARCH" in os.environ:
         arch = os.environ["SIERRA_ARCH"]
         return f"{base}-{arch}"
-    else:
-        return base
+
+    return base
 
 
 __all__ = [
     "ExpShellCmdsGenerator",
-    "cmdline_postparse_configure",
-    "parse_nodefile",
     "check_connectivity",
     "check_for_simulator",
+    "cmdline_postparse_configure",
     "get_executable_arch_aware",
+    "parse_nodefile",
 ]

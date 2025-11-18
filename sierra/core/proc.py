@@ -8,4 +8,4 @@
 # 3rd party packages
 
 # Project packages
-from sierra.core.trampoline import cmdline_parser  # noqa: F401
+from sierra.core.trampoline import cmdline_parser

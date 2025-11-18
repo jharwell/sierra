@@ -58,9 +58,9 @@ class IntraExpPreparer:
         - df[controller] columns as timeslices *across* columns (i.e., across
           experiments in the batch) in the source dataframe.
         """
-        exts = config.kStats["mean"].exts
-        exts.update(config.kStats["conf95"].exts)
-        exts.update(config.kStats["bw"].exts)
+        exts = config.STATS["mean"].exts
+        exts.update(config.STATS["conf95"].exts)
+        exts.update(config.STATS["bw"].exts)
 
         for k in exts:
             stat_ipath = pathlib.Path(self.ipath_stem, self.ipath_leaf + exts[k])
@@ -95,9 +95,9 @@ class IntraExpPreparer:
         - df[scenario] columns as timeslices *across* columns (i.e., across
           experiments in the batch) in the source dataframe.
         """
-        exts = config.kStats["mean"].exts
-        exts.update(config.kStats["conf95"].exts)
-        exts.update(config.kStats["bw"].exts)
+        exts = config.STATS["mean"].exts
+        exts.update(config.STATS["conf95"].exts)
+        exts.update(config.STATS["bw"].exts)
 
         for k in exts:
             stat_ipath = pathlib.Path(self.ipath_stem, self.ipath_leaf + exts[k])
@@ -129,12 +129,6 @@ class IntraExpPreparer:
 
         if utils.path_exists(ipath):
             df = storage.df_read(ipath, "storage.csv")
-
-            # if inc_exps is not None:
-            # cols = utils.exp_include_filter(
-            #     inc_exps, list(df.columns), self.criteria.n_exp()
-            # )
-
             cum_df[controller] = df.iloc[index]
             return cum_df
 
@@ -156,11 +150,6 @@ class IntraExpPreparer:
 
         if utils.path_exists(ipath):
             df = storage.df_read(ipath, "storage.csv")
-
-            # if inc_exps is not None:
-            #     cols = utils.exp_include_filter(
-            #         inc_exps, list(df.columns), self.criteria.n_exp()
-            #     )
 
             cum_df[scenario] = df.iloc[index]
 

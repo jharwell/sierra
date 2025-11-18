@@ -162,6 +162,10 @@ you clone things somewhere else.
 
          Nothing to do!
 
+      .. group-tab:: YAMLSim
+
+         Nothing to do!
+
 #. Setup runtime environment:
 
    .. tabs::
@@ -191,6 +195,10 @@ you clone things somewhere else.
               . /path/to/setup.bash
 
       .. group-tab:: JSONSim
+
+         Nothing to do!
+
+      .. group-tab:: YAMLSim
 
          Nothing to do!
 
@@ -270,6 +278,27 @@ you clone things somewhere else.
             --n-runs=4 \
             --engine=plugins.jsonsim \
             --project=projects.sample_jsonsim \
+            --controller=default.default \
+            --scenario=scenario1 \
+            --batch-criteria max_speed.1.9.C3 \
+            --exp-overwrite
+
+         This will run a batch of 3 experiments. The max speed of agents will be
+         varied from 1..9. Within each experiment, 4 copies of each simulation
+         will be run (each with different random seeds), for a total of 16
+         imaginary simulations. you can run the same experiment again, and it
+         will overwrite the previous one because you passed ``--exp-overwrite``.
+
+      .. group-tab:: YAMLSim
+
+         ::
+
+            sierra-cli \
+            --sierra-root=$HOME/research/exp \
+            --expdef-template=$HOME/research/sierra-sample-project/exp/yamlsim/template.yaml \
+            --n-runs=4 \
+            --engine=plugins.yamlsim \
+            --project=projects.sample_yamlsim \
             --controller=default.default \
             --scenario=scenario1 \
             --batch-criteria max_speed.1.9.C3 \

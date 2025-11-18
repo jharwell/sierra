@@ -22,10 +22,10 @@ from sierra import version
 from sierra.core import engine, startup, batchroot, execenv, utils
 from sierra.core.pipeline.pipeline import Pipeline
 import sierra.core.plugin as pm
-import sierra.core.logging  # type: ignore
+import sierra.core.logging
 from sierra.core import expdef, prod, proc, storage, compare
 
-kIssuesURL = "https://github.com/jharwell/sierra/issues"
+ISSUES_URL = "https://github.com/jharwell/sierra/issues"
 
 
 class SIERRA:
@@ -84,11 +84,11 @@ class SIERRA:
 
     def _bootstrap(
         self, bootstrap: corecmd.BootstrapCmdline
-    ) -> tp.Tuple[argparse.Namespace, tp.List[str]]:
+    ) -> tuple[argparse.Namespace, list[str]]:
         # Bootstrap the cmdline
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
         if bootstrap_args.rcfile:
-            bootstrap_args.rcfile = os.path.expanduser(bootstrap_args.rcfile)
+            bootstrap_args.rcfile = pathlib.Path(bootstrap_args.rcfile).expanduser()
 
         # Setup logging customizations
         sierra.core.logging.initialize(bootstrap_args.log_level)
@@ -104,7 +104,7 @@ class SIERRA:
         return bootstrap_args, other_args
 
     def _load_cmdline(
-        self, bootstrap_args: argparse.Namespace, other_args: tp.List[str]
+        self, bootstrap_args: argparse.Namespace, other_args: list[str]
     ) -> argparse.Namespace:
         """Build the cmdline from the selected plugins and parse args.
 
@@ -158,9 +158,8 @@ class SIERRA:
 
         nonbootstrap_cmdline = module.build(parents, stages)
         args = nonbootstrap_cmdline.parser.parse_args(other_args)
-        args.sierra_root = os.path.expanduser(args.sierra_root)
-        args = self._handle_rc(bootstrap_args.rcfile, args)
-        return args
+        args.sierra_root = pathlib.Path(args.sierra_root).expanduser()
+        return self._handle_rc(bootstrap_args.rcfile, args)
 
     def _load_plugins(self, bootstrap_args: argparse.Namespace):
         this_file = pathlib.Path(__file__)
@@ -170,8 +169,7 @@ class SIERRA:
         self.logger.info("Loading plugins")
         plugin_search_path = [install_root / "plugins"]
         if env := os.environ.get("SIERRA_PLUGIN_PATH"):
-            for p in env.split(os.pathsep):
-                plugin_search_path.append(pathlib.Path(p))
+            plugin_search_path.extend([pathlib.Path(p) for p in env.split(os.pathsep)])
 
         manager = pm.pipeline
         manager.initialize(bootstrap_args.project, plugin_search_path)
@@ -249,7 +247,7 @@ class SIERRA:
             self.logger.debug("Reading rcfile from cmdline")
             realpath = rcfile_path
 
-        if not realpath and os.path.exists(os.path.expanduser("~/.sierrarc")):
+        if not realpath and pathlib.Path("~/.sierrarc").expanduser().exists():
             self.logger.debug("Reading rcfile from ~/.sierrarc")
             realpath = "~/.sierrarc"
 
@@ -257,7 +255,6 @@ class SIERRA:
             return args
 
         path = pathlib.Path(realpath).expanduser()
-
         with utils.utf8open(path, "r") as rcfile:
             for line in rcfile.readlines():
                 # There are 3 ways to pass arguments in the rcfile:
@@ -268,7 +265,7 @@ class SIERRA:
                 #
                 # If you encounter a ~, we assume its a path, so we expand it to
                 # match cmdline behavior.
-                line = line.strip("\n")
+                line = line.strip("\n")  # noqa: PLW2901
                 components = line.split()
 
                 if len(components) == 1 and "=" not in components[0]:  # boolean
@@ -277,12 +274,27 @@ class SIERRA:
 
                 elif len(components) == 1 and "=" in components[0]:
                     key = line.split("=")[0][2:].replace("-", "_")
-                    value = os.path.expanduser(line.split("=")[1])
+                    if "~" in line:
+                        value = pathlib.Path(line.split("=")[1]).expanduser()
+                    else:
+                        value = line.split("=")[1]
 
                     args.__dict__[key] = value
                 else:
                     key = line.split()[0][2:].replace("-", "_")
-                    value = os.path.expanduser(line.split()[1])
+                    if "~" in line:
+                        value = str(pathlib.Path(line.split()[1]).expanduser())
+                    else:
+
+                        # If true, this is an arg which takes a list/has
+                        # multiple values, so it should be put into the argparse
+                        # namespace as a list, to match cmdline behavior.
+                        value = (
+                            line.split()[1:]
+                            if len(line.split()) > 2
+                            else line.split()[1]
+                        )
+
                     args.__dict__[key] = value
 
                 self.logger.trace(
@@ -309,7 +321,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
             "reproducing the error with specific input files and/or "
             "data is also helpful for quick triage and fix.\n"
         ),
-        kIssuesURL,
+        ISSUES_URL,
         exc_info=(exc_type, exc_value, exc_traceback),
     )
 
@@ -328,7 +340,7 @@ def main():
     bootstrap_args, _ = bootstrap.parser.parse_known_args()
 
     if bootstrap_args.version:
-        sys.stdout.write(corecmd.kVersionMsg)
+        sys.stdout.write(corecmd.VERSION_MSG)
     else:
         app = SIERRA(bootstrap)
         app()

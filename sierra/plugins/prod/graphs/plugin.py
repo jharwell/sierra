@@ -46,7 +46,7 @@ def proc_batch_exp(
            graph generation from collated CSV files.
     """
     graphs_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(
-        config.kYAML.graphs
+        config.PROJECT_YAML.graphs
     )
     if utils.path_exists(graphs_path):
         _logger.info("Loading graphs config for project=%s", cmdopts["project"])

@@ -39,6 +39,13 @@ Basic Setup
               - ``parallel``
               - ``psmisc``
 
+           .. group-tab:: Fedora
+
+              Install the following required packages with ``dnf install``:
+
+              - ``parallel``
+              - ``psmisc``
+
            .. group-tab:: OSX
 
               Install the following required packages with ``brew install``:
@@ -55,9 +62,10 @@ Basic Setup
                     package for a feature you try to use, you will get an
                     error.
 
-   - Install SIERRA::
+   - Install SIERRA via something like::
 
        pip3 install sierra-research
+
 
      See :ref:`packages` for some additional useful info.
 

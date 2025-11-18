@@ -22,8 +22,8 @@ class EngineCmdline(PluginCmdline):
 
     def __init__(
         self,
-        parents: tp.List[argparse.ArgumentParser],
-        stages: tp.List[int],
+        parents: list[argparse.ArgumentParser],
+        stages: list[int],
     ) -> None:
         super().__init__(parents, stages)
 
@@ -38,9 +38,9 @@ class EngineCmdline(PluginCmdline):
                  :ref:`usage/vars/expsetup` for a full description.
                  """
             + self.stage_usage_doc([1]),
-            default="exp_setup.T{0}.K{1}".format(
-                config.kARGoS["n_secs_per_run"],
-                config.kARGoS["n_ticks_per_sec"],
+            default="exp_setup.T{}.K{}".format(
+                config.ARGOS["n_secs_per_run"],
+                config.ARGOS["n_ticks_per_sec"],
             ),
         )
 
@@ -156,7 +156,7 @@ class EngineCmdline(PluginCmdline):
 
                              """
             + self.stage_usage_doc([1]),
-            default=config.kARGoS["physics_iter_per_tick"],
+            default=config.ARGOS["physics_iter_per_tick"],
         )
 
         self.stage1.add_argument(
@@ -282,9 +282,7 @@ class EngineCmdline(PluginCmdline):
         )
 
 
-def build(
-    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline parser supporting the :term:`ARGoS` engine.
     """

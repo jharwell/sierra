@@ -90,8 +90,8 @@ class PipelineStage1:
             "Generation complete in %s: %d experiments, %d runs per experiment, %d runs total",
             str(sec),
             n_exp_in_batch,
-            self.cmdopts["n_runs"],
-            self.cmdopts["n_runs"] * n_exp_in_batch,
+            int(self.cmdopts["n_runs"]),
+            int(self.cmdopts["n_runs"]) * n_exp_in_batch,
         )
 
 

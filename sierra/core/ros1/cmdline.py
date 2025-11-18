@@ -20,8 +20,8 @@ class ROSCmdline(PluginCmdline):
 
     def __init__(
         self,
-        parents: tp.List[argparse.ArgumentParser],
-        stages: tp.List[int],
+        parents: list[argparse.ArgumentParser],
+        stages: list[int],
     ) -> None:
         super().__init__(parents, stages)
 
@@ -60,9 +60,9 @@ class ROSCmdline(PluginCmdline):
                  description.
                  """
             + self.stage_usage_doc([1]),
-            default="exp_setup.T{0}.K{1}".format(
-                config.kROS["n_secs_per_run"],
-                config.kROS["n_ticks_per_sec"],
+            default="exp_setup.T{}.K{}".format(
+                config.ROS["n_secs_per_run"],
+                config.ROS["n_ticks_per_sec"],
             ),
         )
 
@@ -71,10 +71,10 @@ class ROSCmdline(PluginCmdline):
             required=True,
             help="""
                  The key name of the robot model, which must be present in the
-                 appropriate section of ``{0}`` for the :term:`Project`.  See
+                 appropriate section of ``{}`` for the :term:`Project`.  See
                  :ref:`tutorials/project/config` for details.
                  """.format(
-                config.kYAML.main
+                config.PROJECT_YAML.main
             )
             + self.stage_usage_doc([1]),
         )

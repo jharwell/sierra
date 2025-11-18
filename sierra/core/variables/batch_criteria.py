@@ -69,13 +69,13 @@ class BaseBatchCriteria:
 
     # Stub out IBaseVariable because all concrete batch criteria only implement
     # a subset of them.
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         return []
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         return []
 
     def gen_files(self) -> None:
@@ -84,13 +84,13 @@ class BaseBatchCriteria:
     def cardinality(self) -> int:
         return -1
 
-    def gen_exp_names(self) -> tp.List[str]:
+    def gen_exp_names(self) -> list[str]:
         raise NotImplementedError
 
     def computable_exp_scenario_name(self) -> bool:
         return False
 
-    def arena_dims(self, cmdopts: types.Cmdopts) -> tp.List[utils.ArenaExtent]:
+    def arena_dims(self, cmdopts: types.Cmdopts) -> list[utils.ArenaExtent]:
         """Get the arena dimensions used for each experiment in the batch.
 
         Not applicable to all criteria.
@@ -107,13 +107,13 @@ class BaseBatchCriteria:
         return module.arena_dims_from_criteria(self)
 
     def n_exp(self) -> int:
-        from sierra.core.experiment import spec
+        from sierra.core.experiment import spec  # noqa: PLC0415
 
         scaffold_spec = spec.scaffold_spec_factory(self)
         return scaffold_spec.n_exps
 
     def pickle_exp_defs(self, cmdopts: types.Cmdopts) -> None:
-        from sierra.core.experiment import spec
+        from sierra.core.experiment import spec  # noqa: PLC0415
 
         scaffold_spec = spec.scaffold_spec_factory(self)
 
@@ -126,7 +126,7 @@ class BaseBatchCriteria:
             # to errors if stage 1 is run multiple times before stage 4. So, we
             # DELETE the pickle file for each experiment here to make stage 1
             # idempotent.
-            pkl_path = self.batch_input_root / exp_dirname / config.kPickleLeaf
+            pkl_path = self.batch_input_root / exp_dirname / config.PICKLE_LEAF
             exp_defi = scaffold_spec.mods[exp]
 
             if not scaffold_spec.is_compound:
@@ -145,8 +145,7 @@ class BaseBatchCriteria:
         experiment's input directory.
 
         """
-
-        from sierra.core.experiment import spec
+        from sierra.core.experiment import spec  # noqa: PLC0415
 
         scaffold_spec = spec.scaffold_spec_factory(self, log=True)
 
@@ -250,12 +249,12 @@ class UnivarBatchCriteria(BaseBatchCriteria):
     def cardinality(self) -> int:
         return 1
 
-    def gen_exp_names(self) -> tp.List[str]:
+    def gen_exp_names(self) -> list[str]:
         return [f"c1-exp{i}" for i in range(0, self.n_exp())]
 
     def populations(
-        self, cmdopts: types.Cmdopts, exp_names: tp.Optional[tp.List[str]] = None
-    ) -> tp.List[int]:
+        self, cmdopts: types.Cmdopts, exp_names: tp.Optional[list[str]] = None
+    ) -> list[int]:
         """
         Calculate system sizes used the batch experiment, sorted.
 
@@ -269,15 +268,12 @@ class UnivarBatchCriteria(BaseBatchCriteria):
 
         """
         sizes = []
-        if exp_names is not None:
-            names = exp_names
-        else:
-            names = self.gen_exp_names()
+        names = exp_names if exp_names is not None else self.gen_exp_names()
 
         module1 = pm.pipeline.get_plugin_module(cmdopts["engine"])
         module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
         for d in names:
-            path = self.batch_input_root / d / config.kPickleLeaf
+            path = self.batch_input_root / d / config.PICKLE_LEAF
             exp_def = module2.unpickle(path)
 
             sizes.append(
@@ -299,7 +295,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
        modify expdef elements to create an experiment definition.
     """
 
-    def __init__(self, criterias: tp.List[BaseBatchCriteria]) -> None:
+    def __init__(self, criterias: list[BaseBatchCriteria]) -> None:
         BaseBatchCriteria.__init__(
             self,
             "+".join([c.name for c in criterias]),
@@ -314,17 +310,14 @@ class XVarBatchCriteria(BaseBatchCriteria):
     def computable_exp_scenario_name(self) -> bool:
         return any(c.computable_exp_scenario_name() for c in self.criterias)
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         changes = [c.gen_attr_changelist() for c in self.criterias]
 
         # Flatten each list of sets into a single list of items
         flattened_lists = []
 
         for list_of_sets in changes:
-            flattened_list = []  # type: tp.List[definition.AttrChangeSet]
-            for s in list_of_sets:
-                flattened_list.append(s)
-
+            flattened_list = list(list_of_sets)
             flattened_lists.append(flattened_list)
 
         # Use itertools.product to get all combinations
@@ -340,7 +333,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
 
         return result
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         adds = [c.gen_element_addlist() for c in self.criterias]
 
         # Create combinations and combine ElementAddList objects
@@ -357,7 +350,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
 
         return result
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         rms = [c.gen_tag_rmlist() for c in self.criterias]
 
         # Create combinations and combine ElementRmList objects
@@ -373,7 +366,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
 
         return result
 
-    def gen_exp_names(self) -> tp.List[str]:
+    def gen_exp_names(self) -> list[str]:
         """
         Generate a SORTED list of strings for all experiment names.
 
@@ -390,11 +383,9 @@ class XVarBatchCriteria(BaseBatchCriteria):
             criteria_lists.append(prefixed_names)
 
         # Generate all combinations using itertools.product
-        ret = []
-        for combination in itertools.product(*criteria_lists):
-            ret.append("+".join(combination))
-
-        return ret
+        return [
+            "+".join(combination) for combination in itertools.product(*criteria_lists)
+        ]
 
     def populations(self, cmdopts: types.Cmdopts) -> list:
         """Generate a N-D array of system sizes used the batch experiment.
@@ -416,7 +407,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
             criteria_counts.append(n_chgs + n_adds)
 
         # Create multi-dimensional nested list initialized with zeros
-        def create_nested_list(dimensions: tp.List[int]) -> list:
+        def create_nested_list(dimensions: list[int]) -> list:
             if len(dimensions) == 1:
                 return [0] * dimensions[0]
             return [create_nested_list(dimensions[1:]) for _ in range(dimensions[0])]
@@ -433,7 +424,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
             total_combinations *= count
 
         for d in names:
-            pkl_path = self.batch_input_root / d / config.kPickleLeaf
+            pkl_path = self.batch_input_root / d / config.PICKLE_LEAF
             exp_def = module2.unpickle(pkl_path)
 
             # Convert linear index to multi-dimensional indices
@@ -454,7 +445,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
 
             # Set the population size at the calculated indices
             current_level = sizes
-            for i, idx in enumerate(indices[:-1]):
+            for _, idx in enumerate(indices[:-1]):
                 current_level = current_level[idx]
             current_level[indices[-1]] = module1.population_size_from_pickle(
                 exp_def, self.main_config, cmdopts
@@ -485,7 +476,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
+        exp_names: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
@@ -560,7 +551,7 @@ class XVarBatchCriteria(BaseBatchCriteria):
             remaining_exp_num = remaining_exp_num % stride
 
         # Find the first criteria that has an n_agents method and use it
-        for i, criteria in enumerate(self.criteria):
+        for i, criteria in enumerate(self.criterias):
             if hasattr(criteria, "n_agents"):
                 return criteria.n_agents(indices[i])
 
@@ -582,7 +573,7 @@ def univar_factory(
     path = f"variables.{category}"
 
     module = pm.bc_load(cmdopts, category)
-    bcfactory = getattr(module, "factory")
+    bcfactory = module.factory
 
     if 5 in cmdopts["pipeline"]:
         ret = bcfactory(
@@ -592,7 +583,7 @@ def univar_factory(
         ret = bcfactory(cli_arg, main_config, cmdopts, batch_input_root)
 
     logging.info("Create univariate batch criteria %s from %s", ret.name, path)
-    return ret  # type: ignore
+    return ret
 
 
 def factory(
@@ -622,7 +613,7 @@ def factory(
         ",".join([c.name for c in criterias]),
     )
 
-    return ret  # type: ignore
+    return ret
 
 
 __all__ = [

@@ -59,7 +59,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
     def __init__(
         self,
         controller: str,
-        scenarios: tp.List[str],
+        scenarios: list[str],
         stage5_roots: outputroot.PathSet,
         cmdopts: types.Cmdopts,
         cli_args: argparse.Namespace,
@@ -69,7 +69,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         self.logger = logging.getLogger(__name__)
         self.controller = controller
 
-    def exp_select(self) -> tp.List[batchroot.ExpRoot]:
+    def exp_select(self) -> list[batchroot.ExpRoot]:
         """
         Determine if a scenario can be include in the comparison for a controller.
 
@@ -92,9 +92,21 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         self,
         cmdopts: types.Cmdopts,
         graph: types.YAMLDict,
-        roots: tp.List[batchroot.ExpRoot],
-        legend: tp.List[str],
+        roots: list[batchroot.ExpRoot],
+        legend: list[str],
     ) -> None:
+        graph_spec = {
+            "index": graph.get("index", -1),
+            "src_stem": graph["src_stem"],
+            "dest_stem": graph["dest_stem"],
+            "title": graph.get("title", ""),
+            "label": graph.get("label", ""),
+            "inc_exps": graph.get("include_exp", None),
+            "legend": legend,
+            "primary_axis": graph.get("primary_axis", 0),
+            "backend": graph.get("backend", cmdopts["graphs_backend"]),
+        }
+
         for scenario in self.things:
             valid_configurations = sum(r.scenario == scenario for r in roots)
             if valid_configurations > 1:
@@ -113,53 +125,48 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
                 )
                 continue
 
-        # Each controller should have been run on exactly ONE batch experiment
-        # that we selected for controller comparison, by definition.
-        root = next(r for r in roots if r.scenario == scenario)
+            # Each controller should have been run on exactly ONE batch
+            # experiment that we selected for controller comparison, by
+            # definition.
+            root = next(r for r in roots if r.scenario == scenario)
 
-        # We need to generate the root directory paths for each batch experiment
-        # (which lives inside of the scenario dir), because they are all
-        # different. We need generate these paths for EACH controller, because
-        # the controller is part of the batch root path.
-        pathset = batchroot.from_exp(
-            sierra_root=self.cli_args.sierra_root,
-            project=self.cli_args.project,
-            batch_leaf=root.leaf,
-            controller=self.controller,
-            scenario=root.scenario,
-        )
+            # We need to generate the root directory paths for each batch
+            # experiment (which lives inside of the scenario dir), because they
+            # are all different. We need generate these paths for EACH
+            # controller, because the controller is part of the batch root path.
+            pathset = batchroot.from_exp(
+                sierra_root=self.cli_args.sierra_root,
+                project=self.cli_args.project,
+                batch_leaf=root.leaf,
+                controller=self.controller,
+                scenario=root.scenario,
+            )
 
-        # For each scenario, we have to create the batch criteria for it,
-        # because they are all different.
-        criteria = bc.factory(
-            self.main_config,
-            cmdopts,
-            pathset.input_root,
-            self.cli_args,
-            root.scenario,
-        )
+            # For each scenario, we have to create the batch criteria for it,
+            # because they are all different.
+            criteria = bc.factory(
+                self.main_config,
+                cmdopts,
+                pathset.input_root,
+                self.cli_args,
+                root.scenario,
+            )
 
-        self._gen_csvs(
-            criteria=criteria,
-            pathset=pathset,
-            project=self.cli_args.project,
-            root=root,
-            src_stem=graph["src_stem"],
-            dest_stem=graph["dest_stem"],
-            index=graph.get("index", -1),
-        )
+            self._gen_csvs(
+                criteria=criteria,
+                pathset=pathset,
+                project=self.cli_args.project,
+                root=root,
+                spec=graph_spec,
+            )
 
-        self._gen_graph(
-            batch_leaf=root.leaf,
-            criteria=criteria,
-            cmdopts=cmdopts,
-            batch_output_root=pathset.output_root,
-            dest_stem=graph["dest_stem"],
-            title=graph.get("title", None),
-            label=graph["label"],
-            legend=legend,
-            backend=graph.get("backend", cmdopts["graphs_backend"]),
-        )
+            self._gen_graph(
+                batch_leaf=root.leaf,
+                criteria=criteria,
+                cmdopts=cmdopts,
+                batch_output_root=pathset.output_root,
+                spec=graph_spec,
+            )
 
     def _gen_graph(
         self,
@@ -167,24 +174,21 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         batch_output_root: pathlib.Path,
-        dest_stem: str,
-        title: str,
-        label: str,
-        legend: tp.List[str],
-        backend: str,
-        inc_exps: tp.Optional[str] = None,
+        spec: dict,
     ) -> None:
         """Generate graph comparing the specified controller across scenarios."""
-        opath_leaf = namecalc.for_sc(batch_leaf, self.things, dest_stem, None)
+        opath_leaf = namecalc.for_sc(batch_leaf, self.things, spec["dest_stem"], None)
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
         xticklabels = info.xticklabels
         xticks = info.xticks
-        if inc_exps is not None:
+        if spec["inc_exps"] is not None:
             xticklabels = utils.exp_include_filter(
-                inc_exps, info.xticklabels, criteria.n_exp()
+                spec["inc_exps"], info.xticklabels, criteria.n_exp()
             )
-            xticks = utils.exp_include_filter(inc_exps, info.xticks, criteria.n_exp())
+            xticks = utils.exp_include_filter(
+                spec["inc_exps"], info.xticks, criteria.n_exp()
+            )
 
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
@@ -201,15 +205,15 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
             stats=cmdopts["dist_stats"],
             medium=cmdopts["storage"],
             output_stem=opath_leaf,
-            title=title,
+            title=spec["title"],
             xlabel=info.xlabel,
-            ylabel=label,
-            backend=backend,
+            ylabel=spec["label"],
+            backend=spec["backend"],
             xticks=xticks,
             xticklabels=xticklabels,
             logyscale=cmdopts["plot_log_yscale"],
             large_text=cmdopts["plot_large_text"],
-            legend=legend,
+            legend=spec["legend"],
         )
 
     def _gen_csvs(
@@ -218,9 +222,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         pathset: batchroot.PathSet,
         project: str,
         root: batchroot.ExpRoot,
-        index: int,
-        src_stem: str,
-        dest_stem: str,
+        spec: dict,
     ) -> None:
         """Generate a set of CSV files for use in inter-scenario graph generation.
 
@@ -242,11 +244,11 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         """
 
-        csv_ipath_stem = pathset.stat_interexp_root / src_stem
+        csv_ipath_stem = pathset.stat_interexp_root / spec["src_stem"]
 
         # Some experiments might not generate the necessary performance measure
         # CSVs for graph generation, which is OK.
-        csv_ipath_mean = csv_ipath_stem.with_suffix(config.kStats["mean"].exts["mean"])
+        csv_ipath_mean = csv_ipath_stem.with_suffix(config.STATS["mean"].exts["mean"])
         if not utils.path_exists(csv_ipath_mean):
             self.logger.warning(
                 "%s missing for controller %s", csv_ipath_mean, self.controller
@@ -255,16 +257,16 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         preparer = preprocess.IntraExpPreparer(
             ipath_stem=pathset.stat_interexp_root,
-            ipath_leaf=src_stem,
+            ipath_leaf=spec["src_stem"],
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
         )
-        opath_leaf = namecalc.for_sc(root.leaf, self.things, dest_stem, None)
+        opath_leaf = namecalc.for_sc(root.leaf, self.things, spec["dest_stem"], None)
 
         preparer.for_sc(
             scenario=root.scenario,
             opath_leaf=opath_leaf,
-            index=index,
+            index=spec["index"],
             inc_exps=None,
         )
 
@@ -272,17 +274,16 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         # dataframes if they exist, otherwise start new ones.
         # Can't use with_suffix() for opath, because that path contains the
         # controller, which already has a '.' in it.
-        # model_istem = pathlib.Path(pathset.model_root, src_stem)
-        model_ostem = self.stage5_roots.model_root / (dest_stem + "-" + self.controller)
-
-        # model_ipath = model_istem.with_suffix(config.kModelsExt["model"])
-        model_opath = model_ostem.with_name(
-            model_ostem.name + config.kModelsExt["model"]
+        model_ostem = self.stage5_roots.model_root / (
+            spec["dest_stem"] + "-" + self.controller
         )
-        # model_df = self._accum_df(criteria, model_ipath, model_opath, src_stem)
+
+        model_opath = model_ostem.with_name(
+            model_ostem.name + config.MODELS_EXT["model"]
+        )
         model_df = None
         legend_opath = model_ostem.with_name(
-            model_ostem.name + config.kModelsExt["legend"]
+            model_ostem.name + config.MODELS_EXT["legend"]
         )
 
         if model_df is not None:
@@ -291,7 +292,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
             with utils.utf8open(legend_opath, "a") as f:
                 sgp = pm.module_load_tiered(project=project, path="generators.scenario")
                 kw = sgp.to_dict(root.scenario)
-                f.write("{0} Model Prediction\n".format(kw["scenario_tag"]))
+                f.write("{} Model Prediction\n".format(kw["scenario_tag"]))
 
 
 __all__ = ["UnivarInterScenarioComparator"]

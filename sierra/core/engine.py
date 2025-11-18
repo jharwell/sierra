@@ -18,14 +18,13 @@ import pathlib
 
 # 3rd party packages
 import implements
-import netifaces
 
 # Project packages
 import sierra.core.plugin as pm
 from sierra.core import types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
-from sierra.core.trampoline import cmdline_parser  # noqa: F401
+from sierra.core.trampoline import cmdline_parser
 
 _logger = logging.getLogger(__name__)
 
@@ -113,7 +112,7 @@ class ExpRunShellCmdsGenerator:
 
     def pre_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         cmds = []
         if self.engine:
             cmds.extend(self.engine.pre_run_cmds(host, input_fpath, run_num))
@@ -122,7 +121,7 @@ class ExpRunShellCmdsGenerator:
 
     def exec_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -132,7 +131,7 @@ class ExpRunShellCmdsGenerator:
 
     def post_run_cmds(
         self, host: str, run_output_root: pathlib.Path
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -168,7 +167,7 @@ class ExpShellCmdsGenerator:
 
             self.engine = None
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -176,7 +175,7 @@ class ExpShellCmdsGenerator:
 
         return cmds
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -184,7 +183,7 @@ class ExpShellCmdsGenerator:
 
         return cmds
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -220,7 +219,7 @@ class BatchShellCmdsGenerator:
 
             self.engine = None
 
-    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -228,7 +227,7 @@ class BatchShellCmdsGenerator:
 
         return cmds
 
-    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -236,7 +235,7 @@ class BatchShellCmdsGenerator:
 
         return cmds
 
-    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
         cmds = []
 
         if self.engine:
@@ -275,32 +274,35 @@ def get_local_ip():
     """
     Get the local IP address of the SIERRA host machine.
     """
-    active = []
-    for iface in netifaces.interfaces():
-        # Active=has a normal IP address (that's what AF_INET means)
-        if socket.AF_INET in netifaces.ifaddresses(iface):
-            active.append(iface)
+    # Get all IP addresses for the hostname
+    hostname = socket.gethostname()
 
-    active = list(filter("lo".__ne__, active))
+    # Get all address info
+    addr_info = socket.getaddrinfo(hostname, None, socket.AF_INET)
 
-    if len(active) > 1:
+    # Extract unique IPv4 addresses, excluding loopback
+    all_ips = {addr[4][0] for addr in addr_info if not addr[4][0].startswith("127.")}
+    non_loopback_ips = [ip for ip in all_ips if not ip.startswith("127.")]
+
+    if len(non_loopback_ips) > 1:
         logging.critical(
             (
-                "SIERRA host machine has > 1 non-loopback IP addresses"
+                "SIERRA host machine has >1 non-loopback IP addresses"
                 "/network interfaces--SIERRA may select the wrong "
                 "one: %s"
             ),
-            active,
+            non_loopback_ips,
         )
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    return s.getsockname()[0]
+
+        logging.critical("Using primary IP: %s", non_loopback_ips[0])
+
+    return non_loopback_ips[0]
 
 
 __all__ = [
+    "ExpRunShellCmdsGenerator",
+    "ExpRunShellCmdsGenerator",
+    "ExpShellCmdsGenerator",
+    "ExpShellCmdsGenerator",
     "cmdline_postparse_configure",
-    "ExpRunShellCmdsGenerator",
-    "ExpShellCmdsGenerator",
-    "ExpRunShellCmdsGenerator",
-    "ExpShellCmdsGenerator",
 ]

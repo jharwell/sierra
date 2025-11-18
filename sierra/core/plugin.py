@@ -48,7 +48,7 @@ class BasePluginManager:
                 "Loaded plugins: %s\n",
                 json.dumps(self.loaded, default=lambda x: "<ModuleSpec>", indent=4),
             )
-            raise Exception(f"Cannot locate plugin '{name}'")
+            raise RuntimeError(f"Cannot locate plugin '{name}'")
 
         init = importlib.util.module_from_spec(plugins[name]["init_spec"])
         plugins[name]["init_spec"].loader.exec_module(init)
@@ -135,7 +135,7 @@ class BasePluginManager:
         # imported, so we put in on there if it isn't.
         new = str(plugins[name]["parent_dir"])
         if new not in sys.path:
-            sys.path = [new] + sys.path[0:]
+            sys.path = [new, *sys.path[0:]]
             self.logger.debug("Updated sys.path with %s", [new])
 
         module = importlib.util.module_from_spec(plugins[name]["module_spec"])
@@ -175,7 +175,7 @@ class BasePluginManager:
         # imported, so we put in on there if it isn't.
         new = str(plugins[name]["parent_dir"])
         if new not in sys.path:
-            sys.path = [new] + sys.path[0:]
+            sys.path = [new, *sys.path[0:]]
             self.logger.debug("Updated sys.path with %s", [new])
 
         self.loaded[name] = {
@@ -202,7 +202,7 @@ class BasePluginManager:
         # imported, so we put in on there if it isn't.
         new = str(plugins[name]["parent_dir"])
         if new not in sys.path:
-            sys.path = [new] + sys.path[0:]
+            sys.path = [new, *sys.path[0:]]
             self.logger.debug("Updated sys.path with %s", [new])
 
         self.loaded[name] = {
@@ -226,7 +226,7 @@ class DirectoryPluginManager(BasePluginManager):
         super().__init__()
         self.plugins = {}  # type: tp.Dict[str, tp.Dict]
 
-    def initialize(self, project: str, search_path: tp.List[pathlib.Path]) -> None:
+    def initialize(self, project: str, search_path: list[pathlib.Path]) -> None:
         self.logger.debug(
             "Initializing with plugin search path %s", [str(p) for p in search_path]
         )
@@ -241,21 +241,21 @@ class DirectoryPluginManager(BasePluginManager):
             self.logger.debug("Searching for plugins in '%s'", path)
 
             def recursive_search(root: pathlib.Path) -> None:
-                try:
-                    for f in root.iterdir():
-                        if not f.is_dir():
-                            continue
-                        recursive_search(f)
+                for f in root.iterdir():
+                    if not f.is_dir():
+                        continue
+                    recursive_search(f)
 
-                        plugin = f / "plugin.py"
-                        init = f / "__init__.py"
-                        cookie = f / ".sierraplugin"
+                    plugin = f / "plugin.py"
+                    init = f / "__init__.py"
+                    cookie = f / ".sierraplugin"
 
-                        if not (init.exists() and (plugin.exists() or cookie.exists())):
-                            continue
+                    if not (init.exists() and (plugin.exists() or cookie.exists())):
+                        continue
 
-                        name = f"{f.parent.name}.{f.name}"
+                    name = f"{f.parent.name}.{f.name}"
 
+                    try:
                         if plugin.exists():
                             module_spec = importlib.util.spec_from_file_location(
                                 f.name, plugin
@@ -266,18 +266,18 @@ class DirectoryPluginManager(BasePluginManager):
                         init_spec = importlib.util.spec_from_file_location(
                             "__init__", init
                         )
+                    except FileNotFoundError:
+                        self.logger.warning(
+                            "Malformed plugin in %s: not loading", f.relative_to(root)
+                        )
 
-                        self.logger.debug("Found plugin in '%s' -> %s", f, name)
+                    self.logger.debug("Found plugin in '%s' -> %s", f, name)
 
-                        self.plugins[name] = {
-                            "parent_dir": root.parent,
-                            "module_spec": module_spec,
-                            "init_spec": init_spec,
-                        }
-                except FileNotFoundError:
-                    self.logger.warning(
-                        "Malformed plugin in %s: not loading", f.relative_to(path)
-                    )
+                    self.plugins[name] = {
+                        "parent_dir": root.parent,
+                        "module_spec": module_spec,
+                        "init_spec": init_spec,
+                    }
 
             recursive_search(path)
 
@@ -293,8 +293,8 @@ def module_exists(name: str) -> bool:
         _ = __import__(name)
     except ImportError:
         return False
-    else:
-        return True
+
+    return True
 
 
 def module_load(name: str) -> types.ModuleType:
@@ -341,37 +341,35 @@ def module_load_tiered(
     # First, see if the requested module is a project/directly exists as
     # specified.
     if module_exists(path):
-        logging.trace("Using direct path %s", path)  # type: ignore
+        logging.trace("Using direct path %s", path)
         return module_load(path)
 
     # Next, check if the requested module is part of the project plugin
     if project is not None:
         component_path = f"{project}.{path}"
         if module_exists(component_path):
-            logging.trace(
-                "Using project component path %s", component_path  # type: ignore
-            )
+            logging.trace("Using project component path %s", component_path)
             return module_load(component_path)
-        else:
-            logging.trace(
-                "Project component path %s does not exist",  # type: ignore
-                component_path,
-            )
+
+        logging.trace(
+            "Project component path %s does not exist",
+            component_path,
+        )
 
     # If that didn't work, check the engine plugin
     if engine is not None:
         engine_path = f"{engine}.{path}"
         if module_exists(engine_path):
-            logging.trace("Using engine component path %s", engine_path)  # type: ignore
+            logging.trace("Using engine component path %s", engine_path)
             return module_load(engine_path)
 
     # If that didn't work, then check the SIERRA core
     core_path = f"sierra.core.{path}"
     if module_exists(core_path):
-        logging.trace("Using SIERRA core path %s", core_path)  # type: ignore
+        logging.trace("Using SIERRA core path %s", core_path)
         return module_load(core_path)
-    else:
-        logging.trace("SIERRA core path %s does not exist", core_path)  # type: ignore
+
+    logging.trace("SIERRA core path %s does not exist", core_path)
 
     # Module does not exist
     error = (
@@ -387,7 +385,7 @@ def storage_sanity_checks(medium: str, module) -> None:
     """
     Check the selected ``--storage`` plugin.
     """
-    logging.trace("Verifying --storage=%s plugin interface", medium)  # type: ignore
+    logging.trace("Verifying --storage=%s plugin interface", medium)
 
     functions = ["df_read", "df_write", "suffixes"]
     in_module = inspect.getmembers(module, inspect.isfunction)
@@ -402,7 +400,7 @@ def expdef_sanity_checks(expdef: str, module) -> None:
     """
     Check the selected ``--expdef`` plugin.
     """
-    logging.trace("Verifying --expdef=%s plugin interface", expdef)  # type: ignore
+    logging.trace("Verifying --expdef=%s plugin interface", expdef)
 
     functions = ["root_querypath", "unpickle"]
     module_funcs = inspect.getmembers(module, inspect.isfunction)
@@ -424,7 +422,7 @@ def proc_sanity_checks(proc: str, module) -> None:
     """
     Check the selected ``--proc`` plugins.
     """
-    logging.trace("Verifying --proc=%s plugin interface", proc)  # type: ignore
+    logging.trace("Verifying --proc=%s plugin interface", proc)
 
     functions = ["proc_batch_exp"]
     in_module = inspect.getmembers(module, inspect.isfunction)
@@ -439,7 +437,7 @@ def prod_sanity_checks(prod: str, module) -> None:
     """
     Check the selected ``--prod`` plugins.
     """
-    logging.trace("Verifying --prod=%s plugin interface", prod)  # type: ignore
+    logging.trace("Verifying --prod=%s plugin interface", prod)
 
     functions = ["proc_batch_exp"]
     in_module = inspect.getmembers(module, inspect.isfunction)
@@ -454,7 +452,7 @@ def compare_sanity_checks(compare: str, module) -> None:
     """
     Check the selected ``--compare`` plugins.
     """
-    logging.trace("Verifying --compare=%s plugin interface", compare)  # type: ignore
+    logging.trace("Verifying --compare=%s plugin interface", compare)
 
     functions = ["proc_exps"]
     in_module = inspect.getmembers(module, inspect.isfunction)
@@ -469,7 +467,7 @@ def execenv_sanity_checks(execenv: str, module) -> None:
     """
     Check the selected ``--execenv`` plugin.
     """
-    logging.trace("Verifying --execenv=%s plugin interface", execenv)  # type: ignore
+    logging.trace("Verifying --execenv=%s plugin interface", execenv)
 
     in_module = inspect.getmembers(module, inspect.isclass)
 
@@ -501,7 +499,7 @@ def engine_sanity_checks(engine: str, module) -> None:
     """
     Check the selected ``--engine`` plugin.
     """
-    logging.trace("Verifying --engine=%s plugin interface", engine)  # type: ignore
+    logging.trace("Verifying --engine=%s plugin interface", engine)
 
     req_classes = [
         "ExpConfigurer",
@@ -566,14 +564,14 @@ models = DirectoryPluginManager()
 
 __all__ = [
     "DirectoryPluginManager",
+    "bc_load",
+    "compare_sanity_checks",
+    "engine_sanity_checks",
+    "execenv_sanity_checks",
     "module_exists",
     "module_load",
-    "bc_load",
     "module_load_tiered",
-    "storage_sanity_checks",
-    "execenv_sanity_checks",
-    "engine_sanity_checks",
     "proc_sanity_checks",
     "prod_sanity_checks",
-    "compare_sanity_checks",
+    "storage_sanity_checks",
 ]

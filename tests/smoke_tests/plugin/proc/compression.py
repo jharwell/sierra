@@ -22,7 +22,7 @@ def compression_sanity(session):
     """Check that the compress/decompress plugins work/don't crash."""
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
-    scenario = "scenario1.10x10x10"
+    scenario = "scenario1"
     leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
     batch_root = batchroot.ExpRoot(
         sierra_root=f"{session.env['SIERRA_ROOT']}",

@@ -49,8 +49,8 @@ class PopulationSize(population_size.PopulationSize):
         main_config: types.YAMLDict,
         batch_input_root: pathlib.Path,
         robot: str,
-        sizes: tp.List[int],
-        positions: tp.List[Vector3D],
+        sizes: list[int],
+        positions: list[Vector3D],
     ) -> None:
         population_size.PopulationSize.__init__(
             self, cli_arg, main_config, batch_input_root
@@ -67,7 +67,7 @@ class PopulationSize(population_size.PopulationSize):
             )
         self.element_adds = []  # type: tp.List[definition.ElementAddList]
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         """Generate XML modifications to set system sizes."""
         if not self.element_adds:
             robot_config = self.main_config["ros"]["robots"][self.robot]
@@ -75,10 +75,9 @@ class PopulationSize(population_size.PopulationSize):
             model_base = robot_config["model"]
             model_variant = robot_config.get("model_variant", "")
 
-            if model_variant != "":
-                model = f"{model_base}_{model_variant}"
-            else:
-                model = model_base
+            model = (
+                f"{model_base}_{model_variant}" if model_variant != "" else model_base
+            )
 
             desc_cmd = f"$(find xacro)/xacro $(find {model_base}_description)/urdf/{model}.urdf.xacro"
             for s in self.sizes:
@@ -152,27 +151,6 @@ class PopulationSize(population_size.PopulationSize):
 
         return self.element_adds
 
-    def graph_info(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> bcbridge.GraphInfo:
-        info = bcbridge.GraphInfo(
-            cmdopts,
-            batch_output_root,
-            exp_names if exp_names else self.gen_exp_names(),
-        )
-
-        info.xlabel = super().graph_xlabel(info.cmdopts)
-        info.xticklabels = super().graph_xticklabels(
-            info.cmdopts, info.batch_output_root, info.exp_names
-        )
-        info.xticks = super().graph_xticks(
-            info.cmdopts, info.batch_output_root, info.exp_names
-        )
-        return info
-
     def n_agents(self, exp_num: int) -> int:
         return int(len(self.element_adds[exp_num]) / len(self.element_adds[0]))
 
@@ -196,9 +174,9 @@ def factory(
         # place robots randomly within it.
         kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-        xs = random.choices(range(0, kw["arena_x"]), k=max_sizes[-1])  # type: ignore
-        ys = random.choices(range(0, kw["arena_y"]), k=max_sizes[-1])  # type: ignore
-        zs = random.choices(range(0, kw["arena_z"]), k=max_sizes[-1])  # type: ignore
+        xs = random.choices(range(0, kw["arena_x"]), k=max_sizes[-1])
+        ys = random.choices(range(0, kw["arena_y"]), k=max_sizes[-1])
+        zs = random.choices(range(0, kw["arena_z"]), k=max_sizes[-1])
         positions = [Vector3D(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
     return PopulationSize(

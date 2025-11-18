@@ -12,7 +12,13 @@ import psutil
 
 # Project packages
 from tests.smoke_tests import core, utils
-from tests.smoke_tests.plugin.engine import argos, jsonsim, ros1robot, ros1gazebo
+from tests.smoke_tests.plugin.engine import (
+    argos,
+    jsonsim,
+    yamlsim,
+    ros1robot,
+    ros1gazebo,
+)
 from tests.smoke_tests.plugin.proc import modelrunner, compression
 from tests.smoke_tests.plugin.prod import graphs
 
@@ -25,26 +31,6 @@ nox.options.default_venv_backend = "uv"
 def lint(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
-
-    session.run(
-        "flake8",
-        "sierra",
-        "--count",
-        "--select=E9,F63,F7,F82",
-        "--show-source",
-        "--statistics",
-    )
-
-    session.run(
-        "flake8",
-        "sierra",
-        "--count",
-        "--select=C901",
-        "--max-complexity=10",
-        "--statistics",
-    )
-
-    session.run("pylint", "sierra")
 
     session.run(
         "xenon",
@@ -68,7 +54,7 @@ def analyze_pytype(session):
         "pytype",
         f"-j {cores}",
         "-k",
-        "-d name-error,attribute-error,pyi-error",
+        "--config pyproject.toml",
         "sierra",
         external=True,
     )

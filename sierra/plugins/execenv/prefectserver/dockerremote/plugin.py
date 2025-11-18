@@ -10,10 +10,10 @@ import typing as tp
 import argparse
 import pathlib
 import os
+import json
 
 # 3rd party packages
 import implements
-import json
 
 # Project packages
 from sierra.core import types
@@ -30,7 +30,7 @@ class BatchShellCmdsGenerator:
         self.cmdopts = cmdopts
         self.api_url = os.environ["PREFECT_API_URL"]
 
-    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
         flow_path = pathlib.Path(__file__).parent / "../flow.py"
         no_prompt = "PREFECT_CLI_PROMPT=false"
 
@@ -62,18 +62,18 @@ class BatchShellCmdsGenerator:
                 wait=True,
             ),
             types.ShellCmdSpec(
-                cmd="prefect config set PREFECT_API_URL={0}".format(self.api_url),
+                cmd="prefect config set PREFECT_API_URL={}".format(self.api_url),
                 shell=True,
                 wait=True,
             ),
         ]
 
         build = (
-            "{0} prefect deploy {1}:sierra "
+            "{} prefect deploy {}:sierra "
             "--name sierra/dockerremote "
-            "--job-variable '{2}' "
-            "--pool {3} "
-            "--work-queue {4}"
+            "--job-variable '{}' "
+            "--pool {} "
+            "--work-queue {}"
         ).format(
             no_prompt,
             flow_path,
@@ -90,7 +90,7 @@ class BatchShellCmdsGenerator:
         )
         return ret
 
-    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         # The needed flow is already present on the server as a deployment, so
         # we can just run it directly as many times as we want. You don't need
         # to set the queue/pool--it is inferred from the flow you are running.
@@ -105,7 +105,7 @@ class BatchShellCmdsGenerator:
 
         return [spec]
 
-    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
 
@@ -129,4 +129,4 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-__all__ = ["cmdline_postparse_configure", "BatchShellCmdsGenerator"]
+__all__ = ["BatchShellCmdsGenerator", "cmdline_postparse_configure"]

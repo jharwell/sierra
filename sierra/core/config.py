@@ -9,9 +9,9 @@ Contains all SIERRA hard-coded configuration in one place.
 import logging
 import typing as tp
 import packaging
-import holoviews as hv
 
 # 3rd party packages
+import holoviews as hv
 
 # Project packages
 from sierra.core import types
@@ -35,7 +35,7 @@ def mpl_init():
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logging.getLogger("PIL").setLevel(logging.WARNING)
 
-    import matplotlib as mpl
+    import matplotlib as mpl  # noqa: PLC0415
 
     mpl.rcParams["lines.linewidth"] = 3
     mpl.rcParams["lines.markersize"] = 10
@@ -50,7 +50,7 @@ def mpl_init():
     # importing pyplot reduce import loading time.
     mpl.use("Agg")
 
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # noqa: PLC0415
 
     # Set MPL style
     plt.style.use("seaborn-v0_8-colorblind")
@@ -63,21 +63,17 @@ mpl_init()
 hv.core.cache_size = 10
 hv.config.cache_size = 0
 hv.config.warning_level = 0
+
 ################################################################################
 # General Configuration
 ################################################################################
+PICKLE_EXT = ".pkl"
+PICKLE_LEAF = "exp_def" + PICKLE_EXT
+RANDOM_SEEDS_LEAF = "seeds" + PICKLE_EXT
 
-
-kStaticImageType = "png"
-kInteractiveImageType = "html"
-
-kRenderFormat = ".mp4"
-
-kPickleExt = ".pkl"
-kPickleLeaf = "exp_def" + kPickleExt
-kRandomSeedsLeaf = "seeds" + kPickleExt
-
-kGraphs = {
+GRAPHS = {
+    "static_type": "png",
+    "interactive_type": "html",
     "dpi": 100,
     "base_size": 10.0,  # inches,
     "text_size_small": {
@@ -98,9 +94,9 @@ kGraphs = {
 # These are the file extensions that files read/written by a given storage
 # plugin should have. Once processed by SIERRA they are written out as CSV files
 # with new extensions contextualizing them.
-kStorageExt: types.StrDict = {"csv": ".csv", "arrow": ".arrow"}
+STORAGE_EXT: types.StrDict = {"csv": ".csv", "arrow": ".arrow"}
 
-kStats: tp.Dict[str, types.StatisticsSpec] = {
+STATS: dict[str, types.StatisticsSpec] = {
     # The default for averaging
     "mean": types.StatisticsSpec({"mean": ".mean"}),
     # For calculating 95% confidence intervals
@@ -119,14 +115,10 @@ kStats: tp.Dict[str, types.StatisticsSpec] = {
     ),
 }
 
-kModelsExt: types.StrDict = {"model": ".model", "legend": ".legend"}
+MODELS_EXT: types.StrDict = {"model": ".model", "legend": ".legend"}
 
-kRendering = {
-    "argos": {
-        "frames_leaf": "frames",
-    }
-}
-kARGoS: tp.Dict[str, tp.Any] = {
+ARGOS: dict[str, tp.Any] = {
+    "frames_leaf": "frames",
     "physics_iter_per_tick": 10,
     "min_version": packaging.version.parse("3.0.0-beta53"),
     "launch_cmd": "argos3",
@@ -142,8 +134,15 @@ kARGoS: tp.Dict[str, tp.Any] = {
     },
 }
 
+RENDERING = {
+    "argos": {
+        "frames_leaf": ARGOS["frames_leaf"],
+    },
+    "format": ".mp4",
+}
 
-kROS: types.SimpleDict = {
+
+ROS: types.SimpleDict = {
     "launch_cmd": "roslaunch",
     "launch_file_ext": ".launch",
     "param_file_ext": ".params",
@@ -156,11 +155,10 @@ kROS: types.SimpleDict = {
 # 2025-06-23 [JRH]: These are empirically determined minimum values which
 # generally result in all data being processed in stage {3,4}. Change with
 # extreme caution.
+GATHER_WORKER_RETRIES = 3
+PROCESS_WORKER_RETRIES = 3
 
-kGatherWorkerRetries = 3
-kProcessWorkerRetries = 3
-
-kYAML = types.YAMLConfigFileSpec(
+PROJECT_YAML = types.YAMLConfigFileSpec(
     main="main.yaml",
     graphs="graphs.yaml",
     collate="collate.yaml",
@@ -169,12 +167,12 @@ kYAML = types.YAMLConfigFileSpec(
     models="models.yaml",
 )
 
-kGazebo = {
+GAZEBO = {
     "launch_cmd": "gazebo",
     "min_version": "11.0.0",
     "physics_iter_per_tick": 1000,
 }
 
-kGNUParallel: types.StrDict = {"cmdfile_stem": "commands", "cmdfile_ext": ".txt"}
+GNU_PARALLEL: types.StrDict = {"cmdfile_stem": "commands", "cmdfile_ext": ".txt"}
 
-kEngine = {"ping_timeout": 10}  # seconds
+ENGINE = {"ping_timeout": 10}  # seconds

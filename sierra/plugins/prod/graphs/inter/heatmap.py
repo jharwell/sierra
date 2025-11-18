@@ -24,7 +24,7 @@ _logger = logging.getLogger(__name__)
 def generate(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    targets: tp.List[types.YAMLDict],
+    targets: list[types.YAMLDict],
     info: bcbridge.GraphInfo,
 ) -> None:
     """
@@ -46,10 +46,10 @@ def generate(
             if graph["type"] != "heatmap":
                 continue
 
-            _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
+            _logger.trace("\n" + json.dumps(graph, indent=4))
 
             try:
-                graph = strictyaml.load(yaml.dump(graph), schema.heatmap).data
+                loaded = strictyaml.load(yaml.dump(graph), schema.heatmap).data
 
             except strictyaml.YAMLError as e:
                 _logger.critical("Non-conformant heatmap YAML: %s", e)
@@ -66,18 +66,18 @@ def generate(
             # change in the future.
             graphs.heatmap(
                 pathset=graph_pathset,
-                input_stem=graph["dest_stem"],
-                output_stem=graph["dest_stem"],
+                input_stem=loaded["dest_stem"],
+                output_stem=loaded["dest_stem"],
                 medium="storage.csv",
-                title=graph.get("title", None),
-                xlabel=graph.get("xlabel", ""),
-                ylabel=graph.get("ylabel", ""),
-                zlabel=graph.get("zlabel", ""),
-                backend=graph.get("backend", cmdopts["graphs_backend"]),
+                title=loaded.get("title", None),
+                xlabel=loaded.get("xlabel", ""),
+                ylabel=loaded.get("ylabel", ""),
+                zlabel=loaded.get("zlabel", ""),
+                backend=loaded.get("backend", cmdopts["graphs_backend"]),
                 colnames=(
-                    graph.get("x", "x"),
-                    graph.get("y", "y"),
-                    graph.get("z", "z"),
+                    loaded.get("x", "x"),
+                    loaded.get("y", "y"),
+                    loaded.get("z", "z"),
                 ),
                 large_text=large_text,
             )

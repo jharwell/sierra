@@ -33,15 +33,15 @@ class ARGoSQTHeadlessRendering:
                  engines of the specified type.
     """
 
-    kFrameSize = "1600x1200"
-    kQUALITY = 100
-    kFRAME_RATE = 10
+    FRAME_SIZE = "1600x1200"
+    QUALITY = 100
+    FRAME_RATE = 10
 
     def __init__(self, setup: exp.ExpSetup) -> None:
         self.setup = setup
         self.element_adds = []  # type: tp.List[definition.ElementAddList]
 
-    def gen_attr_changelist(self) -> tp.List[definition.AttrChangeSet]:
+    def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """
         No effect.
 
@@ -49,7 +49,7 @@ class ARGoSQTHeadlessRendering:
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[definition.ElementRmList]:
+    def gen_tag_rmlist(self) -> list[definition.ElementRmList]:
         """Remove the ``<qt_opengl>`` tag if it exists.
 
         Obviously you *must* call this function BEFORE adding new definitions.
@@ -61,7 +61,7 @@ class ARGoSQTHeadlessRendering:
             )
         ]
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         if not self.element_adds:
             self.element_adds = [
                 definition.ElementAddList(
@@ -75,10 +75,10 @@ class ARGoSQTHeadlessRendering:
                         {
                             "directory": "frames",
                             "base_name": "frame_",
-                            "format": sierra.core.config.kStaticImageType,
+                            "format": sierra.core.config.GRAPHS["static_type"],
                             "headless_grabbing": "true",
-                            "headless_frame_size": "{0}".format(self.kFrameSize),
-                            "headless_frame_rate": "{0}".format(self.kFRAME_RATE),
+                            "headless_frame_size": "{}".format(self.FRAME_SIZE),
+                            "headless_frame_rate": "{}".format(self.FRAME_RATE),
                         },
                         False,
                     ),

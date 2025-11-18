@@ -42,10 +42,10 @@ class ExpRunShellCmdsGenerator:
 
     def pre_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
 
         master_ip = engine.get_local_ip()
-        port = config.kROS["port_base"] + self.exp_num
+        port = config.ROS["port_base"] + self.exp_num
         master_uri = f"http://{master_ip}:{port}"
 
         ros_master = types.ShellCmdSpec(
@@ -55,10 +55,12 @@ class ExpRunShellCmdsGenerator:
         if host == "master":
             if self.cmdopts["no_master_node"]:
                 return []
-            else:
-                return [ros_master]
 
-        main_path = os.path.join(self.cmdopts["project_config_root"], config.kYAML.main)
+            return [ros_master]
+
+        main_path = (
+            pathlib.Path(self.cmdopts["project_config_root"]) / config.PROJECT_YAML.main
+        )
 
         main_config = yaml.load(utils.utf8open(main_path), yaml.FullLoader)
 
@@ -79,15 +81,15 @@ class ExpRunShellCmdsGenerator:
 
     def exec_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         if host == "master":
             return self._exec_run_cmds_master(host, input_fpath, run_num)
-        else:
-            return self._exec_run_cmds_slave(host, input_fpath, run_num)
+
+        return self._exec_run_cmds_slave(host, input_fpath, run_num)
 
     def _exec_run_cmds_master(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
 
         if self.cmdopts["no_master_node"]:
             return []
@@ -102,10 +104,10 @@ class ExpRunShellCmdsGenerator:
         cmd = "{0} --wait {1}_run{2}_master{3};"
 
         cmd = cmd.format(
-            config.kROS["launch_cmd"],
+            config.ROS["launch_cmd"],
             str(exp_template_path),
             run_num,
-            config.kROS["launch_file_ext"],
+            config.ROS["launch_file_ext"],
         )
 
         # --wait tells roslaunch to wait for the configured master to come up
@@ -121,7 +123,7 @@ class ExpRunShellCmdsGenerator:
 
     def _exec_run_cmds_slave(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
 
         _logger.debug(
             "Generating exec cmds for run%s slaves: %d robots", run_num, self.n_agents
@@ -147,29 +149,29 @@ class ExpRunShellCmdsGenerator:
             # come up before launch the robot code.
             cmd = "{0} --wait {1}_robot{2}{3};"
             cmd = cmd.format(
-                config.kROS["launch_cmd"],
+                config.ROS["launch_cmd"],
                 input_fpath,
                 i,
-                config.kROS["launch_file_ext"],
+                config.ROS["launch_file_ext"],
             )
             ret.extend([types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)])
         return ret
 
     def post_run_cmds(
         self, host: str, run_output_root: pathlib.Path
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         if host == "master":
             return []
-        else:
-            return [
-                types.ShellCmdSpec(
-                    # Can't use killall, because that returns non-zero if things
-                    # are cleaned up nicely.
-                    cmd="if pgrep roslaunch; then pkill roslaunch; fi;",
-                    shell=True,
-                    wait=True,
-                )
-            ]
+
+        return [
+            types.ShellCmdSpec(
+                # Can't use killall, because that returns non-zero if things
+                # are cleaned up nicely.
+                cmd="if pgrep roslaunch; then pkill roslaunch; fi;",
+                shell=True,
+                wait=True,
+            )
+        ]
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -180,9 +182,9 @@ class ExpShellCmdsGenerator:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         local_ip = engine.get_local_ip()
-        port = config.kROS["port_base"] + self.exp_num
+        port = config.ROS["port_base"] + self.exp_num
         master_uri = f"http://{local_ip}:{port}"
 
         _logger.info("Using ROS_MASTER_URI=%s", master_uri)
@@ -206,10 +208,10 @@ class ExpShellCmdsGenerator:
             ),
         ]
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         return []
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         # Cleanup roscore processes on the SIERRA host machine which are still
         # active because they don't know how to clean up after themselves.
         return [
@@ -243,8 +245,8 @@ class ExpConfigurer:
         if self.cmdopts["skip_sync"]:
             _logger.info("Skipping syncing experiment inputs -> robots")
             return
-        else:
-            _logger.info("Syncing experiment inputs  -> robots")
+
+        _logger.info("Syncing experiment inputs  -> robots")
 
         nodes = execenv.parse_nodefile(self.cmdopts["nodefile"])
 
@@ -290,21 +292,19 @@ class ExpConfigurer:
         )
         res = None
         try:
-            _logger.trace("Running mkdir: %s", mkdir_cmd)  # type: ignore
+            _logger.trace("Running mkdir: %s", mkdir_cmd)
             res = subprocess.run(
                 mkdir_cmd,
                 shell=True,
                 check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
             )
-            _logger.trace("Running rsync: %s", rsync_cmd)  # type: ignore
+            _logger.trace("Running rsync: %s", rsync_cmd)
             res = subprocess.run(
                 rsync_cmd,
                 shell=True,
                 check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
             )
         except subprocess.CalledProcessError:
             _logger.fatal(
@@ -402,9 +402,9 @@ def pre_exp_diagnostics(
 
 
 __all__ = [
+    "ExpConfigurer",
     "ExpRunShellCmdsGenerator",
     "ExpShellCmdsGenerator",
-    "ExpConfigurer",
     "cmdline_postparse_configure",
     "execenv_check",
 ]

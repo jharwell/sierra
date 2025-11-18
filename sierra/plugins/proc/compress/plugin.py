@@ -72,24 +72,21 @@ def _build_tasklist_for_exp(
     exp_output_root: pathlib.Path,
     run_metrics_leaf: pathlib.Path,
     remove_after: bool,
-) -> tp.List[tp.Tuple[pathlib.Path, pathlib.Path, bool]]:
+) -> list[tuple[pathlib.Path, pathlib.Path, bool]]:
     """Add root dir each experimental run to queue for processing.
 
     Enqueueing for processing is done at the file-level rather than
     per-experiment, so that for systems with more CPUs than experiments you
     still get maximum throughput.
     """
-    res = []
-    for exp in exp_output_root.iterdir():
-        res.append(
-            (
-                exp_output_root,
-                exp.relative_to(exp_output_root) / run_metrics_leaf,
-                remove_after,
-            )
+    return [
+        (
+            exp_output_root,
+            exp.relative_to(exp_output_root) / run_metrics_leaf,
+            remove_after,
         )
-
-    return res
+        for exp in exp_output_root.iterdir()
+    ]
 
 
 def _worker(

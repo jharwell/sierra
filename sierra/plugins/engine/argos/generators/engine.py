@@ -39,7 +39,7 @@ def generate_physics(
     cmdopts: types.Cmdopts,
     engine_type: str,
     n_engines: int,
-    extents: tp.List[ArenaExtent],
+    extents: list[ArenaExtent],
     remove_defs: bool = True,
 ) -> None:
     """
@@ -61,10 +61,7 @@ def generate_physics(
         return
 
     _logger.trace(
-        (
-            "Generating changes for %d '%s' "  # type: ignore
-            "physics engines (all runs)"
-        ),
+        ("Generating changes for %d '%s' " "physics engines (all runs)"),
         n_engines,
         engine_type,
     )
@@ -96,12 +93,7 @@ def generate_arena_shape(
 
     Writes generated changes to the simulation definition pickle file.
     """
-    _logger.trace(
-        (
-            "Generating changes for arena "  # type: ignore
-            "share (all runs)"
-        )
-    )
+    _logger.trace("Generating changes for arena " "share (all runs)")
     _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
     utils.pickle_modifications(adds, chgs, spec.exp_def_fpath)
 
@@ -119,7 +111,7 @@ def for_all_exp(
             {
                 "src_parent": None,
                 "src_tag": ".",
-                "opath_leaf": config.kARGoS["launch_file_ext"],
+                "opath_leaf": config.ARGOS["launch_file_ext"],
                 "new_children": None,
                 "new_children_parent": None,
                 "rename_to": None,
@@ -180,7 +172,7 @@ def _generate_single_exp_run_random_seed(
     exp_def: definition.BaseExpDef, run_num: int, random_seed: int
 ) -> None:
     """Generate XML changes for random seeding for a specific simulation."""
-    _logger.trace("Generating random seed changes for run%s", run_num)  # type: ignore
+    _logger.trace("Generating random seed changes for run%s", run_num)
 
     # Set the random seed in the input file
     exp_def.attr_change(".//experiment", "random_seed", str(random_seed))
@@ -193,11 +185,10 @@ def _generate_single_exp_run_visualization(
     cmdopts: types.Cmdopts,
 ):
     """Generate XML changes for visualization for a specific simulation."""
-    _logger.trace("Generating visualization changes for run%s", run_num)  # type: ignore
+    _logger.trace("Generating visualization changes for run%s", run_num)
 
     if cmdopts["engine_vc"]:
-        argos = config.kRendering["argos"]
-        frames_fpath = run_output_path / argos["frames_leaf"]
+        frames_fpath = run_output_path / config.ARGOS["frames_leaf"]
         exp_def.attr_change(
             ".//qt-opengl/frame_grabbing", "directory", str(frames_fpath)
         )  # probably will not be present
@@ -214,12 +205,7 @@ def _generate_all_exp_n_agents(
     if cmdopts["n_agents"] is None:
         return
 
-    _logger.trace(
-        (
-            "Generating changes for # robots "  # type: ignore
-            "(all runs)"
-        )
-    )
+    _logger.trace("Generating changes for # robots (all runs)")
     chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
         [cmdopts["n_agents"]]
     )
@@ -244,12 +230,7 @@ def _generate_all_exp_saa(
     file.
 
     """
-    _logger.trace(
-        (
-            "Generating changes for SAA "  # type: ignore
-            "(all runs)"
-        )
-    )
+    _logger.trace("Generating changes for SAA (all runs)")
 
     if not cmdopts["with_robot_rab"]:
         exp_def.element_remove(".//media", "range_and_bearing", noprint=True)
@@ -297,7 +278,7 @@ def _generate_all_exp_threading(
     file.
 
     """
-    _logger.trace("Generating changes for threading (all runs)")  # type: ignore
+    _logger.trace("Generating changes for threading (all runs)")
     exp_def.attr_change(".//system", "threads", str(cmdopts["physics_n_engines"]))
 
     # Only valid on linux, per ARGoS, so we ely on the user to add this
@@ -307,10 +288,8 @@ def _generate_all_exp_threading(
 
     if sys.platform != "linux":
         _logger.critical(
-            (
-                ".//system/pin_threads_to_cores only "
-                "valid on linux--configuration error?"
-            )
+            ".//system/pin_threads_to_cores only "
+            "valid on linux--configuration error?"
         )
         return
 
@@ -350,7 +329,7 @@ def _generate_all_exp_library(
     file.
 
     """
-    _logger.trace("Generating changes for library (all runs)")  # type: ignore
+    _logger.trace("Generating changes for library (all runs)")
 
     run_config = spec.criteria.main_config["sierra"]["run"]
     lib_name = run_config.get("library_name", "lib" + cmdopts["project"])
@@ -370,12 +349,7 @@ def _generate_all_exp_visualization(
     file.
 
     """
-    _logger.trace(
-        (
-            "Generating changes for "  # type: ignore
-            "visualization (all runs)"
-        )
-    )
+    _logger.trace("Generating changes for visualization (all runs)")
 
     if not cmdopts["engine_vc"]:
         # ARGoS visualizations

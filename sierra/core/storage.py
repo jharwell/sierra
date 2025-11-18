@@ -15,7 +15,7 @@ import pandas as pd
 
 # Project packages
 import sierra.core.plugin as pm
-from sierra.core.trampoline import cmdline_parser  # noqa: F401
+from sierra.core.trampoline import cmdline_parser
 
 
 def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
@@ -23,7 +23,7 @@ def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
     Dispatch "read from storage" request to active ``--storage`` plugin.
     """
     storage = pm.pipeline.get_plugin_module(medium)
-    return storage.df_read(path, **kwargs)  # type: ignore
+    return storage.df_read(path, **kwargs)
 
 
 def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> None:
@@ -31,7 +31,7 @@ def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> Non
     Dispatch "write to storage" request to active ``--storage`` plugin.
     """
     storage = pm.pipeline.get_plugin_module(medium)
-    return storage.df_write(df, path, **kwargs)  # type: ignore
+    return storage.df_write(df, path, **kwargs)
 
 
 __all__ = ["df_read", "df_write"]

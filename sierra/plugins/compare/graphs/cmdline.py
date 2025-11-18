@@ -16,7 +16,7 @@ from sierra.plugins import PluginCmdline
 
 
 def build(
-    parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+    parents: list[argparse.ArgumentParser], stages: list[int]
 ) -> PluginCmdline:
     """
     Get a cmdline parser supporting the ``compare.graphs`` comparison plugin.
@@ -79,7 +79,7 @@ def build(
                        built from slices of the 2D CSVs/heatmaps generated
                        during stage4, because statistics generation is limited
                        to stage3.  This limitation may be removed in a future
-                       release. 
+                       release.
 
              For all comparison types, ``--legend`` is used if passed for
              legend.

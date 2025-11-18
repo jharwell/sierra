@@ -56,7 +56,7 @@ class ExpShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         shell = shutil.which("bash")
 
         return [
@@ -76,10 +76,10 @@ class ExpShellCmdsGenerator:
             ),
         ]
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         jobid = os.getpid()
 
         # Even if we are passed --nodelist, we still make our own copy of it, so
@@ -96,13 +96,13 @@ class ExpShellCmdsGenerator:
 
         # Make sure there are no duplicate nodes
         unique_nodes = types.ShellCmdSpec(
-            cmd="sort -u {0} > {1}".format(exec_opts["nodefile"], nodelist),
+            cmd="sort -u {} > {}".format(exec_opts["nodefile"], nodelist),
             shell=True,
             wait=True,
         )
         # GNU parallel cmd
         parallel = (
-            "env && parallel {2} "
+            "parallel {2} "
             "--jobs {1} "
             "--results {4} "
             "--joblog {3} "
@@ -126,6 +126,6 @@ class ExpShellCmdsGenerator:
 
 
 __all__ = [
-    "cmdline_postparse_configure",
     "ExpShellCmdsGenerator",
+    "cmdline_postparse_configure",
 ]

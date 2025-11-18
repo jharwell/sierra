@@ -57,12 +57,12 @@ def proc_batch_exp(
     start = time.time()
 
     graphs_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(
-        config.kYAML.graphs
+        config.PROJECT_YAML.graphs
     )
     if utils.path_exists(graphs_path):
         _logger.info("Loading render config for project=%s", cmdopts["project"])
         loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
-        render_config = loader.load_config(cmdopts, config.kYAML.graphs)
+        render_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
 
     else:
         _logger.warning("%s does not exist--cannot generate render", graphs_path)
@@ -72,21 +72,17 @@ def proc_batch_exp(
         _from_engine(render_config["intra-exp"], cmdopts, pathset, criteria)
     else:
         _logger.debug(
-            (
-                "--engine-vc not passed--(possibly) skipping "
-                "rendering frames captured by the engine"
-            )
+            "--engine-vc not passed--(possibly) skipping "
+            "rendering frames captured by the engine"
         )
 
     if cmdopts["project_rendering"] and "imagize" in render_config:
         _from_project_imagized(render_config["imagize"], cmdopts, pathset, criteria)
     else:
         _logger.debug(
-            (
-                "--project-rendering not passed--(possibly) "
-                "skipping rendering frames captured by the "
-                "project"
-            )
+            "--project-rendering not passed--(possibly) "
+            "skipping rendering frames captured by the "
+            "project"
         )
 
     elapsed = int(time.time() - start)
@@ -128,8 +124,8 @@ def _from_engine(
 
         for run in exp.iterdir():
             engine = cmdopts["engine"].split(".")[1]
-            frames_leaf = config.kRendering[engine]["frames_leaf"]
-            output_path = output_dir / (run.name + config.kRenderFormat)
+            frames_leaf = config.RENDERING[engine]["frames_leaf"]
+            output_path = output_dir / (run.name + config.RENDERING["format"])
             opts = {
                 "exp_root": pathset.imagize_root / exp.name,
                 "output_path": output_path,
@@ -193,7 +189,7 @@ def _from_project_imagized(
                     pathset.video_root
                     / exp.name
                     / candidate.relative_to(exp_imagize_root)
-                ) / (candidate.name + config.kRenderFormat)
+                ) / (candidate.name + config.RENDERING["format"])
                 inputs.append(
                     {
                         "input_dir": candidate,
@@ -209,12 +205,9 @@ def _from_project_imagized(
 def _parallel(
     render_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
-    inputs: tp.List[types.SimpleDict],
+    inputs: list[types.SimpleDict],
 ) -> None:
-    """Perform the requested rendering in parallel.
-
-    Unless disabled with ``--proccessing-serial``, then it is done serially.
-    """
+    """Perform the requested rendering in parallel."""
     q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
     for spec in inputs:
@@ -232,7 +225,6 @@ def _parallel(
 
 def _worker(q: mp.Queue, render_config: types.YAMLDict) -> None:
     assert shutil.which("ffmpeg") is not None, "ffmpeg not found"
-
     while True:
         # Wait for 3 seconds after the queue is empty before bailing
         try:
@@ -242,15 +234,15 @@ def _worker(q: mp.Queue, render_config: types.YAMLDict) -> None:
 
             opts = render_opts["ffmpeg_opts"].split(" ")
 
-            ipaths = "'{0}/*.{1}'".format(
-                render_opts["input_dir"], config.kStaticImageType
+            ipaths = "'{}/*.{}'".format(
+                render_opts["input_dir"], config.GRAPHS["static_type"]
             )
             cmd = ["ffmpeg", "-y", "-pattern_type", "glob", "-i", ipaths]
             cmd.extend(opts)
             cmd.extend([str(render_opts["output_path"])])
 
             to_run = " ".join(cmd)
-            _logger.trace("Run cmd: %s", to_run)  # type: ignore
+            _logger.trace("Run cmd: %s", to_run)
 
             utils.dir_create_checked(render_opts["output_path"].parent, exist_ok=True)
 

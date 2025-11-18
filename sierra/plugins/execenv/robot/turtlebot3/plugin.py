@@ -58,20 +58,20 @@ class ExpShellCmdsGenerator:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         jobid = os.getpid()
 
         # Even if we are passed --nodelist, we still make our own copy of it, so
         # that the user can safely modify it (if they want to) after running
         # stage 1.
         nodelist = pathlib.Path(
-            exec_opts["exp_input_root"], "{0}-nodelist.txt".format(jobid)
+            exec_opts["exp_input_root"], "{}-nodelist.txt".format(jobid)
         )
 
         resume = ""
@@ -83,7 +83,7 @@ class ExpShellCmdsGenerator:
 
         # Make sure there are no duplicate nodes
         unique_nodes = types.ShellCmdSpec(
-            cmd="sort -u {0} > {1}".format(exec_opts["nodefile"], nodelist),
+            cmd="sort -u {} > {}".format(exec_opts["nodefile"], nodelist),
             shell=True,
             wait=True,
         )
@@ -92,7 +92,7 @@ class ExpShellCmdsGenerator:
         # defaults to /bin/sh since all cmds are run in a python shell which
         # does not have $SHELL set.
         use_bash = types.ShellCmdSpec(
-            cmd="export PARALLEL_SHELL={0}".format(shutil.which("bash")),
+            cmd="export PARALLEL_SHELL={}".format(shutil.which("bash")),
             shell=True,
             env=True,
             wait=True,
@@ -109,7 +109,7 @@ class ExpShellCmdsGenerator:
 
     def _generate_for_run(
         self, i: int, exec_opts: dict, resume: str, nodelist: pathlib.Path
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         ret = []
         # GNU parallel cmd for robots (slaves)
         robots = (
@@ -201,4 +201,4 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
             )
 
 
-__all__ = ["cmdline_postparse_configure", "execenv_check", "ExpShellCmdsGenerator"]
+__all__ = ["ExpShellCmdsGenerator", "cmdline_postparse_configure", "execenv_check"]

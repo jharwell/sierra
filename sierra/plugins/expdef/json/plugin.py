@@ -1,7 +1,7 @@
 # Copyright 2024 John Harwell, All rights reserved.
 #
 #  SPDX-License-Identifier: MIT
-"""Plugin for parsing and manipulating template input files in XML format."""
+"""Plugin for parsing and manipulating template input files in JSON format."""
 
 # Core packages
 import pathlib
@@ -19,7 +19,7 @@ from sierra.core import types, utils
 
 
 class Writer:
-    """Write the XML experiment to the filesystem according to configuration.
+    """Write the JSON experiment to the filesystem according to configuration.
 
     More than one file may be written, as specified.
     """
@@ -37,7 +37,7 @@ class Writer:
     def _write_with_config(self, base_opath: pathlib.Path, config: dict) -> None:
         tree, src_root, opath = self._write_prepare_tree(base_opath, config)
 
-        self.logger.trace("Write tree@%s to %s", src_root, opath)  # type: ignore
+        self.logger.trace("Write tree@%s to %s", src_root, opath)
 
         to_write = tree
 
@@ -46,11 +46,11 @@ class Writer:
 
     def _write_prepare_tree(
         self, base_opath: pathlib.Path, config: dict
-    ) -> tp.Tuple[tp.Optional[types.JSON], str, pathlib.Path]:
+    ) -> tuple[tp.Optional[types.JSON], str, pathlib.Path]:
         if config["src_parent"] is None:
             src_root = config["src_tag"]
         else:
-            src_root = "{0}.{1}".format(config["src_parent"], config["src_tag"])
+            src_root = "{}.{}".format(config["src_parent"], config["src_tag"])
 
         expr = jpparse(src_root)
         matches = expr.find(self.tree)
@@ -72,7 +72,7 @@ def root_querypath() -> str:
 
 @implements.implements(definition.BaseExpDef)
 class ExpDef:
-    """Read, write, and modify parsed XML files into experiment definitions."""
+    """Read, write, and modify parsed JSON files into experiment definitions."""
 
     def __init__(
         self,
@@ -89,7 +89,7 @@ class ExpDef:
 
         self.logger = logging.getLogger(__name__)
 
-    def n_mods(self) -> tp.Tuple[int, int]:
+    def n_mods(self) -> tuple[int, int]:
         return len(self.element_adds), len(self.attr_chgs)
 
     def write_config_set(self, config: definition.WriterConfig) -> None:
@@ -107,7 +107,7 @@ class ExpDef:
         writer = Writer(self.tree)
         writer(self.write_config, base_opath)
 
-    def flatten(self, keys: tp.List[str]) -> None:
+    def flatten(self, keys: list[str]) -> None:
         """
         Flatten a nested JSON structure.
 
@@ -161,7 +161,7 @@ class ExpDef:
 
             # If the file doesn't exist, that's an error, so don't catch the
             # exception if that happens.
-            with open(path, "r") as f:
+            with utils.utf8open(path, "r") as f:
                 subblob = json.load(f)
 
                 self._flatten_recurse(subblob, path, path_key)
@@ -239,7 +239,7 @@ class ExpDef:
             match = [match]
 
         for m in match:
-            if attr in m.keys() and not isinstance(m[attr], (list, dict)):
+            if attr in m and not isinstance(m[attr], (list, dict)):
                 return m[attr]
 
         return None
@@ -262,7 +262,7 @@ class ExpDef:
 
         for m in matches:
             match = m.value
-            if attr not in match.keys() or isinstance(match[attr], (list, dict)):
+            if attr not in match or isinstance(match[attr], (list, dict)):
                 if not noprint:
                     self.logger.warning(
                         "Attribute '%s' not found in path '%s'", attr, m.full_path
@@ -270,9 +270,7 @@ class ExpDef:
                 return False
 
             match[attr] = value
-            self.logger.trace(
-                "Modify attr: '%s/%s' = '%s'", m.full_path, attr, value  # type: ignore
-            )
+            self.logger.trace("Modify attr: '%s/%s' = '%s'", m.full_path, attr, value)
 
         self.attr_chgs.add(definition.AttrChange(path, attr, value))
         return True
@@ -305,7 +303,7 @@ class ExpDef:
 
             match[attr] = value
             self.logger.trace(
-                "Add new attribute: '%s/%s' = '%s'", m.full_path, attr, value  # type: ignore
+                "Add new attribute: '%s/%s' = '%s'", m.full_path, attr, value
             )
         self.attr_chgs.add(definition.AttrChange(path, attr, value))
         return True
@@ -357,23 +355,7 @@ class ExpDef:
         return found
 
     def element_change(self, path: str, tag: str, value: str) -> bool:
-        expr = jpparse(path)
-        el = expr.find(self.tree).value
-
-        if el is None:
-            self.logger.warning("Parent element '%s' not found", path)
-            return False
-
-        for child in el:
-            if child.tag == tag:
-                child.tag = value
-                self.logger.trace(
-                    "Modify tag: '%s.%s' = '%s'", path, tag, value  # type: ignore
-                )
-                return True
-
-        self.logger.warning("No such element '%s' found in '%s'", tag, path)
-        return False
+        raise NotImplementedError
 
     def element_remove(self, path: str, tag: str, noprint: bool = False) -> bool:
         expr = jpparse(path)
@@ -459,7 +441,7 @@ class ExpDef:
             # Child doesn't exist--just assign to single sub-element.
             parent[tag] = attr
             self.logger.trace(
-                "Add new unique element: '%s.%s' = '%s'",  # type: ignore
+                "Add new unique element: '%s.%s' = '%s'",
                 path,
                 tag,
                 str(attr),
@@ -483,7 +465,7 @@ class ExpDef:
 def unpickle(
     fpath: pathlib.Path,
 ) -> tp.Optional[tp.Union[definition.AttrChangeSet, definition.ElementAddList]]:
-    """Unickle all XML modifications from the pickle file at the path.
+    """Unickle all JSON modifications from the pickle file at the path.
 
     You don't know how many there are, so go until you get an exception.
 

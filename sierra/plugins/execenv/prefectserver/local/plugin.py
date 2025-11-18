@@ -25,7 +25,7 @@ class BatchShellCmdsGenerator:
         self.cmdopts = cmdopts
         self.api_url = "http://127.0.0.1:4200/api"
 
-    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
         flow_path = pathlib.Path(__file__).parent / "../flow.py"
         no_prompt = "PREFECT_CLI_PROMPT=false"
 
@@ -38,12 +38,12 @@ class BatchShellCmdsGenerator:
                 wait=False,
             ),
             types.ShellCmdSpec(
-                cmd="sleep 5",
+                cmd="sleep 10",
                 shell=True,
                 wait=True,
             ),
             types.ShellCmdSpec(
-                cmd="prefect config set PREFECT_API_URL={0}".format(self.api_url),
+                cmd="prefect config set PREFECT_API_URL={}".format(self.api_url),
                 shell=True,
                 wait=True,
             ),
@@ -60,14 +60,14 @@ class BatchShellCmdsGenerator:
                 wait=True,
             ),
             types.ShellCmdSpec(
-                cmd="prefect gcl create sierra-exec-jobs-per-node --limit {0}".format(
+                cmd="prefect gcl create sierra-exec-jobs-per-node --limit {}".format(
                     self.cmdopts["exec_jobs_per_node"]
                 ),
                 shell=True,
                 wait=True,
             ),
             types.ShellCmdSpec(
-                cmd="prefect work-pool create --type process {0}".format(
+                cmd="prefect work-pool create --type process {}".format(
                     self.cmdopts["work_pool"],
                 ),
                 shell=True,
@@ -78,9 +78,9 @@ class BatchShellCmdsGenerator:
             # and queue names to avoid conflicts if we are on a shared server and
             # trying to run prefect locally.
             types.ShellCmdSpec(
-                cmd="{0} prefect worker start "
-                "--pool={1} "
-                "--work-queue={2} &".format(
+                cmd="{} prefect worker start "
+                "--pool={} "
+                "--work-queue={} &".format(
                     no_prompt,
                     self.cmdopts["work_pool"],
                     self.cmdopts["work_queue"],
@@ -98,7 +98,7 @@ class BatchShellCmdsGenerator:
             # use a unique name for the pool name to avoid conflicts if we are
             # on a shared server and trying to run prefect locally.
             types.ShellCmdSpec(
-                cmd="{0} prefect deploy {1}:sierra --name sierra/local --pool {2} --work-queue {3}".format(
+                cmd="{} prefect deploy {}:sierra --name sierra/local --pool {} --work-queue {}".format(
                     no_prompt,
                     flow_path,
                     self.cmdopts["work_pool"],
@@ -109,7 +109,7 @@ class BatchShellCmdsGenerator:
             ),
         ]
 
-    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         # The needed flow is already present on the server as a deployment, so
         # we can just run it directly as many times as we want. You don't need
         # to set the queue/pool--it is inferred from the flow you are running.
@@ -124,7 +124,7 @@ class BatchShellCmdsGenerator:
 
         return [spec]
 
-    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
         return [
             types.ShellCmdSpec(cmd="killall prefect || true", shell=True, wait=True),
         ]

@@ -47,7 +47,7 @@ class PopulationSize(population_size.PopulationSize):
         main_config: types.YAMLDict,
         batch_input_root: pathlib.Path,
         robot: str,
-        sizes: tp.List[int],
+        sizes: list[int],
     ) -> None:
         population_size.PopulationSize.__init__(
             self, cli_arg, main_config, batch_input_root
@@ -57,7 +57,7 @@ class PopulationSize(population_size.PopulationSize):
         self.logger = logging.getLogger(__name__)
         self.element_adds = []  # type: tp.List[definition.ElementAddList]
 
-    def gen_element_addlist(self) -> tp.List[definition.ElementAddList]:
+    def gen_element_addlist(self) -> list[definition.ElementAddList]:
         """
         Generate XML modifications to set system sizes.
         """
@@ -105,27 +105,6 @@ class PopulationSize(population_size.PopulationSize):
 
     def n_agents(self, exp_num: int) -> int:
         return self.sizes[exp_num]
-
-    def graph_info(
-        self,
-        cmdopts: types.Cmdopts,
-        batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[tp.List[str]] = None,
-    ) -> bcbridge.GraphInfo:
-        info = bcbridge.GraphInfo(
-            cmdopts,
-            batch_output_root,
-            exp_names if exp_names else self.gen_exp_names(),
-        )
-
-        info.xlabel = super().graph_xlabel(info.cmdopts)
-        info.xticklabels = super().graph_xticklabels(
-            info.cmdopts, info.batch_output_root, info.exp_names
-        )
-        info.xticks = super().graph_xticks(
-            info.cmdopts, info.batch_output_root, info.exp_names
-        )
-        return info
 
 
 def factory(

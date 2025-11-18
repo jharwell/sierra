@@ -29,7 +29,7 @@ class ExpShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         shell = shutil.which("bash")
 
         return [
@@ -49,10 +49,10 @@ class ExpShellCmdsGenerator:
             ),
         ]
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         resume = ""
 
         # This can't be --resume, because then GNU parallel looks at the results
@@ -90,7 +90,7 @@ class BatchShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def pre_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
         shell = shutil.which("bash")
 
         return [
@@ -110,10 +110,10 @@ class BatchShellCmdsGenerator:
             ),
         ]
 
-    def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def exec_batch_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         resume = ""
 
         # This can't be --resume, because then GNU parallel looks at the results
@@ -123,7 +123,7 @@ class BatchShellCmdsGenerator:
             resume = "--resume-failed"
 
         parallel = (
-            "env && parallel {1} "
+            "parallel {1} "
             "--jobs {2} "
             "--results {0} "
             "--joblog {3} "
@@ -142,4 +142,4 @@ class BatchShellCmdsGenerator:
         return [types.ShellCmdSpec(cmd=parallel, shell=True, wait=True)]
 
 
-__all__ = ["ExpShellCmdsGenerator", "BatchShellCmdsGenerator"]
+__all__ = ["BatchShellCmdsGenerator", "ExpShellCmdsGenerator"]

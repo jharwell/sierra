@@ -15,14 +15,14 @@ from sierra.core import plugin as pm
 
 
 def cmdline_parser(
-    plugin: str, parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+    plugin: str, parents: list[argparse.ArgumentParser], stages: list[int]
 ) -> tp.Optional[argparse.ArgumentParser]:
     """
     Dispatches cmdline parser creation to selected plugin.
 
     If the selected plugin does not define a cmdline, None is returned.
     """
-    path = "{0}.cmdline".format(plugin)
+    path = "{}.cmdline".format(plugin)
     if pm.module_exists(path):
         module = pm.module_load_tiered(path)
         return module.build(parents, stages).parser

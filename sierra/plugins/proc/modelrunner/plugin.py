@@ -59,8 +59,10 @@ def proc_batch_exp(
 
 def _load_models(
     main_config: types.YAMLDict, cmdopts: types.Cmdopts, model_type: str
-) -> tp.Dict[str, tp.Union[tp.Dict[str, tp.Any]]]:
-    project_models = pathlib.Path(cmdopts["project_config_root"]) / config.kYAML.models
+) -> dict[str, tp.Union[dict[str, tp.Any]]]:
+    project_models = (
+        pathlib.Path(cmdopts["project_config_root"]) / config.PROJECT_YAML.models
+    )
     loaded = {}
 
     _logger.info("Loading %s-exp models for project %s", model_type, cmdopts["project"])
@@ -80,7 +82,7 @@ def _load_models(
     for plugin_name in loaded_model_plugins:
         # This is all available models for a specific plugin
         module = pm.module_load(plugin_name)
-        available_models = getattr(module, "sierra_models")(model_type)
+        available_models = module.sierra_models(model_type)
         _logger.debug(
             "Loaded model plugin %s has %d %s-exp models: %s",
             plugin_name,
@@ -99,7 +101,7 @@ def _load_models(
                 # The part of the model name which is relative to the plugin
                 # directory in which it should be found.
                 model_module_relpath = ".".join(conf["name"].split(".")[:-1])
-                model_path = "{0}.{1}".format(plugin_name, model_module_relpath)
+                model_path = "{}.{}".format(plugin_name, model_module_relpath)
                 model_fullpath = f"{model_module_relpath}.{model_name}"
                 if pm.module_exists(model_path):
                     _logger.debug(
@@ -140,7 +142,7 @@ def _load_models(
 def _run_intra_exp(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    to_run: tp.Dict[str, tp.Dict[str, tp.Any]],
+    to_run: dict[str, dict[str, tp.Any]],
     criteria: bc.XVarBatchCriteria,
 ) -> None:
     """
@@ -166,7 +168,7 @@ def _run_intra_single_in_exp(
     cmdopts: types.Cmdopts,
     pathset: exproot.PathSet,
     exp_index: int,
-    blob: tp.Dict[str, tp.Union[interface.IIntraExpModel1D, tp.List[str]]],
+    blob: dict[str, tp.Union[interface.IIntraExpModel1D, list[str]]],
 ) -> None:
     model = blob["model"]
     targets = blob["targets"]
@@ -193,14 +195,14 @@ def _run_intra_single_in_exp(
         # Write model legend file so the generated graph can find it
         idx = dfs.index(df)
         with utils.utf8open(
-            path_stem.with_suffix(config.kModelsExt["legend"]), "w"
+            path_stem.with_suffix(config.MODELS_EXT["legend"]), "w"
         ) as f:
             f.write(legend[idx])
 
         # Write model .csv file
         storage.df_write(
             df,
-            path_stem.with_suffix(config.kModelsExt["model"]),
+            path_stem.with_suffix(config.MODELS_EXT["model"]),
             "storage.csv",
             index=False,
         )
@@ -209,7 +211,7 @@ def _run_intra_single_in_exp(
 def _run_inter_exp(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    to_run: tp.Dict[str, tp.Any],
+    to_run: dict[str, tp.Any],
     criteria: bc.XVarBatchCriteria,
 ) -> None:
     utils.dir_create_checked(pathset.model_interexp_root, exist_ok=True)
@@ -235,14 +237,14 @@ def _run_inter_exp(
             # Write model .csv file
             storage.df_write(
                 df,
-                path_stem.with_suffix(config.kModelsExt["model"]),
+                path_stem.with_suffix(config.MODELS_EXT["model"]),
                 "storage.csv",
                 index=True,
             )
 
             idx = dfs.index(df)
             with utils.utf8open(
-                path_stem.with_suffix(config.kModelsExt["legend"]), "w"
+                path_stem.with_suffix(config.MODELS_EXT["legend"]), "w"
             ) as f:
                 f.write(legend[idx])
 

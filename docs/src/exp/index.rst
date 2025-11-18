@@ -19,9 +19,9 @@ Experimental Design
 
 In SIERRA, there are 3 main faculties that are used to design experiments:
 
-- The *controller*. In SIERRA, a ``--controller`` is simply a designation of some
-  aspect of an algorithm which you are running. Even if what you designate as
-  the controller is *not* actually controlling a significant part of the agent
+- The *controller*. In SIERRA, a ``--controller`` is simply a designation of
+  some aspect of an algorithm which you are running. Even if what you designate
+  as the controller is *not* actually controlling a significant part of the
   behaviors, it *IS* the controlling knob from the perspective of the experiment
   you want to run. Put another way, controllers designate the algorithm/thing
   under test.

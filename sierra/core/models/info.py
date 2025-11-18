@@ -16,4 +16,4 @@ import holoviews as hv
 @dataclasses.dataclass
 class ModelInfo:
     dataset: hv.Dataset = None
-    legend: tp.List[str] = dataclasses.field(default_factory=lambda: [])
+    legend: list[str] = dataclasses.field(default_factory=lambda: [])

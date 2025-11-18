@@ -21,33 +21,38 @@ from sierra.core import types, ros1, config
 _logger = logging.getLogger(__name__)
 
 
-def for_all_exp(spec: expspec.ExperimentSpec,
-                controller: str,
-                cmdopts: types.Cmdopts,
-                expdef_template_fpath: pathlib.Path) -> definition.BaseExpDef:
+def for_all_exp(
+    spec: expspec.ExperimentSpec,
+    controller: str,
+    cmdopts: types.Cmdopts,
+    expdef_template_fpath: pathlib.Path,
+) -> definition.BaseExpDef:
     """Generate XML modifications common to all ROS1+Gazebo experiments."""
-    exp_def = ros1.generators.for_all_exp(spec,
-                                          controller,
-                                          cmdopts,
-                                          expdef_template_fpath)
+    exp_def = ros1.generators.for_all_exp(
+        spec, controller, cmdopts, expdef_template_fpath
+    )
 
-    exp_def.write_config.add({
-        'src_parent': ".",
-        'src_tag': "master",
-        'opath_leaf': "_master" + config.kROS['launch_file_ext'],
-        'new_children': None,
-        'new_children_parent': None,
-        'rename_to': 'launch'
-    })
+    exp_def.write_config.add(
+        {
+            "src_parent": ".",
+            "src_tag": "master",
+            "opath_leaf": "_master" + config.ROS["launch_file_ext"],
+            "new_children": None,
+            "new_children_parent": None,
+            "rename_to": "launch",
+        }
+    )
 
-    exp_def.write_config.add({
-        'src_parent': ".",
-        'src_tag': "robot",
-        'opath_leaf': "_robots" + config.kROS['launch_file_ext'],
-        'new_children': None,
-        'new_children_parent': None,
-        'rename_to': 'launch'
-    })
+    exp_def.write_config.add(
+        {
+            "src_parent": ".",
+            "src_tag": "robot",
+            "opath_leaf": "_robots" + config.ROS["launch_file_ext"],
+            "new_children": None,
+            "new_children_parent": None,
+            "rename_to": "launch",
+        }
+    )
 
     # Setup gazebo experiment
     _generate_all_exp_gazebo_core(exp_def)
@@ -68,21 +73,13 @@ def _generate_all_exp_gazebo_core(exp_def: definition.BaseExpDef) -> None:
     _logger.debug("Generating Gazebo experiment changes (all runs)")
 
     # Start Gazebo/ROS in debug mode to make post-mortem analysis easier.
-    exp_def.element_add("./master/include",
-                        "arg",
-                        {
-                            "name": "verbose",
-                            "value": "true"
-                        })
+    exp_def.element_add("./master/include", "arg", {"name": "verbose", "value": "true"})
 
     # Terminate Gazebo server whenever the launch script that invoked it
     # exits.
-    exp_def.element_add("./master/include",
-                        "arg",
-                        {
-                            "name": "server_required",
-                            "value": "true"
-                        })
+    exp_def.element_add(
+        "./master/include", "arg", {"name": "server_required", "value": "true"}
+    )
 
     # Don't record stuff
     exp_def.element_remove("./master/include", "arg/[@name='headless']")
@@ -103,12 +100,7 @@ def _generate_all_exp_gazebo_vis(exp_def: definition.BaseExpDef) -> None:
     file.
     """
     exp_def.element_remove_all("./master/include", "arg/[@name='gui']")
-    exp_def.element_add("./master/include",
-                        "arg",
-                        {
-                            "name": "gui",
-                            "value": "false"
-                        })
+    exp_def.element_add("./master/include", "arg", {"name": "gui", "value": "false"})
 
 
 def for_single_exp_run(*args, **kwargs) -> None:
@@ -119,7 +111,4 @@ def for_single_exp_run(*args, **kwargs) -> None:
     return ros1.generators.for_single_exp_run(*args, **kwargs)
 
 
-__all__ = [
-    'for_all_exp',
-    'for_single_exp_run'
-]
+__all__ = ["for_all_exp", "for_single_exp_run"]

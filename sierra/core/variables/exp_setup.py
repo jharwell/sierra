@@ -34,7 +34,7 @@ def parse(arg: str, dflts: types.SimpleDict) -> types.CLIArgSpec:
     res = re.match(regex, ret["pretty_name"])
 
     assert (
-        len(res.groups()) >= 1 and len(res.groups()) <= 3
+        res is not None and len(res.groups()) >= 1 and len(res.groups()) <= 3
     ), f"Spec must match {regex}, have {arg}"
 
     ret["n_secs_per_run"] = int(res.group(1))

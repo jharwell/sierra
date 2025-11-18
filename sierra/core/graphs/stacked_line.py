@@ -26,31 +26,32 @@ _logger = logging.getLogger(__name__)
 
 def _ofile_ext(backend: str) -> tp.Optional[str]:
     if backend == "matplotlib":
-        return config.kStaticImageType
-    elif backend == "bokeh":
-        return config.kInteractiveImageType
+        return str(config.GRAPHS["static_type"])
+
+    if backend == "bokeh":
+        return str(config.GRAPHS["interactive_type"])
 
     return None
 
 
-def generate(
+def generate(  # noqa: PLR0913
     paths: pathset.PathSet,
     input_stem: str,
     output_stem: str,
     title: str,
     medium: str,
     backend: str,
-    xticks: tp.Optional[tp.List[float]] = None,
+    xticks: tp.Optional[list[float]] = None,
     stats: str = "none",
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
     points: tp.Optional[bool] = False,
     large_text: bool = False,
-    legend: tp.Optional[tp.List[str]] = None,
-    xticklabels: tp.Optional[tp.List[str]] = None,
-    cols: tp.Optional[tp.List[str]] = None,
+    legend: tp.Optional[list[str]] = None,
+    xticklabels: tp.Optional[list[str]] = None,
+    cols: tp.Optional[list[str]] = None,
     logyscale: bool = False,
-    ext: str = config.kStats["mean"].exts["mean"],
+    ext: str = config.STATS["mean"].exts["mean"],
 ) -> bool:
     """Generate a line graph from a set of columns in a file.
 
@@ -68,14 +69,15 @@ def generate(
     hv.extension(backend)
 
     input_fpath = paths.input_root / (input_stem + ext)
-    output_fpath = paths.output_root / "SLN-{0}.{1}".format(
+    output_fpath = paths.output_root / "SLN-{}.{}".format(
         output_stem, _ofile_ext(backend)
     )
 
-    if large_text:
-        text_size = config.kGraphs["text_size_large"]
-    else:
-        text_size = config.kGraphs["text_size_small"]
+    text_size = (
+        config.GRAPHS["text_size_large"]
+        if large_text
+        else config.GRAPHS["text_size_small"]
+    )
 
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -100,7 +102,7 @@ def generate(
 
     assert len(df.index) == len(
         df["xticks"]
-    ), "Length mismatch between xticks,# data points: {0} vs {1}".format(
+    ), "Length mismatch between xticks,# data points: {} vs {}".format(
         len(df["xticks"]), len(df.index)
     )
 
@@ -112,7 +114,7 @@ def generate(
     if "conf95" in stats and "stddev" in stat_dfs:
         plot = _plot_stats_stddev(dataset, stat_dfs["stddev"])
         plot *= _plot_selected_cols(dataset, model, legend, points, backend)
-    elif "bw" in stats and all(k in stat_dfs.keys() for k in config.kStats["bw"].exts):
+    elif "bw" in stats and all(k in stat_dfs for k in config.STATS["bw"].exts):
         # 2025-10-06 [JRH]: This is a limitation of hv (I think). Manually
         # specifying bw plots around each datapoint on a graph can easily exceed
         # the max # of things that can be in a single overlay.
@@ -169,25 +171,25 @@ def generate(
 def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
     if backend == "matplotlib":
         hv.save(
-            plot.opts(fig_inches=config.kGraphs["base_size"]),
+            plot.opts(fig_inches=config.GRAPHS["base_size"]),
             output_fpath,
-            fig=config.kStaticImageType,
-            dpi=config.kGraphs["dpi"],
+            fig=config.GRAPHS["static_type"],
+            dpi=config.GRAPHS["dpi"],
         )
         plt.close("all")
     elif backend == "bokeh":
         fig = hv.render(plot)
-        fig.width = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
-        fig.height = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        fig.width = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
+        fig.height = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with open(output_fpath, "w") as f:
+        with utils.utf8open(output_fpath, "w") as f:
             f.write(html)
 
 
 def _plot_selected_cols(
     dataset: hv.Dataset,
     model_info: models.ModelInfo,
-    legend: tp.List[str],
+    legend: list[str],
     show_points: bool,
     backend: str,
 ) -> hv.NdOverlay:
@@ -279,20 +281,17 @@ def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOve
 
 def _read_stats(
     setting: str, stats_root: pathlib.Path, input_stem: str, medium: str
-) -> tp.Dict[str, pd.DataFrame]:
+) -> dict[str, pd.DataFrame]:
     dfs = {}  # type: tp.Dict[str, pd.DataFrame]
     settings = []
 
     if setting == "none":
         return dfs
 
-    if setting == "all":
-        settings = ["conf95", "bw"]
-    else:
-        settings = [setting]
+    settings = ["conf95", "bw"] if setting == "all" else [setting]
 
     if setting in settings:
-        exts = config.kStats[setting].exts
+        exts = config.STATS[setting].exts
 
         for k in exts:
             ipath = stats_root / (input_stem + exts[k])
@@ -313,8 +312,8 @@ def _read_models(
     if model_root is None:
         return models.ModelInfo()
 
-    modelf = model_root / (input_stem + config.kModelsExt["model"])
-    legendf = model_root / (input_stem + config.kModelsExt["legend"])
+    modelf = model_root / (input_stem + config.MODELS_EXT["model"])
+    legendf = model_root / (input_stem + config.MODELS_EXT["legend"])
 
     if not utils.path_exists(modelf):
         _logger.trace("Model file %s missing for graph", str(modelf))
@@ -330,7 +329,7 @@ def _read_models(
         info.legend = f.read().splitlines()
 
     _logger.trace(
-        "Loaded model='%s',legend='%s'",  # type: ignore
+        "Loaded model='%s',legend='%s'",
         modelf.relative_to(model_root),
         legendf.relative_to(model_root),
     )

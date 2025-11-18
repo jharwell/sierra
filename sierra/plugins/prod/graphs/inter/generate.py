@@ -53,7 +53,7 @@ def proc_batch_exp(
 
     loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
 
-    graphs_config = loader.load_config(cmdopts, config.kYAML.graphs)
+    graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
 
     if "inter-exp" not in graphs_config:
         _logger.warning(
@@ -61,7 +61,7 @@ def proc_batch_exp(
         )
         return
 
-    controller_config = loader.load_config(cmdopts, config.kYAML.controllers)
+    controller_config = loader.load_config(cmdopts, config.PROJECT_YAML.controllers)
 
     info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
 

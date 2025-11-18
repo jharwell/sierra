@@ -17,6 +17,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+
 import sys
 import builtins
 import pathlib
@@ -24,7 +25,16 @@ import datetime
 import toml
 import os
 import requests
+import ssl
+import certifi
 
+# 2025-11-21 [JRH]: Not needed on debian, but on fedora you need to set this
+# when running under uv because it isn't found otherwise
+os.environ["SSL_CERT_FILE"] = certifi.where()
+os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
+
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+ssl._create_default_https_context = lambda: ssl_context
 builtins.__sphinx_build__ = True
 
 sys.path.insert(0, str(pathlib.Path("..").resolve()))
@@ -252,7 +262,7 @@ if not os.path.exists("/tmp/plantuml.jar"):
 # documentation.
 #
 html_theme_options = {
-    # "globaltoc_maxdepth": 2,
+    "globaltoc_maxdepth": 2,
     "navigation_depth": 4,
     "collapse_navigation": False,
     "sticky_navigation": True,
@@ -270,9 +280,9 @@ html_last_updated_fmt = "%b %d, %Y"
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-html_sidebars = {
-    "**": ["globaltoc.html", "relations.html", "sourcelink.html", "searchbox.html"]
-}
+# html_sidebars = {
+#     "**": ["globaltoc.html", "relations.html", "sourcelink.html", "searchbox.html"]
+# }
 
 # html_context = {
 #     'css_files': [

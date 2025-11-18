@@ -42,29 +42,28 @@ class ExpRunShellCmdsGenerator:
 
     def pre_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         # When running ARGoS under Xvfb in order to headlessly render frames, we
         # need to start a per-instance Xvfb server that we tell ARGoS to use via
         # the DISPLAY environment variable, which will then be killed when the
         # shell GNU parallel spawns to run each line in the commands file exits.
 
-        if host == "slave":
-            if self.cmdopts["engine_vc"]:
-                self.display_port = random.randint(0, 1000000)
-                cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
-                cmd2 = f"export DISPLAY=:{self.display_port};"
-                spec1 = types.ShellCmdSpec(cmd=cmd1, shell=True, wait=True)
-                spec2 = types.ShellCmdSpec(cmd=cmd2, shell=True, wait=True, env=True)
-                return [spec1, spec2]
+        if host == "slave" and self.cmdopts["engine_vc"]:
+            self.display_port = random.randint(0, 1000000)
+            cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
+            cmd2 = f"export DISPLAY=:{self.display_port};"
+            spec1 = types.ShellCmdSpec(cmd=cmd1, shell=True, wait=True)
+            spec2 = types.ShellCmdSpec(cmd=cmd2, shell=True, wait=True, env=True)
+            return [spec1, spec2]
 
         return []
 
     def exec_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
-        shellname = execenv.get_executable_arch_aware(config.kARGoS["launch_cmd"])
-        cmd = "{0} -c {1}{2}".format(
-            shellname, str(input_fpath), config.kARGoS["launch_file_ext"]
+    ) -> list[types.ShellCmdSpec]:
+        shellname = execenv.get_executable_arch_aware(config.ARGOS["launch_cmd"])
+        cmd = "{} -c {}{}".format(
+            shellname, str(input_fpath), config.ARGOS["launch_file_ext"]
         )
 
         # ARGoS is pretty good about not printing stuff if we pass these
@@ -79,7 +78,7 @@ class ExpRunShellCmdsGenerator:
 
     def post_run_cmds(
         self, host: str, run_output_root: pathlib.Path
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         return []
 
 
@@ -88,13 +87,13 @@ class ExpShellCmdsGenerator:
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         return []
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         # Cleanup Xvfb processes which were started in the background. If SIERRA
         # was run with --exec-resume, then there may be no Xvfb processes to
         # kill, so we can't (in general) check the return code.
@@ -113,8 +112,7 @@ class ExpConfigurer:
         self, exp_input_root: pathlib.Path, run_output_root: pathlib.Path
     ) -> None:
         if self.cmdopts["engine_vc"]:
-            argos = config.kRendering["argos"]
-            frames_fpath = run_output_root / argos["frames_leaf"]
+            frames_fpath = run_output_root / config.ARGOS["frames_leaf"]
             utils.dir_create_checked(frames_fpath, exist_ok=True)
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:
@@ -145,7 +143,7 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
 
     # Check we can find ARGoS
     proc = execenv.check_for_simulator(
-        cmdopts["engine"], cmdopts["execenv"], config.kARGoS["launch_cmd"]
+        cmdopts["engine"], cmdopts["execenv"], config.ARGOS["launch_cmd"]
     )
 
     # Check ARGoS version
@@ -156,10 +154,10 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
         res is not None
     ), f"ARGOS_VERSION not in stdout: stdout='{stdout}',stderr='{stderr}'"
 
-    _logger.trace("Parsed ARGOS_VERSION: %s", res.group(0))  # type: ignore
+    _logger.trace("Parsed ARGOS_VERSION: %s", res.group(0))
 
     version = packaging.version.parse(res.group(0))
-    min_version = config.kARGoS["min_version"]
+    min_version = config.ARGOS["min_version"]
 
     assert (
         version >= min_version
@@ -194,15 +192,18 @@ def cmdline_postparse_configure(
 
     if env == "hpc.local":
         return _configure_hpc_local(args)
-    elif env == "hpc.adhoc":
+
+    if env == "hpc.adhoc":
         return _configure_hpc_adhoc(args)
-    elif env == "hpc.slurm":
+
+    if env == "hpc.slurm":
         return _configure_hpc_slurm(args)
-    elif env == "hpc.pbs":
+
+    if env == "hpc.pbs":
         return _configure_hpc_pbs(args)
-    else:
-        _logger.warning("Execution environment %s untested", env)
-        return args
+
+    _logger.warning("Execution environment %s untested", env)
+    return args
 
 
 def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
@@ -240,7 +241,7 @@ def _configure_hpc_slurm(args: argparse.Namespace) -> argparse.Namespace:
         res = re.search(r"^[^\(]+", os.environ["SLURM_TASKS_PER_NODE"])
         assert (
             res is not None
-        ), "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
+        ), "Unexpected format in SLURM_TASKS_PER_NODE: '{}'".format(
             os.environ["SLURM_TASKS_PER_NODE"]
         )
         args.exec_jobs_per_node = int(res.group(0))
@@ -332,7 +333,7 @@ def population_size_from_pickle(
 
 def arena_dims_from_criteria(
     criteria: bc.XVarBatchCriteria,
-) -> tp.List[utils.ArenaExtent]:
+) -> list[utils.ArenaExtent]:
     dims = []
     for exp in criteria.gen_attr_changelist():
         for c in exp:
@@ -351,7 +352,7 @@ def robot_type_from_def(exp_def: definition.BaseExpDef) -> tp.Optional[str]:
 
     .. NOTE:: Assumes homgeneous systems.
     """
-    for robot in config.kARGoS["spatial_hash2D"]:
+    for robot in config.ARGOS["spatial_hash2D"]:
         if exp_def.has_element(f".//arena/distribute/entity/{robot}"):
             return robot
 

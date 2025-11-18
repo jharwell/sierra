@@ -41,7 +41,7 @@ class ExpRunShellCmdsGenerator:
 
     def pre_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         if host == "master":
             return []
 
@@ -49,7 +49,7 @@ class ExpRunShellCmdsGenerator:
         # that multiple ROS instances corresponding to multiple Gazebo
         # instances with the same topic names are considered distinct/not
         # accessible between instances of Gazebo.
-        self.roscore_port = config.kROS["port_base"] + run_num * 2
+        self.roscore_port = config.ROS["port_base"] + run_num * 2
 
         # roscore will run on each slave node used during stage 2, so we have to
         # use 'localhost' for binding.
@@ -80,7 +80,7 @@ class ExpRunShellCmdsGenerator:
         # Second, the command to give Gazebo a unique port on the host during
         # stage 2. We need to be on a unique port so that multiple Gazebo
         # instances can be run in parallel.
-        self.gazebo_port = config.kROS["port_base"] + run_num * 2 + 1
+        self.gazebo_port = config.ROS["port_base"] + run_num * 2 + 1
 
         # 2021/12/13: You can't use HTTPS for some reason or gazebo won't
         # start...
@@ -95,7 +95,7 @@ class ExpRunShellCmdsGenerator:
 
     def exec_run_cmds(
         self, host: str, input_fpath: pathlib.Path, run_num: int
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         if host == "master":
             return []
 
@@ -113,10 +113,10 @@ class ExpRunShellCmdsGenerator:
         # 2022/02/28: I don't use the -u argument here to set ROS_MASTER_URI,
         # because ROS works well enough when only running on the localhost, in
         # terms of respecting whatever the envvar is set to.
-        master = str(input_fpath) + "_master" + config.kROS["launch_file_ext"]
-        robots = str(input_fpath) + "_robots" + config.kROS["launch_file_ext"]
+        master = str(input_fpath) + "_master" + config.ROS["launch_file_ext"]
+        robots = str(input_fpath) + "_robots" + config.ROS["launch_file_ext"]
 
-        cmd = "{0} --wait {1} {2} ".format(config.kROS["launch_cmd"], master, robots)
+        cmd = "{} --wait {} {} ".format(config.ROS["launch_cmd"], master, robots)
 
         # ROS/Gazebo don't provide options to not print stuff, so we have to use
         # the nuclear option.
@@ -128,7 +128,7 @@ class ExpRunShellCmdsGenerator:
 
     def post_run_cmds(
         self, host: str, run_output_root: pathlib.Path
-    ) -> tp.List[types.ShellCmdSpec]:
+    ) -> list[types.ShellCmdSpec]:
         return []
 
 
@@ -138,7 +138,7 @@ class ExpShellCmdsGenerator:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
 
-    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         # 2025-09-11 [JRH]: This was a NASTY bug which got triggered when
         # running SIERRA in a venv. ROS is installed system-wide, but mixing
         # venv+system packages via a --system venv caused all sorts of problems
@@ -158,10 +158,10 @@ class ExpShellCmdsGenerator:
             ),
         ]
 
-    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         return []
 
-    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
         # Cleanup roscore and gazebo processes which are still active because
         # they don't know how to clean up after themselves.
         #
@@ -230,11 +230,14 @@ def cmdline_postparse_configure(
 
     if env == "hpc.local":
         return _configure_hpc_local(args)
-    elif env == "hpc.adhoc":
+
+    if env == "hpc.adhoc":
         return _configure_hpc_adhoc(args)
-    elif env == "hpc.slurm":
+
+    if env == "hpc.slurm":
         return _configure_hpc_slurm(args)
-    elif env == "hpc.pbs":
+
+    if env == "hpc.pbs":
         return _configure_hpc_pbs(args)
 
     raise RuntimeError(f"'{env}' unsupported on ROS1+Gazebo")
@@ -258,7 +261,7 @@ def _configure_hpc_slurm(args: argparse.Namespace) -> argparse.Namespace:
         res = re.search(r"^[^\(]+", os.environ["SLURM_TASKS_PER_NODE"])
         assert (
             res is not None
-        ), "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
+        ), "Unexpected format in SLURM_TASKS_PER_NODE: '{}'".format(
             os.environ["SLURM_TASKS_PER_NODE"]
         )
         args.exec_jobs_per_node = int(res.group(0))
@@ -351,7 +354,7 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
 
     # Check we can find Gazebo
     version = execenv.check_for_simulator(
-        cmdopts["engine"], cmdopts["execenv"], config.kGazebo["launch_cmd"]
+        cmdopts["engine"], cmdopts["execenv"], config.GAZEBO["launch_cmd"]
     )
 
     # Check Gazebo version
@@ -363,7 +366,7 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
     ), f"Gazebo version not in std: have stdout='{stdout}',stderr='{stderr}'"
 
     version = packaging.version.parse(res.group(0))
-    min_version = packaging.version.parse(config.kGazebo["min_version"])
+    min_version = packaging.version.parse(config.GAZEBO["min_version"])
 
     assert (
         version >= min_version

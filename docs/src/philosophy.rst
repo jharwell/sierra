@@ -12,11 +12,12 @@ Single Input, Multiple Output
 
 During stage 1, SIERRA generates multiple experiments via multiple experimental
 run input files all from a single template input file, which must be specified
-on the command line. SIERRA does not follow any references/links to other XML
+on the command line. SIERRA does not follow any references/links to other input
 files in this template input file, greatly simplifying the generation process
-and improving reproducability of experiments (i.e., less cryptic/subtle errors
+and improving reproducability of experiments (e.g., less cryptic/subtle errors
 because of a ROS ``<include>`` which is different between the package versions
-installed on one system and another).
+installed on one system and another). SIERRA *does* support flattening an input
+file tree into a single file, per :ref:`plugins/expdef`.
 
 Don't Modify User Directory Structures
 ======================================

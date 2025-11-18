@@ -41,7 +41,7 @@ def proc_batch_exp(
     ``--processing-parallelism``.
     """
     config_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(
-        config.kYAML.graphs
+        config.PROJECT_YAML.graphs
     )
     if utils.path_exists(config_path):
         _logger.info("Loading imagizing config for project=%s", cmdopts["project"])
@@ -94,7 +94,7 @@ def _build_tasklist_for_exp(
     exp_imagize_root: pathlib.Path,
     imagize_config: types.YAMLDict,
     storage: str,
-) -> tp.List[tp.Tuple[dict, types.YAMLDict]]:
+) -> list[tuple[dict, types.YAMLDict]]:
     """Add all files from experiment to multiprocessing queue for processing.
 
     Enqueueing for processing is done at the file-level rather than
@@ -223,7 +223,8 @@ class ImagizeInputGatherer(gather.BaseGatherer):
         self.logger = logging.getLogger(__name__)
 
         self.config_path = (
-            pathlib.Path(gather_opts["project_config_root"]) / config.kYAML.graphs
+            pathlib.Path(gather_opts["project_config_root"])
+            / config.PROJECT_YAML.graphs
         )
 
         self.imagize_config = yaml.load(
@@ -232,7 +233,7 @@ class ImagizeInputGatherer(gather.BaseGatherer):
 
     def calc_gather_items(
         self, run_output_root: pathlib.Path, exp_name: str
-    ) -> tp.List[gather.GatherSpec]:
+    ) -> list[gather.GatherSpec]:
         to_gather = []
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])

@@ -27,29 +27,30 @@ _logger = logging.getLogger(__name__)
 
 def _ofile_ext(backend: str) -> tp.Optional[str]:
     if backend == "matplotlib":
-        return config.kStaticImageType
-    elif backend == "bokeh":
-        return config.kInteractiveImageType
+        return str(config.GRAPHS["static_type"])
+
+    if backend == "bokeh":
+        return str(config.GRAPHS["interactive_type"])
 
     return None
 
 
-def generate(
+def generate(  # noqa: PLR0913
     pathset: _pathset.PathSet,
     input_stem: str,
     output_stem: str,
     medium: str,
     title: str,
     backend: str,
-    colnames: tp.Tuple[str, str, str] = ("x", "y", "z"),
+    colnames: tuple[str, str, str] = ("x", "y", "z"),
     xlabel: tp.Optional[str] = "",
     ylabel: tp.Optional[str] = "",
     zlabel: tp.Optional[str] = "",
     large_text: bool = False,
-    xticklabels: tp.Optional[tp.List[str]] = None,
-    yticklabels: tp.Optional[tp.List[str]] = None,
+    xticklabels: tp.Optional[list[str]] = None,
+    yticklabels: tp.Optional[list[str]] = None,
     transpose: bool = False,
-    ext=config.kStats["mean"].exts["mean"],
+    ext=config.STATS["mean"].exts["mean"],
 ) -> bool:
     """
     Generate a X vs. Y vs. Z heatmap plot of a ``.mean`` file.
@@ -72,10 +73,9 @@ def generate(
     """
     hv.extension(backend)
 
+    ofile_ext = _ofile_ext(backend)
     input_fpath = pathset.input_root / (input_stem + ext)
-    output_fpath = pathset.output_root / "HM-{0}.{1}".format(
-        output_stem, _ofile_ext(backend)
-    )
+    output_fpath = pathset.output_root / f"HM-{output_stem}.{ofile_ext}"
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
@@ -86,10 +86,11 @@ def generate(
 
     title = "\n".join(textwrap.wrap(title, 40))
 
-    if large_text:
-        text_size = config.kGraphs["text_size_large"]
-    else:
-        text_size = config.kGraphs["text_size_small"]
+    text_size = (
+        config.GRAPHS["text_size_large"]
+        if large_text
+        else config.GRAPHS["text_size_small"]
+    )
 
     # Read .csv and create raw heatmap from default configuration
     df = storage.df_read(input_fpath, medium)
@@ -110,6 +111,8 @@ def generate(
         plot = hv.HeatMap(
             dataset, kdims=[colnames[0], colnames[1]], vdims=[colnames[2]]
         )
+    else:
+        raise ValueError(f"Bad value for backend: {backend}")
 
     xticks = dataset.data[colnames[0]]
     yticks = dataset.data[colnames[1]]
@@ -154,23 +157,23 @@ def generate(
 def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
     if backend == "matplotlib":
         hv.save(
-            plot.opts(fig_inches=config.kGraphs["base_size"]),
+            plot.opts(fig_inches=config.GRAPHS["base_size"]),
             output_fpath,
-            fig=config.kStaticImageType,
-            dpi=config.kGraphs["dpi"],
+            fig=config.GRAPHS["static_type"],
+            dpi=config.GRAPHS["dpi"],
         )
         plt.close("all")
 
     elif backend == "bokeh":
         fig = hv.render(plot)
-        fig.width = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
-        fig.height = int(config.kGraphs["dpi"] * config.kGraphs["base_size"])
+        fig.width = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
+        fig.height = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with open(output_fpath, "w") as f:
+        with output_fpath.open("w") as f:
             f.write(html)
 
 
-def generate2(
+def generate2(  # noqa: PLR0913
     pathset: _pathset.PathSet,
     ipaths: types.PathList,
     output_stem: pathlib.Path,
@@ -180,8 +183,8 @@ def generate2(
     ylabel: tp.Optional[str] = None,
     zlabel: tp.Optional[str] = None,
     large_text: bool = False,
-    xticklabels: tp.Optional[tp.List[str]] = None,
-    yticklabels: tp.Optional[tp.List[str]] = None,
+    xticklabels: tp.Optional[list[str]] = None,
+    yticklabels: tp.Optional[list[str]] = None,
 ) -> bool:
     """Generate a side-by-side plot of two heataps from two CSV files.
 
@@ -196,14 +199,16 @@ def generate2(
     """
     hv.extension("matplotlib")
 
-    output_fpath = pathset.output_root / "HM-{0}.{1}".format(
-        output_stem, config.kStaticImageType
+    output_fpath = (
+        pathset.output_root / f"HM-{output_stem}.{config.GRAPHS['static_type']}"
     )
+
     # Optional arguments
-    if large_text:
-        text_size = config.kGraphs["text_size_large"]
-    else:
-        text_size = config.kGraphs["text_size_small"]
+    text_size = (
+        config.GRAPHS["text_size_large"]
+        if large_text
+        else config.GRAPHS["text_size_small"]
+    )
 
     dfs = [storage.df_read(f, medium) for f in ipaths]
 
@@ -212,12 +217,6 @@ def generate2(
             ("Not generating dual heatmap: wrong # files %s (must be 2)"), len(dfs)
         )
         return False
-
-    # Scaffold graph. We can use either dataframe for setting the graph
-    # size; we assume they have the same dimensions.
-    #
-    # fig, axes = plt.subplots(nrows=1, ncols=2)
-    # DualHeatmap.set_graph_size(dfs[0], fig)
 
     yticks = np.arange(len(dfs[0].columns))
     xticks = dfs[0].index
@@ -257,13 +256,13 @@ def generate2(
     )
 
     # Output figures
-    plot.opts(fig_inches=config.kGraphs["base_size"])
+    plot.opts(fig_inches=config.GRAPHS["base_size"])
 
     hv.save(
         plot,
         output_fpath,
-        fig=config.kStaticImageType,
-        dpi=config.kGraphs["dpi"],
+        fig=config.GRAPHS["static_type"],
+        dpi=config.GRAPHS["dpi"],
     )
     plt.close("all")
 

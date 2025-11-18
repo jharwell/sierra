@@ -15,7 +15,7 @@ from sierra.core import batchroot
 
 
 def for_cc(
-    leaf: batchroot.ExpRootLeaf, new_stem: str, indices: tp.Union[tp.List[int], None]
+    leaf: batchroot.ExpRootLeaf, new_stem: str, indices: tp.Union[list[int], None]
 ) -> str:
     """
     Calculate a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
@@ -24,7 +24,7 @@ def for_cc(
     controller name is part of the default batchroot path, AND each batchroot
     path is unique, this case is easy.
     """
-    name = "{0}-{1}".format(new_stem, leaf.to_path().name)
+    name = "{}-{}".format(new_stem, leaf.to_path().name)
 
     if indices is not None:
         name += "_" + "".join([str(i) for i in indices])
@@ -34,9 +34,9 @@ def for_cc(
 
 def for_sc(
     leaf: batchroot.ExpRootLeaf,
-    scenarios: tp.List[str],
+    scenarios: list[str],
     new_stem: str,
-    indices: tp.Union[tp.List[int], None],
+    indices: tp.Union[list[int], None],
 ) -> str:
     """
     Calculate a name suitable for CSVs/graphs in stage 5 to ensure uniqueness.
@@ -45,7 +45,7 @@ def for_sc(
     need a list of all scenarios in the path to eliminate path collisions in all
     cases.
     """
-    name = "{0}-{1}+{2}".format(new_stem, "+".join(scenarios), leaf.to_path())
+    name = "{}-{}+{}".format(new_stem, "+".join(scenarios), leaf.to_path())
 
     if indices is not None:
         name += "_" + "".join([str(i) for i in indices])

@@ -26,7 +26,7 @@ class PrefectCmdline(hpc.cmdline.HPCCmdline):
     """
 
     def __init__(
-        self, parents: tp.List[argparse.ArgumentParser], stages: tp.List[int]
+        self, parents: list[argparse.ArgumentParser], stages: list[int]
     ) -> None:
         super().__init__(parents, stages)
 

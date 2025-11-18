@@ -36,7 +36,7 @@ class ArenaExtent:
         """
         return ArenaExtent(ur - ll, ll)
 
-    def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D()) -> None:
+    def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D.ZERO) -> None:
         self._origin = origin
         self.dims = dims
         self.ll = origin
@@ -83,9 +83,9 @@ class Sigmoid:
             # Equivalent, and numerically stable for large negative
             # exponents. If you don't case the sigmoid, you get overflow errors
             # at runtime.
-            return 1.0 - 1.0 / (1 + np.exp(self.x))  # type: ignore
-        else:
-            return 1.0 / (1 + np.exp(-self.x))  # type: ignore
+            return 1.0 - 1.0 / (1 + np.exp(self.x))
+
+        return 1.0 / (1 + np.exp(-self.x))
 
 
 class ReLu:
@@ -156,7 +156,7 @@ def path_exists(path: tp.Union[pathlib.Path, str]) -> bool:
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts) -> int:
+def get_primary_axis(criteria, primary_axis_bc: list, cmdopts: types.Cmdopts) -> int:
     """
     Determine axis in a bivariate batch criteria is the primary axis.
 
@@ -176,7 +176,7 @@ def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts)
 
 
 def exp_range_calc(
-    exp_range: str, root_dir: pathlib.Path, dirnames: tp.List[str]
+    exp_range: str, root_dir: pathlib.Path, dirnames: list[str]
 ) -> types.PathList:
     """
     Get the range of experiments to run/do stuff with. SUPER USEFUL.
@@ -195,7 +195,7 @@ def exp_range_calc(
     return exp_all
 
 
-def exp_include_filter(inc_spec: tp.Optional[str], target: tp.List, n_exps: int):
+def exp_include_filter(inc_spec: tp.Optional[str], target: list, n_exps: int):
     """Calculate which experiments to include in a calculation for something.
 
     Take a input list of experiment numbers to include, and returns the sublist
@@ -211,10 +211,7 @@ def exp_include_filter(inc_spec: tp.Optional[str], target: tp.List, n_exps: int)
     else:
         r = inc_spec.split(":")
         start = int(r[0])
-        if r[1] == "":
-            end = len(target)
-        else:
-            end = int(r[1])
+        end = len(target) if r[1] == "" else int(r[1])
 
         if len(target) < n_exps:  # Handle perf measures which exclude exp0 by default
             start -= 1
@@ -224,7 +221,7 @@ def exp_include_filter(inc_spec: tp.Optional[str], target: tp.List, n_exps: int)
 
 def bivar_exp_labels_calc(
     exp_dirs: types.PathList,
-) -> tp.Tuple[tp.List[str], tp.List[str]]:
+) -> tuple[list[str], list[str]]:
     """
     Calculate the labels for bivariant experiment graphs.
     """
@@ -239,13 +236,13 @@ def bivar_exp_labels_calc(
         xlabels_set.add(pair[0])
         ylabels_set.add(pair[1])
 
-    xlabels = sorted(list(xlabels_set))
-    ylabels = sorted(list(ylabels_set))
+    xlabels = sorted(xlabels_set)
+    ylabels = sorted(ylabels_set)
 
     return (xlabels, ylabels)
 
 
-def apply_to_expdef(var, exp_def: definition.BaseExpDef) -> tp.Tuple[
+def apply_to_expdef(var, exp_def: definition.BaseExpDef) -> tuple[
     tp.Optional[definition.ElementRmList],
     tp.Optional[definition.ElementAddList],
     tp.Optional[definition.AttrChangeSet],
@@ -281,7 +278,8 @@ def apply_to_expdef(var, exp_def: definition.BaseExpDef) -> tp.Tuple[
     if chgsl:
         chgs = chgsl[0]
         for c in chgs:
-            exp_def.attr_change(c.path, c.attr, c.value)
+            if not isinstance(c, definition.NullMod):
+                exp_def.attr_change(c.path, c.attr, c.value)
     else:
         chgs = None
 
@@ -327,7 +325,7 @@ def get_n_agents(
     """
     module1 = pm.pipeline.get_plugin_module(cmdopts["engine"])
 
-    # Get # agents to send to shell cmds generator. We try:
+    # Get the number of agents to send to shell cmds generator. We try:
     #
     # 1. Getting it from the current experiment definition, which contains all
     #    changes to the template input file EXCEPT those from batch criteria,
@@ -340,7 +338,7 @@ def get_n_agents(
     module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
 
     if n_agents <= 0:
-        pkl_def = module2.unpickle(exp_input_root / config.kPickleLeaf)
+        pkl_def = module2.unpickle(exp_input_root / config.PICKLE_LEAF)
         n_agents = module1.population_size_from_pickle(pkl_def, main_config, cmdopts)
 
     assert n_agents > 0, "n_agents must be > 0"
@@ -354,20 +352,22 @@ def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     """
     if policy == "none":
         return df
-    elif policy == "pad":
+
+    if policy == "pad":
         return df.fillna(method="pad")
-    elif policy == "zero":
+
+    if policy == "zero":
         return df.fillna(value=0)
-    else:
-        raise RuntimeError(f"Bad fill policy {policy}")
+
+    raise RuntimeError(f"Bad fill policy {policy}")
 
 
-@retry(OSError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
+@retry(OSError, tries=10, delay=0.100, backoff=1.1)
 def pickle_dump(obj: object, f) -> None:
     pickle.dump(obj, f)
 
 
-def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
+def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
     # scenario is passed in kwargs during stage 5 (can't be passed via
     # --scenario in general )
     scenario = kwargs.get("scenario", cmdopts["scenario"])
@@ -381,7 +381,7 @@ def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
 def sphinx_ref(ref: str) -> str:
     try:
         # This is kind of a hack...
-        if __sphinx_build_man__:  # type: ignore
+        if __sphinx_build_man__:  # type: ignore[name-defined]
             parts = ref.split(".")
             stripped = parts[-1]
             return stripped[:-1]
@@ -400,17 +400,17 @@ be for almost everything in SIERRA.
 
 __all__ = [
     "ArenaExtent",
-    "Sigmoid",
     "ReLu",
-    "dir_create_checked",
-    "path_exists",
-    "get_primary_axis",
-    "exp_range_calc",
-    "exp_include_filter",
+    "Sigmoid",
     "apply_to_expdef",
-    "pickle_modifications",
+    "df_fill",
+    "dir_create_checked",
+    "exp_include_filter",
+    "exp_range_calc",
     "exp_template_path",
     "get_n_agents",
-    "df_fill",
+    "get_primary_axis",
+    "path_exists",
+    "pickle_modifications",
     "utf8open",
 ]

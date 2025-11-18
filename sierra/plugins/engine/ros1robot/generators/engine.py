@@ -38,7 +38,7 @@ def for_all_exp(
         {
             "src_parent": ".",
             "src_tag": "master",
-            "opath_leaf": "_master" + config.kROS["launch_file_ext"],
+            "opath_leaf": "_master" + config.ROS["launch_file_ext"],
             "new_children": None,
             "rename_to": "launch",
             "new_children_parent": None,
@@ -67,7 +67,7 @@ def for_single_exp_run(
         exp_def, run_num, run_output_path, launch_stem_path, random_seed, cmdopts
     )
 
-    main_path = pathlib.Path(cmdopts["project_config_root"], config.kYAML.main)
+    main_path = pathlib.Path(cmdopts["project_config_root"], config.PROJECT_YAML.main)
 
     with utils.utf8open(main_path) as f:
         main_config = yaml.load(f, yaml.FullLoader)
@@ -82,7 +82,7 @@ def for_single_exp_run(
             {
                 "src_parent": "./robot",
                 "src_tag": f"group/[@ns='{prefix}{i}']",
-                "opath_leaf": f"_robot{i}" + config.kROS["launch_file_ext"],
+                "opath_leaf": f"_robot{i}" + config.ROS["launch_file_ext"],
                 "new_children": [definition.ElementAdd.as_root("launch", {})],
                 "new_children_parent": ".",
                 "rename_to": None,

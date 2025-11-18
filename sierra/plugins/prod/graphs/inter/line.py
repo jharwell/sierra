@@ -24,7 +24,7 @@ _logger = logging.getLogger(__name__)
 def generate(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    targets: tp.List[types.YAMLDict],
+    targets: list[types.YAMLDict],
     info: bcbridge.GraphInfo,
 ) -> None:
     """Generate linegraphs from :term:`Collated Output Data` files.
@@ -46,22 +46,22 @@ def generate(
             if graph["type"] not in ["summary_line", "stacked_line"]:
                 continue
 
-            _logger.trace("\n" + json.dumps(graph, indent=4))  # type: ignore
+            _logger.trace("\n" + json.dumps(graph, indent=4))
 
             if graph["type"] == "summary_line":
                 try:
-                    graph = strictyaml.load(yaml.dump(graph), schema.summary_line).data
+                    loaded = strictyaml.load(yaml.dump(graph), schema.summary_line).data
                 except strictyaml.YAMLError as e:
                     _logger.critical("Non-conformant summary_line YAML: %s", e)
                     raise
-                _gen_summary_linegraph(graph, pathset, cmdopts, info)
+                _gen_summary_linegraph(loaded, pathset, cmdopts, info)
             elif graph["type"] == "stacked_line":
                 try:
-                    graph = strictyaml.load(yaml.dump(graph), schema.stacked_line).data
+                    loaded = strictyaml.load(yaml.dump(graph), schema.stacked_line).data
                 except strictyaml.YAMLError as e:
                     _logger.critical("Non-conformant stacked_line YAML: %s", e)
                     raise
-                _gen_stacked_linegraph(graph, pathset, cmdopts, info)
+                _gen_stacked_linegraph(loaded, pathset, cmdopts, info)
 
 
 def _gen_summary_linegraph(
@@ -70,7 +70,7 @@ def _gen_summary_linegraph(
     cmdopts: types.Cmdopts,
     info: bcbridge.GraphInfo,
 ) -> None:
-    legend = "{0}+{1}".format(cmdopts["controller"], cmdopts["scenario"])
+    legend = "{}+{}".format(cmdopts["controller"], cmdopts["scenario"])
 
     paths = graphs.PathSet(
         input_root=pathset.stat_interexp_root,

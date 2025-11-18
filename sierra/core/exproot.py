@@ -16,7 +16,7 @@ import typing as tp
 from sierra.core import batchroot
 
 
-class PathSet():
+class PathSet:
     """
     The set of filesystem paths under the per-experiment root that SIERRA uses.
 

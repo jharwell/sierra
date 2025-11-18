@@ -45,7 +45,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         main_config: types.YAMLDict,
         batch_input_root: pathlib.Path,
         target_density: float,
-        dimensions: tp.List[ArenaExtent],
+        dimensions: list[ArenaExtent],
         scenario_tag: str,
     ) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
