@@ -39,8 +39,8 @@ class ExpRunShellCmdsGenerator:
         self,
         cmdopts: types.Cmdopts,
         criteria: bc.BatchCriteria,
-        n_agents: int,
         exp_num: int,
+        n_agents: tp.Optional[int],
     ) -> None:
         pass
 

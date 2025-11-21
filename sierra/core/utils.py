@@ -319,7 +319,7 @@ def get_n_agents(
     cmdopts: types.Cmdopts,
     exp_input_root: pathlib.Path,
     exp_def: definition.BaseExpDef,
-) -> int:
+) -> tp.Optional[int]:
     """
     Get the # agents used for a specific :term:`Experiment`.
     """
@@ -333,17 +333,24 @@ def get_n_agents(
     #
     # 2. Getting it from the pickled experiment definition (i.e., from the
     #    batch criteria which was used for this experiment).
-    n_agents = module1.population_size_from_def(exp_def, main_config, cmdopts)
+    if hasattr(module1, "population_size_from_def"):
+        n_agents = module1.population_size_from_def(exp_def, main_config, cmdopts)
 
-    module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
+        module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
 
-    if n_agents <= 0:
-        pkl_def = module2.unpickle(exp_input_root / config.PICKLE_LEAF)
-        n_agents = module1.population_size_from_pickle(pkl_def, main_config, cmdopts)
+        if n_agents <= 0:
+            pkl_def = module2.unpickle(exp_input_root / config.PICKLE_LEAF)
 
-    assert n_agents > 0, "n_agents must be > 0"
+            if hasattr(module1, "population_size_from_pickle"):
+                n_agents = module1.population_size_from_pickle(
+                    pkl_def, main_config, cmdopts
+                )
+        if n_agents <= 0:
+            raise RuntimeError("n_agents must be > 0")
 
-    return n_agents
+        return n_agents
+
+    return None
 
 
 def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
