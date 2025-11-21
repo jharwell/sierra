@@ -96,8 +96,8 @@ class ExpRunShellCmdsGenerator:
         self,
         cmdopts: types.Cmdopts,
         criteria: bc.XVarBatchCriteria,
-        n_agents: int,
         exp_num: int,
+        n_agents: tp.Optional[int],
     ) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
@@ -105,7 +105,7 @@ class ExpRunShellCmdsGenerator:
 
         if hasattr(module, "ExpRunShellCmdsGenerator"):
             self.engine = module.ExpRunShellCmdsGenerator(
-                self.cmdopts, self.criteria, n_agents, exp_num
+                self.cmdopts, self.criteria, exp_num, n_agents
             )
         else:
             self.engine = None

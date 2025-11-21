@@ -437,8 +437,8 @@ In ``generators/engine.py``, you may define the following functions:
                 def __init__(self,
                      cmdopts: types.Cmdopts,
                      criteria: bc.BatchCriteria,
-                     n_agents: int,
-                     exp_num: int) -> None:
+                     exp_num: int,
+                     n_agents: tp.Optional[int]) -> None:
                      pass
 
                  def pre_run_cmds(self,

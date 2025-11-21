@@ -505,10 +505,7 @@ def engine_sanity_checks(engine: str, module) -> None:
         "ExpConfigurer",
     ]
 
-    req_functions = [
-        "population_size_from_def",
-        "population_size_from_pickle",
-    ]
+    req_functions = []  # type: list[str]
 
     opt_classes = ["ExpRunShellCmdsGenerator", "ExpShellCmdsGenerator"]
 
@@ -517,6 +514,8 @@ def engine_sanity_checks(engine: str, module) -> None:
         "execenv_check",
         "agent_prefix_extract",
         "arena_dims_from_criteria",
+        "population_size_from_def",
+        "population_size_from_pickle",
     ]
 
     in_module = inspect.getmembers(module, inspect.isclass)

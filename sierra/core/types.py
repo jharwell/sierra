@@ -85,7 +85,6 @@ class YAMLConfigFileSpec:
     graphs: str
     collate: str
     controllers: str
-    scenarios: str
     models: str
 
 

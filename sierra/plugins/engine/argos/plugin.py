@@ -34,8 +34,8 @@ class ExpRunShellCmdsGenerator:
         self,
         cmdopts: types.Cmdopts,
         criteria: bc.XVarBatchCriteria,
-        n_agents: int,
         exp_num: int,
+        n_agents: tp.Optional[int],
     ) -> None:
         self.cmdopts = cmdopts
         self.display_port = -1

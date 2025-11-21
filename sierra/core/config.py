@@ -163,7 +163,6 @@ PROJECT_YAML = types.YAMLConfigFileSpec(
     graphs="graphs.yaml",
     collate="collate.yaml",
     controllers="controllers.yaml",
-    scenarios="scenarios.yaml",
     models="models.yaml",
 )
 

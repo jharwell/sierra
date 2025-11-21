@@ -133,7 +133,6 @@ class ControllerGenerator:
             mods = self.controller_config.get(self.category, {}).get(fmt, {})
             if mods is None:
                 continue
-
             chgs = mods.get("attr_change", {})
             for t in chgs:
                 exp_def.attr_change(t[0], t[1], t[2])
@@ -174,19 +173,20 @@ class ControllerGenerator:
             if controller["name"] != self.name:
                 continue
 
-            chgs = controller.get("xml", {}).get("attr_change", {})
-            for t in chgs:
-                exp_def.attr_change(t[0], t[1], t[2])
+            for fmt in ["xml", "json", "yaml"]:
+                chgs = controller.get(fmt, {}).get("attr_change", {})
+                for t in chgs:
+                    exp_def.attr_change(t[0], t[1], t[2])
 
-            chgs = controller.get("xml", {}).get("element_change", {})
-            for t in chgs:
-                exp_def.element_change(t[0], t[1], t[2])
+                chgs = controller.get(fmt, {}).get("element_change", {})
+                for t in chgs:
+                    exp_def.element_change(t[0], t[1], t[2])
 
-            adds = controller.get("xml", {}).get("element_add", {})
-            for t in adds:
-                self._do_element_add(
-                    exp_def, definition.ElementAdd(t[0], t[1], eval(t[2]), False)
-                )
+                adds = controller.get(fmt, {}).get("element_add", {})
+                for t in adds:
+                    self._do_element_add(
+                        exp_def, definition.ElementAdd(t[0], t[1], eval(t[2]), False)
+                    )
 
 
 class ScenarioGenerator:

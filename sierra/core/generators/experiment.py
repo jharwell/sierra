@@ -325,10 +325,10 @@ class ExpCreator:
         n_agents = utils.get_n_agents(
             self.criteria.main_config, self.cmdopts, self.pathset.input_root, exp_def
         )
-        generator = engine.ExpRunShellCmdsGenerator(
-            self.cmdopts, self.criteria, n_agents, self.exp_num
-        )
 
+        generator = engine.ExpRunShellCmdsGenerator(
+            self.cmdopts, self.criteria, self.exp_num, n_agents
+        )
         # Create all experimental runs
         self.logger.debug(
             "Creating %s runs in exp%s", self.cmdopts["n_runs"], self.exp_num
