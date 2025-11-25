@@ -159,6 +159,8 @@ class SIERRA:
         nonbootstrap_cmdline = module.build(parents, stages)
         args = nonbootstrap_cmdline.parser.parse_args(other_args)
         args.sierra_root = pathlib.Path(args.sierra_root).expanduser()
+
+        # Make sure cmdline args override rcfile args
         return self._handle_rc(bootstrap_args.rcfile, args)
 
     def _load_plugins(self, bootstrap_args: argparse.Namespace):
@@ -241,10 +243,10 @@ class SIERRA:
         realpath = os.getenv("SIERRA_RCFILE", None)
 
         if realpath:
-            self.logger.debug("Reading rcfile from envvar")
+            self.logger.debug("Reading rcfile from SIERRA_RCFILE")
 
         if rcfile_path:
-            self.logger.debug("Reading rcfile from cmdline")
+            self.logger.debug("Reading rcfile from --rcfile")
             realpath = rcfile_path
 
         if not realpath and pathlib.Path("~/.sierrarc").expanduser().exists():
@@ -257,51 +259,65 @@ class SIERRA:
         path = pathlib.Path(realpath).expanduser()
         with utils.utf8open(path, "r") as rcfile:
             for line in rcfile.readlines():
-                # There are 3 ways to pass arguments in the rcfile:
-                #
-                # 1. --arg
-                # 2. --arg=foo
-                # 3. --arg foo
-                #
-                # If you encounter a ~, we assume its a path, so we expand it to
-                # match cmdline behavior.
-                line = line.strip("\n")  # noqa: PLW2901
-                components = line.split()
-
-                if len(components) == 1 and "=" not in components[0]:  # boolean
-                    key = line[2:].replace("-", "_")
-                    args.__dict__[key] = True
-
-                elif len(components) == 1 and "=" in components[0]:
-                    key = line.split("=")[0][2:].replace("-", "_")
-                    if "~" in line:
-                        value = pathlib.Path(line.split("=")[1]).expanduser()
-                    else:
-                        value = line.split("=")[1]
-
-                    args.__dict__[key] = value
-                else:
-                    key = line.split()[0][2:].replace("-", "_")
-                    if "~" in line:
-                        value = str(pathlib.Path(line.split()[1]).expanduser())
-                    else:
-
-                        # If true, this is an arg which takes a list/has
-                        # multiple values, so it should be put into the argparse
-                        # namespace as a list, to match cmdline behavior.
-                        value = (
-                            line.split()[1:]
-                            if len(line.split()) > 2
-                            else line.split()[1]
-                        )
-
-                    args.__dict__[key] = value
-
-                self.logger.trace(
-                    "Applied cmdline arg from rcfile='%s': %s", path, line
-                )
+                if self._rcfile_line_proc(line, args):
+                    self.logger.trace(
+                        "Applied cmdline arg from rcfile='%s': %s", path, line
+                    )
 
         return args
+
+    def _rcfile_line_proc(self, line: str, args: argparse.Namespace) -> bool:
+        # There are 3 ways to pass arguments in the rcfile:
+        #
+        # 1. --arg
+        # 2. --arg=foo
+        # 3. --arg foo
+        #
+        # If you encounter a ~, we assume its a path, so we expand it to
+        # match cmdline behavior.
+        line = line.strip("\n")
+        components = line.split()
+
+        if len(components) == 1 and "=" not in components[0]:  # boolean
+            if line in sys.argv:  # Passed on cmdline
+                self.logger.trace("Skip bool rcfile arg %s: passed on cmdline", line)
+                return False
+
+            key = line[2:].replace("-", "_")
+            args.__dict__[key] = True
+
+        elif len(components) == 1 and "=" in components[0]:
+            if any(line.split("=")[0] in a for a in sys.argv):
+                self.logger.trace("Skip =rcfile arg %s: passed on cmdline", line)
+                return False
+
+            key = line.split("=")[0][2:].replace("-", "_")
+            if "~" in line:
+                value = pathlib.Path(line.split("=")[1]).expanduser()
+            else:
+                value = line.split("=")[1]
+
+            args.__dict__[key] = value
+        else:
+            # The == here instead of 'in' is important! Otherwise a
+            # --project-rendering on the cmdline will cause a --project in the
+            # rcfile not to work.
+            if any(line.split()[0] == a for a in sys.argv):
+                self.logger.trace("Skip rcfile2 arg %s: passed on cmdline", line)
+                return False
+            key = line.split()[0][2:].replace("-", "_")
+            if "~" in line:
+                value = str(pathlib.Path(line.split()[1]).expanduser())
+            else:
+
+                # If true, this is an arg which takes a list/has
+                # multiple values, so it should be put into the argparse
+                # namespace as a list, to match cmdline behavior.
+                value = line.split()[1:] if len(line.split()) > 2 else line.split()[1]
+
+            args.__dict__[key] = value
+
+        return True
 
 
 def excepthook(exc_type, exc_value, exc_traceback):

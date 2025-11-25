@@ -40,6 +40,7 @@ jobs:
 
   coverage-smoke:
     runs-on: ubuntu-latest
+    container: jharwell/ubuntu24.04-sierra:latest
 
     needs:
       - core-smoke-tests
@@ -102,6 +103,8 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
+    container: jharwell/ubuntu24.04-sierra:latest
+
     needs:
       - coverage-smoke
 

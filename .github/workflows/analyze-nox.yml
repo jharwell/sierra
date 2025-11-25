@@ -14,13 +14,15 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.12"
+          - 3.12
 
         session:
-          - lint
           - docs
           - analyze_pytype
           - analyze_mypy
+          - analyze_misc
+          - analyze_ruff
+
 
     steps:
       - uses: actions/checkout@v3

@@ -15,9 +15,7 @@ from sierra.core import types
 from sierra.plugins import PluginCmdline
 
 
-def build(
-    parents: list[argparse.ArgumentParser], stages: list[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline parser supporting the ``proc.imagize`` processing plugin.
     """
@@ -28,10 +26,16 @@ def build(
         help="""
              If the ``proc.imagize`` plugin is run, don't run statistics
              generation/assume it has already been run.  This can save TONS of
-             time for large imagizing workloads/workloads where the memory
-             limitations of the SIERRA host machine are such that you need to
-             specify different levels of ``--processing-parallelism`` for
-             statistics calculations/imagizing to avoid filling up memory.
+             time for:
+
+                 - Large imagizing workloads
+
+                 - Workloads where the memory limitations of the SIERRA host
+                   machine are such that you need to specify different levels of
+                   ``--processing-parallelism`` for statistics
+                   calculations/imagizing to avoid filling up memory.
+
+                 - Workloads where you don't want stats/stats don't make sense.
              """
         + cmdline.stage_usage_doc([3]),
         default=False,

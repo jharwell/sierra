@@ -16,8 +16,12 @@ import pandas as pd
 # Project packages
 
 
-def suffixes() -> set[str]:
-    return {".arrow"}
+def supports_input(fmt: str) -> bool:
+    return fmt == ".arrow"
+
+
+def supports_output(fmt: type) -> bool:
+    return fmt is pd.DataFrame
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)

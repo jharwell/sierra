@@ -28,7 +28,8 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     clang \
     build-essential \
-    psmisc
+    psmisc \
+    libgraphviz-dev
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 

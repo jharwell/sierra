@@ -250,7 +250,12 @@ class DirectoryPluginManager(BasePluginManager):
                     init = f / "__init__.py"
                     cookie = f / ".sierraplugin"
 
-                    if not (init.exists() and (plugin.exists() or cookie.exists())):
+                    # 2025-11-24 [JRH]: The cookie is ALWAYS required. We used
+                    # to just recognize a directory containing
+                    # plugin.py+__init__.py as a SIERRA plugin, but that is far
+                    # too generic, and caused conflicts with other python
+                    # packages installed in the same environment.
+                    if not (cookie.exists() and (plugin.exists() or init.exists())):
                         continue
 
                     name = f"{f.parent.name}.{f.name}"
@@ -387,7 +392,7 @@ def storage_sanity_checks(medium: str, module) -> None:
     """
     logging.trace("Verifying --storage=%s plugin interface", medium)
 
-    functions = ["df_read", "df_write", "suffixes"]
+    functions = ["supports_input", "supports_output"]
     in_module = inspect.getmembers(module, inspect.isfunction)
 
     for f in functions:

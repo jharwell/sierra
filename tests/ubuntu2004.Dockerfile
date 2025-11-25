@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     clang \
     build-essential \
     wget \
-    psmisc
+    psmisc \
+    libgraphviz-dev
 
 # The version of parallel which comes with 20.04 is too old/doesn't support the
 # PARALLEL envvar, so we have to install a newer one.
@@ -55,6 +56,7 @@ RUN apt update && apt install -y \
     python3-cairo \
     intltool \
     python3-wheel \
+    python3-pip \
     libxv1
 
 RUN apt update && apt install -y \

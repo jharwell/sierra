@@ -16,8 +16,12 @@ import pandas as pd
 # Project packages
 
 
-def suffixes() -> set[str]:
-    return {".csv"}
+def supports_input(fmt: str) -> bool:
+    return fmt == ".csv"
+
+
+def supports_output(fmt: type) -> bool:
+    return fmt is pd.DataFrame
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)

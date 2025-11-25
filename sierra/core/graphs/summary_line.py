@@ -84,7 +84,8 @@ def generate(  # noqa: PLR0913
                      experiment.
 
     """
-    hv.extension(backend)
+    hv.extension(backend, inline=False, logo=False)
+
     if backend == "matplotlib":
         ofile_ext = config.GRAPHS["static_type"]
     elif backend == "bokeh":

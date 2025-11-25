@@ -35,6 +35,9 @@ collation *within* in an experiment (intra-experiment). Collation *across*
 experiments (if enabled/configured) is done during stage 4, and is handled by a
 different plugin.
 
+This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
+supports ``pd.DataFrame`` objects.
+
 Usage
 =====
 

@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.4"
+version = "1.5.5"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -17,13 +17,21 @@ dependencies = [
     "hatchling",
     "coloredlogs",
     "distro",
+    "networkx",
+    "certifi",
     "haggis",
     "implements",
     "jsonpath-ng",
     "yamlpath",
     "ruamel.yaml",
     "matplotlib",
-    "numpy",
+    "pygraphviz",
+    # 2025-11-24 [JRH]: Causes errors of the form: np.unicode_ was
+    # removed in the NumPy 2.0 release. Use np.str_ instead.
+    #
+    # When saving hv network plots. This should eventually be removed
+    # so we can use the latest and greatest numpy. Eventually.
+    "numpy<2.0",
     "pandas",
     "pyarrow",
     "prefect",
@@ -96,7 +104,7 @@ docs = [
     "sphinx-last-updated-by-git",
     "graphviz",
 
-    # 2025-11-21 [JRH]: Pinning to avoid errors with sphinx-autoapi. 
+    # 2025-11-21 [JRH]: Pinning to avoid errors with sphinx-autoapi.
     "sphinx-autoapi==3.1.0",
     "toml",
     "sphinx-autobuild",

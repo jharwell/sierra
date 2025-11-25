@@ -66,7 +66,7 @@ def generate(  # noqa: PLR0913
     Ideally, model predictions/stddev calculations would be in derived classes,
     but I can't figure out a good way to easily pull that stuff out of here.
     """
-    hv.extension(backend)
+    hv.extension(backend, inline=False, logo=False)
 
     input_fpath = paths.input_root / (input_stem + ext)
     output_fpath = paths.output_root / "SLN-{}.{}".format(

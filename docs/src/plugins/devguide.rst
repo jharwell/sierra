@@ -43,6 +43,9 @@ The following schemas are supported, and are checked in order:
 #.
 
    - In a directory on :envvar:`SIERRA_PLUGIN_PATH`, there is a
+     ``.sierraplugin`` file.
+
+   - In a directory on :envvar:`SIERRA_PLUGIN_PATH`, there is a
      ``plugin.py`` file.
 
    - Within the ``__init__.py`` in that directory there is a

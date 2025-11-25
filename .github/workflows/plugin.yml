@@ -234,6 +234,7 @@ jobs:
           - yamlsim_stage1_univar
           - yamlsim_stage3_univar
           - yamlsim_stage4_univar
+          - yamlsim_imagize
 
         container:
           - jharwell/ubuntu24.04-sierra:latest
