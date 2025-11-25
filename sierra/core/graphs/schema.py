@@ -75,3 +75,21 @@ summary_line = strictyaml.Map(
 """
 Schema for :func:`~sierra.core.graphs.summary_line` graphs.
 """
+
+network = strictyaml.Map(
+    {
+        "src_stem": strictyaml.Str(),
+        "dest_stem": strictyaml.Str(),
+        "layout": strictyaml.Str(),
+        strictyaml.Optional("title"): strictyaml.Str(),
+        strictyaml.Optional("type"): strictyaml.Str(),
+        strictyaml.Optional("backend"): strictyaml.Str(),
+        strictyaml.Optional("large_text"): strictyaml.Str(),
+        strictyaml.Optional("node_color_attr"): strictyaml.Str(),
+        strictyaml.Optional("edge_color_attr"): strictyaml.Str(),
+        strictyaml.Optional("edge_weight_attr"): strictyaml.Str(),
+    }
+)
+"""
+Schema for :func:`~sierra.core.graphs.network` graphs.
+"""

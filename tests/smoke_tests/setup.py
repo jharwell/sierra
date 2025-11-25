@@ -138,7 +138,6 @@ def session_setup(func):
             f"--controller=default.default "
             f"--engine=plugins.yamlsim "
             f"--project=projects.sample_yamlsim "
-            f"--exp-setup=exp_setup.T50 "
             f"--n-runs=4 "
             f"-xstrict "
             f"--expdef-template={session.env['SIERRA_SAMPLE_ROOT']}/exp/yamlsim/template.yaml "

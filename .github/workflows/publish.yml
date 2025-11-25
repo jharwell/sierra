@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: jharwell/ubuntu24.04-sierra:latest
+
     steps:
     - uses: actions/checkout@v3
       with:

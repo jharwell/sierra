@@ -51,6 +51,9 @@ def proc_batch_exp(
            generate frames, and ``--project-rendering`` is passed.
     """
     if (not cmdopts["engine_vc"]) and (not cmdopts["project_rendering"]):
+        _logger.warning(
+            "Rendering plugin active without --engine-vc or --project-rendering"
+        )
         return
 
     _logger.info("Rendering videos...")
@@ -159,14 +162,13 @@ def _from_project_imagized(
 
     For more details, see :ref:`plugins/prod/render`.
 
-    .. note:: This currently only works with PNG images.
+    .. NOTE:: This currently only works with PNG images.
     """
     exp_to_render = utils.exp_range_calc(
         cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     inputs = []
-    # For each category of imagized/rendered graphs
     # For each graph in each category
     for graph in render_config:
         # Across all experiments

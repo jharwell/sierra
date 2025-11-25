@@ -4,16 +4,60 @@
 Storage Plugins
 ===============
 
-Storage plugins tell SIERRA the storage format for :term:`Raw Output Data` from
-:term:`Experimental Runs <Experimental Run>`, and also set the output format
-that SIERRA writes intermediate files to in stages 3-5 (e.g., the files that are
-used as direct inputs to build graphs). Basically, it sets the I/O format.
+Storage plugins tell SIERRA how to handle file I/O in stages 3-5. Specifically:
 
-Supported formats that come with SIERRA are:
+- How to read :term:`Raw Output Data` from :term:`Experimental Runs
+  <Experimental Run>`.
 
-- :ref:`plugins/storage/csv`
+- How to write :term:`Processed Output Data`, :term:`Collated Output Data`,
+  etc., files to disk.
 
-- :ref:`plugins/storage/arrow`
+Each plugin can support any number of input formats, identified by file
+extensions, and any number of output types. This is summarized below for the
+storage plugins which come with SIERRA; additional formats can be supported via
+:ref:`tutorials/plugin/storage`.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Plugin
+
+     - Supported input formats
+
+     - Allowed file extensions
+
+     - Output type
+
+   * - :ref:`plugins/storage/csv`
+
+     - CSV
+
+     - ``.csv``
+
+     - ``pd.DataFrame``
+
+   * - :ref:`plugins/storage/arrow`
+
+     - `Apache arrow <https://arrow.apache.org/>`_
+
+     - ``.arrow``
+
+     - ``pd.DataFrame``
+
+   * - :ref:`plugins/storage/graphml`
+
+     - `GraphML <http://graphml.graphdrawing.org/>`_
+
+     - ``.graphml``
+
+     - ``nx.Graph``
+
+Other plugins in stages 3-5 may require a specific output format; see individual
+docs for details.
+
+.. TIP:: If you are :ref:`tutorials/plugin/storage`, follow the Unix philosophy
+         of doing one thing well, and make multiple smaller plugins, rather than
+         1 storage plugin which handles all of your custom types/formats.
 
 .. _plugins/storage/csv:
 
@@ -23,6 +67,9 @@ CSV
 Select the CSV format for all data I/O in stages 3-5.  This storage plugin can
 be selected via ``--storage=storage.csv``.  This is the default storage type
 which SIERRA will use if none is specified on the cmdline.
+
+Since this plugin produces ``pd.DataFrame`` objects, it is suitable for
+processing numeric data.
 
 .. versionchanged:: 1.3.28
 
@@ -38,6 +85,18 @@ Select the `arrow format <https://arrow.apache.org/>`_ for all data I/O in
 stages 3-5.  This storage plugin can be selected via
 ``--storage=storage.arrow``.
 
+Since this plugin produces ``pd.DataFrame`` objects, it is suitable for
+processing numeric data.
 
-Additional formats can be supported via :ref:`tutorials/plugin/storage` for how
-to add it.
+.. _plugins/storage/graphml:
+
+GraphML
+=======
+
+Select the `GraphML format <http://graphml.graphdrawing.org/>`_ for all data I/O
+in stages 3-5.  This storage plugin can be selected via
+``--storage=storage.graphml``.
+
+Since this plugin produces ``nx.Graph`` objects, it is *not* suitable for
+processing numeric data. E.g., running the :ref:`plugins/proc/statistics` plugin
+with this plugin selected will cause an error.

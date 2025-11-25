@@ -11,9 +11,8 @@ Imagizing
 
 SIERRA's capabilities for imagizing (translating from :term:`Raw Output Data`
 files into images) are detailed in this section. Imagize inputs are treated as
-snapshots of 2D or 3D data over time, and after being be turned into image files
-in stage 3 they can be rendered into videos in stage 4 (see
-:ref:`plugins/prod/render`).
+snapshots of data over time, and after being be turned into image files in stage
+3 they can be rendered into videos in stage 4 (see :ref:`plugins/prod/render`).
 
 .. _plugins/proc/imagize/req:
 
@@ -34,7 +33,7 @@ turn them into images and render them:
   ``foobar/swarm-distribution`` under ``main.run_metrics_leaf`` then all files
   within that directory must be named according to
   ``foobar/swarm-distribution/swarm-distributionXXXXX.<ext>``, where ``XXXXX``
-  is any length numeric prefix (possibly preceded by an underscore or dash), and
+  is any length numeric prefix (possibly preceded by an underscore or dash).
   ``<ext>`` is any extension supported by the currently selected :ref:`storage
   plugin <plugins/storage>`.
 
@@ -70,6 +69,18 @@ own subdirectory in this root for their images. E.g.::
            ...
 
 
+This plugin currently supports two different types of imagizing:
+
+- Imagizing from statistics data -> :func:`sierra.core.graphs.heatmap` at the
+  level of :term:`Experiments <Experiment>` from using a :ref:`storage plugin
+  <plugins/storage>` which outputs ``pd.DataFrame`` objects. In this form, 1
+  graph is generated from e.g. each *averaged* data frame.
+
+- Imagizing from GraphML data -> :func:`sierra.core.graphs.network` at the level
+  of :term:`Experimental Runs <Experimental Run>` from using a :ref:`storage
+  plugin <plugins/storage>` which outputs ``nx.Graph`` objects. In this form 1
+  graph is generated for each ``.grapml`` file output from each experimental
+  run, which can be a lot!
 
 Cmdline Interface
 -----------------

@@ -91,7 +91,7 @@ def _linux_pkg_checks() -> None:
     ):
         _apt_pkg_checks(dist)
 
-    if any(candidate in os_info["id"] for candidate in ["fedora"]):
+    elif any(candidate in os_info["id"] for candidate in ["fedora"]):
         _rpm_pkg_checks(dist)
     else:
         logging.warning(

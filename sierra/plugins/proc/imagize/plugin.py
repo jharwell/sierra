@@ -10,9 +10,9 @@ See :ref:`plugins/proc/imagize` for usage documentation.
 
 # Core packages
 import multiprocessing as mp
+import typing as tp
 import logging
 import pathlib
-import typing as tp
 
 # 3rd party packages
 import yaml
@@ -67,10 +67,15 @@ def proc_batch_exp(
     for exp in exp_to_imagize:
         exp_stat_root = pathset.stat_root / exp.name
         exp_imagize_root = pathset.imagize_root / exp.name
+        exp_output_root = pathset.output_root / exp.name
 
         tasks.extend(
             _build_tasklist_for_exp(
-                exp_stat_root, exp_imagize_root, imagize_config, cmdopts["storage"]
+                exp_stat_root,
+                exp_imagize_root,
+                exp_output_root,
+                imagize_config,
+                cmdopts["storage"],
             )
         )
 
@@ -92,9 +97,10 @@ def proc_batch_exp(
 def _build_tasklist_for_exp(
     exp_stat_root: pathlib.Path,
     exp_imagize_root: pathlib.Path,
+    exp_output_root: pathlib.Path,
     imagize_config: types.YAMLDict,
     storage: str,
-) -> list[tuple[dict, types.YAMLDict]]:
+) -> list[tuple[types.YAMLDict, dict]]:
     """Add all files from experiment to multiprocessing queue for processing.
 
     Enqueueing for processing is done at the file-level rather than
@@ -102,20 +108,96 @@ def _build_tasklist_for_exp(
     still get maximum throughput.
     """
     res = []
-    # For each graph in each category
-    for graph in imagize_config:
-        candidate = exp_stat_root / dict(graph)["src_stem"]
 
+    # There are two types of graphs currently supported:
+    #
+    # - Heatmaps, built from statistical data.
+    #
+    # - Network graphs, built from per-run data. We COULD average GraphML files,
+    #   but doing so in a general way is tricky at best, and brittle at worst.
+    for graph in imagize_config:
+        if dict(graph)["type"] == "heatmap":
+            res.extend(
+                _build_task_for_heatmap(
+                    graph, imagize_config, storage, exp_stat_root, exp_imagize_root
+                )
+            )
+
+        elif dict(graph)["type"] == "network":
+            res.extend(
+                _build_task_for_network(
+                    graph,
+                    imagize_config,
+                    storage,
+                    exp_output_root,
+                    exp_imagize_root,
+                )
+            )
+        else:
+            raise ValueError("Only {heatmap,network} output graphs supported.")
+
+    return res
+
+
+def _build_task_for_heatmap(
+    graph: types.YAMLDict,
+    imagize_config: types.YAMLDict,
+    storage: str,
+    exp_stat_root: pathlib.Path,
+    exp_imagize_root: pathlib.Path,
+) -> list[tuple[types.YAMLDict, dict]]:
+    candidate = exp_stat_root / dict(graph)["src_stem"]
+    res = []  # type: list[tuple[types.YAMLDict, dict]]
+
+    if not candidate.is_dir():
+        _logger.debug(
+            "Configured imagize source <batch stat root>/%s does not exist",
+            (candidate.relative_to(exp_stat_root)),
+        )
+        return res
+
+    imagize_output_root = exp_imagize_root / candidate.relative_to(exp_stat_root)
+    utils.dir_create_checked(imagize_output_root, exist_ok=True)
+
+    for fpath in candidate.iterdir():
+        assert (
+            fpath.is_file()
+        ), f"Imagize directory {candidate} must only contain files!"
+
+        res.append(
+            (
+                imagize_config,
+                {
+                    "input_path": fpath,
+                    "graph_stem": candidate.relative_to(exp_stat_root),
+                    "imagize_output_root": imagize_output_root,
+                    "batch_root": exp_stat_root.parent.parent,
+                    "storage": storage,
+                },
+            )
+        )
+    return res
+
+
+def _build_task_for_network(
+    graph: types.YAMLDict,
+    imagize_config: types.YAMLDict,
+    storage: str,
+    exp_output_root: pathlib.Path,
+    exp_imagize_root: pathlib.Path,
+) -> list[tuple[types.YAMLDict, dict]]:
+
+    res = []
+    for run_output_root in exp_output_root.iterdir():
+        candidate = run_output_root / dict(graph)["src_stem"]
         if not candidate.is_dir():
             _logger.debug(
-                "Configured imagize source <batch stat root>/%s does not exist",
-                (candidate.relative_to(exp_stat_root)),
+                "Configured imagize source <output root>/%s does not exist",
+                (candidate.relative_to(exp_output_root)),
             )
             continue
-
-        imagize_output_root = exp_imagize_root / candidate.relative_to(exp_stat_root)
+        imagize_output_root = exp_imagize_root / candidate.relative_to(exp_output_root)
         utils.dir_create_checked(imagize_output_root, exist_ok=True)
-
         for fpath in candidate.iterdir():
             assert (
                 fpath.is_file()
@@ -123,21 +205,21 @@ def _build_tasklist_for_exp(
 
             res.append(
                 (
+                    imagize_config,
                     {
                         "input_path": fpath,
-                        "graph_stem": candidate.relative_to(exp_stat_root),
+                        "graph_stem": dict(graph)["src_stem"],
                         "imagize_output_root": imagize_output_root,
-                        "batch_root": exp_stat_root.parent.parent,
+                        "batch_root": exp_output_root.parent.parent,
                         "storage": storage,
                     },
-                    imagize_config,
                 )
             )
-
     return res
 
 
-def _worker(imagize_opts: dict, imagize_config: types.YAMLDict) -> None:
+def _worker(imagize_config: types.YAMLDict, imagize_opts: dict) -> None:
+
     _proc_single_exp(imagize_config, imagize_opts)
 
 
@@ -168,26 +250,37 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
             batchroot=imagize_opts["batch_root"],
         )
 
-        # 2025-06-05 [JRH]: We always write stage {3,4} output data files as
-        # .csv because that is currently SIERRA's 'native' format; this may
-        # change in the future.
-        #
-        # Input paths are of the form <dir>/<dir>_<NUMBER>.{extension}
-        graphs.heatmap(
-            pathset=graph_pathset,
-            input_stem=imagize_opts["input_path"].stem,
-            output_stem=imagize_opts["input_path"].stem,
-            title=dict(match)["title"],
-            medium="storage.csv",
-            xlabel="X",
-            ylabel="Y",
-            colnames=(
-                match.get("x", "x"),
-                match.get("y", "y"),
-                match.get("z", "z"),
-            ),
-            backend="matplotlib",
-        )
+        # All input paths are of the form <dir>/<dir>_<NUMBER>.{extension}
+        if dict(graph)["type"] == "heatmap":
+            graphs.heatmap(
+                pathset=graph_pathset,
+                input_stem=imagize_opts["input_path"].stem,
+                output_stem=imagize_opts["input_path"].stem,
+                title=dict(match)["title"],
+                medium=imagize_opts["storage"],
+                xlabel="X",
+                ylabel="Y",
+                colnames=(
+                    match.get("x", "x"),
+                    match.get("y", "y"),
+                    match.get("z", "z"),
+                ),
+                backend="matplotlib",
+            )
+        elif dict(graph)["type"] == "network":
+            graphs.network(
+                pathset=graph_pathset,
+                layout=graph.get("layout", "spring"),
+                input_stem=imagize_opts["input_path"].stem,
+                output_stem=imagize_opts["input_path"].stem,
+                title=dict(match)["title"],
+                medium=imagize_opts["storage"],
+                node_color_attr=graph.get("node_color_attr", None),
+                node_size_attr=graph.get("node_size_attr", None),
+                edge_color_attr=graph.get("edge_color_attr", None),
+                edge_weight_attr=graph.get("edge_weight_attr", None),
+                backend="matplotlib",
+            )
 
     else:
         _logger.warning(
@@ -244,7 +337,7 @@ class ImagizeInputGatherer(gather.BaseGatherer):
 
             for imagizable in item.iterdir():
                 if (
-                    not any(s in plugin.suffixes() for s in imagizable.suffixes)
+                    not any(plugin.supports_input(s) for s in imagizable.suffixes)
                     and imagizable.stat().st_size > 0
                 ):
                     continue

@@ -41,7 +41,8 @@ jobs:
           timeout_minutes: 30
           max_attempts: 3
           shell: bash
-          command: uv run nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
+          command: |
+            uv run nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
 
       - uses: actions/upload-artifact@v4
         with:

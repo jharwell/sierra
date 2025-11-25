@@ -71,7 +71,7 @@ def generate(  # noqa: PLR0913
     in that cell. The names of these columns are configurable.
 
     """
-    hv.extension(backend)
+    hv.extension(backend, inline=False, logo=False)
 
     ofile_ext = _ofile_ext(backend)
     input_fpath = pathset.input_root / (input_stem + ext)
@@ -197,7 +197,7 @@ def generate2(  # noqa: PLR0913
     If there are not exactly two file paths passed, the graph is not generated.
 
     """
-    hv.extension("matplotlib")
+    hv.extension("matplotlib", inline=False, logo=False)
 
     output_fpath = (
         pathset.output_root / f"HM-{output_stem}.{config.GRAPHS['static_type']}"

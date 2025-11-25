@@ -1,0 +1,54 @@
+mygraph:
+  # The filepath of the source data file relative to the output directory for an
+  # experimental run to look for the GraphML file to plot, sans the extension.
+  - src_stem: 'somesubdir/foo'
+
+    # The filepath of the graph to be generated (extension/image type is
+    # determined elsewhere). This allows for multiple graphs to be generated
+    # from the same data file by plotting different combinations of columns.
+    dest_stem: 'bar'
+
+    # The title the graph should have. LaTeX syntax is supported (uses
+    # matplotlib after all). Optional. Defaults to '' if omitted.
+    title: 'My Title'
+
+    # The type of graph. Must be 'network'.
+    type: 'network'
+
+    # The networkx layout to use for the graph. Valid values are:
+    #
+    # - spring
+    # - spectral
+    # - planar
+    # - spiral
+    # - graphviz_neato
+    # - graphviz_dot
+    # - bfs
+    #
+    # All map directly to nx layouts with the exception of graphviz_{dot,neato}
+    # which both map to the graphviz layout, using the dot, neato programs for
+    # actual layout, respectively.
+    #
+    # Defaults to "spring" if omitted.
+    layout: 'spring'
+
+    # The name of the GraphML node attribute to use to color nodes. If omitted,
+    # all nodes will be gray.
+    node_color_attr: 'color'
+
+    # The name of the GraphML node attribute to use to determine node size. If
+    # omitted, all nodes will be sized according to their degree relative to the
+    # min/max for the graph.
+    node_size_attr: 'size'
+
+    # The name of the GraphML edge attribute to use to color edges. If omitted,
+    # all nodes will be black.
+    edge_color_attr: 'color'
+
+    # The name of the GraphML edge attribute to use to weight edge thickness. If
+    # omitted, all nodes will be the same thickness.
+    edge_weight_attr: 'weight'
+
+    # Specify the backend to use to generate the graph. Defaults to
+    # --graphs-backend if omitted.
+    backend: "matplotlib"

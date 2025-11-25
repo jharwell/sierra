@@ -28,7 +28,7 @@ nox.options.default_venv_backend = "uv"
 
 
 @nox.session(python=utils.versions)
-def lint(session):
+def analyze_misc(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
@@ -39,6 +39,12 @@ def lint(session):
         "--max-average A",
         "--no-assert sierra",
     )
+
+
+@nox.session(python=utils.versions)
+def analyze_ruff(session):
+    session.install(".")  # same as 'pip3 install .'
+    session.install(".[devel]")  # same as 'pip3 install .[devel]'
 
     session.run("ruff", "check", "sierra")
 

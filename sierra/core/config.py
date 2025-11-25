@@ -9,6 +9,10 @@ Contains all SIERRA hard-coded configuration in one place.
 import logging
 import typing as tp
 import packaging
+import os
+import ssl
+import contextlib
+import certifi
 
 # 3rd party packages
 import holoviews as hv
@@ -20,13 +24,13 @@ from sierra.core import types
 ################################################################################
 # Holoviews Configuration
 ################################################################################
-def bokeh_init():
+def bokeh_init() -> None:
     # Only needed when hv backend is bokeh
     logging.getLogger("selenium").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
-def mpl_init():
+def mpl_init() -> None:
     # Turn off MPL messages when the log level is set to DEBUG or
     # higher. Otherwise you get HUNDREDS. Must be before import to suppress
     # messages which occur during import.
@@ -56,7 +60,35 @@ def mpl_init():
     plt.style.use("seaborn-v0_8-colorblind")
 
 
-# Actually initialize holoviews
+def hv_ssl_init() -> None:
+    """Initialize SSL properly to ensure fork()ing works.
+
+    This should NOT be necessary, but it is until holoviews/other packages fix
+    this.
+
+    2025-11-24 [JRH]: This is ABSOLUTELY CRUCIAL to avoid SSL related errors in
+    the tornado package which hv uses.  By forcing initialization of SSL in the
+    main process before any forking happens, we (apparently) avoid memory
+    corruption which can happen otherwise.
+    """
+
+    # Disable SSL verification globally before any forks
+    os.environ["PYTHONHTTPSVERIFY"] = "0"
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+
+    # Create SSL context in parent to "warm it up"
+    with contextlib.suppress(BaseException):
+        ssl.create_default_context()
+
+    # Override default context creator
+    ssl._create_default_https_context = ssl._create_unverified_context
+
+    # Pre-import tornado to initialize its SSL before fork
+    with contextlib.suppress(BaseException):
+        import tornado.netutil  # noqa: PLC0415
+
+
+hv_ssl_init()
 bokeh_init()
 mpl_init()
 

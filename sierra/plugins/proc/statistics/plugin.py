@@ -68,10 +68,15 @@ class DataGatherer(gather.BaseGatherer):
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
+        if not plugin.supports_output(pd.DataFrame):
+            raise RuntimeError(
+                "This plugin can only be used with storage plugins which support pd.DataFrame."
+            )
+
         for item in proj_output_root.rglob("*"):
             if (
                 item.is_dir()
-                or not any(s in plugin.suffixes() for s in item.suffixes)
+                or not any(plugin.supports_input(s) for s in item.suffixes)
                 or item.stat().st_size == 0
             ):
                 continue

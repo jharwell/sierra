@@ -188,6 +188,10 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: heatmap.yaml
 
+   .. tab:: Network
+
+      .. literalinclude:: network.yaml
+
 
 Inter-Experiment Graphs
 -----------------------

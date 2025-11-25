@@ -15,11 +15,13 @@ level is required. This plugin supports such analysis by automatically computing
 statistics to e.g., enable plotting 95% confidence intervals on graph
 products in stage 4.
 
-
 This plugin processes at the file level for each :term:`Experimental Run`. All
 :term:`Raw Output Data` files produced by each run are gathered and statistics
 calculated, and the results written out as described in the
 :ref:`usage/run-time-tree`.
+
+This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
+supports ``pd.DataFrame`` objects.
 
 Usage
 =====

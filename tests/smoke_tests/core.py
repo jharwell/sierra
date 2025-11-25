@@ -133,43 +133,44 @@ def core_cmdline_opts(session):
     # Check version
     session.run(*(f"{sierra_cmd} --version").split(), silent=True)
 
-    # Test rcfile
-    if os.path.exists(os.path.expanduser("~/test2")):
-        shutil.rmtree(os.path.expanduser("~/test2"))
-    if os.path.exists(os.path.expanduser("~/test3")):
-        shutil.rmtree(os.path.expanduser("~/test3"))
-
-    # Create rcfiles
-    with open("/tmp/tmpfile", "w") as f:
+    # Create rcfile
+    with pathlib.Path("/tmp/tmpfile").open(mode="w") as f:
         f.write("--sierra-root=~/test2")
 
+    # Test cmdline override of rcfile
+    home = pathlib.Path.home()
+
+    for d in ["test", "test2"]:
+        if (home / d).exists():
+            shutil.rmtree(home / d)
+
     session.run(*(f"{sierra_cmd} --rcfile=/tmp/tmpfile").split(), silent=True)
-    assert os.path.isdir(os.path.expanduser("~/test2")), "Directory ~/test2 not found"
+    assert (home / "test").is_dir(), "Directory ~/test not found"
+    shutil.rmtree(home / "test")
 
-    shutil.rmtree(os.path.expanduser("~/test2"))
-
-    with open("/tmp/tmpfile2", "w") as f:
-        f.write("--sierra-root ~/test3")
-
-    session.run(*(f"{sierra_cmd} --rcfile=/tmp/tmpfile2").split(), silent=True)
-    assert os.path.isdir(os.path.expanduser("~/test3")), "Directory ~/test3 not found"
-
-    shutil.rmtree(os.path.expanduser("~/test3"))
+    sierra_cmd = sierra_cmd.replace(
+        "--sierra-root=" + str(pathlib.Path.home() / "test"), ""
+    )
 
     # Test environment variable for rcfile
-    session.env["SIERRA_RCFILE"] = "/tmp/tmpfile2"
+    session.env["SIERRA_RCFILE"] = "/tmp/tmpfile"
     session.run(*sierra_cmd.split(), silent=True)
-    assert os.path.isdir(os.path.expanduser("~/test3")), "Directory ~/test3 not found"
+    assert (home / "test2").is_dir(), "Directory ~/test2 not found"
 
-    shutil.rmtree(os.path.expanduser("~/test3"))
+    shutil.rmtree(home / "test2")
 
     # Test ~/.sierrarc
     del session.env["SIERRA_RCFILE"]
-    shutil.copy("/tmp/tmpfile2", os.path.expanduser("~/.sierrarc"))
+    shutil.copy("/tmp/tmpfile", home / ".sierrarc")
     session.run(*sierra_cmd.split(), silent=True)
-    assert os.path.isdir(os.path.expanduser("~/test3")), "Directory ~/test3 not found"
+    assert (home / "test2").is_dir(), "Directory ~/test2 not found"
 
-    shutil.rmtree(os.path.expanduser("~/test3"))
+    for d in ["test", "test2"]:
+        if (home / d).exists():
+            shutil.rmtree(home / d)
+
+    (home / ".sierrarc").unlink()
+    pathlib.Path("/tmp/tmpfile").unlink()
 
 
 @nox.session(python=utils.versions, tags=["core"])

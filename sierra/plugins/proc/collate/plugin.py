@@ -183,6 +183,11 @@ class ExpDataGatherer(gather.BaseGatherer):
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
+        if not plugin.supports_output(pd.DataFrame):
+            raise RuntimeError(
+                "This plugin can only be used with storage plugins which support pd.DataFrame."
+            )
+
         config_path = pathlib.Path(
             self.gather_opts["project_config_root"], config.PROJECT_YAML.collate
         )
@@ -202,7 +207,7 @@ class ExpDataGatherer(gather.BaseGatherer):
 
             # Has to be a supported suffix for storage plugin
             if (
-                not any(s in plugin.suffixes() for s in item.suffixes)
+                not any(plugin.supports_input(s) for s in item.suffixes)
                 or item.stat().st_size == 0
             ):
                 continue

@@ -201,9 +201,6 @@ space is 2D instead of 1D, and you can't easily represent time AND two
 variables + time on a plot. This can take a loooonnnggg time, and can be
 disabled with ``--project-no-HM``.
 
-The generated sequence of heatmaps can be turned into a video--pass
-``--bc-rendering`` during stage 4 to do so.
-
 Stage 5 Scenario Comparison Example
 ===================================
 

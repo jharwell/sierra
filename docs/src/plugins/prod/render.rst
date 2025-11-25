@@ -13,12 +13,9 @@ section. SIERRA can render frames (images) into videos from 3 sources:
   proc.imagize`` using ``--project-rendering``. See :ref:`here
   <plugins/proc/imagize>` for details about the project-based imagizing plugin.
 
-- Inter-experiment heatmaps from bivariate batch criteria ``--bc-rendering``.
-
 .. NOTE:: Using BOTH the engine and project rendering capabilities
-   simultaneously IS possible (i.e., passing ``--engine-vc`` and
-   ``--project-rendering`` during stage 3), but discouraged unless you have
-   multiple terrabytes of disk space available. ``--exp-range`` is your friend.
+   simultaneously IS possible, but discouraged unless you have multiple
+   terrabytes of disk space available. ``--exp-range`` is your friend.
 
 This plugin uses :program:`ffmpeg` to do the actual rendering, and so it must be
 findable by the shell used to invoke SIERRA; an error will be thrown otherwise.
@@ -50,7 +47,7 @@ Usage
 =====
 
 This plugin can be selected by adding ``prod.render`` to the list passed to
-``--prod``.
+``--prod`` during stage 4.
 
 This plugin creates ``<batchroot>/videos`` when active. Videos for each
 experiment will accrue in subdirectories under here. E.g.::
@@ -63,6 +60,11 @@ experiment will accrue in subdirectories under here. E.g.::
            |-- c1-exp3
            ...
 
+Which videos will be rendered is read from the ``imagizing`` section of project
+``graphs.yaml`` for ``--project-rendering``. For ``engine-vc``, all matching
+image directories within each experiment are unconditionally rendered. If you
+only care about some of them, you can use ``--exp-range`` to only render videos
+for some experiments.
 
 Cmdline Interface
 -----------------
