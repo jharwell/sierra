@@ -1,0 +1,32 @@
+mygraph:
+  # The filepath of the source data file relative to the output directory for an
+  # experimental run to look for the column(s) to plot, sans the extension.
+  - src_stem: 'somesubdir/foo'
+
+    # The filepath of the graph to be generated (extension/image type is
+    # determined elsewhere). This allows for multiple graphs to be generated
+    # from the same data file by plotting different combinations of columns.
+    dest_stem: 'bar'
+
+    # The title the graph should have. LaTeX syntax is supported (uses
+    # matplotlib after all). Optional. Defaults to '' if omitted.
+    title: 'My Title'
+
+    # The type of graph. Must be 'confusion_matrix'.
+    type: 'confusion_matrix'
+
+    # The column containing ground truth labels. Optional. Defaults to 'truth'
+    # if omitted.
+    truth_col: 'My truth'
+
+    # The column containing predicted labels. Optional. Defaults to 'predicted'
+    # if omitted.
+    predicted_col: 'My Predictions'
+
+    # Should the X labels be rotated? Helpful if you have long category
+    # names. Defaults to False if omitted.
+    xlabels_rotate: False
+
+    # Specify the backend to use to generate the graph. Defaults to
+    # --graphs-backend if omitted.
+    backend: "matplotlib"

@@ -22,10 +22,8 @@ If you are creating a new plugin for an existing engine that comes with SIERRA
    plugins have utility beyond whatever group initially wrote them.
 
 If you are creating a new execution environment plugin for a new engine, then
-you can ignore the above.
-
-Before beginning, see the :ref:`plugins/devguide` for a general overview of
-creating a new plugin.
+you can ignore the above.  Before beginning, see the :ref:`plugins/devguide` for
+a general overview of creating a new plugin.
 
 Create the following filesystem structure in ``$HOME/git/plugins/hpc/HAL``.
 
@@ -42,6 +40,7 @@ These files will be populated as you go through the rest of the tutorial.
           requiring functionality you didn't define, you *might* get an obvious
           error, or you might get a crash later on, depending. Please help
           improve this aspect of SIERRA!
+
 
 Creating The Cmdline Interface
 ==============================
@@ -65,7 +64,7 @@ Creating The Cmdline Interface
           """
 
 
-   Used in stages 1-5.
+   Used in stages 1-4.
 
 Configuring The Experimental Environment
 ========================================
@@ -155,6 +154,7 @@ A Full Skeleton
       .. literalinclude:: plugin.py
          :language: python
 
+
 Finally--Connect to SIERRA!
 ===========================
 
@@ -165,3 +165,11 @@ about it by putting ``$HOME/git/plugins`` on your
 plugin path, how you selected your engine will change. E.g., if you put
 ``$HOME/git/`` on :envvar:`SIERRA_PLUGIN_PATH`, then your new plugin will be
 accessible via ``plugins.engine.HAL`` instead.
+
+Additional Notes
+================
+
+All execution-environment-specific outputs should be logged to
+``<batchroot>/scratch``. This keeps them separate from experimental
+inputs/outputs, and makes the :ref:`usage/run-time-tree` much more modular at
+all levels.

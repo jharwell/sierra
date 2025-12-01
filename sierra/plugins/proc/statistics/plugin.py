@@ -8,7 +8,6 @@ Classes for generating statistics within and across experiments in a batch.
 
 # Core packages
 import multiprocessing as mp
-import typing as tp
 import queue
 import logging
 import pathlib
@@ -351,19 +350,16 @@ def _proc_single_exp(
 ) -> None:
     """Generate statistics from output files for all runs within an experiment.
 
-    .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv
-                   files. Why ? I *think* because of a bug in the logging module
-                   it If you get unlucky enough to spawn the process which
-                   enters the __call__() method in this class while another
-                   logging statement is in progress (and is therefore holding an
-                   internal logging module lock), then the underlying fork()
-                   call will copy the lock in the acquired state. Then, when
-                   this class goes to try to log something, it deadlocks with
-                   it.
+    You *CANNOT* use logging ANYWHERE during processing .csv files.  Why ?  I
+    *think* because of a bug in the logging module it If you get unlucky enough
+    to spawn the process which enters the __call__() method in this class while
+    another logging statement is in progress (and is therefore holding an
+    internal logging module lock), then the underlying fork() call will copy the
+    lock in the acquired state.  Then, when this class goes to try to log
+    something, it deadlocks with it.
 
-                   You also can't just create loggers with unique names, as this
-                   seems to be something like the GIL, but for the logging
-                   module. Sometimes python sucks.
+    You also can't just create loggers with unique names, as this seems to be
+    something like the GIL, but for the logging module.  Sometimes python sucks.
     """
     csv_concat = pd.concat(spec.dfs)
     exp_stat_root = pathset.stat_root / spec.gather.exp_name

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d3" for="node" attr.name="degree" attr.type="long"/>
+<key id="d2" for="graph" attr.name="graph_id" attr.type="long"/>
+<key id="d1" for="graph" attr.name="num_edges" attr.type="long"/>
+<key id="d0" for="graph" attr.name="num_nodes" attr.type="long"/>
+<graph edgedefault="undirected"><data key="d0">14</data>
+<data key="d1">24</data>
+<data key="d2">9</data>
+<node id="0">
+  <data key="d3">4</data>
+</node>
+<node id="1">
+  <data key="d3">3</data>
+</node>
+<node id="2">
+  <data key="d3">1</data>
+</node>
+<node id="3">
+  <data key="d3">2</data>
+</node>
+<node id="4">
+  <data key="d3">4</data>
+</node>
+<node id="5">
+  <data key="d3">4</data>
+</node>
+<node id="6">
+  <data key="d3">6</data>
+</node>
+<node id="7">
+  <data key="d3">3</data>
+</node>
+<node id="8">
+  <data key="d3">4</data>
+</node>
+<node id="9">
+  <data key="d3">4</data>
+</node>
+<node id="10">
+  <data key="d3">5</data>
+</node>
+<node id="11">
+  <data key="d3">3</data>
+</node>
+<node id="12">
+  <data key="d3">4</data>
+</node>
+<node id="13">
+  <data key="d3">1</data>
+</node>
+<edge source="0" target="4"/>
+<edge source="0" target="9"/>
+<edge source="0" target="10"/>
+<edge source="0" target="13"/>
+<edge source="1" target="5"/>
+<edge source="1" target="6"/>
+<edge source="1" target="11"/>
+<edge source="2" target="10"/>
+<edge source="3" target="5"/>
+<edge source="3" target="6"/>
+<edge source="4" target="6"/>
+<edge source="4" target="8"/>
+<edge source="4" target="11"/>
+<edge source="5" target="6"/>
+<edge source="5" target="11"/>
+<edge source="6" target="10"/>
+<edge source="6" target="12"/>
+<edge source="7" target="8"/>
+<edge source="7" target="9"/>
+<edge source="7" target="12"/>
+<edge source="8" target="9"/>
+<edge source="8" target="12"/>
+<edge source="9" target="10"/>
+<edge source="10" target="12"/>
+</graph></graphml>

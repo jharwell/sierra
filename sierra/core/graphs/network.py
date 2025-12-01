@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import holoviews as hv
 import bokeh
+import numpy as np
+import matplotlib as mpl
 
 # Project packages
 from sierra.core import utils, config
@@ -47,6 +49,7 @@ def generate(  # noqa: PLR0913
     node_size_attr: tp.Optional[str] = None,
     edge_color_attr: tp.Optional[str] = None,
     edge_weight_attr: tp.Optional[str] = None,
+    edge_label_attr: tp.Optional[str] = None,
     large_text: bool = False,
 ) -> bool:
     """
@@ -93,7 +96,7 @@ def generate(  # noqa: PLR0913
         node_size_attr = "size"
 
     # Build plot and configure
-    plot = _build_plot(
+    plot, positions = _build_plot(
         G,
         layout,
     )
@@ -106,14 +109,17 @@ def generate(  # noqa: PLR0913
         xaxis=None,
         yaxis=None,
     )
+    if backend == "bokeh" and edge_label_attr is not None:
+        plot.opts(edge_label=edge_label_attr)
+    elif backend == "matplotlib":
 
-    plot.opts(
-        fontsize={
-            "title": text_size["title"],
-            "labels": text_size["xyz_label"],
-            "ticks": text_size["tick_label"],
-        }
-    )
+        plot.opts(
+            fontsize={
+                "title": text_size["title"],
+                "labels": text_size["xyz_label"],
+                "ticks": text_size["tick_label"],
+            }
+        )
 
     plot.opts(title=title)
     try:
@@ -128,7 +134,7 @@ def generate(  # noqa: PLR0913
     return True
 
 
-def _build_plot(G: nx.Graph, layout: str) -> hv.Overlay:
+def _build_plot(G: nx.Graph, layout: str) -> tuple:
     # Create graph
     if layout == "spring":
         nxlayout = nx.spring_layout(G, k=3.0, iterations=100, seed=42, scale=5.0)
@@ -150,7 +156,7 @@ def _build_plot(G: nx.Graph, layout: str) -> hv.Overlay:
     else:
         raise RuntimeError(f"Unknown layout '{layout}'. See docs for valid values.")
 
-    return hv.Graph.from_networkx(G, nxlayout)
+    return hv.Graph.from_networkx(G, nxlayout), nxlayout
 
 
 def _find_root_node(G: nx.Graph):
@@ -205,8 +211,12 @@ def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
 
     elif backend == "bokeh":
         fig = hv.render(plot)
-        fig.width = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
-        fig.height = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
+
+        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
+        # interactive plots fixed size, which makes them unsuitable for
+        # embedding into webpages.
+        fig.sizing_mode = "scale_width"
+
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
         with output_fpath.open("w") as f:
             f.write(html)

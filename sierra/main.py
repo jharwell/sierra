@@ -261,7 +261,9 @@ class SIERRA:
             for line in rcfile.readlines():
                 if self._rcfile_line_proc(line, args):
                     self.logger.trace(
-                        "Applied cmdline arg from rcfile='%s': %s", path, line
+                        "Applied cmdline arg from rcfile='%s': %s",
+                        path,
+                        line.strip("\n"),
                     )
 
         return args
@@ -287,7 +289,10 @@ class SIERRA:
             args.__dict__[key] = True
 
         elif len(components) == 1 and "=" in components[0]:
-            if any(line.split("=")[0] in a for a in sys.argv):
+            # The == here instead of 'in' is important! Otherwise a
+            # --expdef-template the cmdline will cause a --expdef in the
+            # rcfile not to work.
+            if any(line.split("=")[0] == a.split("=")[0] for a in sys.argv if "=" in a):
                 self.logger.trace("Skip =rcfile arg %s: passed on cmdline", line)
                 return False
 

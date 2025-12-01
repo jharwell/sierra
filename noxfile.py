@@ -19,7 +19,7 @@ from tests.smoke_tests.plugin.engine import (
     ros1robot,
     ros1gazebo,
 )
-from tests.smoke_tests.plugin.proc import modelrunner, compression
+from tests.smoke_tests.plugin.proc import modelrunner, compression, pseudostats
 from tests.smoke_tests.plugin.prod import graphs
 
 from tests.smoke_tests.plugin import execenv

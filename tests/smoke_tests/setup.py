@@ -25,7 +25,6 @@ def setup_env(session) -> None:
     argos_install_prefix = pathlib.Path.home() / ".local"
     sierra_sample_root = pathlib.Path.home() / "git/thesis/sierra-sample-project"
 
-    env = {}
     session.env["SIERRA_ROOT"] = pathlib.Path.home() / "test"
 
     # This is for running on github actions in a container.
@@ -146,7 +145,6 @@ def session_setup(func):
             f"--expdef=expdef.yaml "
             f"--yamlsim-path={session.env['SIERRA_SAMPLE_ROOT']}/plugins/yamlsim/yamlsim.py "
             f"--log-level=TRACE "
-            f"--df-verify "
             f"--proc proc.statistics proc.collate "
         )
 

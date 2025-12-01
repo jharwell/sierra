@@ -17,6 +17,10 @@ approach here enables you focus on your goal (what type of graph to generate,
 what you want on it, etc.), rather than the details of *how* that is
 implemented.
 
+.. IMPORTANT:: In order to support out-of-the-box declarative syntax, this
+               plugin requires that all the necessary data to generate a given
+               graph is present in the *same* file.
+
 .. _plugins/prod/graphs/packages:
 
 OS Packages
@@ -64,8 +68,8 @@ interactive graphs for inclusion in webpages easy.
    :align: left
 
    * - Graph Type
-
      - Use Case Characteristics
+     - Data Requirements
 
    * - Linegraph
 
@@ -80,22 +84,35 @@ interactive graphs for inclusion in webpages easy.
        - You need/want statistical distribution information to be shown on the
          graphs to help determine statistical significance.
 
-       - The data you want to graph can be obtained from a single column from a
-         single CSV file.
-
        - The data you want to graph requires comparison between multiple
          experiments in a batch.
+
+     - The data is contained in one or more columns in a single file. Each
+       column contains numerical data forming a time series.
 
    * - Heatmap
 
      -
 
        - The data you want to graph is two dimensional (e.g. a spatial
-         representation of the arena is some way).
+         representation of a 2D space).
 
        - You don't need/aren't interested in statistics (statistically
          significant differences between cells in a heatmap cannot be determined
          just from the graph itself).
+
+     - The data is contained in 3 columns a single file: an X coord column, a Y
+       coord column, and a Z (value) column.
+
+   * - Confusion Matrix
+     - The data you want to graph is a set of predicted vs actual category
+       labels.
+     - The data is contains {truth, predicted} columns.
+
+   * - Network
+     - The data you want to graph is a network (graph) of some kind.
+     - The data is contained in a single GraphML file.
+
 
 This plugin can be selected by adding ``prod.graphs`` to the list passed to
 ``--prod``. When active  will create ``<batchroot>/graphs``, and all
@@ -114,10 +131,12 @@ statistics. E.g.::
 ``inter-exp/`` contains graphs which are generated across experiments in the
 batch from :term:`Batch Summary Data` files.
 
-This plugin has the following stage 3 plugin recommendations:
+This plugin requires one of the following stage 3 plugins to have been run:
 
-- :ref:`plugins/proc/stat` (all graphs). Without this, no statistics can be
-  included on graphs.
+- :ref:`plugins/proc/stat` (linegraphs). Without this, no statistics can be
+  included.
+
+- :ref:`plugins/proc/copy`
 
 Cmdline Interface
 =================
@@ -177,10 +196,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
    .. tab:: Stacked Linegraph
 
       The "stacked" here comes from multiple lines potentially being present
-      (e.g., plotting all columns in a dataframe). This is a time series graph,
-      with the X-axis labels being either dataframe indices or specified in a
-      :term:`Engine` specific way; see :ref:`tutorials/plugin/engine/prod` for
-      specifics of this hook.
+      (e.g., plotting all columns in a dataframe).
 
       .. literalinclude:: stacked_line.yaml
 
@@ -190,7 +206,16 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
    .. tab:: Network
 
+      .. NOTE:: This graph is only available when :ref:`imagizing
+                <plugins/proc/imagize>`. This may change in a future version of
+                SIERRA.
+
       .. literalinclude:: network.yaml
+
+
+   .. tab:: Confusion Matrix
+
+      .. literalinclude:: confusion_matrix.yaml
 
 
 Inter-Experiment Graphs
@@ -221,24 +246,28 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: summary_line.yaml
 
-   .. tab:: heatmap
+   .. tab:: Heatmap
 
       A 2D heatmap of data, drawn from a specified per-experiment time series
       (e.g., if you took the *last* point of some measure of interest, that
       might summarize steady-state behavior).
 
+      The ``xlabel`` and ``ylabel`` fields are drawn from the current bivariate
+      batch criteria, along with the x/y ticks.
+
       .. literalinclude:: heatmap.yaml
+
 
 .. NOTE:: If the batch criteria has dimension > 1, inter-experiment linegraphs
           are disabled/ignored currently. This will hopefully be fixed in a
           future version of SIERRA. (SIERRA#357).
 
 
-Examples
-========
+Linegraph Examples
+==================
 
 For these examples, we will use the following SIERRA cmd and YAML configuration
-from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`
+from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
 
 .. tabs::
 
@@ -247,14 +276,14 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`
       ::
 
          sierra-cli \
-           --sierra-root=/home/jharwell/test \
+           --sierra-root=~/test \
            --controller=foraging.footbot_foraging \
            --engine=engine.argos \
            --project=projects.sample_argos \
            --exp-setup=exp_setup.T1000.K5 \
            --n-runs=4 \
            --physics-n-engines=1 \
-           --expdef-template=/home/jharwell/git/thesis/sierra-sample-project/exp/argos/template.argos \
+           --expdef-template=~/git/sierra-sample-project/exp/argos/template.argos \
            --scenario=LowBlockCount.10x10x2 \
            --with-robot-leds \
            --with-robot-rab \
@@ -267,51 +296,52 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`
 
       .. code-block:: YAML
 
-         - src_stem: collected-data
-           dest_stem: robot-counts
-           cols:
-             - walking
-             - resting
-           title: 'Robot Counts'
-           legend:
-             - 'Walking'
-             - 'Resting'
+         intra-exp:
+           - src_stem: collected-data
+             dest_stem: robot-counts
+             cols:
+               - walking
+               - resting
+             title: 'Robot Counts'
+             legend:
+               - 'Walking'
+               - 'Resting'
 
-           xlabel: 'Time'
-           ylabel: '\# Robots'
-           type: 'stacked_line'
+             xlabel: 'Time'
+             ylabel: '\# Robots'
+             type: 'stacked_line'
 
-         - src_stem: collected-data
-           dest_stem: food-counts
-           cols:
-             - collected_food
-           title: 'Collected Food Counts'
-           legend:
-             - ''
+           - src_stem: collected-data
+             dest_stem: food-counts
+             cols:
+               - collected_food
+             title: 'Collected Food Counts'
+             legend:
+               - ''
 
-           xlabel: 'Time'
-           ylabel: '\# Items'
-           type: 'stacked_line'
+             xlabel: 'Time'
+             ylabel: '\# Items'
+             type: 'stacked_line'
 
-         - src_stem: collected-data
-           dest_stem: swarm-energy
-           cols:
-             - energy
-           title: 'Swarm Energy Over Time'
-           legend:
-             - ''
+           - src_stem: collected-data
+             dest_stem: swarm-energy
+             cols:
+               - energy
+             title: 'Swarm Energy Over Time'
+             legend:
+               - ''
 
-           xlabel: 'Time'
-           type: 'stacked_line'
+             xlabel: 'Time'
+             type: 'stacked_line'
 
 Intra-Experiment
 ----------------
 
 As mentioned earlier, intra-experiment products are time-series based and
-generated from processed data *within* each experiment. Using the
-above. command and the ``.yaml`` configuration capabilities below we can
-generate graphs easily with ``--graphs-backend=matplotlib``, OR interactive
-widgets with ``--graphs-backend=bokeh``:
+generated from processed data *within* each experiment. Using the above command
+and ``.yaml`` configuration capabilities we can generate graphs easily with
+``--graphs-backend=matplotlib``, OR interactive widgets with
+``--graphs-backend=bokeh``:
 
 .. tabs::
 
@@ -328,16 +358,18 @@ widgets with ``--graphs-backend=bokeh``:
 
            -
 
-   .. tab:: bokeh
+ .. tab:: bokeh
 
-      .. raw:: html
-         :file: figures/graphs-intra-none-SLN-food-counts.html
+    .. raw:: html
+       :file: figures/graphs-intra-none-SLN-food-counts.html
 
-      .. raw:: html
-         :file: figures/graphs-intra-none-SLN-robot-counts.html
+    .. raw:: html
+       :file: figures/graphs-intra-none-SLN-robot-counts.html
 
-      .. raw:: html
-         :file: figures/graphs-intra-none-SLN-swarm-energy.html
+    .. raw:: html
+       :file: figures/graphs-intra-none-SLN-swarm-energy.html
+
+
 
 
 If we then want to plot 95% confidence intervals by doing
@@ -349,6 +381,7 @@ If we then want to plot 95% confidence intervals by doing
 
       .. list-table::
          :header-rows: 0
+         :widths: 50 50
 
          * - .. figure:: figures/graphs-intra-conf95-SLN-food-counts.png
 
@@ -360,16 +393,17 @@ If we then want to plot 95% confidence intervals by doing
 
    .. tab:: bokeh
 
-      .. raw:: html
-         :file: figures/graphs-intra-conf95-SLN-food-counts.html
+       .. raw:: html
+          :file: figures/graphs-intra-conf95-SLN-food-counts.html
 
-      .. raw:: html
-         :file: figures/graphs-intra-conf95-SLN-robot-counts.html
+       .. raw:: html
+          :file: figures/graphs-intra-conf95-SLN-robot-counts.html
 
-      .. raw:: html
-         :file: figures/graphs-intra-conf95-SLN-swarm-energy.html
+       .. raw:: html
+          :file: figures/graphs-intra-conf95-SLN-swarm-energy.html
 
-Suppose we want the walking/resting counts to appear on separate graphs. YAML
+Same idea for box-and-whisker plots via ``--dist-stats=bw`` (not shown). Now
+suppose we want the walking/resting counts to appear on separate graphs. YAML
 configuration becomes:
 
 .. code-block:: YAML
@@ -430,3 +464,68 @@ For the summary graph, the X-axis labels are populated based on the :term:`Batch
 Criteria` used. Obviously, this is for a *single* batch experiment; summary
 graphs for multiple batch experiments can be combined in stage 5. See
 :ref:`plugins/compare/graphs` for info.
+
+Confusion Matrix Examples
+=========================
+
+For these examples, we will use the following SIERRA cmd and YAML configuration
+from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
+
+.. tabs::
+
+   .. tab:: SIERRA cmd
+
+      ::
+
+         sierra-cli \
+            --sierra-root=~/test \
+            --controller=default.default \
+            --engine=plugins.yamlsim \
+            --project=projects.sample_yamlsim \
+            --n-runs=4 \
+            --expdef-template=~/git/sierra-sample-project/exp/yamlsim/template.yaml \
+            --scenario=scenario1 \
+            --expdef=expdef.yaml \
+            --yamlsim-path=~/git/sierra-sample-project/plugins/yamlsim/yamlsim.py \
+            --proc proc.statistics proc.collate \
+            --controller=default.default \
+            --batch-criteria noise_floor.1.9.C5 \
+            --pipeline 1 2 3 4
+
+   .. tab:: YAML config
+
+      .. code-block:: YAML
+
+         intra-exp:
+           CM_default:
+             - src_stem: confusion-matrix
+               dest_stem: confusion-matrix
+               type: "confusion_matrix"
+               title: "I'm A Little Confused"
+               truth_col: Actual_Class
+               predicted_col: Predicted_Class
+
+Intra-Experiment
+----------------
+
+In addition to time-series based outputs, projects can also output
+classification data in terms of predicted vs actual labels. These can be
+combined into confusion matrices within each experiment to give a nice summary
+of performance. Using the above command and ``.yaml`` configuration capabilities
+we can generate graphs easily with ``--graphs-backend=matplotlib``, OR
+interactive widgets with ``--graphs-backend=bokeh``:
+
+.. tabs::
+
+   .. tab:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-intra-CM-confusion-matrix.png
+
+
+   .. tab:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-intra-CM-confusion-matrix.html

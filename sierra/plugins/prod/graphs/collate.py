@@ -100,10 +100,16 @@ class GraphCollator:
         # Always do the mean, even if stats are disabled
         stat_config = config.STATS["mean"].exts
 
-        if self.cmdopts["dist_stats"] in ["conf95", "all"]:
+        # We have to test for membership, because it is perfectly valid to run
+        # this plugin with deterministic data which has fake/pseudo stats; i.e.,
+        # the proc.statistics plugin is not active.
+        if "dist_stats" in self.cmdopts and self.cmdopts["dist_stats"] in [
+            "conf95",
+            "all",
+        ]:
             stat_config.update(config.STATS["conf95"].exts)
 
-        if self.cmdopts["dist_stats"] in ["bw", "all"]:
+        if "dist_stats" in self.cmdopts and self.cmdopts["dist_stats"] in ["bw", "all"]:
             stat_config.update(config.STATS["bw"].exts)
 
         stats = [
@@ -170,6 +176,12 @@ class GraphCollator:
                     raise ValueError("'col' key is required")
 
                 datapoint = data_df.loc[data_df.index[idx], target["col"]]
+                if type(target["col"]) is list:
+                    raise RuntimeError(
+                        "Selected column {} must be a scalar, not list".format(
+                            target["col"]
+                        )
+                    )
                 stat.df.loc[exp_dir, stat.summary_col] = datapoint
             elif target["type"] == "stacked_line":
                 if "cols" not in target:

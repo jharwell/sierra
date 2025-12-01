@@ -253,7 +253,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             paths=paths,
             input_stem=opath_leaf,
             output_stem=opath_leaf,
-            stats=cmdopts["dist_stats"],
+            stats=cmdopts.get("dist_stats", "none"),
             medium="storage.csv",
             title=spec["title"],
             xlabel=info.xlabel,

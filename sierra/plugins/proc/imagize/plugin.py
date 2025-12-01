@@ -279,6 +279,7 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
                 node_size_attr=graph.get("node_size_attr", None),
                 edge_color_attr=graph.get("edge_color_attr", None),
                 edge_weight_attr=graph.get("edge_weight_attr", None),
+                edge_label_attr=graph.get("edge_label_attr", None),
                 backend="matplotlib",
             )
 

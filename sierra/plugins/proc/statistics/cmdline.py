@@ -15,9 +15,7 @@ from sierra.core import types
 from sierra.plugins import PluginCmdline
 
 
-def build(
-    parents: list[argparse.ArgumentParser], stages: list[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline supporting the ``proc.statistics`` plugin.
     """

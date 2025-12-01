@@ -30,14 +30,6 @@ def proc_batch_exp(
 ) -> None:
     """Generate graphs from :term:`Collated Output Data` files.
 
-    Performs the following steps:
-
-        #. :func:`~sierra.plugins.prod.graphs.inter.line.generate()` to
-           generate linegraphs (univariate batch criteria only).
-
-        #. :func:`~sierra.plugins.prod.graphs.inter.heatmap.generate()`
-           to generate heatmaps (bivariate batch criteria only).
-
     Which graphs are generated can be controlled by YAML configuration files
     parsed in stage 4.
 

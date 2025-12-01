@@ -82,6 +82,12 @@ This manifests in some important ways:
   to keeping things in memory, which makes running arbitrary sets of pipeline
   stages more difficult).
 
+- The :ref:`usage/run-time-tree` is designed to be human readable/copyable/etc,
+  so that researchers can use any part of SIERRA\'s pipeline as they wish and
+  walk away with the data at any time. That is, the design choice to use a
+  directory structure containing elements which were *not* hashed was deliberate
+  (looking at you conan).
+
 Maximum Reusability
 ===================
 

@@ -40,7 +40,7 @@ def generate(  # noqa: PLR0913
     xticklabels: tp.Optional[list[str]] = None,
     large_text: bool = False,
     logyscale: bool = False,
-    stats: str = "none",
+    stats: tp.Optional[str] = None,
 ) -> bool:
     """Generate a linegraph from a :term:`Batch Summary Data` file.
 
@@ -165,8 +165,12 @@ def generate(  # noqa: PLR0913
         plt.close("all")
     elif backend == "bokeh":
         fig = hv.render(plot)
-        fig.width = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
-        fig.height = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
+
+        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
+        # interactive plots fixed size, which makes them unsuitable for
+        # embedding into webpages.
+        fig.sizing_mode = "scale_width"
+
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
         with utils.utf8open(output_fpath, "w") as f:
             f.write(html)

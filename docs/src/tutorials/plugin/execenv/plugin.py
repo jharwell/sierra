@@ -5,7 +5,7 @@ from sierra.core import types
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator():
+class ExpRunShellCmdsGenerator:
     """
     A class that conforms to
     :class:`sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
@@ -14,7 +14,7 @@ class ExpRunShellCmdsGenerator():
 
 
 @implements.implements(bindings.IRunShellCmdsGenerator)
-class ExpShellCmdsGenerator():
+class ExpShellCmdsGenerator:
     """
     A class that conforms to
     :class:`sierra.core.experiment.bindings.IExpShellCmdsGenerator`.

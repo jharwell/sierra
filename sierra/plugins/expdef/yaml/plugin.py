@@ -115,8 +115,8 @@ class ExpDef:
         self.yaml_spec.default_flow_style = False
 
         args = argparse.Namespace(verbose=False, quiet=True, debug=False)
-        log = yamlpath.wrappers.ConsolePrinter(args)
-        self.processor = yamlpath.Processor(log, self.tree)
+        self.log = yamlpath.wrappers.ConsolePrinter(args)
+        self.processor = yamlpath.Processor(self.log, self.tree)
 
         self.element_adds = definition.ElementAddList()
         self.attr_chgs = definition.AttrChangeSet()
@@ -370,24 +370,28 @@ class ExpDef:
                 "multiple matching elements, use element_remove_all()"
             )
 
-        if len(matches) == 0:
+        if len(matches) == 0 or matches[0].node is None:
             if not noprint:
                 self.logger.warning("Parent element '%s' not found", path)
             return False
 
         parent = matches[0].node
+        if isinstance(parent, dict):
+            if tag not in parent:
+                if not noprint:
+                    self.logger.warning(
+                        "No victim '%s' found in parent '%s'", tag, path
+                    )
+                return False
 
-        if not isinstance(parent, dict):
-            if not noprint:
-                self.logger.warning("Parent '%s' is not a dict", path)
-            return False
+            del parent[tag]
 
-        if tag not in parent:
-            if not noprint:
-                self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
-            return False
+        elif isinstance(parent, list):
+            subprocessor = yamlpath.Processor(self.log, parent)
+            subpath = yamlpath.YAMLPath(tag)
+            victim = next(iter(subprocessor.get_nodes(subpath))).node
+            parent.remove(victim)
 
-        del parent[tag]
         self.logger.trace("Removed element '%s' from '%s'", tag, path)
         return True
 
@@ -425,7 +429,7 @@ class ExpDef:
 
         return True
 
-    def element_add(
+    def element_add(  # noqa: C901
         self,
         path: str,
         tag: str,
@@ -440,7 +444,7 @@ class ExpDef:
         if len(matches) > 1:
             raise ValueError(f"Path '{path}' to parent was not unique!")
 
-        if len(matches) == 0:
+        if len(matches) == 0 or matches[0].node is None:
             if not noprint:
                 self.logger.warning("Parent element '%s' not found", path)
             return False
@@ -467,19 +471,36 @@ class ExpDef:
                 tag,
                 str(attr),
             )
-        # Child element exists, so update it to be a list of sub-elements
-        # rather than a single sub-element.
+        # Child element exists. Two cases: it exists, but has no
+        # children, and it exists and has children. If it has no children, we
+        # user the contents of attr to figure out if the user wants a list of
+        # children, or a dict of children.
         elif tag in parent:
-            # Convert to list if not already
-            if not isinstance(parent[tag], list):
-                parent[tag] = [parent[tag]]
-            parent[tag].append(attr)
-            self.logger.trace(
-                "Append to element list: '%s/%s' = '%s'",
-                path,
-                tag,
-                str(attr),
-            )
+            if parent[tag] is None:
+                parent[tag] = attr
+                self.logger.trace(
+                    "Create sub-element: '%s/%s' = '%s'",
+                    path,
+                    tag,
+                    str(attr),
+                )
+
+            elif isinstance(parent[tag], list):
+                parent[tag].append(attr)
+                self.logger.trace(
+                    "Append to element list: '%s/%s' += '%s'",
+                    path,
+                    tag,
+                    str(attr),
+                )
+            elif isinstance(parent[tag], dict):
+                parent[tag].update(attr)
+                self.logger.trace(
+                    "Merge sub-element map: '%s/%s' U '%s'",
+                    path,
+                    tag,
+                    str(attr),
+                )
         else:
             # Child doesn't exist--just assign to single sub-element.
             parent[tag] = attr

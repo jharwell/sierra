@@ -62,7 +62,7 @@ def proc_batch_exp(
     ):
         _logger.info("Generating intra-experiment graphs...")
         start = time.time()
-        intra.generate.proc_batch_exp(
+        intra.proc_batch_exp(
             main_config,
             cmdopts,
             pathset,
@@ -80,13 +80,12 @@ def proc_batch_exp(
         and graphs_config is not None
         and "inter-exp" in graphs_config
     ):
-        if not cmdopts["skip_collate"]:
-            _logger.info("Collating inter-experiment files...")
-            start = time.time()
-            collate.proc_batch_exp(main_config, cmdopts, pathset, criteria)
-            elapsed = int(time.time() - start)
-            sec = datetime.timedelta(seconds=elapsed)
-            _logger.info("Collating inter-experiment files complete: %s", str(sec))
+        _logger.info("Collating inter-experiment files...")
+        start = time.time()
+        collate.proc_batch_exp(main_config, cmdopts, pathset, criteria)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        _logger.info("Collating inter-experiment files complete: %s", str(sec))
 
         _logger.info("Generating inter-experiment graphs...")
         start = time.time()

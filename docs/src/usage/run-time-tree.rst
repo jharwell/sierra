@@ -19,25 +19,27 @@ Runtime Directory Tree
 Basic Structure
 ---------------
 
+The SIERRA run-time directory tree is intentionally designed to support multiple
+:term:`Projects <Project>`, multiple :term:`Batch Criteria`, multiple
+controllers/scenarios (see :ref:`exp/design` for more info), with multiple
+template input files, without having to worry about collisions. Thus, when
+starting out with SIERRA, the directory structure may seem needlessly
+complex. See also :ref:`philosophy`.
+
 .. list-table::
    :header-rows: 1
 
    * - Directory
-
      - Meaning
-
      - Configurable?
 
    * - SIERRA root
-
      - The root directory that SIERRA outputs EVERYTHING to. SIERRA will *read*
        configuration/inputs from where you tell it to, but all outputs generated
        during at any pipeline stage will appear under here.
-
-     - `--sierra-root`. See :ref:`usage/cli` for more info.
+     - ``--sierra-root``. See :ref:`usage/cli` for more info.
 
    * - Batchroot
-
      - ALL files (generated experiment inputs, experiment outputs, deliverables,
        etc.) are written to this directory, which will be under
        ``--sierra-root``.  Named using a combination of:
@@ -58,26 +60,21 @@ Basic Structure
      - No.
 
    * - Batch input root
-
      - All experiment input files will be generated under this root
        directory.
-
      - No/named ``<batchroot>/exp-inputs``.
 
    * - Batch output root
-
      - All experiment output files in stage 2 will accrue under this root
        directory. Each experiment will get their own subdirectory in this root
        for its outputs to accrue into.
-
      - No/named ``<batchroot>/exp-outputs``.
 
    * - Batch scratch root.
-
-     - All GNU parallel outputs, ``--execenv`` artifacts will appear under
-       here. Each experiment will get their own directory in this root for their
-       own scratch. This root is separate from experiment inputs to make
-       checking for segfaults, tar-ing experiments, etc. easier.
+     - All ``--execenv`` artifacts will appear under here. Each experiment will
+       get their own directory in this root for their own scratch. This root is
+       separate from experiment inputs to make checking for segfaults, tar-ing
+       experiments, etc. easier.
 
      - No/named ``<batchroot>/scratch``.
 

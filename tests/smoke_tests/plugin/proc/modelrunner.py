@@ -58,5 +58,3 @@ def modelrunner_sanity(session):
         for ext in [".legend", ".model"]:
             path = (model_root / "inter-exp/random-noise3-col2").with_suffix(ext)
             assert path.exists(), f"{path} does not exist"
-
-    utils.stage4_univar_check_outputs("jsonsim", batch_root, 5, {})

@@ -920,7 +920,6 @@ class TestPerformance:
         content += f"{indent * 20}value: deep"
 
         fpath = tmp_path / "deep.yaml"
-        print(fpath)
         fpath.write_text(content)
 
         expdef = ExpDef(input_fpath=fpath)

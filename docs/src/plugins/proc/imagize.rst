@@ -43,12 +43,19 @@ turn them into images and render them:
   only render some of it to videos later. See :ref:`plugins/prod/graphs`
   for details.
 
+SIERRA can render data into either:
+
+- :func:`Heatmaps <~sierra.core.graphs.heatmap>`
+- :func:`Network graphs <~sierra.core.graphs.network>`
+
+
 .. IMPORTANT::
 
    Generating the images for each experiment does not happen automatically as
    part of stage 3 because it can take a LONG time and is idempotent. You should
    only pass ``--proc proc.imagize`` the first time you run stage 3 after
    running stage 2.
+
 
 Usage
 =====
@@ -89,3 +96,29 @@ Cmdline Interface
    :filename: ../sierra/plugins/proc/imagize/cmdline.py
    :func: sphinx_cmdline_stage3
    :prog: sierra-cli
+
+Examples
+========
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 50 30
+
+   * - Source file
+
+     - Image
+
+     - Description
+
+   * - :download:`Source <files/imagize-erdos_renyi.graphml>`
+
+     - .. figure:: figures/imagize-erdos_renyi.png
+
+     - Generated GraphML from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`.
+
+   * - :download:`Source <files/imagize-floor-state.mean>`
+
+     - .. figure:: figures/imagize-HM-floor-state.png
+
+     - Captured .csv file representing the state of the arena floor,
+       cell-by-cell, in the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.

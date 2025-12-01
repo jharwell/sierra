@@ -388,4 +388,4 @@ def execenv_prefectserver(session, env):
     utils.stage2_univar_check_outputs("jsonsim", batch_root, 5, 4)
 
     # Kill any prefect processes
-    subprocess.run("killall prefect", shell=True)
+    subprocess.run("killall prefect", check=False, shell=True)

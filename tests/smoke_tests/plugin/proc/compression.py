@@ -33,7 +33,6 @@ def compression_sanity(session):
     ).to_path()
 
     output_root = batch_root / "exp-outputs"
-    scratch_root = batch_root / "scratch"
 
     sierra_cmd = (
         f"{session.env['JSONSIM_BASE_CMD']} "

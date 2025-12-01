@@ -43,7 +43,18 @@ Usage
 
 This plugin can be selected by adding ``proc.collate`` to the list passed to
 ``--proc``.  Configuration for this plugin consists of *what* data to collate,
-and some tweaks for *how* that data should be collated.
+and some tweaks for *how* that data should be collated. When active, it will
+create ``<batchroot>/statistics`` and the following directory structure::
+
+  |-- <batchroot>
+      |-- statistics
+          |-- inter-exp
+
+
+``inter-exp/`` contains :term:`Collated Output Data` files, drawn from specific
+columns in :term:`Raw Output Data` files. This plugin outputs its data as
+described above is so it can be used with :ref:`plugins/prod/graphs`, which
+expects its outputs to be under ``statistics/``.
 
 This plugin does not require additional plugins to be active when it is run.
 

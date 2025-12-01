@@ -68,8 +68,6 @@ def jsonsim_stage3_univar(session):
         scenario=scenario,
     ).to_path()
 
-    stat_root = batch_root / "statistics"
-
     # Build and run command
     sierra_cmd = (
         f"{session.env['JSONSIM_BASE_CMD']} "
@@ -82,82 +80,4 @@ def jsonsim_stage3_univar(session):
     session.run(*sierra_cmd.split(), silent=True)
 
     # Check stage3 generated stuff
-    utils.stage3_univar_check_outputs("jsonsim", batch_root, 5, [".mean"])
-
-
-@nox.session(python=utils.versions, tags=["jsonsim"])
-@setup.session_setup
-@setup.session_teardown
-def jsonsim_stage4_univar(session):
-    """Check that stage 4 outputs what it is supposed to."""
-    bc = ["max_speed.1.9.C5"]
-    template_stem = "template"
-    scenario = "scenario1"
-    leaf = batchroot.ExpRootLeaf(bc=bc, template_stem=template_stem)
-    batch_root = batchroot.ExpRoot(
-        sierra_root=f"{session.env['SIERRA_ROOT']}",
-        project="projects.sample_jsonsim",
-        controller="default.default",
-        leaf=leaf,
-        scenario=scenario,
-    ).to_path()
-
-    graph_root = batch_root / "graphs"
-
-    # Build base command
-    sierra_cmd = (
-        f"{session.env['JSONSIM_BASE_CMD']} "
-        f"--controller=default.default "
-        f"--batch-criteria max_speed.1.9.C5 "
-    )
-
-    # Run pipeline 1-3
-    session.run(*f"{sierra_cmd} --pipeline 1 2 3".split(), silent=True)
-
-    # Run pipeline 4 with matplotlib
-    session.run(
-        *f"{sierra_cmd} --pipeline 4 --graphs-backend=matplotlib".split(), silent=True
-    )
-
-    # Run pipeline 4 with bokeh
-    session.run(
-        *f"{sierra_cmd} --pipeline 4 --graphs-backend=bokeh".split(), silent=True
-    )
-
-    # Check stage4 generated stuff
-    assert (
-        graph_root / "inter-exp"
-    ).is_dir(), f"Directory {graph_root}/inter-exp does not exist"
-
-    # Check collated files
-    interexp_files = [
-        "SLN-random-noise-col1.png",
-        "SLN-random-noise2-col2.png",
-        "SM-random-noise3-col2.png",
-        "SLN-random-noise-col1.html",
-        "SLN-random-noise2-col2.html",
-        "SM-random-noise3-col2.html",
-    ]
-
-    for file_name in interexp_files:
-        file_path = graph_root / "inter-exp" / file_name
-        assert file_path.is_file(), f"File {file_path} does not exist"
-
-    # Check individual experiment files
-    for i in range(5):
-        exp_files = [
-            "SLN-random-noise.png",
-            "SLN-random-noise2.png",
-            "SLN-random-noise3.png",
-            "HM-output2D-1.png",
-            "HM-output2D-2.png",
-            "SLN-random-noise.html",
-            "SLN-random-noise2.html",
-            "SLN-random-noise3.html",
-            "HM-output2D-1.html",
-            "HM-output2D-2.html",
-        ]
-
-        for file_name in exp_files:
-            file_path = graph_root / f"c1-exp{i}" / file_name
-            assert file_path.is_file(), f"File {file_path} does not exist"
+    utils.stage3_univar_check_outputs("jsonsim", batch_root, 5, ["mean"])

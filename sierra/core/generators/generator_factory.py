@@ -45,7 +45,7 @@ class ControllerGenerator:
             with utils.utf8open(controllers_yaml) as f:
                 self.controller_config = yaml.load(f, yaml.FullLoader)
         except FileNotFoundError:
-            self.logger.warning("%s does not exist!", controllers_yaml)
+            self.logger.debug("%s does not exist", controllers_yaml)
             self.controller_config = {}
 
         main_yaml = config_root / config.PROJECT_YAML.main
@@ -55,7 +55,7 @@ class ControllerGenerator:
         # Only check this if controllers.yaml exists. If it doesn't, then user's
         # can use whatever they want as the controller name (i.e., doesn't need
         # to conform to the below schema).
-        if self.controller_config is not None:
+        if self.controller_config:
             n_components = len(controller.split("."))
             if n_components != 2:
                 raise RuntimeError(
@@ -64,8 +64,11 @@ class ControllerGenerator:
                     "must be of the form CATEGORY.TYPE (i.e., 2 "
                     "components separated by a '.')."
                 )
+            self.category, self.name = controller.split(".")
+        else:
+            self.category = None
+            self.name = None
 
-        self.category, self.name = controller.split(".")
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
         self.spec = spec
@@ -148,6 +151,9 @@ class ControllerGenerator:
                 )
 
     def _generate_controller(self, exp_def: definition.BaseExpDef) -> None:
+        if self.category is None:
+            return
+
         if self.category not in self.controller_config:
             self.logger.warning(
                 "Controller category '%s' not found in YAML configuration",

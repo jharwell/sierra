@@ -15,9 +15,7 @@ from sierra.core import types
 from sierra.plugins import PluginCmdline
 
 
-def build(
-    parents: list[argparse.ArgumentParser], stages: list[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline parser supporting the ``prod.graphs`` product plugin.
     """
@@ -108,7 +106,7 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
              """
         + cmdline.graphs_applicable_doc(
             [
-                ":py:func:`Heatmap <sierra.core.graphs.heatmap.generate>`",
+                ":py:func:`Heatmap <sierra.core.graphs.heatmap.generate_numeric>`",
                 ":py:func:`Stacked Line <sierra.core.graphs.stacked_line.generate>`",
             ]
         )
@@ -142,7 +140,7 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
              plotting options clearer.
              """
         + cmdline.graphs_applicable_doc(
-            [":py:func:`Heatmap <sierra.core.graphs.heatmap.generate>`"]
+            [":py:func:`Heatmap <sierra.core.graphs.heatmap.generate_numeric>`"]
         )
         + cmdline.stage_usage_doc([4, 5]),
         action="store_true",
@@ -227,19 +225,28 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
         "--project-no-HM",
         help="""
              Specify that the intra-experiment heatmaps defined in project YAML
-             configuration should not be generated.  Useful if:
-
-                 - You are working on something which results in the generation
-                   of other types of graphs, and the generation of heatmaps only
-                   slows down your development cycle.
-
-                 - You are working on stage5 comparison graphs for bivariate
-                   batch criteria, and re-generating many heatmaps during stage4
-                   is taking too long.
+             configuration should not be generated.  Useful if you are working
+             on something which results in the generation of other types of
+             graphs, and the generation of heatmaps only slows down your
+             development cycle.
 
              Model heatmaps are still generated, if applicable.
 
              .. versionadded:: 1.2.20
+             """,
+        action="store_true",
+    )
+
+    cmdline.stage4.add_argument(
+        "--project-no-CM",
+        help="""
+             Specify that the intra-experiment confusion matrices defined in
+             project YAML configuration should not be generated.  Useful if you
+             are working on something which results in the generation of other
+             types of graphs, and the generation of confusion matrices only
+             slows down your development cycle.
+
+             .. versionadded:: 1.5.6
              """,
         action="store_true",
     )
@@ -262,6 +269,7 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
         "exp_graphs": args.exp_graphs,
         "project_no_LN": args.project_no_LN,
         "project_no_HM": args.project_no_HM,
+        "project_no_CM": args.project_no_CM,
     }
 
 

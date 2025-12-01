@@ -23,6 +23,18 @@ calculated, and the results written out as described in the
 This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
 supports ``pd.DataFrame`` objects.
 
+When run:
+
+- Floating point numeric data is rounded to 8 decimals.
+- Integer data is not rounded.
+- Categorical data is "averaged" via ``mode()``. Thus, only ``df-stats=mean`` is
+  supported for categorical data.
+
+.. NOTE:: This plugin is not intended for use with projects whose output is
+          deterministic. That is, if you always use ``--n-runs=1`` because
+          your code doesn't have any randomness/produces deterministic output,
+          then you should consider using :ref:`plugins/proc/copy` instead of
+          this plugin.
 Usage
 =====
 
@@ -38,15 +50,13 @@ statistics. E.g.::
           |-- c1-exp1
           |-- c1-exp2
           |-- c1-exp3
-          |-- collated
           |-- exec
 
 
-``inter-exp/`` contains :term:`Collated Output Data` files. During stage4,
-SIERRA will draw specific columns from :term:`Raw Output Data` files under and
-collate them under here for later processing. ``exec/`` contains statistics
-about SIERRA runtime. Useful for capturing runtime of specific experiments to
-better plan/schedule time on HPC clusters.
+``exec/`` contains automatically statistics about SIERRA runtime w.r.t. each
+experiment. Useful for capturing runtime of specific experiments to better
+plan/schedule time on HPC clusters. Not currently in dataframe/.csv format,
+though that might change in the future.
 
 Cmdline Interface
 -----------------

@@ -123,7 +123,7 @@ def stage2_univar_check_outputs(
 
 
 def stage3_univar_check_outputs(
-    engine: str, batch_root: pathlib.Path, cardinality: int, stats: tp.List[str]
+    engine: str, batch_root: pathlib.Path, cardinality: int, stats: list[str]
 ):
     """Helper function to check stage 3 outputs."""
     stat_root = batch_root / "statistics"
@@ -133,139 +133,174 @@ def stage3_univar_check_outputs(
         exp_dir = stat_root / f"c1-exp{i}"
         assert exp_dir.is_dir(), f"Directory {exp_dir} does not exist"
 
+    # Don't check for yamlsim, since that is the one which we use for testing
+    # the pseudostats plugin.
+    if engine != "yamlsim":
+        interexp_dir = stat_root / "inter-exp"
+        assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
+
+    if engine == "argos":
+        _stage3_univar_check_outputs_argos(stat_root, cardinality, stats)
+    elif engine == "jsonsim":
+        _stage3_univar_check_outputs_jsonsim(stat_root, cardinality, stats)
+    elif engine == "yamlsim":
+        _stage3_univar_check_outputs_yamlsim(stat_root, cardinality, stats)
+
+
+def _stage3_univar_check_outputs_yamlsim(
+    stat_root: pathlib.Path,
+    cardinality: int,
+    stats: list[str],
+    check_interexp: bool = True,
+):
+    # Check stage3 generated statistics
+    for i in range(0, cardinality):
+        for stat in stats:
+            exp_dir = stat_root / f"c1-exp{i}"
+            intraexp_items = [
+                {"path": exp_dir / f"output1D.{stat}", "lines": 51, "cols": 5},
+                {
+                    "path": exp_dir / f"output1D.{stat}",
+                    "lines": 51,
+                    "cols": 5,
+                },
+                {
+                    "path": exp_dir / f"confusion-matrix.{stat}",
+                    "lines": -1,
+                    "cols": 3,
+                },
+            ]
+
+            for item in intraexp_items:
+                assert item["path"].is_file(), f"File {item['path']} does not exist"
+
+            # Check row and column counts
+            with item["path"].open() as f:
+                reader = csv.reader(f)
+                lines = list(reader)
+                if item["lines"] != -1:
+                    assert (
+                        len(lines) == item["lines"]
+                    ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
+                assert (
+                    len(lines[0]) == item["cols"]
+                ), f"{item['path']} should have {item['cols']} columns, got {len(lines[0])}"
+
+            # Check interexp files
+            if not check_interexp:
+                return
+
+            interexp_items = [
+                {
+                    "path": stat_root / f"inter-exp/c1-exp{i}/output1D-col1.csv",
+                    "lines": 51,
+                    "cols": 4,
+                },
+            ]
+
+            for item in interexp_items:
+                assert item["path"].is_file(), f"File {item['path']} does not exist"
+
+                with item["path"].open() as f:
+                    reader = csv.reader(f)
+                    lines = list(reader)
+                    assert (
+                        len(lines) == item["lines"]
+                    ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
+                    assert (
+                        len(lines[0]) == item["cols"]
+                    ), f"{item['path']} should have {item['cols']} columns, got {len(lines[0])}"
+
+
+def _stage3_univar_check_outputs_jsonsim(
+    stat_root: pathlib.Path, cardinality: int, stats: list[str]
+):
+    # Check stage3 generated statistics
+    for i in range(0, cardinality):
+        for stat in stats:
+            exp_dir = stat_root / f"c1-exp{i}"
+            items = [
+                {"path": exp_dir / f"output1D.{stat}", "lines": 51, "cols": 5},
+                {"path": exp_dir / f"output2D.{stat}", "lines": 49, "cols": 3},
+                {
+                    "path": exp_dir / f"subdir1/subdir2/output1D.{stat}",
+                    "lines": 51,
+                    "cols": 5,
+                },
+                {
+                    "path": exp_dir / f"subdir1/subdir2/output2D.{stat}",
+                    "lines": 49,
+                    "cols": 3,
+                },
+                {"path": exp_dir / f"subdir3/output1D.{stat}", "lines": 51, "cols": 5},
+                {"path": exp_dir / f"subdir3/output2D.{stat}", "lines": 49, "cols": 3},
+            ]
+
+            for item in items:
+                assert item["path"].is_file(), f"File {item['path']} does not exist"
+
+            # Check row and column counts
+            with item["path"].open() as f:
+                reader = csv.reader(f)
+                lines = list(reader)
+                assert (
+                    len(lines) == item["lines"]
+                ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
+                assert (
+                    len(lines[0]) == item["cols"]
+                ), f"{item['path']} should have item['cols'] columns, got {len(lines[0])}"
+
+            # Check interexp files
+            interexp_items = [
+                {
+                    "path": stat_root
+                    / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
+                    "lines": 51,
+                    "cols": 4,
+                },
+                {
+                    "path": stat_root
+                    / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
+                    "lines": 51,
+                    "cols": 4,
+                },
+            ]
+
+            for item in interexp_items:
+                assert item["path"].is_file(), f"File {item['path']} does not exist"
+                # Check interexp file dimensions
+                with item["path"].open() as f:
+                    reader = csv.reader(f)
+                    lines = list(reader)
+                    assert (
+                        len(lines) == item["lines"]
+                    ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
+                assert (
+                    len(lines[0]) == item["cols"]
+                ), f"{item['path']} should have {item['cols']} columns, got {len(lines[0])}"
+
+
+def _stage3_univar_check_outputs_argos(
+    stat_root: pathlib.Path, cardinality: int, stats: list[str]
+):
+    """Helper function to check stage 3 outputs for ARGoS."""
     interexp_dir = stat_root / "inter-exp"
     assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
     # Check stage3 generated statistics
     for stat in stats:
         # Check interexp stats
-        if engine == "argos":
-            interexp_file = interexp_dir / f"c1-exp0/collected-data-collected_food.csv"
-            assert interexp_file.is_file(), f"File {interexp_file} does not exist"
+        interexp_file = interexp_dir / "c1-exp0/collected-data-collected_food.csv"
+        assert interexp_file.is_file(), f"File {interexp_file} does not exist"
 
-            # Check individual experiment stats
-            for i in range(cardinality):
-                stat_file = stat_root / f"c1-exp{i}/collected-data.{stat}"
-                assert stat_file.is_file(), f"File {stat_file} does not exist"
-
-        elif engine == "jsonsim":
-            exp_dir = stat_root / f"c1-exp{i}"
-            file_paths = [
-                exp_dir / "output1D.mean",
-                exp_dir / "output2D.mean",
-                exp_dir / "subdir1/subdir2/output1D.mean",
-                exp_dir / "subdir1/subdir2/output2D.mean",
-                exp_dir / "subdir3/output1D.mean",
-                exp_dir / "subdir3/output2D.mean",
-            ]
-
-            for file_path in file_paths:
-                assert file_path.is_file(), f"File {file_path} does not exist"
-
-            # Check row and column counts
-            # output1D.mean
-            with open(exp_dir / "output1D.mean") as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 51
-                ), f"output1D.mean should have 51 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 5
-                ), f"output1D.mean should have 5 columns, got {len(lines[0])}"
-
-            # output2D.mean
-            with open(exp_dir / "output2D.mean") as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 49
-                ), f"output2D.mean should have 49 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 3
-                ), f"output2D.mean should have 3 columns, got {len(lines[0])}"
-
-            # subdir1/subdir2/output1D.mean
-            with open(exp_dir / "subdir1/subdir2/output1D.mean") as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 51
-                ), f"subdir1/subdir2/output1D.mean should have 51 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 5
-                ), f"subdir1/subdir2/output1D.mean should have 5 columns, got {len(lines[0])}"
-
-            # subdir1/subdir2/output2D.mean
-            with open(exp_dir / "subdir1/subdir2/output2D.mean") as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 49
-                ), f"subdir1/subdir2/output2D.mean should have 49 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 3
-                ), f"subdir1/subdir2/output2D.mean should have 3 columns, got {len(lines[0])}"
-
-            # subdir3/output1D.mean
-            with open(exp_dir / "subdir3/output1D.mean") as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 51
-                ), f"subdir3/output1D.mean should have 51 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 5
-                ), f"subdir3/output1D.mean should have 5 columns, got {len(lines[0])}"
-
-            # subdir3/output2D.mean
-            with open(exp_dir / "subdir3/output2D.mean") as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 49
-                ), f"subdir3/output2D.mean should have 49 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 3
-                ), f"subdir3/output2D.mean should have 3 columns, got {len(lines[0])}"
-
-            # Check interexp files
-            interexp_files = [
-                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
-                stat_root / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
-            ]
-
-            for file_path in interexp_files:
-                assert file_path.is_file(), f"File {file_path} does not exist"
-
-            # Check interexp file dimensions
-            with open(
-                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv"
-            ) as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 51
-                ), f"inter-exp/output1D-col1.csv should have 51 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 4
-                ), f"inter-exp/output1D-col1.csv should have 4 columns, got {len(lines[0])}"
-
-            with open(
-                stat_root / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv"
-            ) as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == 51
-                ), f"inter-exp/output1D-col2.csv should have 51 rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == 4
-                ), f"inter-exp/output1D-col2.csv should have 4 columns, got {len(lines[0])}"
+        # Check individual experiment stats
+        for i in range(cardinality):
+            stat_file = stat_root / f"c1-exp{i}/collected-data.{stat}"
+            assert stat_file.is_file(), f"File {stat_file} does not exist"
 
 
 def stage4_univar_check_outputs(
-    engine: str, batch_root: pathlib.Path, cardinality: int, stats: tp.List[str]
+    engine: str, batch_root: pathlib.Path, cardinality: int, stats: list[str]
 ):
     """Helper function to check stage 4 outputs."""
     graph_root = batch_root / "graphs"
@@ -279,75 +314,127 @@ def stage4_univar_check_outputs(
     interexp_dir = graph_root / "inter-exp"
     assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
+    if engine == "argos":
+        _stage4_univar_check_outputs_argos(graph_root, stat_root, cardinality, stats)
+    elif engine == "jsonsim":
+        _stage4_univar_check_outputs_jsonsim(graph_root, stat_root, cardinality, stats)
+    elif engine == "yamlsim":
+        _stage4_univar_check_outputs_yamlsim(graph_root, stat_root, cardinality, stats)
+    else:
+        raise RuntimeError(f"Engine {engine} checks not implemented")
+
+
+def _stage4_univar_check_outputs_argos(
+    graph_root: pathlib.Path,
+    stat_root: pathlib.Path,
+    cardinality: int,
+    stats: list[str],
+):
+    """Helper function to check stage 4 outputs for ARGoS."""
     # Check stage4 generated .csvs
     for stat in stats:
-        if engine == "argos":
-            assert (
-                stat_root / f"inter-exp/food-counts.{stat}"
-            ).is_file(), f"File food-counts.{stat} does not exist"
-            assert (
-                stat_root / f"inter-exp/robot-counts-resting.{stat}"
-            ).is_file(), f"File robot-counts-resting.{stat} does not exist"
-            assert (
-                stat_root / f"inter-exp/robot-counts-walking.{stat}"
-            ).is_file(), f"File robot-counts-walking.{stat} does not exist"
-            assert (
-                stat_root / f"inter-exp/swarm-energy.{stat}"
-            ).is_file(), f"File swarm-energy.{stat} does not exist"
+        interexp_csvs = [
+            f"food-counts.{stat}",
+            f"robot-counts-resting.{stat}",
+            f"robot-counts-walking.{stat}",
+            f"swarm-energy.{stat}",
+        ]
+        for f in interexp_csvs:
+            path = stat_root / "inter-exp" / f
+            assert path.is_file(), f"File {f} does not exist"
 
-    # Check stage4 generated graphs
+    # Check intra-exp graphs
     for i in range(cardinality):
-        if engine == "argos":
-            assert (
-                graph_root / f"c1-exp{i}/SLN-food-counts.png"
-            ).is_file(), f"File c1-exp{i}/SLN-food-counts.png does not exist"
-            assert (
-                graph_root / f"c1-exp{i}/SLN-robot-counts.png"
-            ).is_file(), f"File c1-exp{i}/SLN-robot-counts.png does not exist"
-            assert (
-                graph_root / f"c1-exp{i}/SLN-swarm-energy.png"
-            ).is_file(), f"File c1-exp{i}/SLN-swarm-energy.png does not exist"
-
-        if engine == "jsonsim":
-            for i in range(cardinality):
-                exp_files = [
-                    "SLN-random-noise.png",
-                    "SLN-random-noise2.png",
-                    "SLN-random-noise3.png",
-                    "HM-output2D-1.png",
-                    "HM-output2D-2.png",
-                ]
-
-                for file_name in exp_files:
-                    file_path = graph_root / f"c1-exp{i}" / file_name
-                    assert file_path.is_file(), f"File {file_path} does not exist"
-
-    # Check interexp graphs
-    if engine == "argos":
-        assert (
-            graph_root / "inter-exp/SLN-food-counts.png"
-        ).is_file(), "File inter-exp/SLN-food-counts.png does not exist"
-        assert (
-            graph_root / "inter-exp/SLN-robot-counts-walking.png"
-        ).is_file(), "File inter-exp/SLN-robot-counts-walking.png does not exist"
-        assert (
-            graph_root / "inter-exp/SLN-robot-counts-resting.png"
-        ).is_file(), "File inter-exp/SLN-robot-counts-resting.png does not exist"
-        assert (
-            graph_root / "inter-exp/SLN-swarm-energy.png"
-        ).is_file(), "File inter-exp/SLN-swarm-energy.png does not exist"
-
-    elif engine == "jsonsim":
-        # Check interexp files
-        interexp_files = [
-            "SLN-random-noise-col1.png",
-            "SLN-random-noise2-col2.png",
-            "SM-random-noise3-col2.png",
+        intraexp_graphs = [
+            graph_root / f"c1-exp{i}/SLN-food-counts.png",
+            graph_root / f"c1-exp{i}/SLN-robot-counts.png",
+            graph_root / f"c1-exp{i}/SLN-swarm-energy.png",
         ]
 
-        for file_name in interexp_files:
-            file_path = graph_root / "inter-exp" / file_name
-            assert file_path.is_file(), f"File {file_path} does not exist"
+        for f in intraexp_graphs:
+            assert f.is_file(), f"File {f} does not exist"
+
+    interexp_graphs = [
+        graph_root / "inter-exp/SLN-food-counts.png",
+        graph_root / "inter-exp/SLN-robot-counts-walking.png",
+        graph_root / "inter-exp/SLN-robot-counts-resting.png",
+        graph_root / "inter-exp/SLN-swarm-energy.png",
+    ]
+    for f in interexp_graphs:
+        assert f.is_file(), f"File {f} does not exist"
+
+
+def _stage4_univar_check_outputs_jsonsim(
+    graph_root: pathlib.Path,
+    stat_root: pathlib.Path,
+    cardinality: int,
+    stats: list[str],
+):
+    """Helper function to check stage 4 outputs for JSONSIM."""
+    # Check stage4 generated .csvs
+    for stat in stats:
+        interexp_csvs = [
+            f"random-noise2-col2.{stat}",
+            f"random-noise3-col2.{stat}",
+            f"random-noise-col1.{stat}",
+        ]
+        for f in interexp_csvs:
+            path = stat_root / "inter-exp" / f
+            assert path.is_file(), f"File {f} does not exist"
+
+    # Check intra-exp graphs
+    for i in range(cardinality):
+        intraexp_graphs = [
+            graph_root / f"c1-exp{i}/HM-output2D-1.png",
+            graph_root / f"c1-exp{i}/HM-output2D-2.png",
+            graph_root / f"c1-exp{i}/SLN-random-noise.png",
+            graph_root / f"c1-exp{i}/SLN-random-noise2.png",
+            graph_root / f"c1-exp{i}/SLN-random-noise3.png",
+        ]
+
+        for f in intraexp_graphs:
+            assert f.is_file(), f"File {f} does not exist"
+
+    interexp_graphs = [
+        graph_root / "inter-exp/SLN-random-noise2-col2.png",
+        graph_root / "inter-exp/SLN-random-noise-col1.png",
+        graph_root / "inter-exp/SM-random-noise3-col2.png",
+    ]
+    for f in interexp_graphs:
+        assert f.is_file(), f"File {f} does not exist"
+
+
+def _stage4_univar_check_outputs_yamlsim(
+    graph_root: pathlib.Path,
+    stat_root: pathlib.Path,
+    cardinality: int,
+    stats: list[str],
+):
+    """Helper function to check stage 4 outputs for YAMLSIM."""
+    # Check stage4 generated .csvs
+    for stat in stats:
+        interexp_csvs = [
+            f"random-noise-col1.{stat}",
+        ]
+        for f in interexp_csvs:
+            path = stat_root / "inter-exp" / f
+            assert path.is_file(), f"File {f} does not exist"
+
+    # Check intra-exp graphs
+    for i in range(cardinality):
+        intraexp_graphs = [
+            graph_root / f"c1-exp{i}/CM-confusion-matrix.png",
+            graph_root / f"c1-exp{i}/SLN-random-noise.png",
+        ]
+
+        for f in intraexp_graphs:
+            assert f.is_file(), f"File {f} does not exist"
+
+    interexp_graphs = [
+        graph_root / "inter-exp/SLN-random-noise-col1.png",
+    ]
+    for f in interexp_graphs:
+        assert f.is_file(), f"File {f} does not exist"
 
 
 def stage1_bivar_check_outputs(
@@ -378,13 +465,13 @@ def stage1_bivar_check_outputs(
                 # Check for required files
                 assert os.path.isfile(
                     f"{input_root}/c1-exp{i}+c2-exp{j}/commands.txt"
-                ), f"commands.txt not found"
+                ), "commands.txt not found"
                 assert os.path.isfile(
                     f"{input_root}/c1-exp{i}+c2-exp{j}/exp_def.pkl"
-                ), f"exp_def.pkl not found"
+                ), "exp_def.pkl not found"
                 assert os.path.isfile(
                     f"{input_root}/c1-exp{i}+c2-exp{j}/seeds.pkl"
-                ), f"seeds.pkl not found"
+                ), "seeds.pkl not found"
 
                 # Check for run files
                 for run in range(n_runs):
@@ -401,7 +488,7 @@ def stage3_bivar_check_outputs(
     batch_root: pathlib.Path,
     cardinality0: int,
     cardinality1: int,
-    to_check: tp.List[str],
+    to_check: list[str],
 ):
     """Check stage 3 bivariate outputs."""
     stat_root = batch_root / "statistics"
@@ -436,7 +523,7 @@ def stage4_bivar_check_outputs(
     batch_root: str,
     cardinality0: int,
     cardinality1: int,
-    to_check: tp.List[str],
+    to_check: list[str],
 ):
     """Check stage 4 bivariate outputs."""
     graph_root = batch_root / "graphs"

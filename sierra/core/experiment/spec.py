@@ -33,7 +33,12 @@ class SimpleBatchScaffoldSpec:
         self.mods = []
         self.is_compound = False
 
-        assert len(self.rms) == 0, "Batch criteria cannot remove expdef elements"
+        if (
+            (self.chgs and self.adds)
+            or (self.chgs and self.rms)
+            or (self.adds and self.rms)
+        ):
+            raise RuntimeError("This spec can't be used with compound scaffolding")
 
         if self.chgs:
             self.mods = self.chgs
@@ -59,12 +64,28 @@ class SimpleBatchScaffoldSpec:
                     self.criteria.name,
                     len(self.adds[0]),
                 )
-        else:
-            raise RuntimeError("This spec can't be used with compound scaffolding")
+        elif self.rms:
+            self.mods = self.rms
+            self.n_exps = len(self.rms)
+            if log:
+                self.logger.info(
+                    (
+                        "Executing scaffold: cli=%s: Remove %s expdef "
+                        "elements per experiment"
+                    ),
+                    self.criteria.name,
+                    len(self.rms[0]),
+                )
 
     def __iter__(
         self,
-    ) -> tp.Iterator[tp.Union[definition.AttrChangeSet, definition.ElementAddList]]:
+    ) -> tp.Iterator[
+        tp.Union[
+            definition.AttrChangeSet,
+            definition.ElementAddList,
+            definition.ElementRmList,
+        ]
+    ]:
         return iter(self.mods)
 
     def __len__(self) -> int:
@@ -82,34 +103,78 @@ class CompoundBatchScaffoldSpec:
         self.n_exps = 0
 
         self.is_compound = True
-        self.mods = []
-
-        assert len(self.rms) == 0, "Batch criteria cannot remove expdef elements"
+        self.mods = (
+            []
+        )  # type: tp.List[tp.Union[tuple[definition.ElementAddList,definition.AttrChangeSet],tuple[definition.ElementRmList,definition.AttrChangeSet],tuple[definition.ElementRmList,definition.ElementAddList]]]
 
         if self.chgs and self.adds:
-            for addlist in self.adds:
-                for chgset in self.chgs:
-                    t = addlist, chgset
-                    self.mods.append(t)
-                    self.n_exps += 1
-
-            if log:
-                self.logger.info(
-                    (
-                        "Executing scaffold: cli=%s: Add  "
-                        "%s expdef elements AND modify %s expdef  "
-                        "elements per experiment"
-                    ),
-                    self.criteria.name,
-                    len(self.adds[0]),
-                    len(self.chgs[0]),
-                )
-
+            self._handle_case1(log)
+        elif self.chgs and self.rms:
+            self._handle_case2(log)
+        elif self.adds and self.rms:
+            self._handle_case3(log)
         else:
             raise RuntimeError("This spec can only be used with compound scaffolding")
 
     def __len__(self) -> int:
         return self.n_exps
+
+    def _handle_case1(self, log: bool) -> None:
+        for addlist in self.adds:
+            for chgset in self.chgs:
+                t = addlist, chgset
+                self.mods.append(t)
+                self.n_exps += 1
+
+        if log:
+            self.logger.info(
+                (
+                    "Executing scaffold: cli=%s: Add  "
+                    "%s expdef elements AND modify %s expdef  "
+                    "elements per experiment"
+                ),
+                self.criteria.name,
+                len(self.adds[0]),
+                len(self.chgs[0]),
+            )
+
+    def _handle_case2(self, log: bool) -> None:
+        for rmlist in self.rms:
+            for chgset in self.chgs:
+                t = rmlist, chgset
+                self.mods.append(t)
+                self.n_exps += 1
+
+        if log:
+            self.logger.info(
+                (
+                    "Executing scaffold: cli=%s: Remove  "
+                    "%s expdef elements AND modify %s expdef  "
+                    "elements per experiment"
+                ),
+                self.criteria.name,
+                len(self.rms[0]),
+                len(self.chgs[0]),
+            )
+
+    def _handle_case3(self, log: bool) -> None:
+        for rmlist in self.rms:
+            for addlist in self.adds:
+                t = rmlist, addlist
+                self.mods.append(t)
+                self.n_exps += 1
+
+        if log:
+            self.logger.info(
+                (
+                    "Executing scaffold: cli=%s: Remove  "
+                    "%s expdef elements AND add %s expdef  "
+                    "elements per experiment"
+                ),
+                self.criteria.name,
+                len(self.rms[0]),
+                len(self.adds[0]),
+            )
 
 
 class ExperimentSpec:
@@ -118,16 +183,16 @@ class ExperimentSpec:
 
     In the interest of DRY, this class collects the following common components:
 
-    - Experiment # within the batch
+    - Experiment # within the batch.
 
     - Root input directory for all :term:`Experimental Run` input files
-      comprising the :term:`Experiment`
+      comprising the :term:`Experiment`.
 
-    - Pickle file path for the experiment
+    - Pickle file path for the experiment.
 
-    - Arena dimensions for the experiment
+    - Arena dimensions for the experiment (if any).
 
-    - Full scenario name
+    - Full scenario name.
     """
 
     def __init__(
@@ -155,17 +220,20 @@ class ExperimentSpec:
                 "Read scenario dimensions '%s' from batch criteria",
                 self.arena_dim,
             )
-        else:  # Default case: scenario dimensions read from cmdline
+        else:  # Maybe read scenario dimensions read from cmdline
             module = pm.module_load_tiered(
                 project=cmdopts["project"], path="generators.scenario"
             )
             kw = module.to_dict(cmdopts["scenario"])
-            self.arena_dim = ArenaExtent(
-                Vector3D(kw["arena_x"], kw["arena_y"], kw["arena_z"])
-            )
-            self.logger.debug(
-                "Read scenario dimensions %s from cmdline spec", self.arena_dim
-            )
+            if all(k in kw for k in ["arena_x", "arena_y", "arena_z"]):
+                self.arena_dim = ArenaExtent(
+                    Vector3D(kw["arena_x"], kw["arena_y"], kw["arena_z"])
+                )
+                self.logger.debug(
+                    "Read scenario dimensions %s from cmdline spec", self.arena_dim
+                )
+            else:
+                self.arena_dim = None
 
             self.scenario_name = cmdopts["scenario"]
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from docutils import nodes
 
@@ -10,7 +9,7 @@ def xref(typ, rawtext, text, lineno, inliner, options={}, content=[]):
     title = target = text
     titleistarget = True
     # look if explicit title and target are given with `foo <bar>` syntax
-    brace = text.find('<')
+    brace = text.find("<")
     if brace != -1:
         titleistarget = False
         m = caption_ref_re.match(text)
@@ -39,6 +38,6 @@ def get_refs(app):
 
 def setup(app):
 
-    app.add_config_value('xref_links', {}, True)
-    app.add_role('xref', xref)
+    app.add_config_value("xref_links", {}, True)
+    app.add_role("xref", xref)
     app.connect("builder-inited", get_refs)

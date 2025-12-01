@@ -98,6 +98,7 @@ docs = [
     "sphinx-rtd-theme",
     "sphinx-argparse",
     "sphinx-tabs",
+    "sphinx-copybutton",
     "sphinxcontrib-napoleon",
     "sphinxcontrib-video",
     "psutil",

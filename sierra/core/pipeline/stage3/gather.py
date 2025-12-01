@@ -176,14 +176,14 @@ class BaseGatherer:
                 )
                 if nonumeric := df.select_dtypes(exclude="number").columns.tolist():
                     self.logger.warning(
-                        "Non-numeric columns are not supported: dropping %s from %s",
+                        "Non-numeric columns only support mean aggregation via mode(): %s from %s",
                         nonumeric,
                         path.relative_to(exp_output_root),
                     )
-                    df = df.drop(columns=nonumeric)
 
-                # Indices here must match so that the appropriate data from each run
-                # are matched with the name of the run in collated performance data.
+                # Indices here must match so that the appropriate data from each
+                # run are matched with the name of the run in collated
+                # performance data.
                 to_process.exp_run_names.append(run.name)
                 to_process.dfs.append(df)
 
@@ -200,7 +200,7 @@ class BaseGatherer:
                 return
 
             self.logger.info(
-                "Waiting for memory: avail=%s,min=%s", free_percent, free_limit
+                "Waiting for memory: avail=%s%%,min=%s%%", free_percent, free_limit
             )
             time.sleep(1)
 

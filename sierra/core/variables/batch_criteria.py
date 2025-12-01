@@ -205,6 +205,8 @@ class BaseBatchCriteria:
                         mod.path is not None
                     ), "Cannot add root {mode.tag} during scaffolding"
                     expi_def.element_add(mod.path, mod.tag, mod.attr, mod.allow_dup)
+                elif isinstance(mod, definition.ElementRm):
+                    expi_def.element_remove(mod.path, mod.tag)
         else:
             self.logger.debug(
                 ("Applying %s expdef modifications from '%s' for exp%s in %s"),
@@ -499,12 +501,12 @@ class XVarBatchCriteria(BaseBatchCriteria):
 
             info.xticks = info1.xticks
             info.xlabel = info1.xlabel
-            info.xticklabels = [str(x) for x in info.xticks]
+            info.xticklabels = info1.xticklabels
 
         elif self.cardinality() == 2:
             c1_xnames = [f"c1-exp{i}" for i in range(0, self.criterias[0].n_exp())]
             xnames = [d for d in self.gen_exp_names() if any(x in d for x in c1_xnames)]
-            c2_ynames = [f"c1-exp{i}" for i in range(0, self.criterias[1].n_exp())]
+            c2_ynames = [f"c2-exp{i}" for i in range(0, self.criterias[1].n_exp())]
             ynames = [d for d in self.gen_exp_names() if any(y in d for y in c2_ynames)]
 
             info1 = self.criterias[0].graph_info(
@@ -514,11 +516,11 @@ class XVarBatchCriteria(BaseBatchCriteria):
                 cmdopts, exp_names=ynames, batch_output_root=batch_output_root
             )
             info.xticks = info1.xticks
-            info.xticklabels = [str(x) for x in info.xticks]
+            info.xticklabels = info1.xticklabels
             info.yticks = info2.xticks
             info.xlabel = info1.xlabel
             info.ylabel = info2.xlabel
-            info.yticklabels = [str(x) for x in info.yticks]
+            info.yticklabels = info2.xticklabels
 
         return info
 

@@ -197,6 +197,13 @@ your code does not meet these assumptions, then you will need to make some
    requirement is easy to meet. For real robot execution environments (see
    :ref:`plugins/execenv/realrobot`), this can be more difficult to meet.
 
+
+   .. IMPORTANT:: SIERRA does *not* create the output root for each experimental
+                  run for you. This is to support workflows where output data is
+                  stored in a database. Plus, most programming languages have a
+                  "create this directory and all its parents as needed" call
+                  which is trivial to add if needed.
+
 #. All experimental run outputs are in a format that SIERRA understands within
    the output directory for the run. See :ref:`plugins/storage` for which output
    formats are currently understood by SIERRA. If your output format is not in

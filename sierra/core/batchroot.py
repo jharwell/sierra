@@ -101,6 +101,11 @@ class ExpRoot:
         self.controller = controller
         self.scenario = scenario
 
+        if self.controller is None:
+            raise RuntimeError("--controller must be specified")
+        if self.scenario is None:
+            raise RuntimeError("--scenario must be specified")
+
         # Don't reslove() the path--that makes symlinked dirs under $HOME throw
         # errors which are fatal from pathlib's POV, but actually harmless.
         self.sierra_root = pathlib.Path(sierra_root)

@@ -16,6 +16,7 @@ plugins which come with SIERRA are below.
    statistics.rst
    collate.rst
    imagize.rst
+   copydata.rst
    compress.rst
    decompress.rst
    modelrunner.rst

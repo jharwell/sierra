@@ -20,6 +20,8 @@ def conf95(
 ) -> dict[str, pd.DataFrame]:
     """Generate stddev statistics plotting for 95% confidence intervals.
 
+    Does not support non-numeric data.
+
     Applicable to:
 
     - :func:`~sierra.core.graphs.stacked_line`
@@ -33,7 +35,21 @@ def mean(
     groupby: pd.core.groupby.generic.DataFrameGroupBy,
 ) -> dict[str, pd.DataFrame]:
     """
-    Generate mean statistics only. Applicable to line graphs and heatmaps.
+    Generate mean statistics only.
+
+    Applicable to:
+
+        - :func:`~sierra.core.graphs.summary_line`
+
+        - :func:`~sierra.core.graphs.stacked_line`
+
+        - :func:`~sierra.core.graphs.heatmap`
+
+        - :func:`~sierra.core.graphs.confusion_matrix`
+
+    .. versionchanged:: 1.5.6
+
+       Now supports non-numeric columns via ``mode()``.
     """
     return _mean_kernel(groupby, groupby=True)
 
@@ -41,6 +57,8 @@ def mean(
 def bw(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> dict[str, pd.DataFrame]:
     """
     Generate statistics for plotting box and whisker plots around data points.
+
+    Does not support non-numeric data.
 
     Applicable to:
 
@@ -59,8 +77,8 @@ def _conf95_kernel(df_like, groupby: bool) -> dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.STATS["mean"].exts["mean"]: _fillna(df_like.mean().round(8)),
-        config.STATS["conf95"].exts["stddev"]: _fillna(df_like.std().round(8)),
+        config.STATS["mean"].exts["mean"]: _fillna(_df_round(df_like.mean())),
+        config.STATS["conf95"].exts["stddev"]: _fillna(_df_round(df_like.std())),
     }
 
 
@@ -73,7 +91,9 @@ def _mean_kernel(df_like, groupby: bool) -> dict[str, pd.DataFrame]:
     if not groupby:
         df_like = df_like.iloc[0, :]
 
-    return {config.STATS["mean"].exts["mean"]: _fillna(df_like.mean().round(8))}
+    return {
+        config.STATS["mean"].exts["mean"]: _fillna(df_like.apply(_smart_aggregate_mean))
+    }
 
 
 def _bw_kernel(df_like, groupby: bool, n_runs: int) -> dict[str, pd.DataFrame]:
@@ -85,10 +105,10 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> dict[str, pd.DataFrame]:
     if not groupby:
         df_like = df_like.iloc[0, :]
 
-    csv_mean = _fillna(round(df_like.mean(), 8))
-    csv_median = _fillna(round(df_like.median(), 8))
-    csv_q1 = _fillna(round(df_like.quantile(0.25), 8))
-    csv_q3 = _fillna(round(df_like.quantile(0.75), 8))
+    csv_mean = _fillna(_df_round(df_like.mean()))
+    csv_median = _fillna(_df_round(df_like.median()))
+    csv_q1 = _fillna(_df_round(df_like.quantile(0.25)))
+    csv_q3 = _fillna(_df_round(df_like.quantile(0.75)))
 
     iqr = abs(csv_q3 - csv_q1)  # Inter-quartile range
     csv_whislo = csv_q1 - 1.50 * iqr
@@ -111,6 +131,31 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> dict[str, pd.DataFrame]:
         config.STATS["bw"].exts["whislo"]: csv_whislo,
         config.STATS["bw"].exts["whishi"]: csv_whishi,
     }
+
+
+def _df_round(df_like):
+    df_like.map(lambda x: round(x, 8) if isinstance(x, float) else x)
+    return df_like
+
+
+def _series_round(series: pd.Series) -> pd.Series:
+    series.apply(lambda x: round(x, 8) if isinstance(x, float) else x)
+    return series
+
+
+def _smart_aggregate_mean(group) -> pd.Series:
+    """
+    Handle numeric and non-numeric data when aggregating for ``mean()``.
+    """
+    result = {}
+    for col in group.columns:
+        if pd.api.types.is_numeric_dtype(group[col]):
+            result[col] = group[col].mean()
+        else:
+            # Use mode for non-numeric, fallback to first value if mode is empty
+            mode_result = group[col].mode()
+            result[col] = mode_result[0] if len(mode_result) > 0 else group[col].iloc[0]
+    return pd.Series(result)
 
 
 def _fillna(

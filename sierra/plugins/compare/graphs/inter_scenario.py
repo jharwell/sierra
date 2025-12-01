@@ -202,7 +202,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         graphs.summary_line(
             paths=paths,
             input_stem=opath_leaf,
-            stats=cmdopts["dist_stats"],
+            stats=cmdopts.get("dist_stats", "none"),
             medium=cmdopts["storage"],
             output_stem=opath_leaf,
             title=spec["title"],

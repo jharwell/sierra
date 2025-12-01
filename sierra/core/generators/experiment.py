@@ -194,7 +194,6 @@ class BatchExpCreator:
         # Run batch experiment generator (must be after scaffolding so the
         # per-experiment template files are in place).
         defs = generator.generate_defs()
-
         assert len(defs) > 0, "No expdef modifications generated?"
 
         self.logger.info(
@@ -216,7 +215,7 @@ class BatchExpCreator:
 
         for i, defi in enumerate(defs):
             self.logger.trace(
-                "Applying %s/%s generated scenario+controller changes/mods to exp%s",
+                "Applying %s+%s generated scenario+controller changes/mods to exp%s",
                 defi.n_mods()[0],
                 defi.n_mods()[1],
                 i,

@@ -28,17 +28,17 @@ def for_all_exp(spec: spec.ExperimentSpec,
     """
     # Only needed if your engine supports multiple input formats. Otherwise
     # just hardcode the string identifying the root element.
-    fmt = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+    fmt = pm.pipeline.get_plugin_module(cmdopts["expdef"])
 
     # Assuming engine takes a single file as input
-    wr_config = definition.WriterConfig([{'src_parent': None,
-                                          'src_tag': fmt.root_querypath(),
-                                          'opath_leaf': '.myextension',
-                                          'new_children': None,
-                                          'new_children_parent': None,
-                                          'rename_to': None
+    wr_config = definition.WriterConfig([{"src_parent": None,
+                                          "src_tag": fmt.root_querypath(),
+                                          "opath_leaf": ".myextension",
+                                          "new_children": None,
+                                          "new_children_parent": None,
+                                          "rename_to": None
                                           }])
-    module = pm.pipeline.get_plugin_module(cmdopts['expdef'])
+    module = pm.pipeline.get_plugin_module(cmdopts["expdef"])
 
     expdef = module.ExpDef(input_fpath=expdef_template_fpath,
                            write_config=wr_config)

@@ -38,7 +38,7 @@ state "Active\nComputing\nresources" as resources #Cornflowerblue
 state "1. Generate\nExperimental\nInputs" as stage1  {
    state "Experiment\nInput\nTemplate" as input1 #lightcyan
    state "Experiment\nInput\nFiles" as output1 #skyblue {
-      state " .xml,.json,\n.yaml,.launch,...  " as plugins1 #lightcoral
+                state " XML,JSON,\nYAML,...  " as plugins1 #lightcoral
       }
    state " " as plugin1 #white ##white {
       state "Engine" as engine1 #lightcoral
@@ -54,10 +54,10 @@ state "1. Generate\nExperimental\nInputs" as stage1  {
 ' Stage 2
 state "2. Execute\nExperiments\n" as stage2  {
    state "Experiment\nInput Files" as input2 #lightcyan {
-   state "  .xml,.json,\n.yaml,.launch,...  " as plugins_in2 #lightcoral
+      state " XML,JSON,\nYAML,...  " as plugins_in2 #lightcoral
    }
    state "Experimental\nOutputs" as output2 #skyblue {
-      state ".csv,.arrow,..." as plugins_out2 #lightcoral
+      state "CSV,Arrow,\nGraphML,..." as plugins_out2 #lightcoral
    }
    state " " as plugin2 #white ##white {
       state "Engine" as engine2 #lightcoral
@@ -74,7 +74,7 @@ state "3. Process\nExperiment\nOutputs" as stage3  {
       state ".csv,.arrow,..." as plugins_in3 #lightcoral
    }
    state "Processed\nExperiment\nOutputs" as output3 #skyblue {
-      state ".csv,.arrow,\nimages,..." as plugins_out3 #lightcoral
+      state "CSV,Arrow,\nGraphML,PNG,..." as plugins_out3 #lightcoral
    }
 
    state " " as plugin3 #white ##white {
@@ -91,10 +91,10 @@ state "3. Process\nExperiment\nOutputs" as stage3  {
 ' Stage 4
 state "4. Generate\nProducts\n" as stage4  {
    state "Processed\nExperiment\nOutputs" as input4 #lightcyan {
-      state ".csv,.arrow,\nimages,..." as plugins_in4 #lightcoral
+      state "CSV,Arrow,\nGraphML,..." as plugins_in4 #lightcoral
    }
    state "Products" as output4 #skyblue {
-      state "Graphs, videos\n(.png,.mp4,...)" as subblob4 #lightcoral
+      state "Graphs (PNG,HTML),\nVideos (mp4),..." as subblob4 #lightcoral
    }
    state " "  as plugin4 #white ##white {
    top to bottom direction
@@ -111,10 +111,10 @@ state "4. Generate\nProducts\n" as stage4  {
 ' Stage 5
 state "5. Compare\nProducts\n" as stage5  {
    state "Products" as input5 #lightcyan {
-      state "Graphs (.png,...)" as plugins_in5 #lightcoral
+      state "Graphs (PNG,...)" as plugins_in5 #lightcoral
    }
    state "Product\nComparisons" as output5 #skyblue {
-      state "Graphs (.png,...)" as final_outputs #lightcoral
+      state "Graphs (PNG,...)" as final_outputs #lightcoral
    }
    state " " as plugin5 #white ##white {
       state "Engine" as engine5 #lightcoral

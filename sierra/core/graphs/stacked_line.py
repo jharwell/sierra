@@ -42,7 +42,7 @@ def generate(  # noqa: PLR0913
     medium: str,
     backend: str,
     xticks: tp.Optional[list[float]] = None,
-    stats: str = "none",
+    stats: tp.Optional[str] = None,
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
     points: tp.Optional[bool] = False,
@@ -111,10 +111,12 @@ def generate(  # noqa: PLR0913
 
     # Plot stats if they have been computed FIRST, so they appear behind the
     # actual data.
-    if "conf95" in stats and "stddev" in stat_dfs:
+    if stats and "conf95" in stats and "stddev" in stat_dfs:
         plot = _plot_stats_stddev(dataset, stat_dfs["stddev"])
         plot *= _plot_selected_cols(dataset, model, legend, points, backend)
-    elif "bw" in stats and all(k in stat_dfs for k in config.STATS["bw"].exts):
+    elif (
+        stats and "bw" in stats and all(k in stat_dfs for k in config.STATS["bw"].exts)
+    ):
         # 2025-10-06 [JRH]: This is a limitation of hv (I think). Manually
         # specifying bw plots around each datapoint on a graph can easily exceed
         # the max # of things that can be in a single overlay.
@@ -179,8 +181,12 @@ def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
         plt.close("all")
     elif backend == "bokeh":
         fig = hv.render(plot)
-        fig.width = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
-        fig.height = int(config.GRAPHS["dpi"] * config.GRAPHS["base_size"])
+
+        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
+        # interactive plots fixed size, which makes them unsuitable for
+        # embedding into webpages.
+        fig.sizing_mode = "scale_width"
+
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
         with utils.utf8open(output_fpath, "w") as f:
             f.write(html)
@@ -280,7 +286,7 @@ def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOve
 
 
 def _read_stats(
-    setting: str, stats_root: pathlib.Path, input_stem: str, medium: str
+    setting: tp.Optional[str], stats_root: pathlib.Path, input_stem: str, medium: str
 ) -> dict[str, pd.DataFrame]:
     dfs = {}  # type: tp.Dict[str, pd.DataFrame]
     settings = []

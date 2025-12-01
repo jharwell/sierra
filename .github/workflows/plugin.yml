@@ -189,7 +189,6 @@ jobs:
         session:
           - jsonsim_stage1_univar
           - jsonsim_stage3_univar
-          - jsonsim_stage4_univar
 
         container:
           - jharwell/ubuntu24.04-sierra:latest
@@ -233,7 +232,6 @@ jobs:
         session:
           - yamlsim_stage1_univar
           - yamlsim_stage3_univar
-          - yamlsim_stage4_univar
           - yamlsim_imagize
 
         container:
@@ -440,6 +438,7 @@ jobs:
           - compression_sanity
           - modelrunner_sanity
           - graphs_backend
+          - pseudostats_sanity
 
         container:
           - jharwell/ubuntu24.04-sierra:latest
