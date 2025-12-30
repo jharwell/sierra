@@ -22,7 +22,9 @@ from tests.smoke_tests import utils, setup
 
 
 @nox.session(python=utils.versions, tags=["hpc"])
-@nox.parametrize("env", ["hpc.local", "hpc.adhoc", "hpc.slurm", "hpc.pbs"])
+@nox.parametrize(
+    "env", ["hpc.local", "hpc.adhoc", "hpc.slurm", "hpc.pbs", "hpc.awsbatch"]
+)
 @nox.parametrize(
     "engine",
     ["engine.argos", "engine.ros1gazebo", "plugins.jsonsim", "plugins.yamlsim"],
@@ -201,6 +203,21 @@ def execenv_hpc(session, env, engine):
         #   run it directly.
         session.run(
             "./tests/smoke_tests/pbs-test.sh",
+            external=True,
+            silent=True,
+        )
+        utils.stage2_univar_check_outputs(
+            engine.split(".")[1], batch_root, cardinality, 4
+        )
+
+    elif env == "hpc.awsbatch":
+        os.environ["SIERRA_CMD"] = sierra_cmd
+
+        # 2026-01-13 [JRH]: Testing this would requiring spending $ on aws, so
+        # the test for this execution environment is a (much) lower fidelity
+        # mock.
+        session.run(
+            "./tests/smoke_tests/awsbatch-test.sh",
             external=True,
             silent=True,
         )

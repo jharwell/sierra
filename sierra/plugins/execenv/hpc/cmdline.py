@@ -40,16 +40,13 @@ class HPCCmdline(PluginCmdline):
         self.stage2.add_argument(
             "--exec-jobs-per-node",
             help="""
-
-                              Specify the maximum number of parallel jobs to run
-                              per allocated node. By default this is computed
-                              from the selected HPC environment for maximum
-                              throughput given the desired ``--n-runs`` and CPUs
-                              per allocated node. However, for some environments
-                              being able to override the computed default can be
-                              useful.
-
-                              """
+                 Specify the maximum number of parallel jobs to run per
+                 allocated node.  By default this is computed from the selected
+                 HPC environment for maximum throughput given the desired
+                 ``--n-runs`` and CPUs per allocated node.  However, for some
+                 environments being able to override the computed default can be
+                 useful.
+                 """
             + self.stage_usage_doc([2]),
             type=int,
             default=None,
@@ -58,15 +55,11 @@ class HPCCmdline(PluginCmdline):
         self.stage2.add_argument(
             "--exec-devnull",
             help="""
-
-                              Redirect ALL output from simulations to
-                              /dev/null. Useful for engine where you can't
-                              disable all INFO messages at compile time, and
-                              don't want to have to grep through lots of
-                              redundant stdout files to see if there were any
-                              errors.
-
-                              """
+                 Redirect ALL output from simulations to /dev/null.  Useful for
+                 engine where you can't disable all INFO messages at compile
+                 time, and don't want to have to grep through lots of redundant
+                 stdout files to see if there were any errors.
+                 """
             + self.stage_usage_doc([1, 2]),
             action="store_true",
             dest="exec_devnull",
@@ -76,15 +69,11 @@ class HPCCmdline(PluginCmdline):
         self.stage2.add_argument(
             "--exec-no-devnull",
             help="""
-
-                              Don't redirect ALL output from simulations to
-                              /dev/null. Useful for engines where you can't
-                              disable all INFO messages at compile time, and
-                              don't want to have to grep through lots of
-                              redundant stdout files to see if there were any
-                              errors.
-
-                              """
+                 Don't redirect ALL output from simulations to /dev/null.
+                 Useful for engines where you can't disable all INFO messages at
+                 compile time, and don't want to have to grep through lots of
+                 redundant stdout files to see if there were any errors.
+                 """
             + self.stage_usage_doc([1, 2]),
             action="store_false",
             dest="exec_devnull",

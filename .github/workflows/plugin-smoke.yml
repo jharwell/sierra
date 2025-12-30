@@ -288,6 +288,7 @@ jobs:
           - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.adhoc')
           - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.slurm')
           - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.pbs')
+          - execenv_hpc-3.12(engine='plugins.jsonsim', env='hpc.awsbatch')
           - execenv_prefectserver
 
         container:

@@ -8,7 +8,6 @@ Not necessarily HPC, but it fits well enough under that semantic umbrella.
 """
 
 # Core packages
-import typing as tp
 import shutil
 import pathlib
 
@@ -97,7 +96,7 @@ class BatchShellCmdsGenerator:
             # Since parallel doesn't export any envvars to child processes by
             # default, we add some common ones.
             types.ShellCmdSpec(
-                cmd='export PARALLEL="--env LD_LIBRARY_PATH"',
+                cmd='export PARALLEL="${PARALLEL} --env LD_LIBRARY_PATH"',
                 shell=True,
                 wait=True,
                 env=True,

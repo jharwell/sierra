@@ -389,7 +389,17 @@ class ExpDef:
         elif isinstance(parent, list):
             subprocessor = yamlpath.Processor(self.log, parent)
             subpath = yamlpath.YAMLPath(tag)
+
+            victim = subprocessor.get_nodes(subpath)
+
             victim = next(iter(subprocessor.get_nodes(subpath))).node
+            if victim not in parent:
+                if not noprint:
+                    self.logger.warning(
+                        "No victim '%s' found in parent '%s'", tag, path
+                    )
+                return False
+
             parent.remove(victim)
 
         self.logger.trace("Removed element '%s' from '%s'", tag, path)

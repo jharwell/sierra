@@ -32,7 +32,7 @@ def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCm
                    directory to <batchroot>/statistics.
 
              Unless your code generates TONS of outputs, prefer ``copy`` to
-             ``move`` to preserve stage 3idempotency.
+             ``move`` to preserve stage 3 idempotency.
              """
         + cmdline.stage_usage_doc([3]),
         default="copy",

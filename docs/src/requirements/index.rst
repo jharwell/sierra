@@ -72,9 +72,9 @@ changes).
    communicated to SIERRA, which SIERRA tries in the following order:
 
    #. Through :term:`Batch Criteria` defining the ``arena_dims()`` function. See
-   :ref:`tutorials/project/new-bc` to see how to implement this method. This
-   method also requires additional hooks to be defined in the
-   :term:`Engine`--see :ref:`plugins/engine` for specifics.
+      :ref:`tutorials/project/new-bc` to see how to implement this method. This
+      method also requires additional hooks to be defined in the
+      :term:`Engine`--see :ref:`plugins/engine` for specifics.
 
    #. Through the cmdline, by encoding it as part of what is passed to
       ``--scenario``. See :ref:`tutorials/project/generators/scenario` to see
@@ -119,10 +119,10 @@ General
 Experiment Definition Format-based Restrictions
 -----------------------------------------------
 
-SIERRA uses some special XML tokens during stage 1, and although it is unlikely
-that including these tokens would cause problems, because SIERRA looks for them
-in *specific* places in the ``--expdef-template``. Restrictions differ according
-to the active ``--expdef`` plugin.
+SIERRA uses some special tokens during stage 1, and although it is unlikely that
+including these tokens would cause problems, because SIERRA looks for them in
+*specific* places in the ``--expdef-template``, you should still avoid
+them. Restrictions differ according to the active ``--expdef`` plugin.
 
 .. tabs::
 
@@ -192,11 +192,6 @@ your code does not meet these assumptions, then you will need to make some
    ``$HOME/exp/research/simulations/sim1/outputs``. The directory within the
    experimental run root which SIERRA looks for simulation outputs is configured
    via YAML; see :ref:`tutorials/project/config` for details.
-
-   For HPC execution environments (see :ref:`plugins/execenv/hpc`), this
-   requirement is easy to meet. For real robot execution environments (see
-   :ref:`plugins/execenv/realrobot`), this can be more difficult to meet.
-
 
    .. IMPORTANT:: SIERRA does *not* create the output root for each experimental
                   run for you. This is to support workflows where output data is
