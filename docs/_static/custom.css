@@ -1,0 +1,5 @@
+.wy-table-responsive table td, .wy-table-responsive table th {
+    white-space: normal;
+    /* white-space-collapse: collapse; This property is deprecated and not needed */
+    /* text-wrap: normal; This property is experimental and not needed */
+}

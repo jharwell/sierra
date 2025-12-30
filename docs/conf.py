@@ -251,10 +251,11 @@ plantuml = "java -jar /tmp/plantuml.jar"
 plantuml_url = "https://downloads.sourceforge.net/project/plantuml/plantuml.jar"
 
 
-if not os.path.exists("/tmp/plantuml.jar"):
+jarpath = pathlib.Path("/tmp/plantuml.jar")
+if not jarpath.exists():
     print("DOCS: Downloading latest plantuml...")
     response = requests.get(plantuml_url)
-    with open("/tmp/plantuml.jar", "wb") as file:
+    with jarpath.open("/tmp/plantuml.jar", "wb") as file:
         file.write(response.content)
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -271,8 +272,11 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
-# html_css_files = ["custom.css"]
+html_static_path = ["_static"]
+
+# 2026-01-12 [JRH]: Custom CSS for forcing table cells to wrap in RTD, which
+# they don't by default, for whatever reason.
+html_css_files = ["custom.css"]
 
 html_last_updated_fmt = "%b %d, %Y"
 

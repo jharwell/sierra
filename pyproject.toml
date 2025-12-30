@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.6"
+version = "1.5.8"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [

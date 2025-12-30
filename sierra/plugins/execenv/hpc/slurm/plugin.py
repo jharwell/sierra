@@ -6,7 +6,6 @@ HPC plugin for running SIERRA on HPC clusters using the SLURM scheduler.
 """
 
 # Core packages
-import typing as tp
 import argparse
 import shutil
 import pathlib

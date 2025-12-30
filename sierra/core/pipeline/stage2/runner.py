@@ -215,7 +215,11 @@ class BatchExpRunner:
 
                 # Run cmds for engine-specific things to setup the experiment
                 # (e.g., start daemons) if needed.
-                engine_generator = engine.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+                engine_generator = engine.ExpShellCmdsGenerator(
+                    self.cmdopts,
+                    exp_num,
+                )
+
                 execenv_generator = execenv.ExpShellCmdsGenerator(self.cmdopts, exp_num)
 
                 for spec in execenv_generator.pre_exp_cmds():
@@ -310,7 +314,7 @@ class SequentialRunner:
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Exp%s elapsed time: %s", exp_num, sec)
+        self.logger.info("Per-exp%s elapsed time: %s", exp_num, sec)
 
         with utils.utf8open(self.exec_times_fpath, "a") as f:
             f.write("exp" + str(exp_num) + ": " + str(sec) + "\n")
@@ -342,7 +346,7 @@ class ParallelRunner:
     def __call__(self, exp_to_run: list[pathlib.Path]) -> None:
         """Execute all experimental runs for all experiments."""
 
-        self.logger.info("Kicking off all experiments in <batchroot>")
+        self.logger.info("Begin per-batch execution in <batchroot>")
         sys.stdout.flush()
 
         start = time.time()
@@ -359,6 +363,7 @@ class ParallelRunner:
             "cmdfile_ext": config.GNU_PARALLEL["cmdfile_ext"],
             "exec_resume": self.cmdopts["exec_resume"],
             "n_jobs": self.cmdopts["exec_jobs_per_node"],
+            "nodefile": self.cmdopts["nodefile"],
         }
 
         # Run cmds for engine-specific things to setup the experiment
@@ -389,7 +394,7 @@ class ParallelRunner:
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Elapsed time: %s", sec)
+        self.logger.info("Per-batch elapsed time: %s", sec)
 
         with utils.utf8open(self.exec_times_fpath, "a") as f:
             f.write(": " + str(sec) + "\n")

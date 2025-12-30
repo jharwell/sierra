@@ -44,39 +44,20 @@ class ExpShellCmdsGenerator:
         if hasattr(module, "ExpShellCmdsGenerator"):
             self.env = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
         else:
-            _logger.debug(
-                (
-                    "Skipping generating experiment shell commands "
-                    "for --execenv=%s: does not define ExpShellCmdsGenerator"
-                ),
-                self.cmdopts["execenv"],
+            raise RuntimeError(
+                "--execenv={} does not implement ExpShellCmdsGenerator".format(
+                    cmdopts["execenv"]
+                )
             )
 
-            self.env = None
-
     def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
-        cmds = []
-
-        if self.env:
-            cmds.extend(self.env.pre_exp_cmds())
-
-        return cmds
+        return self.env.pre_exp_cmds()
 
     def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
-        cmds = []
-
-        if self.env:
-            cmds.extend(self.env.exec_exp_cmds(exec_opts))
-
-        return cmds
+        return self.env.exec_exp_cmds(exec_opts)
 
     def post_exp_cmds(self) -> list[types.ShellCmdSpec]:
-        cmds = []
-
-        if self.env:
-            cmds.extend(self.env.post_exp_cmds())
-
-        return cmds
+        return self.env.post_exp_cmds()
 
 
 @implements.implements(bindings.IBatchShellCmdsGenerator)
@@ -97,39 +78,20 @@ class BatchShellCmdsGenerator:
         if hasattr(module, "BatchShellCmdsGenerator"):
             self.env = module.BatchShellCmdsGenerator(self.cmdopts)
         else:
-            _logger.debug(
-                (
-                    "Skipping generating batch experiment shell commands "
-                    "for --execenv=%s: does not define BatchShellCmdsGenerator"
-                ),
-                self.cmdopts["execenv"],
+            raise RuntimeError(
+                "--execenv={} does not implement BatchShellCmdsGenerator".format(
+                    cmdopts["execenv"]
+                )
             )
 
-            self.env = None
-
     def pre_batch_cmds(self) -> list[types.ShellCmdSpec]:
-        cmds = []
-
-        if self.env:
-            cmds.extend(self.env.pre_batch_cmds())
-
-        return cmds
+        return self.env.pre_batch_cmds()
 
     def exec_batch_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
-        cmds = []
-
-        if self.env:
-            cmds.extend(self.env.exec_batch_cmds(exec_opts))
-
-        return cmds
+        return self.env.exec_batch_cmds(exec_opts)
 
     def post_batch_cmds(self) -> list[types.ShellCmdSpec]:
-        cmds = []
-
-        if self.env:
-            cmds.extend(self.env.post_batch_cmds())
-
-        return cmds
+        return self.env.post_batch_cmds()
 
 
 def cmdline_postparse_configure(
