@@ -43,6 +43,17 @@ users (no ceiling).
        into their existing scripts with minimal fuss.
      - Low floor
 
+   * - Easy command-line tool integration
+     - For :ref:`plugins/engine` and :ref:`plugins/execenv`, SIERRA is designed
+       to make translating users' original commands to invoke an engine/run in
+       an execution environment easy. Since these almost invariably *cmdline*
+       commands, SIERRA uses the Principle of Least Surprise and simply wraps
+       and these during stages 2. It *is* trivially possible to provide e.g., an
+       alternative python API using a tool's python bindings to execute things,
+       but not all tools have that. All engines/execution environments I've ever
+       encountered *do* have cmdline APIs, hence this design choice.
+     - Low floor
+
    * - Maximally configurable
      - SIERRA is designed to be as modular and extensible as possible (just like
        ARGoS, ROS, Gazebo, etc.), so that it can be adapted for a wide variety
@@ -107,7 +118,7 @@ This manifests in some important ways:
 - The :ref:`usage/run-time-tree` is designed to be human readable/copyable/etc,
   so that researchers can use any part of SIERRA\'s pipeline as they wish and
   walk away with the data at any time. That is, the design choice to use a
-  directory structure containing elements which were ***not* hashed was
+  directory structure containing elements which were *not* hashed was
   deliberate (looking at you conan).
 
 Separation Of Data Types

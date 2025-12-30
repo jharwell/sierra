@@ -116,8 +116,9 @@ Why SIERRA?
   input/output formats via plugins. SIERRA supports mix-and-match between all
   plugin types, subject to restrictions within the plugins themselves. This is
   and makes it very easy to run experiments on different hardware, targeting
-  different simulators, generating different outputs, etc., all with little to
-  no configuration changes by the user.
+  different simulators, in different execution environments, generating
+  different outputs, etc., all with little to no configuration changes by the
+  user.
 
 - SIERRA maximizes reusability of code and configuration; it is designed so that
   *no* copy-pasting is ever needed, improving code quality with no additional

@@ -77,19 +77,17 @@ class BaseCmdline:
     @staticmethod
     def stage_usage_doc(stages: list[int], omitted: str = "If omitted: N/A.") -> str:
         lst = ",".join(map(str, stages))
-        return "\n.. TIP:: Used by stage {}; can be omitted otherwise. {}\n".format(
-            lst, omitted
-        )
+        return "\nUsed by stage {}; can be omitted otherwise. {}\n".format(lst, omitted)
 
     @staticmethod
     def bc_applicable_doc(criteria: list[str]) -> str:
         lst = "".join("   - " + bc + "\n" for bc in criteria)
-        return f"\n.. TIP:: Applicable batch criteria:\n\n{lst}\n"
+        return f"\nApplicable batch criteria:\n\n{lst}\n"
 
     @staticmethod
     def graphs_applicable_doc(graphs: list[str]) -> str:
         lst = "".join("   - " + utils.sphinx_ref(graph) + "\n" for graph in graphs)
-        return f"\n.. TIP:: Applicable graphs:\n\n{lst}\n"
+        return f"\nApplicable graphs:\n\n{lst}\n"
 
 
 class BootstrapCmdline(BaseCmdline):

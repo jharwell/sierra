@@ -11,66 +11,15 @@ SIERRA2
 =======
 
 SIERRA is beginning to really mature, and so I think it isappropriate to lay out
-the improvements needed to go into a 2.0 version. Most of this is
-maturing/improving the plugin framework.
-
-Right now there are plugins for engines, execution environments, and storage
-media for experimental outputs, which cover stages {1,2} well in terms of ease
-of use/adoption. Stages {3,4,5} are plugin-ish, but really not, because they
-only provide options for tweaking what is there, not loading entirely new
-plugins. The configuration hooks for overriding/extending them are plugin-ish,
-but also seem kind of like a band-aid.
-
-So I think an important shift would be to remove usage of all the configuration
-hooks (or at least most of them), and replace with plugins, with the idea being
-that if a given plugin doesn't work for a given user's desires, they can
-copy/modify it so that it works for them and then just put it on SIERRA's plugin
-path.
-
-Stage 3
--------
-
-In stage 3, the plugins will be post-processors (probably called ``proc``
-plugins). Currently in the core we have:
-
-- Statistics generation
-
-- Imagizing
-
-- Run collation
-
-The first two should be easy to convert to plugins, because their functionality
-is clearly optional from a user perspective, and thus not really tied to the
-SIERRA core per-se. It's easy to imagine someone who doesn't care about
-statistics, because they are only generating videos, or isn't generating images
-from .csv files. Run collation is a little trickier, because it *is* tied into
-the SIERRA core in that that is how you build .csv files which can be directly
-used to generate deliverables in stage 4 for inter-experiment graphs. But again,
-someone might not be interested in those types of graphs for whatever reason,
-and so wouldn't be interested in collating things.
+the improvements needed to go into a 2.0 version.
 
 Stage {4,5}
 -----------
 
-In stage 4, the plugins will be deliverable generators (probably called
-``deliverable`` plugins). Currently in the core we have:
 
-- Intra/inter experiment graphs
-
-- Models
-
-- Video generation from images
-
-Models are already plugin-based. Graphs would need to be updated to be plugins.
-Right now, stage {4,5} are tied to matplotlib, and cannot be easily made to work
-using a different engine. Holoviews is a superset of matplotlib; matplotlib is
-one selectable backend. Making the switch will make generating static plots, web
-plots, etc. seamless. All of the current set of graph types (StackedLine,
-Summary, etc.) should be localized to the new ``hv`` plugin.
-
-In addition, the configurability/hooks available in stage {4,5} for specifying
-what data goes on what graphs fees a bit clunky, as it was developed mostly for
-my thesis/hacked on as needed.. In *theory* you can just slot in whatever
+The configurability/hooks available in stage {4,5} for specifying what data goes
+on what graphs fees a bit clunky, as it was developed mostly for my
+thesis/hacked on as needed.. In *theory* you can just slot in whatever
 deliverable generation code you want to, but it feels like an afterthought. What
 *should* happen is:
 

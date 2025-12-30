@@ -93,7 +93,7 @@ class SIERRA:
         # Setup logging customizations
         sierra.core.logging.initialize(bootstrap_args.log_level)
         self.logger = logging.getLogger(__name__)
-        self.logger.info("This is SIERRA %s.", version.__version__)
+        self.logger.info("This is SIERRA %s", version.__version__)
 
         bootstrap_args = self._handle_rc(bootstrap_args.rcfile, bootstrap_args)
 

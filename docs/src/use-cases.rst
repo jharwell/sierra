@@ -136,3 +136,16 @@ static graphs, the desired deliverables are interactive webplots.
 In addition, some projects that this simulator is used on/will be used on are
 classified, so any integrations with any open source software tools need to be
 able to be kept separate from the open source tool itself.
+
+Use Case #4: Candace The ML Engineer
+====================================
+
+Candace works as an ML engineer and trains ML models locally on her laptop, but
+has run into computational bottlenecks when trying out different parameter and
+hyperparameter combinations. Her ML model is configured using YAML. Her model is
+deterministic, but she is interested in randomly dropping elements from the
+input dataset to see how that affects the learned model, as one avenue of
+investigation. Her company prefers to use AWS for its large-scale computing
+needs.  In addition, some projects that this simulator is used on/will be used
+on are classified, so any integrations with any open source software tools need
+to be able to be kept separate from the open source tool itself.
