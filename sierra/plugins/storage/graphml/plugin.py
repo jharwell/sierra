@@ -11,7 +11,6 @@ import typing as tp
 
 # 3rd party packages
 from retry import retry
-import pandas as pd
 import networkx as nx
 
 # Project packages
@@ -25,19 +24,19 @@ def supports_output(fmt: type) -> bool:
     return fmt is nx.Graph
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
+@retry(Exception, tries=10, delay=0.100, backoff=1.1)
 def graph_read(
     path: pathlib.Path, run_output_root: tp.Optional[pathlib.Path] = None, **kwargs
-) -> pd.DataFrame:
+) -> nx.Graph:
     """
     Read a dataframe from a .graphl file using networkx.
     """
-    nx.read_graphml(path)
+    return nx.read_graphml(path)
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
-def graph_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
+@retry(Exception, tries=10, delay=0.100, backoff=1.1)
+def graph_write(graph: nx.Graph, path: pathlib.Path, **kwargs) -> None:
     """
     Write a dataframe to a CSV file using pandas.
     """
-    df.to_csv(path, sep=",", float_format="%.8f", **kwargs)
+    nx.write_graphml(graph, path)

@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-Plugin for reading/writing CSV files.
+Plugin for reading/writing CSV files using polars.
 """
 
 # Core packages
@@ -11,7 +11,7 @@ import typing as tp
 
 # 3rd party packages
 from retry import retry
-import pandas as pd
+import polars as pl
 
 # Project packages
 
@@ -21,24 +21,22 @@ def supports_input(fmt: str) -> bool:
 
 
 def supports_output(fmt: type) -> bool:
-    return fmt is pd.DataFrame
+    return fmt is pl.DataFrame
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
+@retry(Exception, tries=10, delay=0.100, backoff=1.1)
 def df_read(
     path: pathlib.Path, run_output_root: tp.Optional[pathlib.Path] = None, **kwargs
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     """
-    Read a dataframe from a CSV file using pandas.
+    Read a dataframe from a CSV file using polars.
     """
-    # Always specify the datatype so pandas does not have to infer it--much
-    # faster.
-    return pd.read_csv(path, sep=",", **kwargs)
+    return pl.read_csv(path, separator=",", **kwargs)
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
-def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
+@retry(Exception, tries=10, delay=0.100, backoff=1.1)
+def df_write(df: pl.DataFrame, path: pathlib.Path, **kwargs) -> None:
     """
-    Write a dataframe to a CSV file using pandas.
+    Write a dataframe to a CSV file using polars.
     """
-    df.to_csv(path, sep=",", float_format="%.8f", **kwargs)
+    df.write_csv(path, separator=",", float_precision=8, **kwargs)

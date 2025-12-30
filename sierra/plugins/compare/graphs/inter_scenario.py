@@ -287,7 +287,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         )
 
         if model_df is not None:
-            storage.df_write(model_df, model_opath, "storage.csv", index=False)
+            storage.df_write(model_df, model_opath, "storage.csv")
 
             with utils.utf8open(legend_opath, "a") as f:
                 sgp = pm.module_load_tiered(project=project, path="generators.scenario")

@@ -12,7 +12,7 @@ import logging
 import pathlib
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 import holoviews as hv
 import matplotlib.pyplot as plt
 import bokeh
@@ -89,21 +89,30 @@ def generate(  # noqa: PLR0913
 
     df = storage.df_read(input_fpath, medium)
 
-    # Use xticks if provided, otherwise default to using the dataframe index as
-    # the xticks.
-    dfcols = df.columns.tolist()
-    df["xticks"] = xticks if xticks is not None else df.index.to_list()
-    dataset = hv.Dataset(
-        # Make index a column so we can use it as kdim
-        data=df.reset_index(),
-        kdims=["index"],
-        vdims=cols if cols else dfcols,
-    )
+    # Use xticks if provided, otherwise default to using row indices as xticks
+    dfcols = df.columns
 
-    assert len(df.index) == len(
+    # Add row index first
+    df = df.with_row_index("index")
+
+    # Add xticks column
+    if xticks is not None:
+        df = df.with_columns(pl.Series("xticks", xticks))
+    else:
+        df = df.with_columns(pl.col("index").cast(pl.Float64).alias("xticks"))
+
+    # Convert to pandas for holoviews compatibility
+    df_pd = df.to_pandas()
+
+    dataset = hv.Dataset(
+        data=df_pd,
+        kdims=["index"],
+        vdims=cols if cols else list(dfcols),
+    )
+    assert len(df) == len(
         df["xticks"]
     ), "Length mismatch between xticks,# data points: {} vs {}".format(
-        len(df["xticks"]), len(df.index)
+        len(df["xticks"]), len(df)
     )
 
     model = _read_models(paths.model_root, input_stem, medium)
@@ -262,16 +271,19 @@ def _plot_selected_cols(
     return plot
 
 
-def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOverlay:
+def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pl.DataFrame) -> hv.NdOverlay:
     """Plot the stddev for all columns in the dataset."""
-    stddevs = pd.DataFrame()
-    for c in dataset.vdims:
-        stddevs[f"{c}_stddev_l"] = dataset[c] - 2 * stddev_df[c.name].abs()
-        stddevs[f"{c}_stddev_u"] = dataset[c] + 2 * stddev_df[c.name].abs()
 
-    # To plot area between lines, you need to add the stddev columns to the
-    # dataset
-    dataset.data = pd.concat([dataset.dframe(), stddevs], axis=1)
+    # Build stddev columns dictionary
+    stddev_cols = {}
+    for c in dataset.vdims:
+        stddev_vals = stddev_df[c.name].abs().to_numpy()
+        stddev_cols[f"{c}_stddev_l"] = dataset.data[c.name] - 2 * stddev_vals
+        stddev_cols[f"{c}_stddev_u"] = dataset.data[c.name] + 2 * stddev_vals
+
+    # Add stddev columns to dataset
+    for col_name, col_data in stddev_cols.items():
+        dataset.data[col_name] = col_data
 
     return hv.Overlay(
         [
@@ -287,8 +299,8 @@ def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pd.DataFrame) -> hv.NdOve
 
 def _read_stats(
     setting: tp.Optional[str], stats_root: pathlib.Path, input_stem: str, medium: str
-) -> dict[str, pd.DataFrame]:
-    dfs = {}  # type: tp.Dict[str, pd.DataFrame]
+) -> dict[str, pl.DataFrame]:
+    dfs = {}  # type: tp.Dict[str, pl.DataFrame]
     settings = []
 
     if setting == "none":
@@ -327,9 +339,13 @@ def _read_models(
 
     info = models.ModelInfo()
     df = storage.df_read(modelf, medium)
-    cols = df.columns.tolist()
+    cols = list(df.columns)
 
-    info.dataset = hv.Dataset(data=df.reset_index(), kdims=["index"], vdims=cols)
+    # Add index and convert to pandas for holoviews
+    df = df.with_row_index("index")
+    df_pd = df.to_pandas()
+
+    info.dataset = hv.Dataset(data=df_pd, kdims=["index"], vdims=cols)
 
     with utils.utf8open(legendf, "r") as f:
         info.legend = f.read().splitlines()

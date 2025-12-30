@@ -19,12 +19,14 @@ from tests.smoke_tests.plugin.engine import (
     ros1robot,
     ros1gazebo,
 )
+from tests.regression_tests import proc
 from tests.smoke_tests.plugin.proc import modelrunner, compression, pseudostats
 from tests.smoke_tests.plugin.prod import graphs
 
 from tests.smoke_tests.plugin import execenv
 
 nox.options.default_venv_backend = "uv"
+nox.options.reuse_venv = "always"
 
 
 @nox.session(python=utils.versions)

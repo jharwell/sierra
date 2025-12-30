@@ -17,8 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import holoviews as hv
 import bokeh
-import pandas as pd
-from pandas.api.types import CategoricalDtype
+import polars as pl
 
 # Project packages
 from sierra.core import utils, config, storage, types
@@ -77,48 +76,51 @@ def generate_confusion(  # noqa: PLR0913
 
     # Read .csv and get counts of each <truth, predicted> pair.
     df = storage.df_read(input_fpath, medium)
-    confusion_df = (
-        df.groupby([truth_col, predicted_col], observed=False)
-        .size()
-        .reset_index(name="count")
-    )
+
+    # Group by truth and predicted columns and count occurrences
+    confusion_df = df.group_by([truth_col, predicted_col]).agg(pl.len().alias("count"))
 
     # Get category names. Need union in case the sets aren't the same.
-    categories = sorted(set(df[truth_col].unique()) | set(df[predicted_col].unique()))
-
-    # We need to use pandas' categorical datatypes here to ensure the same
-    # ordering of categories on both axes for a true confusion matrix.
-    cat_type = CategoricalDtype(categories=categories, ordered=True)
-    confusion_df[truth_col] = confusion_df[truth_col].astype(cat_type)
-    confusion_df[predicted_col] = confusion_df[predicted_col].astype(cat_type)
-
-    # Fill in missing combinations with 0.0 to avoid duplicate/missing index
-    # issues.
-    all_combinations = pd.MultiIndex.from_product(
-        [categories, categories], names=[truth_col, predicted_col]
-    ).to_frame(index=False)
-    all_combinations[truth_col] = all_combinations[truth_col].astype(cat_type)
-    all_combinations[predicted_col] = all_combinations[predicted_col].astype(cat_type)
-    confusion_df = all_combinations.merge(
-        confusion_df,
-        on=[truth_col, predicted_col],
-        how="left",
+    categories = sorted(
+        set(df[truth_col].unique().to_list())
+        | set(df[predicted_col].unique().to_list())
     )
 
-    confusion_df["count"] = confusion_df["count"].fillna(0)
-
-    # Normalize by row to get fractions rather than counts, which are generally
-    # more useful.
-    row_totals = confusion_df.groupby(truth_col, observed=False)["count"].transform(
-        "sum"
+    # Create all combinations of categories
+    all_combinations = pl.DataFrame(
+        {
+            truth_col: [t for t in categories for _ in categories],
+            predicted_col: [p for _ in categories for p in categories],
+        }
     )
-    confusion_df["fraction"] = confusion_df["count"] / row_totals
 
-    # Convert categorical back to string to avoid HoloViews internal warnings
-    confusion_df[truth_col] = confusion_df[truth_col].astype(str)
-    confusion_df[predicted_col] = confusion_df[predicted_col].astype(str)
+    # Merge with actual data, filling missing combinations with 0
+    confusion_df = all_combinations.join(
+        confusion_df, on=[truth_col, predicted_col], how="left"
+    )
+
+    # Fill null counts with 0
+    confusion_df = confusion_df.with_columns(pl.col("count").fill_null(0))
+
+    # Normalize by row to get fractions rather than counts
+    # Calculate sum for each truth value
+    row_totals = confusion_df.group_by(truth_col).agg(
+        pl.col("count").sum().alias("row_total")
+    )
+
+    # Join back and calculate fractions
+    confusion_df = confusion_df.join(row_totals, on=truth_col)
+    confusion_df = confusion_df.with_columns(
+        (pl.col("count") / pl.col("row_total")).alias("fraction")
+    )
+
+    # Drop the row_total column
+    confusion_df = confusion_df.drop("row_total")
+
+    # Convert to pandas for holoviews
+    confusion_pd = confusion_df.to_pandas()
     dataset = hv.Dataset(
-        confusion_df, kdims=[predicted_col, truth_col], vdims="fraction"
+        confusion_pd, kdims=[predicted_col, truth_col], vdims="fraction"
     )
 
     # Finally, plot the data!
@@ -228,7 +230,10 @@ def generate_numeric(  # noqa: PLR0913
 
     # Read .csv and create raw heatmap from default configuration
     df = storage.df_read(input_fpath, medium)
-    dataset = hv.Dataset(df, kdims=[colnames[0], colnames[1]], vdims=colnames[2])
+
+    # Convert to pandas for holoviews
+    df_pd = df.to_pandas()
+    dataset = hv.Dataset(df_pd, kdims=[colnames[0], colnames[1]], vdims=colnames[2])
 
     # Transpose if requested
     if transpose:
@@ -252,7 +257,6 @@ def generate_numeric(  # noqa: PLR0913
         xticks = dataset.data[colnames[0]]
     if not yticks:
         yticks = dataset.data[colnames[1]]
-
     # Add X,Y ticks
     if xticklabels:
         plot.opts(xticks=list(zip(xticks, xticklabels)))
@@ -335,17 +339,20 @@ def generate_dual_numeric(  # noqa: PLR0913
         )
         return False
 
-    yticks = np.arange(len(dfs[0].columns))
-    xticks = dfs[0].index
+    # Convert polars DataFrames to pandas for holoviews
+    dfs_pd = [df.to_pandas() for df in dfs]
+
+    yticks = np.arange(len(dfs_pd[0].columns))
+    xticks = dfs_pd[0].index
 
     # Plot heatmaps
-    plot = hv.Image(dfs[0]) + hv.Image(dfs[1])
+    plot = hv.Image(dfs_pd[0]) + hv.Image(dfs_pd[1])
 
     # Add X,Y ticks
     if xticklabels:
-        plot.opts(xformatter=lambda x: xticklabels[xticks.index(x)])
+        plot.opts(xformatter=lambda x: xticklabels[list(xticks).index(x)])
     if yticklabels:
-        plot.opts(yformatter=lambda y: yticklabels[yticks.index(y)])
+        plot.opts(yformatter=lambda y: yticklabels[list(yticks).index(y)])
 
     # Add labels
     plot.opts(xlabel=xlabel)

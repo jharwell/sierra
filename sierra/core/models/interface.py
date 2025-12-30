@@ -9,10 +9,9 @@ Models can be run during stage 3 and added to any configured graph during stage
 """
 
 # Core packages
-import typing as tp
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 import implements
 
 # Project packages
@@ -42,7 +41,7 @@ class IIntraExpModel1D(implements.Interface):
         exp_num: int,
         cmdopts: types.Cmdopts,
         pathset: exproot.PathSet,
-    ) -> list[pd.DataFrame]:
+    ) -> list[pl.DataFrame]:
         """Run the model and generate a list of dataframes.
 
         Each dataframe can (potentially) target different graphs. All dataframes
@@ -92,7 +91,7 @@ class IInterExpModel1D(implements.Interface):
         criteria: bc.XVarBatchCriteria,
         cmdopts: types.Cmdopts,
         pathset: batchroot.PathSet,
-    ) -> list[pd.DataFrame]:
+    ) -> list[pl.DataFrame]:
         """Run the model and generate list of dataframes.
 
         Each returned dataframe must have:

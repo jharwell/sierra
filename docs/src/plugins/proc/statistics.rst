@@ -3,7 +3,7 @@
 
    SPDX-License-Identifier:  MIT
 
-.. _plugins/proc/stat:
+.. _plugins/proc/statistics:
 
 =====================
 Statistics Generation

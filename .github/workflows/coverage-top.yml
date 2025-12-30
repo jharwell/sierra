@@ -27,11 +27,15 @@ jobs:
   # route. Plugins are another story, and are explicitly tested on OSX where
   # feasible.
   core-smoke-tests:
-    uses: ./.github/workflows/core.yml
+    uses: ./.github/workflows/core-smoke.yml
     secrets: inherit
 
   plugin-smoke-tests:
-    uses: ./.github/workflows/plugin.yml
+    uses: ./.github/workflows/plugin-smoke.yml
+    secrets: inherit
+
+  plugin-regression-tests:
+    uses: ./.github/workflows/plugin-reg.yml
     secrets: inherit
 
   unit-tests:

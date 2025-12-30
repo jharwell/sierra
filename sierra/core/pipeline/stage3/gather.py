@@ -17,7 +17,7 @@ import pathlib
 
 # 3rd party packages
 import psutil
-import pandas as pd
+import polars as pl
 
 # Project packages
 from sierra.core import types, utils, storage
@@ -70,7 +70,7 @@ class ProcessSpec:
     def __init__(self, gather: GatherSpec) -> None:
         self.gather = gather
         self.exp_run_names = []  # type: tp.List[str]
-        self.dfs = []  # type: tp.List[pd.DataFrame]
+        self.dfs = []  # type: tp.List[pl.DataFrame]
 
 
 class BaseGatherer:
@@ -172,9 +172,10 @@ class BaseGatherer:
                     path,
                     self.gather_opts["storage"],
                     run_output_root=run,
-                    index_col=False,
                 )
-                if nonumeric := df.select_dtypes(exclude="number").columns.tolist():
+                if nonumeric := [
+                    col for col in df.columns if not df[col].dtype.is_numeric()
+                ]:
                     self.logger.warning(
                         "Non-numeric columns only support mean aggregation via mode(): %s from %s",
                         nonumeric,

@@ -173,7 +173,7 @@ def _find_root_node(G: nx.Graph):
     if is_directed:
         # Check if it's a directed tree (arborescence)
         if not nx.is_tree(G):
-            print("Warning: Not a valid tree structure")
+            _logger.warning("Warning: Not a valid tree structure")
             return None
 
         # Find node with in-degree = 0 (no incoming edges)

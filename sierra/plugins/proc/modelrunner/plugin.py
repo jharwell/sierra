@@ -204,7 +204,6 @@ def _run_intra_single_in_exp(
             df,
             path_stem.with_suffix(config.MODELS_EXT["model"]),
             "storage.csv",
-            index=False,
         )
 
 
@@ -239,7 +238,6 @@ def _run_inter_exp(
                 df,
                 path_stem.with_suffix(config.MODELS_EXT["model"]),
                 "storage.csv",
-                index=True,
             )
 
             idx = dfs.index(df)

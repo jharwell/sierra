@@ -1,0 +1,48 @@
+# Only stuff that actually tests the engine should be here: stage 1 and 2.
+name: Plugin CI
+
+on:
+  workflow_call:
+
+jobs:
+  plugin-proc:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
+          - 3.12
+
+        session:
+          - statistics_reg
+
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sample-project-setup
+      - name: Regression tests
+        run: |
+          uv run -p ${{ matrix.python-version }} \
+          nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-proc-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error

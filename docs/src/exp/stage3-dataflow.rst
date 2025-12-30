@@ -91,8 +91,8 @@ represent the output data abstractly as:
 For intra-experiment data processing, all of the per-run outputs are matched
 across :term:`Experimental Runs <Experimental Run>` within an
 :term:`Experiment`, and processed in some way (e.g., :ref:`generating
-statistical distributions <plugins/proc/stat>`). Crucially, the processing is
-done at the level of *entire files* (i.e., it is a file-level reduce
+statistical distributions <plugins/proc/statistics>`). Crucially, the processing
+is done at the level of *entire files* (i.e., it is a file-level reduce
 operation). For example, if runs produce a ``foo.csv`` file, then every column
 in ``foo.csv`` will be present in the corresponding :term:`Processed Output
 Data` files as well.
@@ -172,7 +172,7 @@ This can be visualized as follows:
 
 Some examples of plugins performing this reduce operation:
 
-- :ref:`plugins/proc/stat`
+- :ref:`plugins/proc/statistics`
 
 Inter-Experiment Dataflow
 =========================

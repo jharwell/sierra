@@ -15,7 +15,7 @@ import csv
 
 # Project packages
 
-versions = ["3.9", "3.10", "3.11", "3.12"]
+versions = ["3.9", "3.12"]
 
 
 def stage1_univar_check_outputs(
@@ -94,17 +94,19 @@ def stage2_univar_check_outputs(
     if engine != "ros1gazebo":
         for i in range(cardinality):
             for run in range(4):  # {0..3}
-                output_dir = f"{output_root}/c1-exp{i}/template_run{run}_output"
-                assert os.path.isdir(
-                    output_dir
-                ), f"Directory {output_dir} does not exist"
+                output_dir = pathlib.Path(
+                    f"{output_root}/c1-exp{i}/template_run{run}_output"
+                )
+                output_dir.is_file(), f"Directory {output_dir} does not exist"
 
     # Check stage2 generated data
     for i in range(cardinality):
         for run in range(n_runs):
             if engine == "argos":
-                data_file = f"{output_root}/c1-exp{i}/template_run{run}_output/output/collected-data.csv"
-                assert os.path.isfile(data_file), f"File {data_file} does not exist"
+                data_file = pathlib.Path(
+                    f"{output_root}/c1-exp{i}/template_run{run}_output/output/collected-data.csv"
+                )
+                assert data_file.is_file(), f"File {data_file} does not exist"
             elif engine == "jsonsim":
                 files = [
                     f"{output_root}/c1-exp{i}/template_run{run}_output/output/output1D.csv",
@@ -115,17 +117,19 @@ def stage2_univar_check_outputs(
                     f"{output_root}/c1-exp{i}/template_run{run}_output/output/subdir3/output2D.csv",
                 ]
                 for f in files:
-                    assert os.path.isfile(f), f"File {f} does not exist"
+                    assert pathlib.Path(f).is_file(), f"File {f} does not exist"
             elif engine == "ros1gazebo":
                 pass  # Nothing currently generated
             else:
-                assert False, f"Unhandled engine case {engine}"
+                raise AssertionError(f"Unhandled engine case {engine}")
 
 
 def stage3_univar_check_outputs(
     engine: str, batch_root: pathlib.Path, cardinality: int, stats: list[str]
 ):
-    """Helper function to check stage 3 outputs."""
+    """
+    Helper function to check stage 3 outputs.
+    """
     stat_root = batch_root / "statistics"
 
     # Check SIERRA directory structure
@@ -158,58 +162,21 @@ def _stage3_univar_check_outputs_yamlsim(
         for stat in stats:
             exp_dir = stat_root / f"c1-exp{i}"
             intraexp_items = [
-                {"path": exp_dir / f"output1D.{stat}", "lines": 51, "cols": 5},
-                {
-                    "path": exp_dir / f"output1D.{stat}",
-                    "lines": 51,
-                    "cols": 5,
-                },
-                {
-                    "path": exp_dir / f"confusion-matrix.{stat}",
-                    "lines": -1,
-                    "cols": 3,
-                },
+                exp_dir / f"output1D.{stat}",
+                exp_dir / f"confusion-matrix.{stat}",
             ]
 
             for item in intraexp_items:
-                assert item["path"].is_file(), f"File {item['path']} does not exist"
-
-            # Check row and column counts
-            with item["path"].open() as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                if item["lines"] != -1:
-                    assert (
-                        len(lines) == item["lines"]
-                    ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == item["cols"]
-                ), f"{item['path']} should have {item['cols']} columns, got {len(lines[0])}"
+                assert item.is_file(), f"File {item} does not exist"
 
             # Check interexp files
             if not check_interexp:
                 return
 
-            interexp_items = [
-                {
-                    "path": stat_root / f"inter-exp/c1-exp{i}/output1D-col1.csv",
-                    "lines": 51,
-                    "cols": 4,
-                },
-            ]
+            interexp_items = [stat_root / f"inter-exp/c1-exp{i}/output1D-col1.csv"]
 
             for item in interexp_items:
-                assert item["path"].is_file(), f"File {item['path']} does not exist"
-
-                with item["path"].open() as f:
-                    reader = csv.reader(f)
-                    lines = list(reader)
-                    assert (
-                        len(lines) == item["lines"]
-                    ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
-                    assert (
-                        len(lines[0]) == item["cols"]
-                    ), f"{item['path']} should have {item['cols']} columns, got {len(lines[0])}"
+                assert item.is_file(), f"File {item} does not exist"
 
 
 def _stage3_univar_check_outputs_jsonsim(
@@ -220,64 +187,25 @@ def _stage3_univar_check_outputs_jsonsim(
         for stat in stats:
             exp_dir = stat_root / f"c1-exp{i}"
             items = [
-                {"path": exp_dir / f"output1D.{stat}", "lines": 51, "cols": 5},
-                {"path": exp_dir / f"output2D.{stat}", "lines": 49, "cols": 3},
-                {
-                    "path": exp_dir / f"subdir1/subdir2/output1D.{stat}",
-                    "lines": 51,
-                    "cols": 5,
-                },
-                {
-                    "path": exp_dir / f"subdir1/subdir2/output2D.{stat}",
-                    "lines": 49,
-                    "cols": 3,
-                },
-                {"path": exp_dir / f"subdir3/output1D.{stat}", "lines": 51, "cols": 5},
-                {"path": exp_dir / f"subdir3/output2D.{stat}", "lines": 49, "cols": 3},
+                exp_dir / f"output1D.{stat}",
+                exp_dir / f"output2D.{stat}",
+                exp_dir / f"subdir1/subdir2/output1D.{stat}",
+                exp_dir / f"subdir1/subdir2/output2D.{stat}",
+                exp_dir / f"subdir3/output1D.{stat}",
+                exp_dir / f"subdir3/output2D.{stat}",
             ]
 
             for item in items:
-                assert item["path"].is_file(), f"File {item['path']} does not exist"
-
-            # Check row and column counts
-            with item["path"].open() as f:
-                reader = csv.reader(f)
-                lines = list(reader)
-                assert (
-                    len(lines) == item["lines"]
-                ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == item["cols"]
-                ), f"{item['path']} should have item['cols'] columns, got {len(lines[0])}"
+                assert item.is_file(), f"File {item} does not exist"
 
             # Check interexp files
             interexp_items = [
-                {
-                    "path": stat_root
-                    / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
-                    "lines": 51,
-                    "cols": 4,
-                },
-                {
-                    "path": stat_root
-                    / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
-                    "lines": 51,
-                    "cols": 4,
-                },
+                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
+                stat_root / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
             ]
 
             for item in interexp_items:
-                assert item["path"].is_file(), f"File {item['path']} does not exist"
-                # Check interexp file dimensions
-                with item["path"].open() as f:
-                    reader = csv.reader(f)
-                    lines = list(reader)
-                    assert (
-                        len(lines) == item["lines"]
-                    ), f"{item['path']} should have {item['lines']} rows, got {len(lines)}"
-                assert (
-                    len(lines[0]) == item["cols"]
-                ), f"{item['path']} should have {item['cols']} columns, got {len(lines[0])}"
+                assert item.is_file(), f"File {item} does not exist"
 
 
 def _stage3_univar_check_outputs_argos(

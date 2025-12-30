@@ -14,7 +14,7 @@ import pathlib
 
 # 3rd party packages
 import numpy as np
-import pandas as pd
+import polars as pl
 from retry import retry
 
 # Project packages
@@ -353,7 +353,7 @@ def get_n_agents(
     return None
 
 
-def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
+def df_fill(df: pl.DataFrame, policy: str) -> pl.DataFrame:
     """
     Fill missing cells in a dataframe according to the specified fill policy.
     """
@@ -361,10 +361,10 @@ def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
         return df
 
     if policy == "pad":
-        return df.fillna(method="pad")
+        return df.select([pl.col(col).forward_fill() for col in df.columns])
 
     if policy == "zero":
-        return df.fillna(value=0)
+        return df.fill_null(0)
 
     raise RuntimeError(f"Bad fill policy {policy}")
 

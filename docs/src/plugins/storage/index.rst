@@ -98,5 +98,5 @@ in stages 3-5.  This storage plugin can be selected via
 ``--storage=storage.graphml``.
 
 Since this plugin produces ``nx.Graph`` objects, it is *not* suitable for
-processing numeric data. E.g., running the :ref:`plugins/proc/stat` plugin
+processing numeric data. E.g., running the :ref:`plugins/proc/statistics` plugin
 with this plugin selected will cause an error.

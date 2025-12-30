@@ -64,9 +64,7 @@ The required/optional .deb packages for linux-based distributions.
 
 
 def startup_checks(pkg_checks: bool) -> None:
-    logging.debug("Performing startup checks")
-
-    # Check python version
+    logging.debug("Performing startup checks [venv=%s]", sys.prefix != sys.base_prefix)
 
     # Check packages
     if sys.platform == "linux":
@@ -89,10 +87,10 @@ def _linux_pkg_checks() -> None:
     if any(
         candidate in os_info["id"] for candidate in ["debian", "ubuntu", "linuxmint"]
     ):
-        _apt_pkg_checks(dist)
+        _do_linux_pkg_checks(dist, "deb", DEBIAN_PACKAGES, ["dpkg", "-s"])
 
     elif any(candidate in os_info["id"] for candidate in ["fedora"]):
-        _rpm_pkg_checks(dist)
+        _do_linux_pkg_checks(dist, "rpm", RPM_PACKAGES, ["rpm", "-q"])
     else:
         logging.warning(
             "Unknown Linux distro '%s' detected: skipping package check", dist
@@ -103,98 +101,34 @@ def _linux_pkg_checks() -> None:
         )
 
 
-def _apt_pkg_checks(dist: str) -> None:
-    if sys.prefix != sys.base_prefix:
-        logging.debug("Running in virtual environment")
-    try:
-        # This will fail on OSX if at global scope
-        import apt  # pytype: disable=import-error # noqa: PLC0415
+def _do_linux_pkg_checks(
+    dist: str, ext: str, packages: types.OSPackagesSpec, basecmd: list[str]
+) -> None:
+    for pkg, required in packages.pkgs.items():
 
-    except ImportError:
-        logging.warning(
-            "Failed to import apt python module: Cannot check for required .deb packages."
+        res = subprocess.run(
+            [*basecmd, pkg], capture_output=True, text=True, check=False
         )
-        logging.warning(
-            "This can happen when:\n"
-            "- Running in a venv where the python version != system python "
-            "version.\n"
-            "- No packaging python module is installed at the system/user level "
-            "outside the venv."
+
+        logging.trace(
+            "Checking for .%s package %s...",
+            ext,
+            pkg,
         )
-        return
 
-    cache = apt.Cache()
-    missing = []
-
-    for pkg, required in DEBIAN_PACKAGES.pkgs.items():
-        logging.trace("Checking for .deb package '%s'", pkg)
-        if pkg not in cache or not cache[pkg].is_installed:
-            missing.append(pkg)
-
-        if missing:
+        if res.returncode != 0:
             if required:
                 raise RuntimeError(
-                    f"Required .deb packages {missing} missing on "
-                    f"Linux distribution '{dist}'. Install all "
+                    f"Required .{ext} packages {pkg} missing on "
+                    f"Linux distribution {dist}. Install all "
                     "required packages before running SIERRA! "
                     '(Did you read the "Getting Started" docs?)'
                 )
 
             logging.debug(
-                (
-                    "Recommended .deb packages %s missing on Linux "
-                    "distribution '%s'. Some SIERRA functionality will "
-                    "not be available. "
-                ),
-                missing,
-                dist,
-            )
-
-
-def _rpm_pkg_checks(dist: str) -> None:
-    if sys.prefix != sys.base_prefix:
-        logging.debug("Running in virtual environment")
-    try:
-        # This will fail on OSX if at global scope
-        import rpm  # pytype: disable=import-error # noqa: PLC0415
-
-    except ImportError:
-        logging.warning(
-            "Failed to import rpm python module: Cannot check for required .rpm packages."
-        )
-        logging.warning(
-            "This can happen when:\n"
-            "- Running in a venv where the python version != system python "
-            "version.\n"
-            "- No rpm python module is installed at the system/user level "
-            "outside the venv."
-        )
-        return
-
-    ts = rpm.TransactionSet()
-    missing = []
-
-    for pkg, required in RPM_PACKAGES.pkgs.items():
-        logging.trace("Checking for .rpm package '%s'", pkg)
-        if not ts.dbMatch("name", pkg):
-            missing.append(pkg)
-
-        if missing:
-            if required:
-                raise RuntimeError(
-                    f"Required .rpm packages {missing} missing on "
-                    f"Linux distribution '{dist}'. Install all "
-                    "required packages before running SIERRA! "
-                    '(Did you read the "Getting Started" docs?)'
-                )
-
-            logging.debug(
-                (
-                    "Recommended .rpm packages %s missing on Linux "
-                    "distribution '%s'. Some SIERRA functionality will "
-                    "not be available. "
-                ),
-                missing,
+                "Recommended .%s packages %s missing on Linux distro %s. Some SIERRA functionality will not be available. ",
+                ext,
+                pkg,
                 dist,
             )
 

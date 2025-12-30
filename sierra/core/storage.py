@@ -11,14 +11,14 @@ See :ref:`tutorials/plugin/storage` for more details.
 import pathlib
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 
 # Project packages
 import sierra.core.plugin as pm
 from sierra.core.trampoline import cmdline_parser
 
 
-def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
+def df_read(path: pathlib.Path, medium: str, **kwargs) -> pl.DataFrame:
     """
     Dispatch "read from storage" request to active ``--storage`` plugin.
     """
@@ -26,7 +26,7 @@ def df_read(path: pathlib.Path, medium: str, **kwargs) -> pd.DataFrame:
     return storage.df_read(path, **kwargs)
 
 
-def df_write(df: pd.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> None:
+def df_write(df: pl.DataFrame, path: pathlib.Path, medium: str, **kwargs) -> None:
     """
     Dispatch "write to storage" request to active ``--storage`` plugin.
     """

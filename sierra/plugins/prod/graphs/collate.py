@@ -4,16 +4,13 @@
 """Collation functionality for stage3 outputs according to configuration."""
 
 # Core packages
-import multiprocessing as mp
-import queue
-import typing as tp
 import logging
 import pathlib
 import json
 import re
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 
 # Project packages
 from sierra.core import utils, config, types, storage, batchroot
@@ -53,12 +50,18 @@ class GraphCollationInfo:
         self.df_ext = df_ext
 
         if graph_type == "summary_line":
-            self.df = pd.DataFrame(index=exp_names, columns=[summary_col])
-            self.df.index.name = "Experiment ID"
+            # Polars doesn't have index, so create explicit "Experiment ID" column
+            self.df = pl.DataFrame(
+                {"Experiment ID": exp_names, summary_col: [None] * len(exp_names)}
+            )
         elif graph_type == "stacked_line":
-            self.df = pd.DataFrame(columns=exp_names)
+            # Create empty DataFrame with experiment names as column names
+            self.df = pl.DataFrame(schema=dict.fromkeys(exp_names))
         elif graph_type == "heatmap":
-            self.df = pd.DataFrame(columns=["x", "y", "z"])
+            # Create empty DataFrame with x, y, z columns
+            self.df = pl.DataFrame(
+                schema={"x": pl.Int64, "y": pl.Int64, "z": pl.Float64}
+            )
 
         self.graph_type = graph_type
         self.summary_col = summary_col
@@ -134,7 +137,6 @@ class GraphCollator:
                     self.pathset.stat_interexp_root
                     / (target["dest_stem"] + stat.df_ext),
                     "storage.csv",
-                    index=stat.graph_type == "summary_line",
                 )
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
@@ -166,55 +168,107 @@ class GraphCollator:
             stat.some_srcs_exist = True
 
             data_df = storage.df_read(csv_ipath, "storage.csv")
-
             # 2025-07-08 [JRH]: This is the ONE place in all the graph
             # generation code which is a procedural switch on graph type.
             if target["type"] == "summary_line":
-                idx = target.get("index", -1)
-
-                if "col" not in target:
-                    raise ValueError("'col' key is required")
-
-                datapoint = data_df.loc[data_df.index[idx], target["col"]]
-                if type(target["col"]) is list:
-                    raise RuntimeError(
-                        "Selected column {} must be a scalar, not list".format(
-                            target["col"]
-                        )
-                    )
-                stat.df.loc[exp_dir, stat.summary_col] = datapoint
+                self._collate_exp_summary_line(target, exp_dir, stat, data_df)
             elif target["type"] == "stacked_line":
-                if "cols" not in target:
-                    raise ValueError("'cols' key is required")
-                if len(target["cols"]) > 1:
-                    raise ValueError(
-                        "Exactly 1 column is required for inter-exp"
-                        "stacked_line graphs"
-                    )
-
-                stat.df[exp_dir] = data_df[target["cols"]]
+                self._collate_exp_stacked_line(target, exp_dir, stat, data_df)
             elif target["type"] == "heatmap":
-                idx = target.get("index", -1)
+                self._collate_exp_heatmap(target, exp_dir, stat, data_df)
 
-                regex = r"c1-exp(\d+)\+c2-exp(\d+)"
-                res = re.match(regex, exp_dir)
+    def _collate_exp_summary_line(
+        self,
+        target: dict,
+        exp_dir: str,
+        stat: GraphCollationInfo,
+        data_df: pl.DataFrame,
+    ) -> None:
+        idx = target.get("index", -1)
 
-                assert (
-                    res and len(res.groups()) == 2
-                ), f"Unexpected directory name '{exp_dir}': does not match regex {regex}"
+        if "col" not in target:
+            raise ValueError("'col' key is required")
 
-                row = pd.DataFrame(
-                    [
-                        {
-                            # group 0 is always the whole matched string
-                            "x": int(res.group(1)),
-                            "y": int(res.group(2)),
-                            "z": data_df.loc[data_df.index[idx], target["col"]],
-                        }
-                    ]
-                )
+        # Get datapoint from data_df at specified index and column In
+        # polars, we need to add row index first if accessing by
+        # positio.n
+        data_df_indexed = data_df.with_row_index("__row_idx")
+        datapoint = data_df_indexed.filter(
+            pl.col("__row_idx") == (idx if idx >= 0 else len(data_df) + idx)
+        )[target["col"]][0]
 
-                stat.df = pd.concat([stat.df, row])
+        if type(target["col"]) is list:
+            raise RuntimeError(
+                "Selected column {} must be a scalar, not list".format(target["col"])
+            )
+
+        # Update the row where Experiment ID matches exp_dir
+        stat.df = stat.df.with_columns(
+            pl.when(pl.col("Experiment ID") == exp_dir)
+            .then(pl.lit(datapoint))
+            .otherwise(pl.col(stat.summary_col))
+            .alias(stat.summary_col)
+        )
+
+    def _collate_exp_stacked_line(
+        self,
+        target: dict,
+        exp_dir: str,
+        stat: GraphCollationInfo,
+        data_df: pl.DataFrame,
+    ) -> None:
+        if "cols" not in target:
+            raise ValueError("'cols' key is required")
+        if len(target["cols"]) > 1:
+            raise ValueError(
+                "Exactly 1 column is required for inter-exp" "stacked_line graphs"
+            )
+
+        # Get the column data - target["cols"] is a list with one element
+        col_data = data_df[target["cols"][0]]
+
+        # If this is the first column being added, we need to handle the
+        # empty DataFrame.
+        if stat.df.height == 0:
+            # Create DataFrame from the first column
+            stat.df = pl.DataFrame({exp_dir: col_data})
+        else:
+            # Add this as a new column to existing stat.df
+            stat.df = stat.df.with_columns(col_data.alias(exp_dir))
+
+    def _collate_exp_heatmap(
+        self,
+        target: dict,
+        exp_dir: str,
+        stat: GraphCollationInfo,
+        data_df: pl.DataFrame,
+    ) -> None:
+        idx = target.get("index", -1)
+
+        regex = r"c1-exp(\d+)\+c2-exp(\d+)"
+        res = re.match(regex, exp_dir)
+
+        assert (
+            res and len(res.groups()) == 2
+        ), f"Unexpected directory name '{exp_dir}': does not match regex {regex}"
+
+        # Get z value from data_df at specified index and column
+        data_df_indexed = data_df.with_row_index("__row_idx")
+        z_value = data_df_indexed.filter(
+            pl.col("__row_idx") == (idx if idx >= 0 else len(data_df) + idx)
+        )[target["col"]][0]
+
+        # Create new row as DataFrame
+        row = pl.DataFrame(
+            {
+                "x": [int(res.group(1))],
+                "y": [int(res.group(2))],
+                "z": [z_value],
+            }
+        )
+
+        # Concatenate vertically
+        stat.df = pl.concat([stat.df, row], how="vertical")
 
 
 def proc_batch_exp(
@@ -229,8 +283,6 @@ def proc_batch_exp(
     """
     utils.dir_create_checked(pathset.stat_interexp_root, exist_ok=True)
 
-    q = mp.JoinableQueue()  # type: mp.JoinableQueue
-
     loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
 
     graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
@@ -243,43 +295,30 @@ def proc_batch_exp(
 
     controller_config = loader.load_config(cmdopts, config.PROJECT_YAML.controllers)
 
-    # For each category of graphs we are generating
+    # 2026-01-05 [JRH]: Collect all graphs to process. This USED to be done in a
+    # multiprocessing pool, but that was having problems with holoviews causing
+    # hangs because (presumably) some lock being held by the main thread from
+    # processing intra-experiment graphs which causes hangs when generated
+    # graphs in sub-processes here.
     for category in targets.inter_exp_calc(
         graphs_config["inter-exp"], controller_config, cmdopts
     ):
-        # For each graph in each category
         for graph in category:
-            q.put(graph)
+            _proc_single_graph(main_config, cmdopts, pathset, criteria, graph)
 
-    parallelism = cmdopts["processing_parallelism"]
-
-    for _ in range(0, parallelism):
-        p = mp.Process(
-            target=_thread_worker,
-            args=(q, main_config, cmdopts, pathset, criteria),
-        )
-        p.start()
-
-    q.join()
+    _logger.info("All graphs processed successfully")
 
 
-def _thread_worker(
-    q: mp.Queue,
+def _proc_single_graph(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     criteria,
+    graph: types.YAMLDict,
 ) -> None:
-
+    """Process a single graph. Called by worker processes."""
     collator = GraphCollator(main_config, cmdopts, pathset)
-    while True:
-        # Wait for 3 seconds after the queue is empty before bailing
-        try:
-            graph = q.get(True, 3)
-            collator(criteria, graph)
-            q.task_done()
-        except queue.Empty:
-            break
+    collator(criteria, graph)
 
 
 __all__ = [

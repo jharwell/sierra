@@ -133,8 +133,8 @@ batch from :term:`Batch Summary Data` files.
 
 This plugin requires one of the following stage 3 plugins to have been run:
 
-- :ref:`plugins/proc/stat` (linegraphs). Without this, no statistics can be
-  included.
+- :ref:`plugins/proc/statistics` (linegraphs). Without this, no statistics can
+  be included.
 
 - :ref:`plugins/proc/copy`
 

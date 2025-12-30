@@ -11,7 +11,6 @@ import sys
 import datetime
 import logging
 import pathlib
-import typing as tp
 
 # 3rd party packages
 
@@ -36,7 +35,7 @@ class ExpShell:
     def __init__(self, exec_strict: bool) -> None:
         self.env = os.environ.copy()
         self.logger = logging.getLogger(__name__)
-        self.procs = []  # type: tp.List[subprocess.Popen]
+        self.procs = []  # type: list[subprocess.Popen]
         self.exec_strict = exec_strict
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:

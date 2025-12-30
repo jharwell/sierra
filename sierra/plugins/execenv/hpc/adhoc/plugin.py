@@ -63,7 +63,7 @@ class ExpShellCmdsGenerator:
             # Since parallel doesn't export any envvars to child processes by
             # default, we add some common ones.
             types.ShellCmdSpec(
-                cmd='export PARALLEL="${PARALLEL} --env LD_LIBRARY_PATH --env PYTHONPATH"',
+                cmd='export PARALLEL="--env LD_LIBRARY_PATH --env PYTHONPATH"',
                 shell=True,
                 wait=True,
                 env=True,

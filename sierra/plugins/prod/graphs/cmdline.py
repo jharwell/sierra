@@ -173,8 +173,9 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
         type=float,
         help="""
              Specify an additional multiplicative factor for computing the # of
-             datapoints captured duration an :term:`Experiment` to modify the
-             duration * ticks_per_sec default.
+             datapoints captured duration an :term:`Experiment`. This is useful
+             if project code has hard-coded down-sampling on experiment length
+             (e.g., it only outputs data every 10 ticks).
              """,
         default=1.0,
     )

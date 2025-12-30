@@ -15,13 +15,12 @@ because comparing curves of stddev is not meaningful.
 
 # Core packages
 import multiprocessing as mp
-import typing as tp
 import queue
 import logging
 import pathlib
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 import yaml
 
 # Project packages
@@ -183,9 +182,9 @@ class ExpDataGatherer(gather.BaseGatherer):
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
-        if not plugin.supports_output(pd.DataFrame):
+        if not plugin.supports_output(pl.DataFrame):
             raise RuntimeError(
-                "This plugin can only be used with storage plugins which support pd.DataFrame."
+                "This plugin can only be used with storage plugins which support pl.DataFrame."
             )
 
         config_path = pathlib.Path(
@@ -249,16 +248,23 @@ def _proc_single_exp(
     utils.dir_create_checked(batch_stat_collate_root, exist_ok=True)
 
     collated = {}
-
     key = (spec.gather.item_stem_path, spec.gather.collate_col)
-    collated[key] = pd.DataFrame(index=spec.dfs[0].index, columns=spec.exp_run_names)
+
+    # Build dictionary of columns instead of starting with empty DataFrame
+    columns_dict = {}
+
     for i, df in enumerate(spec.dfs):
         assert (
             spec.gather.collate_col in df.columns
         ), f"{spec.gather.collate_col} not in {df.columns}"
 
         collate_df = df[spec.gather.collate_col]
-        collated[key][spec.exp_run_names[i]] = collate_df
+
+        # Add column to dictionary
+        columns_dict[spec.exp_run_names[i]] = collate_df
+
+    # Create DataFrame from the dictionary of columns
+    collated[key] = pl.DataFrame(columns_dict)
 
     for k, v in collated.items():
         file_path, col = k
@@ -270,7 +276,7 @@ def _proc_single_exp(
         # run; if something is in a subdir there, it will show up in a subdir in
         # the collated outputs too.
         fname = f"{file_path.stem}-{col}" + config.STORAGE_EXT["csv"]
-        storage.df_write(df, parent / fname, "storage.csv", index=False)
+        storage.df_write(df, parent / fname, "storage.csv")
 
 
 __all__ = [

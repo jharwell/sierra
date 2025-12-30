@@ -14,7 +14,7 @@ import pathlib
 import typing as tp
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 
 # Project packages
 from sierra.core import utils, config, storage
@@ -72,7 +72,6 @@ class IntraExpPreparer:
                     df,
                     self.opath_stem / (opath_leaf + exts[k]),
                     "storage.csv",
-                    index=True,
                 )
 
     def for_sc(
@@ -109,7 +108,6 @@ class IntraExpPreparer:
                     df,
                     self.opath_stem / (opath_leaf + exts[k]),
                     "storage.csv",
-                    index=True,
                 )
 
     def _cc_for_stat(
@@ -119,18 +117,21 @@ class IntraExpPreparer:
         index: int,
         inc_exps: tp.Optional[str],
         controller: str,
-    ) -> pd.DataFrame:
+    ) -> tp.Optional[pl.DataFrame]:
 
         if utils.path_exists(opath):
-            cum_df = storage.df_read(opath, "storage.csv", index_col="Experiment ID")
+            cum_df = storage.df_read(opath, "storage.csv")
         else:
-            cum_df = pd.DataFrame(index=self.criteria.gen_exp_names())
-            cum_df.index.name = "Experiment ID"
+            cum_df = pl.DataFrame({"Experiment ID": self.criteria.gen_exp_names()})
 
         if utils.path_exists(ipath):
             df = storage.df_read(ipath, "storage.csv")
-            cum_df[controller] = df.iloc[index]
-            return cum_df
+
+            # Get the row at the specified index
+            row_data = df.row(index if index >= 0 else len(df) + index)
+
+            # Add as a new column to cum_df
+            return cum_df.with_columns(pl.Series(controller, row_data))
 
         return None
 
@@ -141,19 +142,20 @@ class IntraExpPreparer:
         index: int,
         inc_exps: tp.Optional[str],
         scenario: str,
-    ) -> pd.DataFrame:
+    ) -> tp.Optional[pl.DataFrame]:
         if utils.path_exists(opath):
-            cum_df = storage.df_read(opath, "storage.csv", index_col="Experiment ID")
+            cum_df = storage.df_read(opath, "storage.csv")
         else:
-            cum_df = pd.DataFrame(index=self.criteria.gen_exp_names())
-            cum_df.index.name = "Experiment ID"
+            cum_df = pl.DataFrame({"Experiment ID": self.criteria.gen_exp_names()})
 
         if utils.path_exists(ipath):
             df = storage.df_read(ipath, "storage.csv")
 
-            cum_df[scenario] = df.iloc[index]
+            # Get the row at the specified index
+            row_data = df.row(index if index >= 0 else len(df) + index)
 
-            return cum_df
+            # Add as a new column to cum_df
+            return cum_df.with_columns(pl.Series(scenario, row_data))
 
         return None
 

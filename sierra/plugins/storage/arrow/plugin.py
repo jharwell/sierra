@@ -2,7 +2,7 @@
 #
 #  SPDX-License-Identifier: MIT
 """
-Plugin for reading/writing apache .arrow files.
+Plugin for reading/writing apache .arrow files using polars.
 """
 
 # Core packages
@@ -11,7 +11,7 @@ import typing as tp
 
 # 3rd party packages
 from retry import retry
-import pandas as pd
+import polars as pl
 
 # Project packages
 
@@ -21,22 +21,22 @@ def supports_input(fmt: str) -> bool:
 
 
 def supports_output(fmt: type) -> bool:
-    return fmt is pd.DataFrame
+    return fmt is pl.DataFrame
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
+@retry(Exception, tries=10, delay=0.100, backoff=1.1)
 def df_read(
     path: pathlib.Path, run_output_root: tp.Optional[pathlib.Path] = None, **kwargs
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     """
-    Read a pandas dataframe from an apache .arrow file.
+    Read a polars dataframe from an apache .arrow file.
     """
-    return pd.read_feather(path)
+    return pl.read_ipc(path, **kwargs)
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)
-def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
+@retry(Exception, tries=10, delay=0.100, backoff=1.1)
+def df_write(df: pl.DataFrame, path: pathlib.Path, **kwargs) -> None:
     """
-    Write a pandas dataframe to a apache .arrow file.
+    Write a polars dataframe to a apache .arrow file.
     """
-    df.to_feather(path, **kwargs)
+    df.write_ipc(path, **kwargs)

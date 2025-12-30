@@ -120,7 +120,7 @@ The following environmental variables are used in the PBS HPC environment:
    * - :envvar:`PARALLEL`
 
      - Used to transfer environment variables into the GNU parallel
-       environment. SIERRA appends to this variable.
+       environment.
 
    * - :envvar:`LD_LIBRARY_PATH`
 
@@ -175,7 +175,7 @@ not defined SIERRA will throw an error.
    * - :envvar:`PARALLEL`
 
      - Used to transfer environment variables into the GNU parallel
-       environment. SIERRA appends to this variable.
+       environment.
 
      - N/A
 
@@ -241,7 +241,7 @@ The following environmental variables are used in the Adhoc HPC environment:
    * - :envvar:`PARALLEL`
 
      - Used to transfer environment variables into the GNU parallel
-       environment. SIERRA appends to this variable.
+       environment.
 
      - N/A
 

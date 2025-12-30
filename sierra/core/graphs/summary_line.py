@@ -14,7 +14,7 @@ import pathlib
 import logging
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 import holoviews as hv
 import matplotlib.pyplot as plt
 import bokeh
@@ -109,18 +109,20 @@ def generate(  # noqa: PLR0913
         if large_text
         else config.GRAPHS["text_size_small"]
     )
-
-    df = storage.df_read(input_fpath, medium, index_col="Experiment ID")
+    df = storage.df_read(input_fpath, medium)
     # Column 0 is the 'Experiment ID' index, which we don't want included as
     # a vdim
-    cols = df.columns.tolist()
-    df["xticks"] = xticks
+    cols = df.columns[1:]
+    df = df.with_columns(pl.Series("xticks", xticks))
 
-    dataset = hv.Dataset(data=df.reset_index(), kdims=["xticks"], vdims=cols)
-    assert len(df.index) == len(
+    # Convert to pandas for HoloViews compatibility
+    df_pd = df.to_pandas()
+    dataset = hv.Dataset(data=df_pd.reset_index(), kdims=["xticks"], vdims=cols)
+
+    assert len(df) == len(
         xticks
     ), "Length mismatch between xticks,# data points: {} vs {}".format(
-        len(xticks), len(df.index)
+        len(xticks), len(df)
     )
 
     model_info = _read_model_info(paths.model_root, input_stem, medium, xticks)
@@ -247,7 +249,7 @@ def _plot_lines(
 def _plot_stats(
     dataset: hv.Dataset,
     setting: str,
-    stat_dfs: dict[str, pd.DataFrame],
+    stat_dfs: dict[str, pl.DataFrame],
     backend: str,
 ) -> hv.NdOverlay:
     """
@@ -260,7 +262,7 @@ def _plot_stats(
 
 
 def _plot_conf95_stats(
-    dataset: hv.Dataset, setting: str, stat_dfs: dict[str, pd.DataFrame]
+    dataset: hv.Dataset, setting: str, stat_dfs: dict[str, pl.DataFrame]
 ) -> hv.NdOverlay:
     if setting not in ["conf95", "all"]:
         return hv.Overlay()
@@ -276,15 +278,16 @@ def _plot_conf95_stats(
         )
         return hv.Overlay()
 
-    # Stddevs have to be added to dataset to be able to plot via overlays,
-    # afaict.
-    stddevs = pd.DataFrame()
-
+    # Build stddev columns
+    stddev_cols = {}
     for c in dataset.vdims:
-        stddevs[f"{c}_stddev_l"] = dataset[c] - 2 * stat_dfs["stddev"][c.name].abs()
-        stddevs[f"{c}_stddev_u"] = dataset[c] + 2 * stat_dfs["stddev"][c.name].abs()
-    stddevs.index = dataset.data.index
-    dataset.data = pd.concat([dataset.dframe(), stddevs], axis=1)
+        stddev_vals = stat_dfs["stddev"][c.name].abs().to_numpy()
+        stddev_cols[f"{c}_stddev_l"] = dataset.data[c.name] - 2 * stddev_vals
+        stddev_cols[f"{c}_stddev_u"] = dataset.data[c.name] + 2 * stddev_vals
+
+    # Add stddev columns to dataset
+    for col_name, col_data in stddev_cols.items():
+        dataset.data[col_name] = col_data
 
     return hv.Overlay(
         [
@@ -301,7 +304,7 @@ def _plot_conf95_stats(
 def _plot_bw_stats(
     dataset: hv.Dataset,
     setting: str,
-    stat_dfs: dict[str, pd.DataFrame],
+    stat_dfs: dict[str, pl.DataFrame],
     backend: str,
 ) -> hv.NdOverlay:
     if setting not in ["bw", "all"]:
@@ -328,15 +331,15 @@ def _plot_bw_stats(
     for _, v in enumerate(dataset.vdims):
 
         # For each datapoint captured from an experiment in the batch
-        for j in range(0, len(dataset.data.values)):
+        for j in range(0, len(dataset.data)):
             col = v.name
 
-            # Read stats from file
-            q1 = stat_dfs["q1"][col].iloc[j]
-            median = stat_dfs["median"][col].iloc[j]
-            q3 = stat_dfs["q3"][col].iloc[j]
-            whishi = stat_dfs["whislo"][col].iloc[j]
-            whislo = stat_dfs["whishi"][col].iloc[j]
+            # Read stats from file (convert to scalar values)
+            q1 = stat_dfs["q1"][col].item(j)
+            median = stat_dfs["median"][col].item(j)
+            q3 = stat_dfs["q3"][col].item(j)
+            whishi = stat_dfs["whislo"][col].item(j)
+            whislo = stat_dfs["whishi"][col].item(j)
 
             # Box (Rectangle from q1 to q3).
             # Args: x center, y center, x width, y height
@@ -411,12 +414,11 @@ def _plot_ticks(
 
 def _read_stats(
     setting: str, medium: str, stats_root: pathlib.Path, input_stem: str
-) -> dict[str, list[pd.DataFrame]]:
+) -> dict[str, pl.DataFrame]:
     dfs = {}
 
     dfs.update(_read_conf95_stats(setting, medium, stats_root, input_stem))
     dfs.update(_read_bw_stats(setting, medium, stats_root, input_stem))
-
     return dfs
 
 
@@ -425,7 +427,7 @@ def _read_conf95_stats(
     medium: str,
     stats_root: pathlib.Path,
     input_stem: str,
-) -> dict[str, list[pd.DataFrame]]:
+) -> dict[str, pl.DataFrame]:
     dfs = {}
 
     exts = config.STATS["conf95"].exts
@@ -434,7 +436,7 @@ def _read_conf95_stats(
             ipath = stats_root / (input_stem + exts[k])
 
             if utils.path_exists(ipath):
-                dfs[k] = storage.df_read(ipath, medium, index_col="Experiment ID")
+                dfs[k] = storage.df_read(ipath, medium)
             else:
                 _logger.warning("%s file not found for '%s'", exts[k], input_stem)
 
@@ -446,7 +448,7 @@ def _read_bw_stats(
     medium: str,
     stats_root: pathlib.Path,
     input_stem: str,
-) -> dict[str, list[pd.DataFrame]]:
+) -> dict[str, pl.DataFrame]:
     dfs = {}
 
     exts = config.STATS["bw"].exts
@@ -456,7 +458,7 @@ def _read_bw_stats(
             ipath = stats_root / (input_stem + exts[k])
 
             if utils.path_exists(ipath):
-                dfs[k] = storage.df_read(ipath, medium, index_col="Experiment ID")
+                dfs[k] = storage.df_read(ipath, medium)
             else:
                 _logger.warning("%s file not found for '%s'", exts[k], input_stem)
 
@@ -490,14 +492,16 @@ def _read_model_info(
 
     info = models.ModelInfo()
 
-    df = storage.df_read(modelf, medium, index_col="Experiment ID")
+    df = storage.df_read(modelf, medium)
 
     # Column 0 is the 'Experiment ID' index, which we don't want included as
     # a vdim
-    cols = df.columns.tolist()
-    df["xticks"] = xticks
+    cols = df.columns[1:]
+    df = df.with_columns(pl.Series("xticks", xticks))
 
-    info.dataset = hv.Dataset(data=df.reset_index(), kdims=["xticks"], vdims=cols)
+    # Convert to pandas for HoloViews compatibility
+    df_pd = df.to_pandas()
+    info.dataset = hv.Dataset(data=df_pd.reset_index(), kdims=["xticks"], vdims=cols)
 
     with utils.utf8open(legendf, "r") as f:
         info.legend = f.read().splitlines()

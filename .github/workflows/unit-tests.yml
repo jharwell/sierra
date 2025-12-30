@@ -13,7 +13,7 @@ jobs:
           - jharwell/ubuntu24.04-sierra:latest
 
         python-version:
-          - "3.10"
+          - 3.9
           - 3.12
 
     steps:

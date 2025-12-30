@@ -14,14 +14,15 @@ import pathlib
 import os
 
 # 3rd party packages
-import pandas as pd
+import polars as pl
 import yaml
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, utils, stat_kernels, storage, batchroot, config
+from sierra.core import types, utils, storage, batchroot, config
 from sierra.core.pipeline.stage3 import gather
 import sierra.core.plugin as pm
+from sierra.plugins.proc.statistics import kernels
 
 _logger = logging.getLogger(__name__)
 
@@ -67,9 +68,9 @@ class DataGatherer(gather.BaseGatherer):
         proj_output_root = run_output_root / str(self.run_metrics_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
-        if not plugin.supports_output(pd.DataFrame):
+        if not plugin.supports_output(pl.DataFrame):
             raise RuntimeError(
-                "This plugin can only be used with storage plugins which support pd.DataFrame."
+                "This plugin can only be used with storage plugins which support pl.DataFrame."
             )
 
         for item in proj_output_root.rglob("*"):
@@ -350,34 +351,38 @@ def _proc_single_exp(
 ) -> None:
     """Generate statistics from output files for all runs within an experiment.
 
-    You *CANNOT* use logging ANYWHERE during processing .csv files.  Why ?  I
-    *think* because of a bug in the logging module it If you get unlucky enough
-    to spawn the process which enters the __call__() method in this class while
-    another logging statement is in progress (and is therefore holding an
-    internal logging module lock), then the underlying fork() call will copy the
-    lock in the acquired state.  Then, when this class goes to try to log
-    something, it deadlocks with it.
+    You *CANNOT* use logging ANYWHERE during processing :term:`Raw Output Data`
+    files.  Why ?  I *think* because of a bug in the logging module it If you
+    get unlucky enough to spawn the process which enters the ``__call__()``
+    method in this class while another logging statement is in progress (and is
+    therefore holding an internal logging module lock), then the underlying
+    ``fork()`` call will copy the lock in the acquired state.  Then, when this
+    class goes to try to log something, it deadlocks with it.
 
     You also can't just create loggers with unique names, as this seems to be
     something like the GIL, but for the logging module.  Sometimes python sucks.
     """
-    csv_concat = pd.concat(spec.dfs)
+    # Add row index to each DataFrame BEFORE concatenating
+    indexed_dfs = [df.with_row_index("row_idx") for df in spec.dfs]
+
+    # Now concatenate - this will have multiple rows with the same row_idx
+    csv_concat = pl.concat(indexed_dfs, how="vertical")
+
+    # Group by row_idx - now each group has N runs worth of data
+    by_row_index = csv_concat.group_by("row_idx")
     exp_stat_root = pathset.stat_root / spec.gather.exp_name
 
     utils.dir_create_checked(exp_stat_root, exist_ok=True)
 
-    by_row_index = csv_concat.groupby(csv_concat.index)
-
     dfs = {}
-
     if stat_opts["dist_stats"] in ["none", "all"]:
-        dfs.update(stat_kernels.mean(by_row_index))
+        dfs.update(kernels.mean(by_row_index, csv_concat))
 
     if stat_opts["dist_stats"] in ["conf95", "all"]:
-        dfs.update(stat_kernels.conf95(by_row_index))
+        dfs.update(kernels.conf95(by_row_index, csv_concat))
 
     if stat_opts["dist_stats"] in ["bw", "all"]:
-        dfs.update(stat_kernels.bw(by_row_index))
+        dfs.update(kernels.bw(by_row_index, csv_concat))
 
     for ext, df in dfs.items():
         opath = exp_stat_root / spec.gather.item_stem_path
@@ -388,7 +393,6 @@ def _proc_single_exp(
             utils.df_fill(df, stat_opts["df_homogenize"]),
             opath,
             "storage.csv",
-            index=False,
         )
 
 
