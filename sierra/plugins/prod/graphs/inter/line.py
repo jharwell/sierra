@@ -1,7 +1,7 @@
 #
 # Copyright 2024 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """Inter-experiment linegraph generation in stage 4."""
 

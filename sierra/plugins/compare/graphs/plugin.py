@@ -1,7 +1,7 @@
 #
 # Copyright 2025 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """
 Stage5 plugin to compare graphs across {controllers, scenarios, criterias}.

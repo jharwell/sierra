@@ -1,7 +1,7 @@
 #
 # Copyright 2024 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """
 Utility module for functionality for managing all the paths used in stage5.

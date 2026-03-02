@@ -1,7 +1,7 @@
 #
 # Copyright 2025 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """Functionality for runner different types of models.
 

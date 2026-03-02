@@ -1,7 +1,7 @@
 #
 # Copyright 2024 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """Preprocess inter-experiment outputs for stage 5.
 

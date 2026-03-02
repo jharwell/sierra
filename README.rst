@@ -18,7 +18,8 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=devel
 .. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
 
-.. |license| image:: https://img.shields.io/badge/License-MIT-blue.svg
+.. |license| image:: https://img.shields.io/github/license/jharwell/sierra
+   :alt: GitHub License
 
 .. |doi| image:: https://zenodo.org/badge/125774567.svg
          :target: https://zenodo.org/badge/latestdoi/125774567

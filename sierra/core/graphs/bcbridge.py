@@ -1,7 +1,7 @@
 #
 # Copyright 2025 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """
 Bridge/glue interfaces/bindings for :term:`Batch Criteria` which can be graphed.

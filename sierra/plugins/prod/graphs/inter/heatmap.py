@@ -1,7 +1,7 @@
 #
 # Copyright 2024 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """Generate heatmaps *across* multiple :term:`Experiments <Experiment>`."""
 

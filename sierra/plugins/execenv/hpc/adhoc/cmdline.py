@@ -1,7 +1,7 @@
 #
 # Copyright 2025 John Harwell, All rights reserved.
 #
-# SPDX-License Identifier: MIT
+# SPDX-License-Identifier: MIT
 #
 """Command line definitions for the :ref:`plugins/execenv/hpc/PBS`."""
 
