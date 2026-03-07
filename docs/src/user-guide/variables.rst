@@ -1,12 +1,17 @@
-.. _usage/vars:
+.. _user-guide/vars:
 
 =============================
 Configurable SIERRA Variables
 =============================
 
-Non-:term:`Batch Criteria` variables which you can use to configure
-simulations. All batch criteria are variables, but not all variables are batch
-criteria.
+These are non-:term:`Batch Criteria` variables you can use to configure
+simulations. The distinction matters: batch criteria define the axes of
+variation *across* a batch experiment — each value of a criterion generates a
+separate experiment. Variables, by contrast, apply uniformly to every
+experiment in the batch. All batch criteria are variables, but not all
+variables are batch criteria. See :ref:`usage/bc` for the batch criteria
+reference.
+
 
 - :ref:`Experiment Setup <usage/vars/expsetup>`
 
@@ -15,37 +20,47 @@ criteria.
 Experiment Setup
 ================
 
-Configure :term:`Experiment` time: length, controller cadence (:term:`Tick`
-duration/timestep), and how many datapoints to capture per :term:`Experimental
-Run`.
+Configures :term:`Experiment` duration, controller cadence (:term:`Tick`
+duration/timestep), and the number of datapoints captured per
+:term:`Experimental Run`. Supported by the ARGoS and ROS1-based engines; if
+your engine does not support it, it has no effect.
 
 .. _usage/vars/expsetup/cmdline:
 
 Cmdline Syntax
 --------------
 
-``T{duration}[.K{ticks_per_sec}]``
+``exp_setup.T{duration}[.K{ticks_per_sec}]``
 
-- ``duration`` - Duration of timesteps in *seconds* (not timesteps/ticks).
+- ``duration`` — Duration of the experiment in *seconds* (not
+  timesteps/ticks).
 
-- ``ticks_per_sec`` - How many times each controller will be run per
-  second. Well, controllers can actually run more often than this if they want,
-  but this should be how many times/sec they output data, so that the #
-  datapoints gathered can (roughly) be calculated as ``duration *
-  ticks_per_sec`` for the purpose of generating :term:`products <Product>`.
+- ``ticks_per_sec`` — How many times per second each controller outputs data.
+  Controllers may execute more frequently internally, but SIERRA uses this
+  value to determine how many datapoints to expect per run. The number of
+  captured datapoints is approximately ``duration * ticks_per_sec``.
 
-``duration`` must always be specified, but ``ticks_per_sec`` is optional.
+``duration`` must always be specified. ``ticks_per_sec`` is optional.
 
-.. IMPORTANT:: All :Term:`Experimental Runs <Experimental Run>` *must* respect
-               these parameters or some of the finer points of SIERRA
-               functionality won't work at best, and BAD things will happen at
-               worst. Probably.
+.. IMPORTANT::
+
+   All :term:`Experimental Runs <Experimental Run>` must produce the expected
+   number of datapoints. If a run produces fewer, SIERRA's graph generation
+   will produce incorrect results because it computes axis ranges and
+   statistics from the expected count.
 
 Examples
 --------
 
-- ``exp_setup.T1000``: Experimental run will be 1,000 seconds long and have
-  1,000*5=5,000 timesteps, with default (50) # datapoints.
+- ``exp_setup.T1000``: Run is 1,000 seconds long with the default 5
+  ticks/sec, giving 1,000 × 5 = 5,000 timesteps, assuming the engine default
+  is capturing one datapoint pe 100 timesteps, giving approximately 50 datapoints per run.
 
-- ``exp_setup.T10000.K10``: Experimental run will be 10,000 seconds long, and
-  have 10,000*10=100,000 timesteps with default (50) # datapoints.
+- ``exp_setup.T10000.K10``: Run is 10,000 seconds long with 10 ticks/sec,
+  giving 10,000 × 10 = 100,000 timesteps and approximately 50 datapoints
+  (same default capture interval of one per 100 timesteps).
+
+.. NOTE:: If you are writing a new engine plugin and your engine models
+   experiment time in terms of duration and controller cadence, adopting
+   ``--exp-setup`` gives users a consistent interface across engines. See
+   :ref:`tutorials/plugin/engine` for details.

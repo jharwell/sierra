@@ -1,8 +1,8 @@
 .. _plugins/expdef:
 
-=============================
-Experiment Definition Plugins
-=============================
+================================
+Experiment Definition (--expdef)
+================================
 
 SIERRA is capable of reading ``--expdef-template`` from a number of formats via
 ``--expdef`` plugins.  Before diving into the details of the plugins, it is

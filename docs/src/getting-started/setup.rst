@@ -24,10 +24,11 @@ Step 1: Check Requirements
 Before writing any plugin code, verify your setup meets SIERRA's requirements
 for experimental design and output format:
 
-- :ref:`req/os` — supported operating systems.
-- :ref:`req/exp` — how arena sizes and experiment definitions must be structured.
-- :ref:`req/project` — what SIERRA assumes about how your code outputs data and
-  how experimental runs are launched.
+- :ref:`getting-started/installation/os` — supported operating systems.
+- :ref:`req/getting-started/requirements` — how arena sizes and experiment
+  definitions must be structured.
+- :ref:`user-guide/running-experiments` — what SIERRA assumes about how your
+  code outputs data and how experimental runs are launched.
 
 If your setup doesn't meet a requirement, the requirements page explains which
 plugin to write to accommodate it.

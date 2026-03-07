@@ -1,4 +1,4 @@
-.. _usage/pipeline:
+.. _concepts/pipeline:
 
 ===============
 SIERRA Pipeline
@@ -222,10 +222,3 @@ The following plugins are active in this stage:
 
 
 Not part of default pipeline.
-
-Running The Pipeline
-====================
-
-When invoked SIERRA will run one or more stages of its execution path, as
-specified via ``--pipeline`` on the cmdline. Only the first 4 pipeline stages
-will run by default.

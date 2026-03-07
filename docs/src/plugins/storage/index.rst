@@ -1,8 +1,8 @@
 .. _plugins/storage:
 
-===============
-Storage Plugins
-===============
+===================
+Storage (--storage)
+===================
 
 Storage plugins tell SIERRA how to handle file I/O in stages 3-5. Specifically:
 

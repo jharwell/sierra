@@ -1,8 +1,8 @@
 .. _plugins/execenv:
 
-=============================
-Execution Environment Plugins
-=============================
+=================================
+Execution Environment (--execenv)
+=================================
 
 High Performance Computing (HPC) Plugins
 ========================================
@@ -50,11 +50,11 @@ different type of compute node SIERRA might be run on, for maximum efficiency.
 .. toctree::
    :maxdepth: 1
 
-   hpc/local.rst
-   hpc/adhoc.rst
-   hpc/pbs.rst
-   hpc/slurm.rst
-   hpc/awsbatch.rst
+   hpc/local
+   hpc/adhoc
+   hpc/pbs
+   hpc/slurm
+   hpc/awsbatch
 
 Prefect-based Plugins
 =====================

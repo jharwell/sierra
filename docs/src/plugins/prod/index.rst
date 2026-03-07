@@ -5,9 +5,9 @@
 
 .. _plugins/prod:
 
-==========================
-Product Generation Plugins
-==========================
+===========================
+Product Generation (--prod)
+===========================
 
 These plugins run during stage 4, and therefore are dependent on certain stage 3
 plugins having been run (each plugin calls out their dependencies). See

@@ -4,18 +4,86 @@
 SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 ===========================================================================
 
-SIERRA is a framework for automating computational processing and scientific
-research. It manages the full lifecycle: experiment definition, parameter
-expansion, execution, data collection, post-processing, and artifact generation
-— with systematic reproducibility built in throughout.
+SIERRA is a command line tool and plugin framework for:
+
+- Automating scientific research, providing faculties for seamless experiment
+  generation, execution, and results processing.
+
+- Accelerating R&D cycles by allowing researchers/developers to focus on the
+  “science” aspects: developing new things and designing experiments to test
+  them, rather than the engineering aspects (writing scripts, configuring
+  environments, etc).
+
+- Maximizing the reproducibility of scientific research, particularly in AI; it
+  is designed so that *no* copy-pasting of code/configuration between projects
+  is needed.
+
+- Managing the full experiment lifecycle: experiment definition, parameter
+  expansion, execution, data collection, post-processing, and artifact
+  generation.
+
+It supports a wide range of execution engines/environments, experiment
+input/output formats, and generatable products (e.g., graphs) via
+plugins. SIERRA supports mix-and-match between all plugin types, subject to
+restrictions within the plugins themselves. This is THE most powerful feature of
+SIERRA, and makes it very easy to run experiments on different hardware,
+targeting different simulators, generating different outputs, etc., all with
+little to no configuration changes by the user.
 
 Typical use cases include robotics simulation studies, ML hyperparameter sweeps,
 large parameter studies in scientific computing, and automated benchmarking
 pipelines. See :ref:`getting-started/why-sierra` for concrete examples.
 
+.. admonition:: New to SIERRA?
+
+   Start with :ref:`concepts/index` to understand the core model, then try the
+   :ref:`getting-started/trial` to see it in action — no plugin setup required.
+
+Pipeline Overview
+-----------------
+
+SIERRA experiments pass through a five-stage pipeline. Each stage is
+independently re-runnable, so you can re-generate graphs without re-running
+experiments, and each stage is extensible through the SIERRA plugin system.
+
+.. code-block:: text
+
+   Stage 1 │ Batch Experiment Definition & Instantiation
+           │
+   Stage 2 │ Experiment Execution
+           │
+   Stage 3 │ Data Post-Processing
+           │
+   Stage 4 │ Artifact Production (graphs, videos, reports)
+           │
+   Stage 5 │ Cross-Batch Comparison
+
+See :ref:`concepts/pipeline` for a detailed walkthrough.
+
+.. dropdown:: Architecture Diagram
+   :icon: image
+
+   .. figure:: figures/architecture.png
+
+      SIERRA architecture, organised by pipeline stage (left to right).
+      High-level inputs/outputs and active plugins are shown for each stage.
+      "..." indicates areas of further extensibility via new plugins.
+      "Host machine" indicates the machine SIERRA was invoked on.
+
+Get Started
+-----------
+
 .. grid:: 2
    :gutter: 2
    :margin: 4 4 0 0
+
+   .. grid-item-card:: 💡 Key Concepts
+      :link: concepts/index
+      :link-type: doc
+      :class-card: sd-border-1
+
+      Understand experiments, batch criteria, the pipeline, and the runtime
+      tree before diving in.
 
    .. grid-item-card:: 🚀 5-Minute Trial
       :link: getting-started/trial
@@ -31,51 +99,12 @@ pipelines. See :ref:`getting-started/why-sierra` for concrete examples.
 
       Install SIERRA and integrate it with your own code and experiments.
 
-   .. grid-item-card:: 💡 Key Concepts
-      :link: concepts/index
-      :link-type: doc
-      :class-card: sd-border-1
-
-      Experiments, batch criteria, the pipeline, and the runtime tree.
-
-   .. grid-item-card:: 🔌 Plugin Reference
-      :link: plugins/index
-      :link-type: doc
+   .. grid-item-card:: 🔌 Plugins Overview
+      :link: plugins/overview
+      :link-type: ref
       :class-card: sd-border-1
 
       Engines, execution environments, storage formats, and more.
-
-.. dropdown:: Pipeline Overview
-   :icon: image
-
-   SIERRA experiments pass through a five-stage pipeline. Each stage is
-   independently re-runnable, so you can re-generate graphs without
-   re-running experiments.
-
-   .. code-block:: text
-
-      Stage 1 │ Experiment Definition & Batch Expansion
-              │
-      Stage 2 │ Experiment Execution
-              │
-      Stage 3 │ Data Post-Processing
-              │
-      Stage 4 │ Artifact Production (graphs, videos, reports)
-              │
-      Stage 5 │ Cross-Batch Comparison
-
-   Each stage is extensible through the SIERRA plugin system.
-   See :doc:`concepts/pipeline` for details.
-
-.. dropdown:: Architecture Diagram
-   :icon: image
-
-   .. figure:: figures/architecture.png
-
-      SIERRA architecture, organised by pipeline stage (left to right).
-      High-level inputs/outputs and active plugins are shown for each stage.
-      "..." indicates areas of further extensibility via new plugins.
-      "Host machine" indicates the machine SIERRA was invoked on.
 
 .. toctree::
    :hidden:
@@ -88,110 +117,103 @@ pipelines. See :ref:`getting-started/why-sierra` for concrete examples.
    src/getting-started/why-sierra
 
 .. toctree::
-   :hidden:
    :caption: Concepts
+   :hidden:
 
-   concepts/index
-   concepts/experiments
-   concepts/batch-criteria
-   concepts/pipeline
-   concepts/runtime-tree
+   src/concepts/experimental-design
+   src/concepts/batch-criteria
+   src/concepts/dataflow
+   src/concepts/pipeline
+   src/concepts/run-time-tree
 
 .. toctree::
    :hidden:
    :caption: User Guide
 
-   user-guide/index
-   user-guide/cli
-   user-guide/configuration
-   user-guide/running-experiments
-   user-guide/postprocessing
+   src/user-guide/index
+   src/user-guide/examples
+   src/user-guide/variables
+   src/user-guide/running-experiments
+   src/user-guide/postprocessing
+
+.. toctree::
+   :hidden:
+   :caption: Configuring SIERRA Projects
+
+   src/tutorials/project/project.rst
+   src/tutorials/project/config/index.rst
+   src/tutorials/project/generators.rst
+   src/tutorials/project/new-bc.rst
+   src/tutorials/project/hooks.rst
+
+.. toctree::
+   :hidden:
+   :caption: Extending SIERRA With New Plugins
+
+   src/tutorials/plugin/engine/index.rst
+   src/tutorials/plugin/execenv/index.rst
+   src/tutorials/plugin/storage/index.rst
+   src/tutorials/plugin/expdef/index.rst
+   src/tutorials/plugin/proc/index.rst
+   src/tutorials/plugin/prod/index.rst
+   src/tutorials/plugin/compare/index.rst
 
 .. toctree::
    :hidden:
    :caption: Plugins
 
-   plugins/index
-   plugins/plugin-types
-   plugins/engine-plugins
-   plugins/processor-plugins
-   plugins/producer-plugins
-   plugins/storage-plugins
-   plugins/expdef-plugins
-   plugins/developer-guide
+   src/plugins/overview
+   src/plugins/engine/index
+   src/plugins/execenv/index
+   src/plugins/proc/index
+   src/plugins/prod/index
+   src/plugins/storage/index
+   src/plugins/expdef/index
+   src/plugins/compare/index
+   src/plugins/developer-guide
 
 .. toctree::
-   :hidden:
    :caption: Architecture
+   :hidden:
 
-   architecture/index
-   architecture/system-overview
-   architecture/stage3-dataflow
-   architecture/stage4-dataflow
-   architecture/stage5-dataflow
+   src/architecture/execution-model
+   src/architecture/plugin-system
+   src/architecture/deep-dive
 
 .. toctree::
    :hidden:
    :caption: Reference
 
-   reference/cli-reference
-   reference/configuration-reference
-   reference/glossary
-   reference/troubleshooting
+   src/reference/cli
+   src/reference/glossary
+   src/reference/faq
+   src/reference/subprograms
+   src/reference/environment
    /autoapi/index
 
 .. toctree::
    :hidden:
    :caption: Project
 
-   reference/contributing
-   reference/roadmap
-   reference/philosophy
-   reference/faq
-
-Citing SIERRA
-=============
-
-If you use SIERRA and find it helpful, please cite:
-
-.. code-block:: bibtex
-
-   @inproceedings{Harwell2022a-SIERRA,
-    author    = {Harwell, John and Lowmanstone, London and Gini, Maria},
-    title     = {SIERRA: A Modular Framework for Research Automation},
-    year      = {2022},
-    isbn      = {9781450392136},
-    publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
-    address   = {Richland, SC},
-    booktitle = {Proceedings of the 21st International Conference on Autonomous Agents
-                 and Multiagent Systems},
-    pages     = {1905--1907},
-    numpages  = {3},
-    keywords  = {simulation, real robots, research automation, scientific method},
-    location  = {Virtual Event, New Zealand},
-    series    = {AAMAS '22}
-    }
-
-To cite a specific version of SIERRA for reproducibility:
-
-.. |doi| image:: https://zenodo.org/badge/125774567.svg
-         :target: https://zenodo.org/badge/latestdoi/125774567
-
-|doi|
+   src/reference/contributing
+   src/reference/roadmap
+   src/reference/philosophy
+   src/reference/citing
 
 SIERRA In The Wild
 ==================
 
-Papers and demos that have used SIERRA in published research.
+SIERRA has been used across a range of published research in swarm robotics,
+multi-robot systems, and ODE-based modeling — demonstrating its flexibility
+across simulation platforms, scale, and experimental designs.
 
 Papers
 ------
 
+**Swarm Robotics & Collective Behaviour**
+
 - :xref:`Harwell2021a-metrics` — Introduces performance metrics for swarm
   robotics evaluated across population sizes using SIERRA's batch pipeline.
-
-- :xref:`Harwell2022b-ode` — Uses SIERRA to run large-scale ODE-based model
-  comparisons against empirical swarm data.
 
 - :xref:`Harwell2020a-demystify` — Applies SIERRA to demystify emergent
   collective behaviours in foraging swarms.
@@ -202,6 +224,11 @@ Papers
 - :xref:`White2019-social` — Uses SIERRA to investigate social learning in
   robot swarms.
 
+**Modelling & Task Allocation**
+
+- :xref:`Harwell2022b-ode` — Uses SIERRA to run large-scale ODE-based model
+  comparisons against empirical swarm data.
+
 - :xref:`Chen2019-battery` — Employs SIERRA to study battery-aware task
   allocation across experiment batches.
 
@@ -210,3 +237,8 @@ Demos
 
 - :xref:`2022-aamas-demo` — Live demonstration of SIERRA's end-to-end pipeline
   at AAMAS 2022, showing experiment generation through camera-ready graph output.
+
+.. note::
+
+   Using SIERRA in your research? See :ref:`reference/citing` for BibTeX
+   entries and version-specific DOI badges for reproducibility.

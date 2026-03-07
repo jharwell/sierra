@@ -1,4 +1,4 @@
-.. _glossary:
+.. _reference/glossary:
 
 ========
 Glossary
@@ -72,37 +72,12 @@ works/is designed the way it is, and to help you find your way around.
 
    Batch Criteria
 
-      A `variable` you wish to use with SIERRA to measure its effect on system
-      behavior. A batch criteria can has a single axis (such as
-      :ref:`plugins/engine/argos/bc/population-size`), in which case it is
-      called `univariate`, or have two axes (such as
-      :ref:`plugins/engine/argos/bc/population-size` and another batch
-      criteria such as one defining sensor and actuator noise to apply to the
-      robots), in which case it is called `bivariate`.
 
-      Univariate batch criteria have cardinality=1, and so the graphs produced
-      by them are (usually) linegraphs with a numerical representation of the
-      range for the variable on the X axis, and some other quantity of interest
-      on the Y. Bivariate batch criteria have cardinality=2, and so the graphs
-      produced by them might be heatmaps with the first variable in the criteria
-      on the X axis, the second on the Y, and the quantity of interest on
-      the Z. Or they could be linegraphs, with a "slice" along the axis of
-      interest. You can imagine similar cases for higher cardinality criteria.
-
-      Batch criteria define a *range* of sets changes for one or more elements
-      in a template file (passed to SIERRA with ``--expdef-template``). For each
-      element in the range, the changes are applied to the template file to
-      define :term:`Experiments<Experiment>`. The set of defined experiments is
-      called a :term:`Batch Experiment`.
-
-      The batch criteria you can use depends on:
-
-         - The :term:`Project` you have loaded, as each project can define their
-           own batch criteria (see :ref:`tutorials/project/new-bc`).
-
-         - The :term:`Engine` you have selected, as each engine defines some
-           basic batch criteria that any project/experiment can use.
-
+   See :ref:`concepts/batch-criteria` for a thorough explanation of batch
+   criteria, but the short version is that they are the core of SIERRA--how to
+   get it to DO stuff for you as you create and define an experiment which
+   investigates a *variable* (or multiple variables) across a *range* of values,
+   which when instantiated gives you a *batch* of experiments to run.
 
    Batch Experiment
 

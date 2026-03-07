@@ -7,11 +7,37 @@ Installing SIERRA
 This page covers everything you need before running ``sierra-cli`` for the
 first time.
 
-.. note::
+.. _getting-started/installation/os:
 
-   **Python 3.9–3.12 is required.** Older versions are not supported; as they
-   reach end-of-life, support is dropped so SIERRA can use newer language
-   features. Newer versions beyond 3.12 may work but are not yet tested.
+OS Requirements
+===============
+
+One of the following:
+
+- Recent linux. SIERRA is tested with Ubuntu 22.04+, though it will probably
+  work on less recent versions/other distros as well.
+
+- Recent OSX. SIERRA is tested with OSX 12+, though it *might* work on less
+  recent versions.
+
+.. NOTE:: Windows is not supported currently. Not because it can't be supported,
+          but because there are not current any engine plugins that which work
+          on windows. SIERRA is written in pure python, and could be made to
+          work on windows with minimal work.
+
+Python Requirements
+===================
+
+Python 3.9+. Tested with 3.9-3.12. It may work for newer versions, probably
+won't for older; as older versions become EOL support for them is dropped and no
+effort is made at compatibility, in order to take advantage of newer language
+features.
+
+For all external plugins (e.g., those which don't come with SIERRA) which you
+would want to define/use, they will have to be packaged according to the
+guidance in :ref:`plugins/external`, specifically how module imports must be
+structured w.r.t. dynamic modifications to ``sys.path`` to support arbitrary
+plugin loading at runtime.
 
 Prerequisites
 =============
@@ -53,6 +79,7 @@ If you are on a different Linux distribution, install the equivalents of
    The prerequisites above cover the SIERRA core only. Many
    :ref:`plugins <plugins>` have additional OS-level requirements, documented
    on their respective pages.
+
 
 Installing SIERRA
 =================

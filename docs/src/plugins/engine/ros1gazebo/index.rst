@@ -22,6 +22,12 @@ dimensions as part of the ``--scenario`` argument, then you need to supply a
 list of valid robot positions via ``--robot-positions`` which SIERRA will choose
 from randomly for each robot.
 
+Requirements
+============
+
+:envvar:`ROS_PACKAGE_PATH` must be set up properly prior to invoking SIERRA.
+
+.. include:: /src/plugins/engine/ros1
 
 .. _plugins/engine/ros1gazebo/packages:
 

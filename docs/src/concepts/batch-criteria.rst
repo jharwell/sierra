@@ -4,10 +4,44 @@
 Batch Criteria
 ==============
 
-See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
-short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.  The following batch criteria are defined which can be used with any
-:term:`Project`.
+Batch criteria are *variables* you wish to use with SIERRA to measure their
+effect on system behavior. From the perspective of experimental design, a batch
+criteria is an axis of the parameter space the experiment is exploring. For
+example, if your experiment has a single variable, such as :ref:`# robots
+<plugins/engine/argos/bc/population-size>`), you would use a univariate batch
+criteria like this one to create it. If you want to investigate two variables
+simultaneously, such as :ref:`# robots
+<plugins/engine/argos/bc/population-size>` and another batch criteria such as
+one defining sensor and actuator noise to apply to the robots), you would use a
+bivariate batch criteria to create it.
+
+.. IMPORTANT:: SIERRA supports N-dimensional batch criteria.
+
+Univariate batch criteria have cardinality=1, and so the graphs produced
+by them are (usually) linegraphs with a numerical representation of the
+range for the variable on the X axis, and some other quantity of interest
+on the Y. Bivariate batch criteria have cardinality=2, and so the graphs
+produced by them might be heatmaps with the first variable in the criteria
+on the X axis, the second on the Y, and the quantity of interest on
+the Z. Or they could be linegraphs, with a "slice" along the axis of
+interest. You can imagine similar cases for higher cardinality criteria.
+
+Batch criteria define a *range* of sets changes for one or more elements
+in a template file (passed to SIERRA with ``--expdef-template``). For each
+element in the range, the changes are applied to the template file to
+define :term:`Experiments<Experiment>`. The set of defined experiments is
+called a :term:`Batch Experiment`.
+
+The batch criteria you can use depends on:
+
+- The :term:`Project` you have loaded, as each project can define their
+  own batch criteria (see :ref:`tutorials/project/new-bc`).
+
+- The :term:`Engine` you have selected, as some engines define basic batch
+  criteria that any project/experiment can use.
+
+In addition, SIERRA has a few general purpose batch criteria which are always
+available:
 
 - :ref:`concepts/batch-criteria/montecarlo`
 

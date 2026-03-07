@@ -1,8 +1,8 @@
 .. _plugins/engine:
 
-==============
-Engine Plugins
-==============
+=================
+Engine (--engine)
+=================
 
 SIERRA supports a number of :term:`engines <Engine>`, all of which can be
 used transparently for running experiments; well, transparent from SIERRA's
@@ -12,8 +12,8 @@ between engines.
 .. toctree::
    :maxdepth: 2
 
-   argos/index.rst
-   ros1gazebo/index.rst
-   ros1robot/index.rst
+   argos/index
+   ros1gazebo/index
+   ros1robot/index
 
 Additional engines can be supported via :ref:`tutorials/plugin/engine`.

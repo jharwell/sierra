@@ -5,9 +5,9 @@
 
 .. _plugins/compare:
 
-==================
-Comparison Plugins
-==================
+==============================
+Product Comparison (--compare)
+==============================
 
 SIERRA supports a number of comparator plugins, all of which can be used to
 compare products/deliverables generated in stage 4 in some way.
@@ -20,4 +20,4 @@ information about how output data flows/is transformed during stage5 processing.
 .. toctree::
    :maxdepth: 1
 
-   graphs.rst
+   graphs

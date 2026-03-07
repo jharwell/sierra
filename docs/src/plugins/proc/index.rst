@@ -1,8 +1,8 @@
 .. _plugins/proc:
 
-=====================================
-Experiment Outputs Processing Plugins
-=====================================
+======================================
+Experiment Outputs Processing (--proc)
+======================================
 
 See :ref:`here <exp/stage3-dataflow>` for information about how output data
 flows/is transformed during stage3 processing.

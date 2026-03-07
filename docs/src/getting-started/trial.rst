@@ -265,11 +265,12 @@ sample project to ``$HOME/research``; adjust if needed.
            --project=projects.sample_yamlsim \
            --controller=default.default \
            --scenario=scenario1 \
-           --batch-criteria max_speed.1.9.C3 \
+           --batch-criteria noise_floor.1.9.C3 \
            --exp-overwrite
 
       Identical to JSONSim above, but using a YAML template. Runs 3 experiments
-      (12 simulations total) varying max speed from 1–9.
+      (12 simulations total) varying noise floor from 1–9 (meaning project
+      dependent).
 
 Next Steps
 ==========
