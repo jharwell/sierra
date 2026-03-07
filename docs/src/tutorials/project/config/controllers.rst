@@ -1,3 +1,10 @@
+.. _tutorials/project/config/controllers:
+
+=======================
+config/controllers.yaml
+=======================
+
+
 Configuration for robot controllers. Optional. If this config file is present,
 arguments to ``--controller`` must conform to the following schema::
 
@@ -8,193 +15,167 @@ and separated by a ``.``. If the config file is not present, then arguments to
 ``--controller`` can be anything. This config file serves two purposes:
 
 - Allows users to declare "simple" changes which should be applied to the
-  ``--expdef`` dependent on the value of ``--controller``. If you need to do
-  fancy things, see :ref:`tutorials/project/generators`.
+  ``--expdef-template`` dependent on the value of ``--controller``. If you need
+  to do more complex things, see :ref:`tutorials/project/generators`.
 
 - Allows users to declare what types of :ref:`products <plugins/prod>` should be
-  considered for generation based on the value of ``--controller``.
+  considered for generation based on the value of ``--controller``).
 
-This config file should contain project dependent root-level dictionaries. Each
-root level dictionary is treated as the name of a :term:`Controller Category`
+This config file should contain project-dependent root-level dictionaries. Each
+root-level dictionary is treated as the name of a :term:`Controller Category`
 when ``--controller`` is parsed. For example, if you pass
 ``--controller=mycategory.FizzBuzz`` to SIERRA, then you need to have a root
 level dictionary ``mycategory`` defined in ``controllers.yaml``.
 
-A complete YAML configuration for a :term:`Controller Category`
-``mycategory`` and a controller ``FizzBuzz`` is shown below, separated by
-engine. This configuration specifies that all graphs in the categories
-of ``LN_MyCategory1``, ``LN_MyCategory2``, ``HM_MyCategory1``,
-``HM_MyCategory2`` are applicable to ``FizzBuzz``, and should be generated
-if the necessary :term:`Experiment` output files exist. The
-``LN_MyCategory1``, ``LN_MyCategory2`` graph categories are common to
-multiple controllers in this project, while the ``HM_MyCategory1``,
-``HM_MyCategory2`` :term:`graph categories<Graph Category>` are specific
-to the ``FizzBuzz`` controller.
+.. _tutorials/project/config/controllers/blocks:
 
-.. tabs::
+Special Block
+=============
 
-   .. code-tab:: YAML ARGoS
+Each controller category and each individual controller may define any number of
+{xml,json,yaml} blocks specifying changes to apply to the
+:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`. Three
+subsection keys are supported, each taking a list of three-element lists:
 
-      my_base_graphs:
-        - LN_MyCategory1
-        - LN_MyCategory2
+``attr_change``
+   Modify an existing attribute. Format: ``[path, attr, value]`` where
+   ``path`` is an expression for the **parent** element, ``attr`` is
+   the attribute name, and ``value`` is the new value as a string.
 
-      mycategory:
+``element_change``
+   Modify an existing child element. Format: ``[path, child_tag, value]``.
 
-        # Changes to existing XML attributes in the template ``.argos``
-        # file for *all* controllers in the category, OR changes to
-        # existing tags for *all* controllers in the template ``.xml``
-        # file.  This is usually things like setting ARGoS loop functions
-        # appropriately, if required. Each change is formatted as a list
-        # with paths to parent tags specified in the XPath syntax.
-        #
-        # - [parent tag, attr, value] for changes to existing XML
-        #   attributes.
-        #
-        # - [parent tag, child tag, value] for changes to existing tags
-        #
-        # - [parent tag, child tag, attr] for adding new tags. When adding
-        #   tags the attr string is passed to eval() to turn it into a
-        #   python dictionary.
-        #
-        # The ``xml`` section and subsections are optional. If
-        # ``--engine-vc`` is passed, then this section should be used to
-        # specify any changes to the XML needed to setup the selected
-        # engine for frame capture/video rendering by specifying the QT
-        # visualization functions to use.
-        xml:
-          element_change:
-            - ['.//loop-functions/parent', 'child', 'stepchild']
-          attr_change:
-            - ['.//loop-functions', 'label', 'my_category_loop_functions']
-            - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
-          element_add:
-            - ...
-            - ...
+``element_add``
+   Add a new child element. Format: ``[path, child_tag, attr_dict]`` where
+   ``attr_dict`` is a string passed to ``eval()`` to produce a Python
+   dictionary of attribute names and values for the new element.
 
-        # Under ``controllers`` is a list of controllers which can be
-        # passed as part of ``--controller`` when invoking SIERRA, matched
-        # by ``name``. Any controller-specific XML attribute changes can
-        # be specified here, with the same syntax as the changes for the
-        # controller category (``mycategory`` in this example). As above,
-        # you can specify sets of changes to existing XML attributes,
-        # changes to existing XML tags to set things up for a specific
-        # controller, or adding new XML tags.
-        controllers:
-          - name: FizzBuzz
-            xml:
-              attr_change:
+All three subsections are optional. The path syntax in each list entry depends
+on your template format: XPath for XML, JSONPath for JSON, YAMLPath for YAML.
+See :ref:`tutorials/plugins/expdef/format-restrictions` for the full format
+reference.
 
-                # The ``__CONTROLLER__`` tag in the
-                # ``--expdef-template`` is REQUIRED to allow SIERRA to
-                # unambiguously set the "library" attribute of the
-                # controller.
-                - ['.//controllers', '__CONTROLLER__', 'FizzBuzz']
+.. _tutorials/project/config/controllers/tokens:
 
+Special Tokens in ``controllers.yaml``
+======================================
 
-            # Sets of graphs common to multiple controller categories can
-            # be inherited with the ``graphs_inherit`` dictionary (they
-            # are added to the ``graphs`` dictionary). This dictionary is
-            # optional, but handy to reduce repetitive declarations and
-            # typing. see the YAML docs for details on how to include
-            # named lists inside other lists.
-            graphs_inherit:
-              - *my_base_graphs
+Two special tokens can appear in ``controllers.yaml`` path expressions and
+values, regardless of template format. See
+:ref:`tutorials/plugins/expdef/tokens` for their full definitions.
 
-            # Specifies a list of graph categories from inter- or
-            # intra-experiment ``.yaml`` configuration which should be
-            # generated for this controller, if the necessary input CSV
-            # files exist.
-            graphs: &FizzBuzz_graphs
-              - HM_MyCategory1
-              - HM_MyCategory2
+``__CONTROLLER__``
+   Used in ``attr_change`` entries to target the controller element in the
+   template. SIERRA replaces it with the resolved controller name regardless
+   of template format. For XML templates (including ARGoS ``.argos`` files),
+   the path expression uses XPath; for JSON/YAML templates it uses the
+   equivalent path syntax for that format.
 
-   .. code-tab:: YAML ROS1+Gazebo and ROS1+Robot
+   The standard ARGoS entry:
 
-      my_base_graphs:
-        - LN_MyCategory1
-        - LN_MyCategory2
+   .. code-block:: yaml
 
-      mycategory:
-        # Changes to existing XML attributes in the template ``.launch``
-        # file for *all* controllers in the category, OR changes to
-        # existing tags for *all* controllers in the template ``.launch``
-        # file.  Each change is formatted as a list with paths to parent
-        # tags specified in the XPath syntax.
-        #
-        # - [parent tag, attr, value] for changes to existing XML
-        #   attributes.
-        #
-        # - [parent tag, child tag, value] for changes to existing tags
-        #
-        # - [parent tag, child tag, attr] for adding new tags. When adding
-        #   tags the attr string is passed to eval() to turn it into a
-        #   python dictionary.
-        #
-        # The ``xml`` section and subsections are optional. If
-        # ``--engine-vc`` is passed, then this section should be used to
-        # specify any changes to the XML needed to setup ROS1+Gazebo for
-        # visual capture.
-        #
-        # When adding new tags the ``__UUID__`` string can be included in
-        # the parent tag or child tag fields, which has two
-        # effects. First, it is expanded to the robot prefix (namespace in
-        # ROS terminology) + the robot's ID to form a UUID for the
-        # robot. Second, the tag is added not just once overall, but once
-        # for each robot in each experimental run. This is useful to set
-        # per-robot parameters specific to a given controller outside of
-        # the parameters controller via batch criteria or SIERRA
-        # variables (e.g., launching nodes to bringup sensors on the
-        # robot that are not launched by default/by the controller entry
-        # point).
-        xml:
-          element_change:
-            - ...
-          attr_change:
-            - ...
-          element_add:
-            - ...
+      attr_change:
+        - ['.//controllers', '__CONTROLLER__', 'MyControllerName']
 
-        # Under ``controllers`` is a list of controllers which can be
-        # passed as part of ``--controller`` when invoking SIERRA, matched
-        # by ``name``. Any controller-specific XML attribute changes can
-        # be specified here, with the same syntax as the changes for the
-        # controller category (``mycategory`` in this example). As above,
-        # you can specify sets of changes to existing XML attributes,
-        # changes to existing XML tags to set things up for a specific
-        # controller, or adding new XML tags.
-        #
-        # When adding new tags the ``__UUID__`` string can be included in
-        # the parent tag or child tag fields, which has two
-        # effects. First, it is expanded to the robot prefix (namespace in
-        # ROS terminology) + the robot's ID to form a UUID for the
-        # robot. Second, the tag is added not just once overall, but once
-        # for each robot in each experimental run. This is useful to set
-        # per-robot parameters specific to a given controller outside of
-        # the parameters controller via batch criteria or SIERRA variables
-        # (e.g., launching nodes to bringup sensors on the robot that are
-        # not launched by default/by the controller entry point).
-        controllers:
-          - name: FizzBuzz
-            xml:
-              element_add:
-                - [".//launch/group/[@ns='__UUID__']", 'param', "{'name': 'topic_name', 'value':'mytopic'}"]
+   This is **required** for ARGoS projects to allow SIERRA to unambiguously
+   set the controller's ``library`` attribute. JSON/YAML projects should use
+   the equivalent JSONPath or YAMLPath expression for their controller key.
 
+``__UUID__``
+   Available in ROS1 ``.launch`` templates only. When ``__UUID__`` appears in
+   an XPath expression inside ``element_add``, the tag is added once per robot
+   (not once overall), with ``__UUID__`` expanded to the robot's namespace
+   prefix and numeric ID. Use this to set per-robot parameters that cannot be
+   controlled through batch criteria.
 
+A complete ``controllers.yaml`` configuration is shown below, separated by
+engine:
 
-            # Sets of graphs common to multiple controller categories can
-            # be inherited with the ``graphs_inherit`` dictionary (they
-            # are added to the ``graphs`` dictionary). This dictionary is
-            # optional, but handy to reduce repetitive declarations and
-            # typing. see the YAML docs for details on how to include
-            # named lists inside other lists.
-            graphs_inherit:
-              - *my_base_graphs
+.. tab-set::
 
-            # Specifies a list of graph categories from inter- or
-            # intra-experiment ``.yaml`` configuration which should be
-            # generated for this controller, if the necessary input CSV
-            # files exist.
-            graphs: &FizzBuzz_graphs
-              - HM_MyCategory1
-              - HM_MyCategory2
+   .. tab-item:: ARGoS
+
+      .. code-block:: YAML
+
+         my_base_graphs:
+           - LN_MyCategory1
+           - LN_MyCategory2
+
+         mycategory:
+
+           # Optional: changes applied to the template for *all* controllers
+           # in this category (e.g. setting ARGoS loop functions, or QT
+           # visualization functions when --engine-vc is passed).
+           xml:
+             element_change:
+               - ['.//loop-functions/parent', 'child', 'stepchild']
+             attr_change:
+               - ['.//loop-functions', 'label', 'my_category_loop_functions']
+               - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
+             element_add:
+               - ...
+               - ...
+
+           # Under ``controllers`` is a list of controllers which can be
+           # passed as part of ``--controller`` when invoking SIERRA, matched
+           # by ``name``. Any controller-specific XML attribute changes can
+           # be specified here, with the same syntax as the changes for the
+           # controller category (``mycategory`` in this example). As above,
+           # you can specify sets of changes to existing XML attributes,
+           # changes to existing XML tags to set things up for a specific
+           # controller, or adding new XML tags.
+           controllers:
+             - name: FizzBuzz
+               xml:
+                 attr_change:
+                   - ['.//controllers', '__CONTROLLER__', 'FizzBuzz']
+
+               # Optional: inherit graph categories common to multiple controllers.
+               graphs_inherit:
+                 - *my_base_graphs
+
+               # Graph categories to generate for this controller if the
+               # necessary output CSVs exist.
+               graphs: &FizzBuzz_graphs
+                 - HM_MyCategory1
+                 - HM_MyCategory2
+
+   .. tab-item:: ROS1+Gazebo and ROS1+Robot
+
+      .. code-block:: YAML
+
+        my_base_graphs:
+          - LN_MyCategory1
+          - LN_MyCategory2
+
+        mycategory:
+
+          # Optional: changes applied to the template for *all* controllers
+          # in this category. For ROS1+Gazebo, also use this to specify
+          # changes needed for visual capture when --engine-vc is passed.
+          xml:
+            element_change:
+              - ...
+            attr_change:
+              - ...
+            element_add:
+              - ...
+
+          controllers:
+            - name: FizzBuzz
+              xml:
+                element_add:
+                  # __UUID__ causes this tag to be added once per robot,
+                  # with __UUID__ expanded to <prefix><robot_id>.
+                  - [".//launch/group/[@ns='__UUID__']", 'param', "{'name': 'topic_name', 'value':'mytopic'}"]
+
+              # Optional: inherit graph categories common to multiple controllers.
+              graphs_inherit:
+                - *my_base_graphs
+
+              # Graph categories to generate for this controller if the
+              # necessary output CSVs exist.
+              graphs: &FizzBuzz_graphs
+                - HM_MyCategory1
+                - HM_MyCategory2

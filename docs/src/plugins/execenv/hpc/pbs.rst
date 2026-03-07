@@ -45,7 +45,9 @@ The following environmental variables are used in the PBS HPC environment:
 
          floor(PBS_NUM_PPN / --exec-jobs-per-node)
 
-       That is, ``--exec-jobs-per-node`` is required for PBS HPC environments.
+       That is,
+       :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra-cli---exec-jobs-per-node>`
+       is required for PBS HPC environments.
 
    * - :envvar:`PBS_NODEFILE`
      - Obtaining the list of nodes allocated to a job which SIERRA can direct

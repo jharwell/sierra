@@ -60,14 +60,15 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.graphviz",
     "sphinxcontrib.video",
-    "sphinx_tabs.tabs",
     "sphinx.ext.inheritance_diagram",
-    "sphinxarg.ext",
+    "sphinx_argparse_cli",
     "xref",
     "sphinx_last_updated_by_git",
     "sphinx_rtd_theme",
+    "pydata_sphinx_theme",
     "sphinx.ext.napoleon",
     "sphinxcontrib.plantuml",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -106,28 +107,21 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "flycheck"]
 root_doc = "index"
 
 if not os.getenv("READTHEDOCS"):
-    if "html" in sys.argv:
-        builtins.__sphinx_build_html__ = True
-        exclude_patterns = ["man/*.rst"]
-        root_doc = "index"
-    elif "man" in sys.argv:
+    if "man" in sys.argv:
         builtins.__sphinx_build_man__ = True
         exclude_patterns.extend(
             [
-                "src/tutorials",
-                "src/contributing.rst",
-                "src/quickstart.rst",
-                "src/faq.rst",
-                "src/usage/index.rst",
-                "html.rst",
+                "src",
             ]
         )
-        root_doc = "man/sierra"
+        root_doc = "man/sierra.1"
 
     elif "linkcheck" in sys.argv:
         pass
-    else:
-        assert False, "Must pass -b {html,man,linkcheck} to build docs"
+    else:  # Assum html in sys.argv:
+        builtins.__sphinx_build_html__ = True
+        exclude_patterns = ["man/*.rst"]
+        root_doc = "index"
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -140,14 +134,13 @@ math_number_all = True
 math_eqref_format = "Eq. {number}"
 
 nitpick_ignore = [
-    ("py:class", "pandas.core.frame.DataFrame"),
-    ("py:class", "pandas.core.groupby.generic.DataFrameGroupBy"),
     ("py:class", "argparse"),
     ("py:class", "module"),
     ("py:class", "implements.Interface"),
     ("py:class", "xml.etree.ElementTree"),
     ("py:class", "multiprocessing.context.BaseContext.JoinableQueue"),
     ("py:class", "multiprocessing.context.BaseContext.Queue"),
+    ("py:class", "polars.DataFrame"),
     # 2025-04-15 [JRH]: These are necessary because type aliases aren't handled
     # well by autoapi currently. Maybe once SIERRA moves to python 3.10, or even
     # 3.12 these can go away.
@@ -206,14 +199,6 @@ xref_links = {
         "Maximizing Energy Efficiency in Swarm Robotics",
         "https://arxiv.org/abs/1906.01957",
     ),
-    "Hecker2015": (
-        "Hecker2015",
-        "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf",
-    ),
-    "Rosenfeld2006": (
-        "Rosenfeld2006",
-        "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf",
-    ),
     "SIERRA_GITHUB": (
         "https://github.com/jharwell/sierra.git",
         "https://github.com/jharwell/sierra.git",
@@ -239,17 +224,17 @@ xref_links = {
 }
 
 sphinx_tabs_disable_tab_closing = True
-# sphinx_tabs_disable_css_loading = True # True=tabs render more as buttons -_-
+sphinx_argparse_cli_prefix_document = True
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 plantuml = "java -jar /tmp/plantuml.jar"
 plantuml_url = "https://downloads.sourceforge.net/project/plantuml/plantuml.jar"
-
+smartquotes = False
 
 jarpath = pathlib.Path("/tmp/plantuml.jar")
 if not jarpath.exists():
@@ -263,10 +248,16 @@ if not jarpath.exists():
 # documentation.
 #
 html_theme_options = {
-    "globaltoc_maxdepth": 2,
-    "navigation_depth": 4,
-    "collapse_navigation": False,
-    "sticky_navigation": True,
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "navigation_depth": 3,
+    "show_toc_level": 2,
+    "header_links_before_dropdown": 8,
+    "logo": {
+        "image_light": "figures/logo-only-small-with-name.png",
+        "text": f"{version}",
+    },
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -334,63 +325,11 @@ latex_documents = [
 autosectionlabel_prefix_document = True
 man_pages = [
     (
-        "man/sierra-cli",
-        "sierra-cli",
-        "The SIERRA Command Line Interface (CLI).",
-        [author],
-        1,
-    ),
-    (
-        "man/sierra-usage",
-        "sierra-usage",
-        "How to use SIERRA. This covers all non-command line interface aspects.",
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-plugins",
-        "sierra-plugins",
-        "SIERRA's builtin plugins.",
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-examples",
-        "sierra-examples",
-        (
-            "Examples of SIERRA usage. These examples all assume that you have "
-            "successfully set up SIERRA with a project of your choice."
-        ),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-glossary",
-        "sierra-glossary",
-        ("Glossary of SIERRA terminology."),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-api",
-        "sierra-api",
-        ("SIERRA API reference."),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-tutorials",
-        "sierra-tutorials",
-        ("SIERRA tutorials."),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra",
+        "man/sierra.1",
         "sierra",
         "reSearch pIpEline for Reproducability, Reusability, and Automation.",
         [author],
-        7,
+        1,
     ),
 ]
 man_show_urls = True
@@ -419,6 +358,9 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "matplotlib": ("https://matplotlib.org", None),
     "sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/dev", None),
+    # Source - https://stackoverflow.com/a/78924692
+    # Posted by bzm3r
+    # Retrieved 2026-03-09, License - CC BY-SA 4.0
+    "polars": ("https://docs.pola.rs/api/python/stable", None),
     "implements": ("https://implements.readthedocs.io/en/latest/", None),
 }

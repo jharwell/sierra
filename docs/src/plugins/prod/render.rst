@@ -7,15 +7,19 @@ Rendering
 SIERRA's capabilities for rendering video outputs are detailed in this
 section. SIERRA can render frames (images) into videos from 3 sources:
 
-- Those captured using ``--engine-vc``.
+- Those captured using :ref:`--engine-vc<src/reference/cli:sierra-cli---engine-vc>`.
 
 - Those imagized from project :term:`Raw Output Data` files via ``--proc
-  proc.imagize`` using ``--project-rendering``. See :ref:`here
-  <plugins/proc/imagize>` for details about the project-based imagizing plugin.
+  proc.imagize`` using
+  :ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`. See
+  :ref:`here <plugins/proc/imagize>` for details about the project-based
+  imagizing plugin.
 
 .. NOTE:: Using BOTH the engine and project rendering capabilities
    simultaneously IS possible, but discouraged unless you have multiple
-   terrabytes of disk space available. ``--exp-range`` is your friend.
+   terrabytes of disk space
+   available. :ref:`--exp-range<src/reference/cli:sierra-cli---exp-range>` is
+   your friend.
 
 This plugin uses :program:`ffmpeg` to do the actual rendering, and so it must be
 findable by the shell used to invoke SIERRA; an error will be thrown otherwise.
@@ -25,20 +29,20 @@ findable by the shell used to invoke SIERRA; an error will be thrown otherwise.
 OS Packages
 ===========
 
-.. tabs::
+.. tab-set::
 
-      .. group-tab:: Ubuntu
+      .. tab-item:: Ubuntu
 
-         Install the following required packages with ``apt install``:
+         .. code-block:: bash
 
-         - ``ffmpeg``
+            apt-get install ffmpeg
 
 
-      .. group-tab:: OSX
+      .. tab-item:: OSX
 
-         Install the following required packages with ``brew install``:
+         .. code-block:: bash
 
-         - ``ffmpeg``
+            brew install ffmpeg
 
 
 .. _plugins/prod/render/usage:
@@ -61,16 +65,18 @@ experiment will accrue in subdirectories under here. E.g.::
            ...
 
 Which videos will be rendered is read from the ``imagizing`` section of project
-``graphs.yaml`` for ``--project-rendering``. For ``engine-vc``, all matching
-image directories within each experiment are unconditionally rendered. If you
-only care about some of them, you can use ``--exp-range`` to only render videos
-for some experiments.
+``graphs.yaml`` for
+:ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`. For
+``engine-vc``, all matching image directories within each experiment are
+unconditionally rendered. If you only care about some of them, you can use
+:ref:`--exp-range<src/reference/cli:sierra-cli---exp-range>` to only render
+videos for some experiments.
 
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/prod/render/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.prod.render.cmdline
    :func: sphinx_cmdline_stage4
    :prog: sierra-cli
 
@@ -100,19 +106,23 @@ rendered into videos in stage 4.
 
 To use:
 
-- Pass ``--project-rendering`` during stage 4 after running imagizing via
-  ``--proc proc.imagize`` during stage 3, either on the same invocation or a
-  previous one. SIERRA will take the imagized files previously created and
-  generate a set of a videos in ``<batch_root>/videos/<exp>/<subdir>`` for each
-  experiment in the batch which was run, where ``<subdir>`` corresponds to the
-  ``src_stem`` of a configured imagizing directory.
+- Pass
+  :ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`
+  during stage 4 after running imagizing via ``--proc proc.imagize`` during
+  stage 3, either on the same invocation or a previous one. SIERRA will take the
+  imagized files previously created and generate a set of a videos in
+  ``<batch_root>/videos/<exp>/<subdir>`` for each experiment in the batch which
+  was run, where ``<subdir>`` corresponds to the ``src_stem`` of a configured
+  imagizing directory.
 
 .. IMPORTANT::
 
-   Rendering the heatmaps does not happen automatically every time as part
-   of stage 4 because it can take a LONG time and is idempotent. You should only
-   pass ``--project-rendering`` the first time you run stage 4 after having run
-   stage 3 with ``--proc proc.imagize``.
+   Rendering the heatmaps does not happen automatically every time as part of
+   stage 4 because it can take a LONG time and is idempotent. You should only
+   pass
+   :ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`
+   the first time you run stage 4 after having run stage 3 with ``--proc
+   proc.imagize``.
 
 
 Examples

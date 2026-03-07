@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.8"
+version = "1.5.9"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -96,8 +96,8 @@ docs = [
     "sphinx",
     "docutils",
     "sphinx-rtd-theme",
-    "sphinx-argparse",
-    "sphinx-tabs",
+    "pydata-sphinx-theme",
+    "sphinx-argparse-cli",
     "sphinx-copybutton",
     "sphinxcontrib-napoleon",
     "sphinxcontrib-video",
@@ -109,7 +109,9 @@ docs = [
     "sphinx-autoapi==3.1.0",
     "toml",
     "sphinx-autobuild",
-    "sphinxcontrib-plantuml"
+    "sphinxcontrib-plantuml",
+    "sphinx-design"
+
 ]
 dev = [
     {include-group ="docs"},
@@ -121,7 +123,9 @@ dev = [
 Homepage = "https://github.com/jharwell/sierra"
 
 [project.scripts]
-sierra-cli = "sierra.main:main"
+# Leave this in until SIERRA 2.0
+sierra-cli = "sierra.main:main_deprecated"
+sierra = "sierra.main:main"
 
 [build-system]
 requires = ["hatchling"]

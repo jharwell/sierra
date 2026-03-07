@@ -16,9 +16,7 @@ from sierra.core import types
 from sierra.plugins import PluginCmdline
 
 
-def build(
-    parents: list[argparse.ArgumentParser], stages: list[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline for the ``prefectserver.dockerremote`` execution environment.
     """
@@ -51,6 +49,10 @@ def build(
         + cmdline.stage_usage_doc([2]),
     )
     return cmdline
+
+
+def sphinx_cmdline_stage2():
+    return build([], [1]).parser
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:

@@ -5,7 +5,8 @@ Graph Generation
 ================
 
 This plugin generates graphs using holoviews during stage 4; any graph type
-supported by a holoviews backend can be selected with ``--graphs-backend``.
+supported by a holoviews backend can be selected with
+:ref:`--graphs-backend<src/plugins/prod/graphs:sierra-cli---graphs-backend>`.
 Since this plugin uses holoviews to do all the heavy lifting, you may wonder
 "Why wrap holoviews backends at all?" A wrapper of a wrapper would seem
 gratuitous at first glance. The reason is that SIERRA's wrapping here enables
@@ -26,23 +27,24 @@ implemented.
 OS Packages
 ===========
 
-.. tabs::
+.. tab-set::
 
-      .. group-tab:: Ubuntu
+   .. tab-item:: Ubuntu
 
-         Install the following required packages with ``apt install``:
+      .. code-block:: bash
 
-         - ``cm-super``
-         - ``texlive-fonts-recommended``
-         - ``texlive-latex-extra``
-         - ``dvipng``
+          apt-get install \
+                  cm-super \
+                  texlive-fonts-recommended \
+                  texlive-latex-extra \
+                  dvipng
 
 
-      .. group-tab:: OSX
+   .. tab-item:: OSX
 
-         Install the following required packages with ``brew install``:
+      .. code-block:: bash
 
-         - ``--cask mactex-no-gui``
+         brew install --cask mactex-no-gui
 
 Usage
 =====
@@ -58,10 +60,11 @@ types of analyses:
 - Inter-experiment graphs, which are generated from a selected subset of data
   from each :term:`Experiment` in a :term:`Batch Experiment`.
 
-Within each of these logical graph types, any ``--graphs-backend`` can be
-specified to generate the actual graphs; overrideable on a per-graph basis. This
-makes generating mixed e.g. static graphs for inclusion in presentations and
-interactive graphs for inclusion in webpages easy.
+Within each of these logical graph types, any
+:ref:`--graphs-backend<src/plugins/prod/graphs:sierra-cli---graphs-backend>` can
+be specified to generate the actual graphs; overrideable on a per-graph
+basis. This makes generating mixed e.g. static graphs for inclusion in
+presentations and interactive graphs for inclusion in webpages easy.
 
 .. list-table::
    :header-rows: 1
@@ -136,13 +139,13 @@ This plugin requires one of the following stage 3 plugins to have been run:
 - :ref:`plugins/proc/statistics` (linegraphs). Without this, no statistics can
   be included.
 
-- :ref:`plugins/proc/copy`
+- :ref:`plugins/proc/pseudostats`
 
 Cmdline Interface
 =================
 
-.. argparse::
-   :filename: ../sierra/plugins/prod/graphs/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.prod.graphs.cmdline
    :func: sphinx_cmdline_multistage
    :prog: sierra-cli
 
@@ -191,20 +194,20 @@ Intra-Experiment Graphs
 Configuration for each type of intra-experiment graph currently supported by
 this plugin is below. Unless stated otherwise, all keys are required.
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: Stacked Linegraph
+   .. tab-item:: Stacked Linegraph
 
       The "stacked" here comes from multiple lines potentially being present
       (e.g., plotting all columns in a dataframe).
 
       .. literalinclude:: stacked_line.yaml
 
-   .. tab:: Heatmap
+   .. tab-item:: Heatmap
 
       .. literalinclude:: heatmap.yaml
 
-   .. tab:: Network
+   .. tab-item:: Network
 
       .. NOTE:: This graph is only available when :ref:`imagizing
                 <plugins/proc/imagize>`. This may change in a future version of
@@ -213,7 +216,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
       .. literalinclude:: network.yaml
 
 
-   .. tab:: Confusion Matrix
+   .. tab-item:: Confusion Matrix
 
       .. literalinclude:: confusion_matrix.yaml
 
@@ -224,9 +227,9 @@ Inter-Experiment Graphs
 Configuration for each type of inter-experiment graph currently supported by
 this plugin is below. Unless stated otherwise, all keys are required.
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: Stacked Linegraph
+   .. tab-item:: Stacked Linegraph
 
       The "stacked" here comes from multiple lines potentially being present
       (e.g., plotting the same column from the same file across all experiments
@@ -237,7 +240,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: stacked_line.yaml
 
-   .. tab:: Summary Linegraph
+   .. tab-item:: Summary Linegraph
 
       The "summary" here comes from the selection of a single point from a time
       series of interest for each experiment in the batch. For example, if you
@@ -246,7 +249,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: summary_line.yaml
 
-   .. tab:: Heatmap
+   .. tab-item:: Heatmap
 
       A 2D heatmap of data, drawn from a specified per-experiment time series
       (e.g., if you took the *last* point of some measure of interest, that
@@ -269,9 +272,9 @@ Linegraph Examples
 For these examples, we will use the following SIERRA cmd and YAML configuration
 from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: SIERRA cmd
+   .. tab-item:: SIERRA cmd
 
       ::
 
@@ -292,7 +295,7 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
            --exp-n-datapoints-factor=0.1 \
            --dist-stats=none
 
-   .. tab:: YAML config
+   .. tab-item:: YAML config
 
       .. code-block:: YAML
 
@@ -343,9 +346,9 @@ and ``.yaml`` configuration capabilities we can generate graphs easily with
 ``--graphs-backend=matplotlib``, OR interactive widgets with
 ``--graphs-backend=bokeh``:
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: matplotlib
+   .. tab-item:: matplotlib
 
       .. list-table::
          :header-rows: 0
@@ -358,16 +361,16 @@ and ``.yaml`` configuration capabilities we can generate graphs easily with
 
            -
 
- .. tab:: bokeh
+   .. tab-item:: bokeh
 
-    .. raw:: html
-       :file: figures/graphs-intra-none-SLN-food-counts.html
+      .. raw:: html
+         :file: figures/graphs-intra-none-SLN-food-counts.html
 
-    .. raw:: html
-       :file: figures/graphs-intra-none-SLN-robot-counts.html
+      .. raw:: html
+         :file: figures/graphs-intra-none-SLN-robot-counts.html
 
-    .. raw:: html
-       :file: figures/graphs-intra-none-SLN-swarm-energy.html
+      .. raw:: html
+         :file: figures/graphs-intra-none-SLN-swarm-energy.html
 
 
 
@@ -375,9 +378,9 @@ and ``.yaml`` configuration capabilities we can generate graphs easily with
 If we then want to plot 95% confidence intervals by doing
 ``--dist-stats=conf95``:
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: matplotlib
+   .. tab-item:: matplotlib
 
       .. list-table::
          :header-rows: 0
@@ -391,7 +394,7 @@ If we then want to plot 95% confidence intervals by doing
 
            -
 
-   .. tab:: bokeh
+   .. tab-item:: bokeh
 
        .. raw:: html
           :file: figures/graphs-intra-conf95-SLN-food-counts.html
@@ -439,9 +442,9 @@ representing the same data: a measurement of swarm energy over time. The graph
 on the right is arguably more readable because it summarizes the steady-state
 information more clearly.
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: matplotlib
+   .. tab-item:: matplotlib
 
       .. list-table::
          :header-rows: 0
@@ -451,7 +454,7 @@ information more clearly.
 
            - .. figure:: figures/graphs-inter-SM-swarm-energy.png
 
-   .. tab:: bokeh
+   .. tab-item:: bokeh
 
       .. raw:: html
          :file: figures/graphs-inter-SLN-swarm-energy.html
@@ -471,9 +474,9 @@ Confusion Matrix Examples
 For these examples, we will use the following SIERRA cmd and YAML configuration
 from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: SIERRA cmd
+   .. tab-item:: SIERRA cmd
 
       ::
 
@@ -492,7 +495,7 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
             --batch-criteria noise_floor.1.9.C5 \
             --pipeline 1 2 3 4
 
-   .. tab:: YAML config
+   .. tab-item:: YAML config
 
       .. code-block:: YAML
 
@@ -515,9 +518,9 @@ of performance. Using the above command and ``.yaml`` configuration capabilities
 we can generate graphs easily with ``--graphs-backend=matplotlib``, OR
 interactive widgets with ``--graphs-backend=bokeh``:
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: matplotlib
+   .. tab-item:: matplotlib
 
       .. list-table::
          :header-rows: 0
@@ -525,7 +528,7 @@ interactive widgets with ``--graphs-backend=bokeh``:
          * - .. figure:: figures/graphs-intra-CM-confusion-matrix.png
 
 
-   .. tab:: bokeh
+   .. tab-item:: bokeh
 
       .. raw:: html
          :file: figures/graphs-intra-CM-confusion-matrix.html

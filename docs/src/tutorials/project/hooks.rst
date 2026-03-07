@@ -1,8 +1,8 @@
 .. _tutorials/project/hooks:
 
-============================
-SIERRA Pipeline Python Hooks
-============================
+=====================
+Python Pipeline Hooks
+=====================
 
 SIERRA allows a number of different elements of its pipeline to be customized
 and extend by a :term:`Project`. To override part of a stage of the SIERRA

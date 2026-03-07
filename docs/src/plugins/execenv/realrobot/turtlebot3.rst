@@ -27,5 +27,6 @@ in the turtlebot3 environment:
 
      - ``--nodefile``
 
-     - :envvar:`SIERRA_NODEFILE` must be defined or ``--nodefile`` passed. If
-       neither is true, SIERRA will throw an error.
+     - :envvar:`SIERRA_NODEFILE` must be defined or
+       :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` passed. If neither is true,
+       SIERRA will throw an error.

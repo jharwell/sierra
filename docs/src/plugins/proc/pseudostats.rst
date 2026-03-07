@@ -10,19 +10,26 @@ Pseudo-Statistics
 =================
 
 When doing deterministic :term:`Experimental Runs <Experimental Run>`, there is
-no benefit to running :ref:`plugins/proc/stat` over the all experimental
+no benefit to running :ref:`plugins/proc/statistics` over the all experimental
 run data for an :term:`Experiment`, because ``--n-runs=1``. Thus, the
 statistical analysis via e.g., confidence intervals doesn't make sense.  This
 plugin processes at the file level for each :term:`Experimental Run`. All
 :term:`Raw Output Data` files produced by each run are copied (or moved)from
-their original locations and written to the :ref:`usage/run-time-tree` under
+their original locations and written to the :ref:`concepts/run-time-tree` under
 ``statistics/``. This is so it can be used with :ref:`plugins/prod/graphs`,
 which expects its outputs to be under that prefix.
 
 .. NOTE:: This plugin is not intended for use with projects whose output is
           non-deterministic (i.e., contain randomness). That is, if you always
-          use ``--n-runs=>1`` , then you should use :ref:`plugins/proc/stat`
-          instead of this plugin.
+          use ``--n-runs=>1`` , then you should use
+          :ref:`plugins/proc/statistics` instead of this plugin.
+
+.. _plugins/proc/pseudostats/ordering:
+
+Ordering Considerations
+=======================
+
+Same as ``proc.statistics``; this plugin is a no-op drop-in for that plugin.
 
 Usage
 =====
@@ -45,8 +52,8 @@ All experimental outputs are copied which are supported by the currently active
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/proc/pseudostats/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.proc.pseudostats.cmdline
    :func: sphinx_cmdline_multistage
    :prog: sierra-cli
 

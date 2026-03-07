@@ -10,13 +10,14 @@ Telling SIERRA About Scenario Details
 =====================================
 
 To enable SIERRA to generate experiment definitions based on the ``--scenario``
-you specify, create ``generators/scenario.py`` in your ``--project`` directory.
+you specify, create ``generators/scenario.py`` in your
+:ref:`--project<src/reference/cli:sierra-cli---project>` directory.
 
 Within this file, you must define the following functions:
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: ``to_generator_name()``
+   .. tab-item:: ``to_generator_name()``
 
       Takes the ``--scenario`` argument and returns the string of the callable
       function within ``scenario.py`` that SIERRA should use to generate
@@ -43,7 +44,7 @@ Within this file, you must define the following functions:
 
 
 
-   .. tab:: ``to_dict()``
+   .. tab-item:: ``to_dict()``
 
       .. code-block:: python
 
@@ -69,10 +70,10 @@ Generating Experiments
 
 In ``generators/experiment.py``, you may define the following functions:
 
-.. tabs::
+.. tab-set::
 
 
-   .. tab:: ``for_single_exp_run()``
+   .. tab-item:: ``for_single_exp_run()``
 
       This function is optional. It is used to generate expdef changes for a
       single :term:`Experimental Run` for your project. If you define it, you

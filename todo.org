@@ -28,9 +28,6 @@ comparison.
 
 ** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
 
-** TODO Added tutorial for creating a new model
-- And add an example in the sample project
-
 ** TODO Add --seed to gazebo commands so experiments are more idempotent
 
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
@@ -46,7 +43,6 @@ be implemented in stage 5 as another comparison option.
 Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 
 ** DONE [#C] Check out the fastcore library
-** TODO [#C] Try Modin as a parallel pandas wrapper
 ** TODO [#B] Document why you need 2 GNU parallel processes for rosrobot :sierra:
    Because you can't have robot controllers running on the master, which could
    happen if you only had a single GNU parallel process.
@@ -188,3 +184,5 @@ better type checking
 ** DONE [#B] Add .sierrarc to read common cmdline args/envvar settings from
 ** DONE [#C] Fix all links in document to not be prefixed with 'ln-sierra'
 ** DONE Make cmdline a first-class plugin, update tutorials
+** DONE Added tutorial for creating a new model
+- And add an example in the sample project

@@ -4,7 +4,7 @@
 
 """Classes for the ``--exp-setup`` cmdline option for ROS1 engines.
 
-See :ref:`usage/vars/expsetup` for usage documentation.
+See :ref:`user-guide/vars/expsetup` for usage documentation.
 
 """
 

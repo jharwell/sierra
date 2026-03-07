@@ -1,8 +1,8 @@
 .. _plugins/storage:
 
-===============
-Storage Plugins
-===============
+===================
+Storage (--storage)
+===================
 
 Storage plugins tell SIERRA how to handle file I/O in stages 3-5. Specifically:
 
@@ -15,7 +15,7 @@ Storage plugins tell SIERRA how to handle file I/O in stages 3-5. Specifically:
 Each plugin can support any number of input formats, identified by file
 extensions, and any number of output types. This is summarized below for the
 storage plugins which come with SIERRA; additional formats can be supported via
-:ref:`tutorials/plugin/storage`.
+:ref:`tutorials/plugins/storage`.
 
 .. list-table::
    :header-rows: 1
@@ -55,7 +55,7 @@ storage plugins which come with SIERRA; additional formats can be supported via
 Other plugins in stages 3-5 may require a specific output format; see individual
 docs for details.
 
-.. TIP:: If you are :ref:`tutorials/plugin/storage`, follow the Unix philosophy
+.. TIP:: If you are :ref:`tutorials/plugins/storage`, follow the Unix philosophy
          of doing one thing well, and make multiple smaller plugins, rather than
          1 storage plugin which handles all of your custom types/formats.
 

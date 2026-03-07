@@ -21,6 +21,14 @@ matching archive types are decompressed. Currently supports:
 
 - ``.tar.gz``
 
+.. _plugins/proc/decompress/ordering:
+
+Ordering Considerations
+=======================
+
+Must precede any plugin which reads raw outputs if those outputs were previously
+compressed with :ref:`plugins/proc/compress`.
+
 Usage
 =====
 

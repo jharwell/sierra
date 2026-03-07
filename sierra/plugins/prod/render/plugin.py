@@ -148,7 +148,7 @@ def _from_project_imagized(
 ) -> None:
     """Render THINGS previously imagized in a project in stage 3 into videos.
 
-    Frames (images) in the imagize root (see :ref:`usage/run-time-tree`) are
+    Frames (images) in the imagize root (see :ref:`concepts/run-time-tree`) are
     stitched together to make a video using :program:`ffmpeg`.  Output format
     controlled via configuration.
 

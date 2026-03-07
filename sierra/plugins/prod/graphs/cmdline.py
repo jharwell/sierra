@@ -90,12 +90,11 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
                  - Another batch criteria which does not affect system size
                    (columns)
 
-             Metrics will be calculated by `computing` across .csv rows and
-             `projecting` down the columns by default, since system size will
-             only vary within a row.  Passing a value of 1 to this option will
-             override this calculation, which can be useful in bivariate batch
-             criteria in which you are interested in the effect of the OTHER
-             non-size criteria on various performance measures.
+             Metrics will be calculated by computing across .csv rows and
+             projecting down the columns by default.  Passing a value of 1 to
+             this option will override this calculation, which can be useful in
+             bivariate batch criteria in which you are interested in the effect
+             of the OTHER non-size criteria on various performance measures.
 
              0=criteria of interest varies across `rows`.
 
@@ -119,7 +118,7 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
         help="""
              This option specifies that the title, X/Y axis labels/tick labels
              should be larger than the SIERRA default.  This is useful when
-        generating graphs suitable for two column paper format where the
+             generating graphs suitable for two column paper format where the
              default text size for rendered graphs will be too small to see
              easily.  The SIERRA defaults are generally fine for the one
              column/journal paper format.
@@ -136,8 +135,8 @@ def _build_multistage(cmdline: PluginCmdline) -> PluginCmdline:
 
              .. versionchanged:: 1.2.20
 
-             Renamed from ``--transpose-graphs`` to make its relation to other
-             plotting options clearer.
+                Renamed from ``--transpose-graphs`` to make its relation to
+                other plotting options clearer.
              """
         + cmdline.graphs_applicable_doc(
             [":py:func:`Heatmap <sierra.core.graphs.heatmap.generate_numeric>`"]

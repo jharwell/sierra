@@ -169,7 +169,7 @@ class BootstrapCmdline(BaseCmdline):
             help="""
                  Skip the usual startup package checks.  Only do this if you are
                  SURE you will never use the SIERRA functionality which requires
-                 packages you don't have installed/can't install.
+                 packages you don\'t have installed/can\'t install.
                  """,
             action="store_true",
         )
@@ -671,16 +671,8 @@ class CoreCmdline(BaseCmdline):
                  (e.g., paths).  Preserving/overwriting random seeds is not
                  affected by ``--exp-overwrite``.
                  """,
+            action=argparse.BooleanOptionalAction,
             default=True,
-        )
-
-        self.stage1.add_argument(
-            "--no-preserve-seeds",
-            help="""
-                 Opposite of ``--preserve-seeds``.
-                 """,
-            dest="preserve_seeds",
-            action="store_false",
         )
 
     def init_stage2(self) -> None:
@@ -690,7 +682,7 @@ class CoreCmdline(BaseCmdline):
         self.stage2.add_argument(
             "--nodefile",
             help="""
-                 Specify a list of compute nodes which SIERpRA will use to run
+                 Specify a list of compute nodes which SIERRA will use to run
                  jobs.  For simulator :term:`Engines <Engine>`, these are HPC
                  resource nodes.  For real robot engines, these are robot
                  hostnames/IP addresses.  This information can also be supplied
@@ -787,12 +779,20 @@ class CoreCmdline(BaseCmdline):
         """
 
 
+def sphinx_cmdline_bootstrap():
+    return BootstrapCmdline().parser
+
+
 def sphinx_cmdline_multistage():
-    return CoreCmdline([BootstrapCmdline().parser], [-1]).parser
+    return CoreCmdline([], [-1]).parser
 
 
 def sphinx_cmdline_stage1():
     return CoreCmdline([], [1]).parser
+
+
+def sphinx_cmdline_stage2():
+    return CoreCmdline([], [2]).parser
 
 
 def sphinx_cmdline_stage3():

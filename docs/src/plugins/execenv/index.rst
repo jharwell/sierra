@@ -1,8 +1,8 @@
 .. _plugins/execenv:
 
-=============================
-Execution Environment Plugins
-=============================
+=================================
+Execution Environment (--execenv)
+=================================
 
 High Performance Computing (HPC) Plugins
 ========================================
@@ -50,11 +50,20 @@ different type of compute node SIERRA might be run on, for maximum efficiency.
 .. toctree::
    :maxdepth: 1
 
-   hpc/local.rst
-   hpc/adhoc.rst
-   hpc/pbs.rst
-   hpc/slurm.rst
-   hpc/awsbatch.rst
+   hpc/local
+   hpc/adhoc
+   hpc/pbs
+   hpc/slurm
+   hpc/awsbatch
+
+
+Common HPC Cmdline Options
+--------------------------
+
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.execenv.hpc.cmdline
+   :func: sphinx_cmdline_stage2
+   :prog: sierra-cli
 
 Prefect-based Plugins
 =====================
@@ -70,6 +79,9 @@ will otherwise arise.
 
    prefectserver/local.rst
    prefectserver/dockerremote.rst
+
+
+.. _plugins/execenv/realrobot:
 
 Real Robot Plugins
 ==================

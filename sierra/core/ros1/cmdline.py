@@ -56,7 +56,7 @@ class ROSCmdline(PluginCmdline):
             "--exp-setup",
             help="""
                  Defines experiment run length, ticks per second for the
-                 experiment.  See :ref:`usage/vars/expsetup` for a full
+                 experiment.  See :ref:`user-guide/vars/expsetup` for a full
                  description.
                  """
             + self.stage_usage_doc([1]),
@@ -78,6 +78,14 @@ class ROSCmdline(PluginCmdline):
             )
             + self.stage_usage_doc([1]),
         )
+
+
+def sphinx_cmdline_multistage():
+    return ROSCmdline([], [-1]).parser
+
+
+def sphinx_cmdline_stage1():
+    return ROSCmdline([], [1]).parser
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:

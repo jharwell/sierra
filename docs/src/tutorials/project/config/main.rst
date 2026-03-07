@@ -1,6 +1,10 @@
-.. tabs::
+================
+config/main.yaml
+================
 
-   .. group-tab:: ARGoS
+.. tab-set::
+
+   .. tab-item:: ARGoS
 
       An example main configuration file for the ARGoS engine:
 
@@ -35,7 +39,7 @@
            # can be easily accommodated without copy-pasting.
            perf: 'perf-config.yaml'
 
-   .. group-tab:: ROS1+Gazebo
+   .. tab-item:: ROS1+Gazebo
 
       An example main configuration file for the ROS1+Gazebo engine:
 
@@ -104,7 +108,7 @@
               ...
 
 
-   .. group-tab:: ROS1+Robot
+   .. tab-item:: ROS1+Robot
 
       An example main configuration file for the ROS1+Robot engine:
 

@@ -110,6 +110,10 @@ class HPCCmdline(PluginCmdline):
         )
 
 
+def sphinx_cmdline_stage2():
+    return HPCCmdline([], [2]).parser
+
+
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     """Update cmdopts dictionary with the HPC-specific cmdline options."""
     return {

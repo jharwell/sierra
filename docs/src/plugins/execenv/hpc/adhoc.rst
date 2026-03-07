@@ -7,10 +7,10 @@ This HPC environment can be selected via ``--execenv=hpc.adhoc``.  In this HPC
 environment, SIERRA will run experiments spread across an ad-hoc network of
 compute nodes.
 
-.. WARNING:: ``--sierra-root`` *MUST* be on a shared mount point across all
-               nodes, or things will not work out of the box. You will have to
-               manually copy things around in between stages (which you can do,
-               of course).
+.. WARNING:: :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>` *MUST* be on a
+               shared mount point across all nodes, or things will not work out
+               of the box. You will have to manually copy things around in
+               between stages (which you can do, of course).
 
 The following environmental variables are used in the Adhoc HPC environment:
 
@@ -44,6 +44,6 @@ The following environmental variables are used in the Adhoc HPC environment:
    * - :envvar:`SIERRA_NODEFILE`
      - Contains hostnames/IP address of all compute nodes SIERRA can use. Same
        format as GNU parallel ``--sshloginfile``.  :envvar:`SIERRA_NODEFILE`
-       must be defined or ``--nodefile`` passed. If neither is true, SIERRA will
-       throw an error.
-     - ``--nodefile``
+       must be defined or :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` passed. If
+       neither is true, SIERRA will throw an error.
+     - :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>`

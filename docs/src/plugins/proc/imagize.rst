@@ -56,6 +56,15 @@ SIERRA can render data into either:
    only pass ``--proc proc.imagize`` the first time you run stage 3 after
    running stage 2.
 
+.. _plugins/proc/imagize/ordering:
+
+Ordering Considerations
+=======================
+
+Invokes ``proc.statistics`` internally unless
+:ref:`--imagize-no-stats<src/plugins/proc/imagize:sierra-cli---imagize-no-stats>`
+is passed. Placing it after an explicit ``proc.statistics`` in the chain without
+that flag runs statistics twice.
 
 Usage
 =====
@@ -92,8 +101,8 @@ This plugin currently supports two different types of imagizing:
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/proc/imagize/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.proc.imagize.cmdline
    :func: sphinx_cmdline_stage3
    :prog: sierra-cli
 

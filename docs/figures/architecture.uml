@@ -28,8 +28,8 @@ state "Pipeline" as pipeline
 
 
 ' Labels for rows
-state "Stage\nInputs" as stage_inputs #lightcyan
-state "Stage\nOutputs" as stage_outputs #skyblue
+state "Input\nArtifacts" as input_artifacts #lightcyan
+state "Output\nArtifacts" as output_artifacts #skyblue
 state "Active\nPlugins" as plugins #Lightcoral
 state "Active\nComputing\nresources" as resources #Cornflowerblue
 
@@ -155,14 +155,14 @@ output5 -[hidden]-> plugin5
 plugin5 -[hidden]-> resources5
 
 ' Connect the categories
-pipeline -[hidden]d-> stage_inputs
-stage_inputs --> stage_outputs
-stage_outputs -[hidden]d-> plugins
+pipeline -[hidden]d-> input_artifacts
+input_artifacts --> output_artifacts
+output_artifacts -[hidden]d-> plugins
 plugins -[hidden]d-> resources
 
 ' Pipeline connection
-pipeline -[hidden]d->stage_inputs
-stage_inputs -[hidden]r->input1
+pipeline -[hidden]d->input_artifacts
+input_artifacts -[hidden]r->input1
 
 ' Layout hints
 stage1 -[hidden]d-> input1
