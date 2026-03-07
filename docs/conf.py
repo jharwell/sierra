@@ -68,6 +68,7 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.napoleon",
     "sphinxcontrib.plantuml",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

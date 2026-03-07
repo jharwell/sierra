@@ -4,110 +4,95 @@
 Development Roadmap
 ===================
 
-This page shows a brief overview of some of the ways I think SIERRA could be
-improved. Big picture stuff, not "add more unit tests".
+This page outlines big-picture improvements under consideration for SIERRA.
+Items are separated into known limitations to fix (SIERRA 2.0) and aspirational
+new capabilities (beyond 2.0). For smaller, concrete tasks see the issue
+tracker.
 
-SIERRA2
-=======
+SIERRA 2.0
+==========
 
-SIERRA is beginning to really mature, and so I think it isappropriate to lay out
-the improvements needed to go into a 2.0 version.
+These are known limitations of the current design that need addressing before
+a 2.0 release can be cut.
 
-Stage {4,5}
------------
+Stage {4,5}: Rework Deliverable Configuration
+---------------------------------------------
 
+The current mechanism for specifying what data goes on which graphs in stages
+{4,5} is clunky — it was developed incrementally for thesis work and patched as
+needed since. In practice you *can* slot in arbitrary deliverable generation
+code, but it feels like an afterthought rather than a first-class design.
 
-The configurability/hooks available in stage {4,5} for specifying what data goes
-on what graphs fees a bit clunky, as it was developed mostly for my
-thesis/hacked on as needed.. In *theory* you can just slot in whatever
-deliverable generation code you want to, but it feels like an afterthought. What
-*should* happen is:
+The target state is:
 
-- Deliverable generation for stage 4 is defined on a per-plugin basis:
-  inter/intra graphs for the ``hv`` plugin, for example.
+- Deliverable generation for stage 4 is defined on a per-plugin basis. For
+  example, the ``hv`` plugin would own its inter/intra-experiment graph
+  definitions rather than sharing a single global config.
 
-- Configurability still is via YAML, BUT now you have different files for
-  different plugins.
+- Configuration remains YAML-based, but each plugin has its own configuration
+  file rather than all plugins sharing one.
 
-Finally, there need to be several new tutorials for not only how to write
-hooks/plugins for stages {4,5}, but also how to *use* what is defined in an
-end-user workflow. The current examples don't show *any* of this, and the
-question of "How do I use SIERRA to generate what I really care about" isn't
-really answered anywhere.
+Stage {4,5}: New Tutorials
+--------------------------
 
-Beyond SIERRA2
-==============
+The existing tutorials and examples show nothing of stages {4,5} from a
+user workflow perspective. The question *"How do I use SIERRA to generate what
+I actually care about?"* is not currently answered anywhere in the docs. Several
+new tutorials are needed covering:
 
-Once the 2.0 release is done, that will set the stage for adding more plugins.
+- How to write hooks and plugins for stages {4,5}.
+- How to configure deliverable generation as an end user.
+- Worked examples showing stage 4 output for common research outputs (paper
+  figures, comparison tables, videos).
 
-Supporting ROS2
----------------
+Beyond SIERRA 2.0
+=================
 
-This would require adding several new engine plugin (one for each simulator
-that SIERRA supports that supports ROS1, and a new ROS2 real robot
-plugin). Since ROS2 still supports XML, this should actually be a fairly
-self-contained improvement.
+Once the 2.0 release is complete, the foundation will be in place for the
+following. These are aspirational and not yet scheduled.
 
-Supporting WeBots
------------------
-
-This would require adding a new engine plugin. Should be a fairly
-self-contained improvement.
-
-Supporting NetLogo
+New Engine Plugins
 ------------------
 
-This would require adding a new engine plugin. I *think* netlogo can take in
-XML, so this should be a fairly self-contained improvement. netlogo handles
-parallel experimental runs, so that might require some additional configuration,
-since none of the currently supported engines do that.
+**ROS2** — Would require a new engine plugin for each simulator SIERRA currently
+supports under ROS1, plus a new ROS2 real-robot plugin. Since ROS2 retains XML
+support, this should be relatively self-contained.
 
-Adding this would also make SIERRA more appealing/using to researchers outside
-of robotics.
+**WeBots** — Would require a single new engine plugin. Self-contained.
 
-Expanded Workflows
-------------------
+**NetLogo** — Would require a single new engine plugin. NetLogo may accept XML
+input, which would simplify integration. One non-trivial aspect: NetLogo
+handles parallel runs internally, unlike any engine currently supported by
+SIERRA, so some additional configuration may be needed. Adding NetLogo support
+would also broaden SIERRA's appeal beyond robotics to agent-based modelling
+more generally.
 
-It would be useful to be able to evaluate user code computationally, in addition
-to whatever scientific/research flavored evaluations. That is, having a workflow
-where SIERRA analyzes things like:
+Expanded Computational Workflows
+---------------------------------
 
-- How long sims (really the algorithms/controllers used) took. This would be
-  done by treating the stuff in the statistics/exec folder as first-class data
-  and operating on it.
+It would be useful to evaluate user code computationally alongside its
+scientific outputs. Concrete ideas:
 
-- The performance profile of sims (really the algorithms/controllers used) using
-  something like vtune, grof, kcachegrind, etc. This would be done by wrapping
-  the call to execute given sim on a target engine with whatever is required
-  by the profiling tool, and then averaging (if supported by the tool) the data
-  in stage 3, and generating some graphs/reports from the data in stage 4
-  (hopefully using native faculties the tool provides).
+- **Execution timing** — Treat the ``statistics/exec`` folder as first-class
+  data; average and graph how long each algorithm/controller takes to run.
 
-  This raises a nuanced point about plugins: should they be categorical, or
-  functional? E.g., for profiling with vtune, should we have ``proc.vtune``,
-  ``deliverable.vtune`` plugins in stages 3 and 4 respectively, OR have
-  ``vtune.proc`` and ``vtune.deliverable`` plugins. One is more tool/backend
-  based, and one is more functional. The same issue will arise with holoviews in
-  stages 4/5: ``hv.deliverable`` and ``hv.comparator`` or ``deliverable.hv`` and
-  ``comparator.hv``. In the latter case I think it makes more sense to have
-  ``hv.X``, because that will make it easier/cleaner to reuse code common to
-  usage of hv in stage 4/5. This decision is a long way off, and doesn't really
-  matter at this juncture.
+- **Performance profiling** — Wrap engine invocations with a profiling tool
+  (e.g., vtune, gprof, kcachegrind), average the profiles in stage 3, and
+  generate reports in stage 4.
 
-- The contributions of each dimension in an N-dim batch criteria to the observed
-  performance (i.e., principle component analysis).
+- **Principal component analysis** — For N-dimensional batch criteria,
+  decompose the contribution of each dimension to observed performance.
 
-- Regression testing: given the cmdline args + a pointer to some blessed
-  referenced data, generate a report of what items passed and which failed. This
-  should be fairly straightforward, because the blessed data would come from a
-  previous experiment, and therefore be packaged in SIERRA's directory structure.
+- **Regression testing** — Given a set of CLI arguments and a pointer to
+  blessed reference data from a previous experiment, generate a pass/fail
+  report. Because the blessed data lives in SIERRA's directory structure,
+  this should be straightforward to implement.
 
-Rewrite in Rust
----------------
+Stage 1 Rewrite in Rust
+------------------------
 
-Stage1 would greatly benefit from rewriting in rust, because they
-don't involve any "exotic" 3rd party libs like pandas/holoviews. Rewriting in
-rust would bring a massive speed boost to generating large experiments in
-stage1. Rewriting other stages in rust *might* be helpful, but there would be a
-limit to the rewrite, because e.g., holoviews would still have to be used. An
-interesting programming and architecture challenge, to say the least.
+Stage 1 (experiment generation) is a good candidate for a Rust rewrite: it
+does not depend on any "exotic" third-party libraries like pandas or holoviews,
+and a Rust implementation would substantially speed up generating large
+experiment batches. Other stages are less clear-cut candidates, since they do
+rely on such libraries.

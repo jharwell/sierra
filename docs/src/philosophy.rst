@@ -4,20 +4,19 @@
 SIERRA Design Philosophy
 ========================
 
-This document outlines the main philosophy behind SIERRA's design, how it can be
-used, and so forth. It really boils down to a few core ideas.
+This document outlines the core ideas behind SIERRA's design. Understanding
+these helps explain *why* SIERRA works the way it does — including choices that
+might initially seem overly rigid or opinionated.
 
 Single Input, Multiple Output
 =============================
 
-During stage 1, SIERRA generates multiple experiments via multiple experimental
-run input files all from a single template input file, which must be specified
-on the command line. SIERRA does not follow any references/links to other input
-files in this template input file, greatly simplifying the generation process
-and improving reproducability of experiments (e.g., less cryptic/subtle errors
-because of a ROS ``<include>`` which is different between the package versions
-installed on one system and another). SIERRA *does* support flattening an input
-file tree into a single file, per :ref:`plugins/expdef`.
+During stage 1, SIERRA generates multiple experiments from a single template
+input file specified on the command line. It does not follow any
+references or includes within that file, which simplifies generation and
+improves reproducibility (for example, it avoids subtle errors caused by a ROS
+``<include>`` resolving differently across systems). SIERRA *does* support
+flattening an input file tree into a single file; see :ref:`plugins/expdef`.
 
 Low Floor, No Ceiling
 =====================
@@ -29,112 +28,106 @@ users (no ceiling).
 .. list-table::
    :header-rows: 1
 
-   * - Design Decision
-     - Description
+   * - Decision
+     - Rationale
      - Supports
 
    * - Don't modify user directory structures
-     - :term:`Experimental Runs <Experimental Run>` will generate some sort of
-       directory structure in their output directory; it might be flat, it might
-       be deeply nested. SIERRA maintains this directory structure during stages
-       {3,4} in the interest of the Principle Of Least Surprise, and to make it
-       easier for SIERRA outputs to interoperate with other user scripts. E.g.,
-       users can take processed data at any stage and walk away, plugging it
-       into their existing scripts with minimal fuss.
+     - :term:`Experimental Runs <Experimental Run>` produce their own directory
+       structure — flat or deeply nested. SIERRA preserves that structure during
+       stages {3,4}, following the Principle of Least Surprise and making it
+       easy to pipe SIERRA outputs into existing scripts with minimal changes.
      - Low floor
 
-   * - Easy command-line tool integration
-     - For :ref:`plugins/engine` and :ref:`plugins/execenv`, SIERRA is designed
-       to make translating users' original commands to invoke an engine/run in
-       an execution environment easy. Since these almost invariably *cmdline*
-       commands, SIERRA uses the Principle of Least Surprise and simply wraps
-       and these during stages 2. It *is* trivially possible to provide e.g., an
-       alternative python API using a tool's python bindings to execute things,
-       but not all tools have that. All engines/execution environments I've ever
-       encountered *do* have cmdline APIs, hence this design choice.
+   * - Wrap engine CLIs rather than reimplementing them
+     - For :ref:`plugins/engine` and :ref:`plugins/execenv`, SIERRA translates
+       users' original invocation commands rather than reimplementing engine
+       APIs. All engines and execution environments have a CLI; not all have
+       Python bindings. This choice keeps integration predictable.
      - Low floor
 
    * - Maximally configurable
-     - SIERRA is designed to be as modular and extensible as possible (just like
-       ARGoS, ROS, Gazebo, etc.), so that it can be adapted for a wide variety
-       of applications. When in doubt, SIERRA exposes relevant settings as
-       configuration (even if the average user will never change them from their
-       default values).
+     - SIERRA exposes relevant settings as configuration wherever possible,
+       even if most users will never change the defaults. This ensures nothing
+       is hardwired that a sufficiently advanced project might need to control.
      - No ceiling
 
    * - Maximize reusability
-     - SIERRA is designed the way it is to maximize reusability. When used
-       properly, you should 100% *NEVER* have to copy-paste YAML configuration,
-       python code, etc., between projects/engines/etc. For a beginner user, the
-       amount of configuration can seem annoying, but for advanced users with
-       lots of projects, the amount of configuration maximizes reusability.
+     - When used properly, you should *never* need to copy-paste YAML
+       configuration or Python code between projects, engines, or scenarios.
+       The upfront configuration investment pays off at scale.
      - No ceiling
 
-   * - Assert often, fail early
-     - If a condition arises which SIERRA can't easily handle, abort, either via
-       an uncaught exception or an ``assert()``. Don't try to recover by
-       throwing an exception which can be caught at a higher level, etc., just
-       abort. This gives users confidence that *if* SIERRA doesn't crash, then
-       it is probably working properly. As a result of this, any ``try-catch``
-       blocks which do exist should always be in the same function; never rely
-       on raised exceptions to be caught at higher levels.
+   * - Separate processing from product generation
+     - Stage 3 post-processes raw run outputs into normalised,
+       statistics-bearing files. Stage 4 reads *only* those files to generate
+       graphs and deliverables. This means you can re-run stage 4 with
+       different graph configuration (title, axis range, additional lines) in
+       seconds, without re-running experiments or reprocessing data. Each stage
+       4 deliverable has a single, well-defined input source.
      - Low floor, No ceiling
+
+**Internal implementation conventions** (relevant to contributors):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Convention
+     - Rationale
+
+   * - Assert often, fail early
+     - If SIERRA encounters a condition it cannot handle, it aborts via an
+       uncaught exception or ``assert()`` rather than attempting recovery. This
+       gives users confidence that a non-crashing run is likely correct. As a
+       corollary, any ``try``/``except`` blocks should catch and handle errors
+       locally — never rely on exceptions propagating up to be caught at a
+       higher level.
 
 Never Delete Things
 ===================
 
-Because SIERRA is intended for research, and experimental data can be hard
-fought, SIERRA tries to guard against accidental deletions/overwrites of said
-data that users actually want to keep, but forgot to change parameters to direct
-SIERRA to keep it. Therefore, we force the user to explicitly say that
-deleting/overwriting is OK when it might cause irreparable damage to experiment
-results (i.e., only pipeline stages {1,2}). Overwriting is OK in later pipeline
-stages since those files are built from stage {1, 2} outputs, and can be easily
-regenerated if overwritten.
+Experimental data is hard-won. SIERRA therefore refuses to delete or overwrite
+anything in stages {1,2} without explicit permission, because losing those
+outputs in a later stage would be irreversible. Files generated in stages
+{3,4,5} are derived from stage {1,2} outputs and can be safely regenerated, so
+SIERRA will overwrite them freely. To override the protection on stages {1,2},
+pass ``--exp-overwrite``.
 
 Swiss Army Pipeline
 ===================
 
-SIERRAS 5-stage :ref:`Pipeline<usage/pipeline>` is meant to be like a Swiss army
-knife, in that you can run (mostly) arbitrary subsets of the 5 stages and have
-everything work as you would expect it to, to help with tweaking experimental
-design, generated graphs, etc., with minimal headaches of "Grrr I have to wait
-for THAT other part to run again before it will get to the part I just changed
-the configuration for and re-run what I actually care about".
+SIERRA's 5-stage :ref:`pipeline <usage/pipeline>` is designed to be run in
+any subset. You should be able to re-run only stage 4 after tweaking a graph
+config, or only stages {3,4} after a fresh post-processing pass, without
+friction.
 
-This manifests in some important ways:
+This is achieved through several structural choices:
 
-- Separating results processing in stage 3 from product generation in stage
-  \4.
+- Stage 3 (processing) and stage 4 (product generation) are kept separate, so
+  re-generating products never requires re-processing raw data.
 
-- Products in stage 4 are sourced from a single input file, rather than
-  pulling data from multiple files.
+- Stage 4 products are each sourced from a single input file, not assembled
+  from multiple files at generation time.
 
-- Each pipeline stage is transactional at the file level; that is, it writes out
-  its results to one or more files which can be read by later stages (as opposed
-  to keeping things in memory, which makes running arbitrary sets of pipeline
-  stages more difficult).
+- Each pipeline stage is transactional at the file level: it reads from and
+  writes to files on disk, rather than keeping state in memory. This makes
+  arbitrary stage subsets composable.
 
-- The :ref:`usage/run-time-tree` is designed to be human readable/copyable/etc,
-  so that researchers can use any part of SIERRA\'s pipeline as they wish and
-  walk away with the data at any time. That is, the design choice to use a
-  directory structure containing elements which were *not* hashed was
-  deliberate (looking at you conan).
+- The :ref:`usage/run-time-tree` uses human-readable, non-hashed directory
+  names, so researchers can inspect, copy, or hand off data at any stage
+  without needing SIERRA to interpret it.
 
-Separation Of Data Types
+Separation of Data Types
 ========================
 
-Any statistics generated during say stage 3 are stored in *separate* files from
-the actual data, even if the chosen ``--storage`` plugin and/or
-``--prod`` plugin supports them in a single file. This is for reasons of:
+Statistics generated during stage 3 are stored in *separate* files from the
+underlying data, even when the chosen ``--storage`` or ``--prod`` plugin could
+accommodate them in a single file. The reasons are:
 
-- Readability in the files themselves. For time series/1D data, separating
-  doesn't really provide benefits, but for 2D data it does. For 3D data, and
-  beyond (e.g., 4D), visualization of the raw numerical data is difficult
-  whether stats are in a separate file or in the same file as the actual data,
-  so is a net neutral.
+- **Readability.** For 2D and higher-dimensional data, separating statistics
+  from raw values makes both files easier to inspect.
 
-- Reducing memory footprint. For example, if a user is generating a 2D heatmap,
-  any stddev info present in the source file is ignored if it is present. Thus,
-  if it were present, and the source file be large, that could result in large,
-  unnecessary memory footprints.
+- **Memory footprint.** If a user is generating a 2D heatmap, any standard
+  deviation columns in the source file are irrelevant and would waste memory
+  unnecessarily if co-located with the data.

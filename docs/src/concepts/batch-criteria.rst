@@ -1,4 +1,4 @@
-.. _usage/bc:
+.. _concepts/batch-criteria:
 
 ==============
 Batch Criteria
@@ -9,9 +9,9 @@ short version is that they are the core of SIERRA--how to get it to DO stuff for
 you.  The following batch criteria are defined which can be used with any
 :term:`Project`.
 
-- :ref:`usage/bc/montecarlo`
+- :ref:`concepts/batch-criteria/montecarlo`
 
-.. _usage/bc/montecarlo:
+.. _concepts/batch-criteria/montecarlo:
 
 Monte Carlo
 ===========

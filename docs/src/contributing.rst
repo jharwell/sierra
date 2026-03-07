@@ -4,68 +4,55 @@
 Contributing
 ============
 
-Types of contributions
+Types of Contributions
 ======================
 
-All types of contributions are welcome: bugfixes, adding unit/integration tests,
-etc. If you're only have a little bit of time and/or are new to SIERRA, looking
-at the issues is a good place to look for places to contribute. If you have more
-time and/or want to give back to the community in a bigger way, see
-:ref:`roadmap` for some big picture ideas about where things might be going, and
-help shape the future!
+All types of contributions are welcome: bug fixes, adding unit/integration
+tests, documentation improvements, and more. If you only have a little time
+or are new to SIERRA, the issue tracker is a good place to find approachable
+tasks. If you want to contribute something more substantial, see :ref:`roadmap`
+for big-picture ideas about where the project is headed.
 
 Mechanics
 =========
 
-Writing the code
+Writing the Code
 ----------------
 
 #. Install development packages for SIERRA (from the SIERRA repo root)::
 
      uv sync . --extra devel
 
-#. Do development!
+#. Make your changes. For non-trivial changes, open an issue first to discuss
+   the approach before writing code.
 
-#. Run ``nox`` to check most things prior to commiting/pushing your changes. If
-   there are errors *you* have introduced, fix them. Some checkers (such as
-   pylint), will still report errors, as cleaning up the code is always a work
-   in progress::
+#. Run the full check suite before committing or pushing. Fix any errors
+   *you* have introduced. Some checkers (such as pylint) may still report
+   pre-existing warnings — cleaning those up is always ongoing work::
 
      uv run nox
 
+.. note::
 
-SIERRA Source Code Directory Structure
---------------------------------------
+   Two typos to watch for in the existing codebase: "pipline" (should be
+   "pipeline") and "layed" (should be "laid"). Fix them if you see them.
 
-It is helpful to know how SIERRA is layed out, so it is easier to see how things
-fit together, and where to look for implementation details if (really `when`)
-SIERRA crashes. So here is the directory structure, as seen from the root of the
-repository.
+Source Code Layout
+------------------
 
-- ``sierra`` - The SIERRA python package
+Understanding how SIERRA is laid out makes it easier to find implementation
+details and see how components fit together.
 
-  - ``core/`` - The parts of SIERRA which independent of the :term:`Project`
-    being run.
+.. code-block:: text
 
-    - ``experiment/`` - Various interfaces and bindings for use by plugins.
-
-    - ``generators/`` - Generic controller and scenario generators used to
-      modify template expdef files to provide the setting/context for running
-      experiments with variables.
-
-    - ``graphs/`` - Generic code to generate graphs of different types.
-
-    - ``models/`` - Model interfaces.
-
-    - ``pipeline/`` - Core pipline code in 5 stages (see
-      :ref:`usage/pipeline`).
-
-    - ``ros1/`` - Common :term:`ROS1` bindings.
-
-    - ``variables/`` - Generic generators for experimental variables to modify
-      template expdef files in order to run experiments with a given controller.
-
-  - ``plugins/`` - Plugins which provide broad customization of SIERRA, and
-    enables it to adapt to a wide variety of engines and experiment outputs.
-
-- ``docs/`` - Contains sphinx source code to generate these shiny docs.
+   sierra/
+   ├── core/                    # Engine- and project-independent SIERRA core
+   │   ├── experiment/          # Interfaces and bindings for use by plugins
+   │   ├── generators/          # Controller and scenario generators
+   │   ├── graphs/              # Graph generation (linegraphs, heatmaps, etc.)
+   │   ├── models/              # Model interfaces
+   │   ├── pipeline/            # 5-stage pipeline implementation
+   │   ├── ros1/                # Common ROS1 bindings
+   │   └── variables/           # Experimental variable generators
+   ├── plugins/                 # Bundled plugins (engines, execenvs, storage, etc.)
+   └── docs/                    # Sphinx documentation source
