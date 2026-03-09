@@ -14,7 +14,7 @@ For the purposes of this tutorial, I will assume you are creating a new HPC
 If you are creating a new plugin for an existing engine that comes with SIERRA
 (e.g., :term:`ARGoS`) you have two options:
 
-#. Following :ref:`tutorials/plugin/engine` to create a new engine
+#. Following :ref:`tutorials/plugins/engine` to create a new engine
    to add support for your execution environment within the existing engine.
 
 #. Open a pull request for SIERRA with your created plugin to get it into the
@@ -22,14 +22,15 @@ If you are creating a new plugin for an existing engine that comes with SIERRA
    plugins have utility beyond whatever group initially wrote them.
 
 If you are creating a new execution environment plugin for a new engine, then
-you can ignore the above.  Before beginning, see the :ref:`plugins/devguide` for
-a general overview of creating a new plugin.
+you can ignore the above.  Before beginning, see the
+:ref:`tutorials/plugins/devguide` for a general overview of creating a new
+plugin.
 
 Create the following filesystem structure in ``$HOME/git/plugins/hpc/HAL``.
 
--  ``plugin.py`` - This file is required, and is where most of the bits for the
+- ``plugin.py`` - This file is required, and is where most of the bits for the
    plugin will go. You don't *have* to call it this; if you want to use a
-   different name, see :ref:`plugins/devguide/schemas` for options.
+   different name, see :ref:`tutorials/plugins/devguide/schemas` for options.
 
 - ``cmdline.py`` This file is optional. If your new engine doesn't need any
   additional cmdline arguments, you can skip it.
@@ -171,5 +172,5 @@ Additional Notes
 
 All execution-environment-specific outputs should be logged to
 ``<batchroot>/scratch``. This keeps them separate from experimental
-inputs/outputs, and makes the :ref:`usage/run-time-tree` much more modular at
+inputs/outputs, and makes the :ref:`concepts/run-time-tree` much more modular at
 all levels.

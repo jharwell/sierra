@@ -145,17 +145,18 @@ Real-Robot Execution Topology
 For real-robot engines, the execution topology during a single run is:
 
 - **Host machine** — the machine SIERRA is invoked from. Acts as the ROS master
-  (unless :ref:`--no-master-node<src/reference/cli:sierra-cli---no-master-node>` is
-  passed). SIERRA coordinates the entire run from here.
+  (unless
+  :ref:`--no-master-node<src/plugins/engine/ros1:sierra-cli---no-master-node>`
+  is passed). SIERRA coordinates the entire run from here.
 
 - **Robot nodes** — each robot listed in the nodefile receives its controller
   subprocess via SSH, dispatched by GNU parallel using the ``host`` argument
   passed to each hook.
 
 - **Inter-run pause** — after all subprocesses for a run complete, SIERRA waits
-  :ref:`--exec-inter-run-pause<src/reference/cli:sierra-cli---exec-inter-run-pause>` seconds
-  before starting the next run, giving time to physically reset robot positions
-  and the environment.
+  :ref:`--exec-inter-run-pause<src/plugins/engine/ros1:sierra-cli---exec-inter-run-pause>`
+  seconds before starting the next run, giving time to physically reset robot
+  positions and the environment.
 
 How the Execution Environment Controls Concurrency
 ==================================================

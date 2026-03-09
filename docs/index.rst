@@ -32,7 +32,7 @@ Quick Paths
       Try SIERRA immediately using the built-in sample project.
 
    .. grid-item-card:: 💡 Understand the Model
-      :link: concepts/index
+      :link: concepts/overview
       :link-type: ref
       :class-card: sd-border-1
 
@@ -190,32 +190,34 @@ Demos
 
    src/getting-started/why-sierra
    src/getting-started/installation
-   src/getting-started/quickstart
    src/getting-started/trial
    src/getting-started/setup
 
 .. toctree::
    :caption: Core Concepts
-   :hidden:
 
+   src/concepts/overview
    src/concepts/experimental-design
    src/concepts/pipeline
    src/concepts/dataflow
    src/concepts/run-time-tree
    src/concepts/batch-criteria
+   src/concepts/philosophy
 
 .. toctree::
-   :hidden:
    :caption: User Guide
 
+   src/user-guide/project-structure
    src/user-guide/experiment-templates
    src/user-guide/running-experiments
+   src/user-guide/postprocessing
+   src/user-guide/product-generation
+   src/user-guide/comparator-usage
    src/user-guide/examples
    src/user-guide/variables
-   src/user-guide/postprocessing
+   src/user-guide/debugging-and-logging
 
 .. toctree::
-   :hidden:
    :caption: Tutorials: Using SIERRA
 
    src/tutorials/project/project
@@ -225,7 +227,6 @@ Demos
    src/tutorials/project/hooks
 
 .. toctree::
-   :hidden:
    :caption: Tutorials: Extending SIERRA
 
    src/tutorials/plugins/engine/index
@@ -239,7 +240,6 @@ Demos
    src/tutorials/plugins/external
 
 .. toctree::
-   :hidden:
    :caption: Plugins
 
    src/plugins/index
@@ -252,7 +252,6 @@ Demos
    src/plugins/compare/index
 
 .. toctree::
-   :caption: Architecture
    :hidden:
 
    src/architecture/execution-model
@@ -260,7 +259,6 @@ Demos
    src/architecture/deep-dive
 
 .. toctree::
-   :hidden:
    :caption: Reference
 
    src/reference/cli
@@ -271,10 +269,8 @@ Demos
    /autoapi/index
 
 .. toctree::
-   :hidden:
    :caption: Project
 
    src/reference/contributing
    src/reference/roadmap
-   src/reference/philosophy
    src/reference/citing

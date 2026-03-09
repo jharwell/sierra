@@ -8,10 +8,11 @@ For the purposes of this tutorial, I will assume you are creating a new
 :term:`Plugin` ``microscope`` for comparing :term:`Products <Product>`.  Before
 beginning:
 
-- See :ref:`exp/stage5-dataflow` to get a brief overview of how data
+- See :ref:`concepts/dataflow/stage5` to get a brief overview of how data
   flows through the pipeline w.r.t. stage 5,
 
-- See :ref:`plugins/devguide` for a general overview of creating a new plugin.
+- See :ref:`tutorials/plugins/devguide` for a general overview of creating a new
+  plugin.
 
 - Determine the type(s) of comparison your plugin will support: comparing
   *across* controllers, *across* scenarios, and *across* batch criteria. This is
@@ -23,7 +24,7 @@ To begin, create the following filesystem structure in
 
 -  ``plugin.py`` - This file is required, and is where most of the bits for the
    plugin will go. You don't *have* to call it this; if you want to use a
-   different name, see :ref:`plugins/devguide/schemas` for options.
+   different name, see :ref:`tutorials/plugins/devguide/schemas` for options.
 
 - ``cmdline.py`` This file is optional. If your new plugin doesn't need any
   additional cmdline arguments, you can skip it.

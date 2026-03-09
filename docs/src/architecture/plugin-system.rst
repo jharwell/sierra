@@ -15,8 +15,9 @@ available command line flags depend on which plugins you select, and how to use
 that as a guide to where changes belong.
 
 For the full list of plugin types and what each does, see :ref:`plugins`. For
-which plugins are active in each pipeline stage, see :ref:`usage/pipeline`. For
-how to write a plugin, see :ref:`plugins/devguide`.
+which plugins are active in each pipeline stage, see
+:ref:`concepts/pipeline`. For how to write a plugin, see
+:ref:`tutorials/plugins/devguide`.
 
 Infrastructure Plugins vs. the Project Plugin
 ==============================================

@@ -38,6 +38,15 @@ different plugin.
 This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
 supports ``pd.DataFrame`` objects.
 
+.. _plugins/proc/collate/ordering:
+
+Ordering Considerations
+=======================
+
+Should come after ``proc.statistics`` to generate statistics around collated
+data.
+
+
 Usage
 =====
 

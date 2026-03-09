@@ -16,7 +16,8 @@ supports flattening/nested configuration files.
                are modified accordingly.
 
 Experimental inputs are defined using JSON. See the section on JSON in
-:ref:`req/expdef` for restrictions on the contents of JSON input files.
+:ref:`tutorials/plugins/expdef/tokens` for restrictions on the contents of JSON
+input files.
 
 Requirements
 ============

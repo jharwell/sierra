@@ -14,8 +14,8 @@ For the purposes of this tutorial, I will assume you are creating a new
 :term:`Engine` :term:`Plugin` ``matrix``, and the code for that plugin lives
 in ``$HOME/git/plugins/engine/matrix``.
 
-Before beginning, see the :ref:`plugins/devguide` for a general overview of
-creating a new plugin.
+Before beginning, see the :ref:`tutorials/plugins/devguide` for a general
+overview of creating a new plugin.
 
 If you are creating a new engine, you have two options.
 
@@ -33,7 +33,7 @@ Before beginning, create the following filesystem structure in
 
 - ``plugin.py`` - This file is required, and is where most of the bits for the
   plugin will go. You don't *have* to call it this; if you want to use a
-  different name, see :ref:`plugins/devguide/schemas` for options.
+  different name, see :ref:`tutorials/plugins/devguide/schemas` for options.
 
 - ``cmdline.py`` This file is optional. If your new engine doesn't need any
   additional cmdline arguments, you can skip it.
@@ -204,7 +204,7 @@ In ``generators/engine.py``, you may define the following functions:
       on the cmdline for a scenario where you want to change the size of the
       arena from what it is in the template file, which can be useful if the
       batch criteria involves changing them; e.g., evaluating behavior with
-      different arena shapes. See :ref:`req/exp/arena-size` for more details.
+      different arena shapes. See :ref:`tutorials/project/new-bc/arena-size` for more details.
 
       .. code-block:: python
 
@@ -266,7 +266,7 @@ In ``generators/engine.py``, you may define the following functions:
    - All :term:`Batch Criteria` that you use must have the arena dimensions
      extractable when passed to ``arena_dims_from_criteria()``.
 
-   See :ref:`req/exp/arena-size` for more info.
+   See :ref:`tutorials/project/new-bc/arena-size` for more info.
 
 
 #. In ``plugin.py``, you may define the following classes which are used in

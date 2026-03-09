@@ -149,8 +149,6 @@ Cmdline Interface
    :func: sphinx_cmdline_stage1
    :prog: sierra-cli
 
-
-
 Environment Variables
 =====================
 

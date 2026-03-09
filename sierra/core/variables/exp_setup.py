@@ -18,7 +18,7 @@ from sierra.core import types
 def parse(arg: str, dflts: types.SimpleDict) -> types.CLIArgSpec:
     """Enforces the cmdline definition of ``--exp-setup``.
 
-    See :ref:`usage/vars/expsetup` for documentation.
+    See :ref:`user-guide/vars/expsetup` for documentation.
 
     """
     ret = dflts

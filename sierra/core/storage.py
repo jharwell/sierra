@@ -4,7 +4,7 @@
 """
 Trampoline bindings for the various storage plugins that come with SIERRA.
 
-See :ref:`tutorials/plugin/storage` for more details.
+See :ref:`tutorials/plugins/storage` for more details.
 """
 
 # Core packages

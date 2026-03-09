@@ -61,7 +61,7 @@ The following plugins are active in this stage:
 
 See also:
 
-- :ref:`usage/cli`
+- :ref:`reference/cli`
 
 Part of default pipeline. For a deep dive into design and functionality, see
 the :ref:`deep dive <usage/deep-dive/stage1>`.

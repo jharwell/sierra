@@ -61,8 +61,8 @@ works/is designed the way it is, and to help you find your way around.
                      separate projects with shared python code imported into
                      each as needed.
 
-      Specified via :ref:`--project<src/reference/cli:sierra-cli---project>` on the cmdline. See
-      :ref:`usage/cli` for more info.
+      Specified via :ref:`--project<src/reference/cli:sierra-cli---project>` on
+      the cmdline.
 
    Tick
 
@@ -72,11 +72,11 @@ works/is designed the way it is, and to help you find your way around.
 
    Batch Criteria
 
-   See :ref:`concepts/batch-criteria` for a thorough explanation of batch
-   criteria, but the short version is that they are the core of SIERRA--how to
-   get it to DO stuff for you as you create and define an experiment which
-   investigates a *variable* (or multiple variables) across a *range* of values,
-   which when instantiated gives you a *batch* of experiments to run.
+      See :ref:`concepts/batch-criteria` for a thorough explanation of batch
+      criteria, but the short version is that they are the core of SIERRA--how
+      to get it to DO stuff for you as you create and define an experiment which
+      investigates a *variable* (or multiple variables) across a *range* of
+      values, which when instantiated gives you a *batch* of experiments to run.
 
    Batch Experiment
 

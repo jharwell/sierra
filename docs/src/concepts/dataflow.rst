@@ -245,10 +245,10 @@ At the highest level we have the following in the context of pipeline stages
     stage3 --> stage4
     stage4 --> stage5
 
-After :ref:`exp/stage3-dataflow`, data is in :term:`Processed Output Data` files
-and/or :term:`Collated Output Data` files. In stage 4, the :term:`Processed
-Output Data` files can be taken and directly converted to products along one of
-two paths using appropriate plugins:
+After :ref:`concepts/dataflow/stage3`, data is in :term:`Processed Output Data`
+files and/or :term:`Collated Output Data` files. In stage 4, the
+:term:`Processed Output Data` files can be taken and directly converted to
+products along one of two paths using appropriate plugins:
 
 - Intra-experiment products such as graphs and videos, which are built from a
   single processed output data file.
@@ -327,8 +327,8 @@ files with a 1:1 mapping as above.
 Stage 5 Inter-Batch Dataflow
 ============================
 
-After :ref:`exp/stage4-dataflow`, data is in :term:`Processed Output Data` files
-and/or :term:`Collated Output Data` files. In stage 5, the :term:`Collated
+After :ref:`concepts/dataflow/stage4`, data is in :term:`Processed Output Data`
+files and/or :term:`Collated Output Data` files. In stage 5, the :term:`Collated
 Output Data` files can be taken and further collated to create
 :term:`Inter-Batch Data` files. The dataflow for this can be visualized as
 follows, with :term:`Batch Experiment` as SCOPE.

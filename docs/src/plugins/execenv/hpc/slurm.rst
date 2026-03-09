@@ -51,7 +51,7 @@ error.
 
    * - :envvar:`SLURM_TASKS_PER_NODE`
      - Used to set # parallel jobs per allocated compute node.
-     - ``--exec-jobs-per-node``
+     - :ref:`--exec-jobs-per-node<src/plugins/execenv/hpc:sierra-cli---exec-jobs-per-node>`
 
    * - :envvar:`SLURM_JOB_NODELIST`
      - Obtaining the list of nodes allocated to a job which SIERRA can direct

@@ -27,14 +27,16 @@ A minimal ``sierra-cli`` invocation looks like this:
      --scenario        myScenario.10x10x1            \
      --controller      myCategory.myController
 
-The bootstrap options (:ref:`--engine <src/reference/cli:sierra-cli---engine>`, :ref:`--execenv
-<src/reference/cli:sierra-cli---execenv>`, :ref:`--expdef <src/reference/cli:sierra-cli---expdef>`, ``--storage``,
-:ref:`--proc <src/reference/cli:sierra-cli---proc>`, ``--prod``) all have defaults and only need
-to be specified when overriding them. The four options that change most often
-between runs are :ref:`--batch-criteria <src/reference/cli:sierra-cli---batch-criteria>`,
-``--scenario``, ``--controller``, and :ref:`--expdef-template
-<src/reference/cli:sierra-cli---expdef-template>` — together they determine both the shape of the
-batch and where outputs are stored under
+The bootstrap options (:ref:`--engine <src/reference/cli:sierra-cli---engine>`,
+:ref:`--execenv <src/reference/cli:sierra-cli---execenv>`, :ref:`--expdef
+<src/reference/cli:sierra-cli---expdef>`, ``--storage``, :ref:`--proc
+<src/reference/cli:sierra-cli---proc>`, ``--prod``) all have defaults and only
+need to be specified when overriding them. The four options that change most
+often between runs are :ref:`--batch-criteria
+<src/reference/cli:sierra-cli---batch-criteria>`, ``--scenario``,
+``--controller``, and :ref:`--expdef-template
+<src/reference/cli:sierra-cli---expdef-template>` — together they determine both
+the shape of the batch and where outputs are stored under
 :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`. See
 :ref:`concepts/run-time-tree` for the resulting directory layout.
 
@@ -121,17 +123,16 @@ Resuming After a Crash
 =======================
 
 If stage 2 is killed partway through (e.g. by an HPC time limit), pass
-:ref:`--exec-resume<src/reference/cli:sierra-cli---exec-resume>` with the same arguments on the
-next invocation:
+:ref:`--exec-resume<src/plugins/execenv/hpc/index:sierra-cli---exec-resume>`
+with the same arguments on the next invocation:
 
 .. code-block:: bash
 
    sierra-cli ... --pipeline 2 --exec-resume
 
 SIERRA skips any experimental run whose output directory already exists and runs
-only those that did not complete. Without
-:ref:`--exec-resume<src/reference/cli:sierra-cli---exec-resume>`, re-running stage 2 against an
-existing batch results in redundant work.
+only those that did not complete. Without ``--exec-resume``, re-running stage 2
+against an existing batch results in redundant work.
 
 .. _user-guide/running-experiments/overwrite:
 
@@ -150,7 +151,7 @@ To discard and regenerate an existing batch experiment entirely, pass
    This deletes stage 1 inputs and regenerates them from scratch. Any existing
    stage 2 outputs will no longer correspond to the inputs that produced
    them. Use only when you intend to re-run the full batch. See
-   :ref:`reference/philosophy` for why SIERRA requires explicit permission for
+   :ref:`concepts/philosophy` for why SIERRA requires explicit permission for
    this.
 
 .. _user-guide/running-experiments/rcfile:
@@ -206,4 +207,4 @@ aggressively SIERRA uses resources during stages 3 and 4:
   machines.
 
 For stage 2, parallelism is determined by the ``--execenv`` plugin.  See
-:ref:`plugins/execenv/index` for per-environment details.
+:ref:`plugins/execenv` for per-environment details.

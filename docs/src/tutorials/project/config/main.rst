@@ -1,3 +1,7 @@
+================
+config/main.yaml
+================
+
 .. tab-set::
 
    .. tab-item:: ARGoS

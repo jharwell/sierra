@@ -96,6 +96,7 @@ docs = [
     "sphinx",
     "docutils",
     "sphinx-rtd-theme",
+    "pydata-sphinx-theme",
     "sphinx-argparse-cli",
     "sphinx-copybutton",
     "sphinxcontrib-napoleon",

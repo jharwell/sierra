@@ -135,7 +135,7 @@ Steps
    SIERRA, so its kind of silly if you don't do this.
 
 #. Setup your :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
-   appropriately by following :ref:`plugins/expdef`.
+   appropriately by following :ref:`user-guide/experiment-templates`.
 
 Optional Steps
 ==============

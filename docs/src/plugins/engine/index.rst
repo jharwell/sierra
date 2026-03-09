@@ -16,4 +16,13 @@ between engines.
    ros1gazebo/index
    ros1robot/index
 
+
 Additional engines can be supported via :ref:`tutorials/plugins/engine`.
+
+Common ROS1 Functionality
+=========================
+
+.. sphinx_argparse_cli::
+   :module: sierra.core.ros1.cmdline
+   :func: sphinx_cmdline_multistage
+   :prog: sierra-cli

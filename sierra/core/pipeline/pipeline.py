@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 """The 5 pipeline stages implemented by SIERRA.
 
-See :ref:`usage/pipeline` for high-level documentation.
+See :ref:`concepts/pipeline` for high-level documentation.
 
 """
 

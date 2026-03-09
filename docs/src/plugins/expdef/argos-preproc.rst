@@ -21,5 +21,5 @@ For the purposes of illustration we will use
   <argos-configuration>
 
 
-See :ref:`req/expdef` for usage/description of the ``__CONTROLLER__`` tag in XML
+See :ref:`tutorials/plugins/expdef/tokens` for usage/description of the ``__CONTROLLER__`` tag in XML
 files.

@@ -25,8 +25,6 @@ Before writing any plugin code, verify your setup meets SIERRA's requirements
 for experimental design and output format:
 
 - :ref:`getting-started/installation/os` — supported operating systems.
-- :ref:`req/getting-started/requirements` — how arena sizes and experiment
-  definitions must be structured.
 - :ref:`user-guide/running-experiments` — what SIERRA assumes about how your
   code outputs data and how experimental runs are launched.
 
@@ -126,8 +124,8 @@ If you pass an obviously incorrect combination of arguments, SIERRA will refuse
 to start. For subtler errors it will abort via an assertion before doing
 anything substantial.
 
-See :doc:`../user-guide/cli` for annotated invocation examples, and
-:ref:`faq` if you get stuck.
+See :ref:`user-guide/examples` for annotated invocation examples, and
+:ref:`reference/faq` if you get stuck.
 
 Step 4: Understand the Output
 ==============================
@@ -140,9 +138,9 @@ spelunking later.
 The key principle: **SIERRA never deletes your data.** If a directory that
 SIERRA needs to create already exists, it will abort during stages 1–2 rather
 than risk overwriting experimental results. Pass
-:ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>` to override this when you
-deliberately want to rerun. See :ref:`philosophy` for the reasoning behind this
-behaviour.
+:ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>` to override
+this when you deliberately want to rerun. See :ref:`conceptsphilosophy` for the
+reasoning behind this behaviour.
 
 Next Steps
 ==========

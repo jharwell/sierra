@@ -19,8 +19,8 @@ Core
    versions and systems, and (b) SIERRA uses this path for other things
    internally (e.g., computing the paths to YAML config files).
 
-   This variable is used in stages 1-5. See :ref:`plugins/external` for more
-   information.
+   This variable is used in stages 1-5. See :ref:`tutorials/plugins/external`
+   for more information.
 
 .. envvar:: SIERRA_RCFILE
 
@@ -63,7 +63,7 @@ Core
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
    defined and :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` is not
-   passed SIERRA will throw an error.
+   1passed SIERRA will throw an error.
 
 
 Plugins
@@ -87,35 +87,22 @@ Plugins
 
 .. envvar:: PARALLEL
 
-   When running on some execution environments, such as ``hpc.slurm,hpc.pbs``,
-   any and all environment variables needed by your :term:`Project` should be
-   exported via the :envvar:`PARALLEL` environment variable before invoking
-   SIERRA, because GNU parallel does not export the environment of the node it
-   is launched from to slave nodes (or even on the local machine). Something
-   like::
+   Used by GNU parallel to pass default options to every invocation. On HPC
+   execution environments (``hpc.slurm``, ``hpc.pbs``) GNU parallel does not
+   forward the launching node's environment to compute nodes, so any variables
+   needed by your :term:`Project` must be listed here before invoking SIERRA.
+   SIERRA's built-in ``hpc.*`` plugins seed this variable with a minimal set
+   (``LD_LIBRARY_PATH``, ``PYTHONPATH``); extend it with whatever your project
+   additionally requires:
 
-     export PARALLEL="--workdir . \
-     --env PATH \
-     --env LD_LIBRARY_PATH \
-     --env LOADEDMODULES \
-     --env _LMFILES_ \
-     --env MODULE_VERSION \
-     --env MODULEPATH \
-     --env MODULEVERSION_STACK
-     --env MODULESHOME \
-     --env OMP_DYNAMICS \
-     --env OMP_MAX_ACTIVE_LEVELS \
-     --env OMP_NESTED \
-     --env OMP_NUM_THREADS \
-     --env OMP_SCHEDULE \
-     --env OMP_STACKSIZE \
-     --env OMP_THREAD_LIMIT \
-     --env OMP_WAIT_POLICY \
-     --env SIERRA_ARCH \
-     --env SIERRA_PLUGIN_PATH"
+   .. code-block:: bash
 
-   Don't forget to include :envvar:`ARGOS_PLUGIN_PATH`,
-   :envvar:`ROS_PACKAGE_PATH`, etc., depending on your chosen :term:`Engine`.
+      export PARALLEL="${PARALLEL} \
+        --env SIERRA_PLUGIN_PATH \
+        --env SIERRA_ARCH \
+        --env ARGOS_PLUGIN_PATH"
+
+   See :ref:`user-guide/debugging-and-logging` for a full HPC setup checklist.
 
 .. envvar:: PARALLEL_SHELL
 
@@ -123,8 +110,8 @@ Plugins
    or more shell commands in a subprocess (treated as a ``shell``, which means
    that :program:`parallel` can't determine ``SHELL``, and therefore defaults to
    ``/bin/sh``, which is not what users expect. SIERRA explicitly sets
-   ``PARALLEL_SHELL`` to the result of ``shutil.which('bash')`` in keeping with
-   the Principle Of Least Surprise.
+   :envvar:`PARALLEL_SHELL` to the result of ``shutil.which('bash')`` in keeping
+   with the Principle Of Least Surprise.
 
 .. envvar:: ROS_PACKAGE_PATH
 

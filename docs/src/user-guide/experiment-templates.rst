@@ -15,35 +15,10 @@ explains the contract a valid template must satisfy and what stage 1 does with
 it. For token syntax and format-specific restrictions, see
 :ref:`plugins/expdef` for your chosen input file format.
 
-.. _user-guide/experiment-templates/single-file:
-
-The Single-File Requirement
-===========================
-
-SIERRA requires the template to be a single file. All parameters SIERRA
-needs to vary must be reachable within that one file---anything outside
-it is invisible to the modification pipeline.
-
-If your simulator normally expects multiple configuration files (a common
-pattern in ROS launch setups), you have two options:
-
-#. Flatten the configuration into a single file before passing it to SIERRA. The
-   :term:`Engine` plugin can provide an ``expdef_flatten()`` hook that SIERRA
-   calls at the start of stage 1 to perform this transformation
-   automatically. See :ref:`plugins/engine` for how to implement this hook.
-
-#. Factor out only the parameters SIERRA needs to vary into the template and
-   load the remaining files from fixed paths within your project.  This is the
-   pragmatic approach for large legacy configurations where flattening is not
-   practical.
-
-See :ref:`reference/philosophy` for the design rationale behind this
-requirement.
-
 .. _user-guide/experiment-templates/what-stage1-does:
 
 What Stage 1 Does With Your Template
-======================================
+=====================================
 
 For each experiment in the batch, stage 1 applies modifications from
 batch criteria and ``controllers.yaml`` to the template, substitutes

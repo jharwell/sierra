@@ -10,8 +10,8 @@ Getting Started
 #. Q: I'm really confused by all the terminology that SIERRA uses — how can I
    better understand the documentation?
 
-   A: See the :doc:`/src/glossary` for all terms SIERRA defines specific names
-   for. Reading it before anything else is strongly recommended.
+   A: See the :ref:`reference/glossary` for all terms SIERRA defines specific
+   names for. Reading it before anything else is strongly recommended.
 
 #. Q: I'm getting an error about the output directory for my simulation run
    being missing. I told SIERRA where outputs should be created by following

@@ -30,7 +30,7 @@ class MonteCarlo(bc.UnivarBatchCriteria):
     """
     Criteria which does nothing put provide a set of experiments via cardinality.
 
-    See :ref:`usage/bc/montecarlo` for documentation.
+    See :ref:`concepts/batch-criteria/montecarlo` for documentation.
 
     """
 

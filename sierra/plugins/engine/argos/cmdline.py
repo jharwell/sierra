@@ -35,7 +35,7 @@ class EngineCmdline(PluginCmdline):
             help="""
                  Defines experiment run length, :term:`Ticks <Tick>` per second
                  for the experiment (<experiment> tag).  See
-                 :ref:`usage/vars/expsetup` for a full description.
+                 :ref:`user-guide/vars/expsetup` for a full description.
                  """
             + self.stage_usage_doc([1]),
             default="exp_setup.T{}.K{}".format(

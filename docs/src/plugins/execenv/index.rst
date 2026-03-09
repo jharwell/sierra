@@ -47,7 +47,6 @@ for the nodes you request for your HPC job.  Similarly, you may want to build
 your :term:`Project` ``.so`` (if your project is C/C++) natively on each
 different type of compute node SIERRA might be run on, for maximum efficiency.
 
-==========================
 Common HPC Cmdline Options
 ==========================
 

@@ -50,6 +50,22 @@ in THIS column of THIS .csv file under the different conditions present
 throughout the different experiment, and I want the data to appear like THIS on
 THIS type of graph". SIERRA handles the rest!
 
+.. _concepts/exp-design/variables:
+
+Variables vs. Batch Criteria
+=============================
+
+Batch criteria define the axes of variation *across* a batch experiment — each
+value of a criterion generates a separate experiment. Variables, by contrast,
+apply uniformly to every experiment in the batch. All batch criteria are
+variables in the general sense, but not all variables are batch criteria.
+
+The most commonly used non-criteria variable is experiment setup
+(:ref:`user-guide/vars/expsetup`), which configures experiment duration and
+controller cadence uniformly across all experiments in a batch. For the full
+list of configurable variables and their cmdline syntax, see
+:ref:`user-guide/vars`.
+
 Now that you understand the basics of how to create experiments, proceed to
 :ref:`concepts/dataflow` to understand how data in your experiment flows through
 the SIERRA pipeline.

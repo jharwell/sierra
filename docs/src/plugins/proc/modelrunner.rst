@@ -69,6 +69,14 @@ this, so it is left to researchers to follow best practices in this case.
 
 All models, when enabled/active, execute during stage 3.
 
+.. _plugins/proc/modelrunner/ordering:
+
+Ordering Considerations
+=======================
+
+Should come after ``proc.statistics`` and/or ``proc.collate`` if the models use
+that data.
+
 Usage
 =====
 
@@ -102,7 +110,7 @@ There are multiple "gates" which a model must pass to be run, to allow for
 maximum flexibility in many different use cases:
 
 #. A model must to be contained in a ``.py`` file which conforms to one of the
-   :ref:`plugin schemas <plugins/devguide/schemas>`.
+   :ref:`plugin schemas <tutorials/plugins/devguide/schemas>`.
 
 #. The model's enclosing directory has to be on :envvar:`SIERRA_PLUGIN_PATH`.
 
@@ -207,7 +215,8 @@ to write some python bindings to translate the inputs/outputs into things that
 SIERRA can understand/is expecting. Model code can be anywhere, as long as the
 enclosing directory is on :envvar:`SIERRA_PLUGIN_PATH`.  For a directory on
 :envvar:`SIERRA_PLUGIN_PATH` to be recognized as a model plugin, the directory
-needs to conform to one of the :ref:`plugin schemas <plugins/devguide/schemas>`.
+needs to conform to one of the :ref:`plugin schemas
+<tutorials/plugins/devguide/schemas>`.
 
 By defining models via ``sierra_models()`` which takes a string argument for the
 type of model [ ``intra``, ``inter`` ] and returns a list of the names of the

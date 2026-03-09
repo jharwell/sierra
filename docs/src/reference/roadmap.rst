@@ -9,6 +9,456 @@ Items are separated into known limitations to fix (SIERRA 2.0) and aspirational
 new capabilities (beyond 2.0). For smaller, concrete tasks see the issue
 tracker.
 
+
+Documentation Improvement
+=========================
+
+This section outlines recommended structural improvements to the SIERRA
+documentation.  The goal is to improve navigation, reader onboarding, and
+long‑term maintainability of the documentation. The recommendations focus
+specifically on **information architecture** (placement, section
+responsibilities, and reader flow), rather than wording or style.
+
+The current documentation contains strong technical content, but the
+organization sometimes makes it difficult for new users to understand where to
+begin and how different parts of the system relate to one another.
+
+The following recommendations describe structural changes that will improve the
+learning path and clarify the role of each section.
+
+1. Clarify the Top‑Level Documentation Structure
+------------------------------------------------
+
+Current Structure
+~~~~~~~~~~~~~~~~~
+
+The documentation currently contains the following major sections:
+
+- getting-started
+- concepts
+- architecture
+- plugins
+- tutorials
+- user-guide
+- reference
+
+While these are all reasonable categories, the *responsibilities of each section
+overlap* in several places.
+
+Recommended Structure
+~~~~~~~~~~~~~~~~~~~~~
+
+The documentation should follow a clearer progression:
+
+- getting-started
+- concepts
+- user-guide
+- tutorials
+- plugins
+- architecture
+- reference
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+This structure aligns with the typical user journey:
+
+1. Learn what the system is.
+2. Understand the core ideas.
+3. Learn how to use it.
+4. Follow examples.
+5. Extend the system.
+6. Understand internal implementation.
+7. Look up detailed references.
+
+This creates a **progressive learning model** rather than a set of disconnected pages.
+
+
+
+2. Streamline the Getting Started Section
+-----------------------------------------
+
+Current Content
+~~~~~~~~~~~~~~~
+
+The section currently contains:
+
+- why-sierra
+- installation
+- setup
+- quickstart
+- trial
+
+Issue
+~~~~~
+
+Some of these pages overlap conceptually, particularly *quickstart* and *trial*.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Reduce the section to:
+
+- why-sierra
+- installation
+- quickstart
+- setup
+
+Quickstart should already produce a working experiment run.
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+A concise getting-started section reduces friction for new users and ensures that
+they can quickly run their first experiment without navigating multiple introductory pages.
+
+
+
+3. Add a Concepts Overview Page
+-------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+The concepts section contains several well-written technical topics:
+
+- pipeline
+- dataflow
+- runtime-tree
+- batch-criteria
+- experimental-design
+
+However, there is no single page explaining how these ideas fit together.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Add a page:
+
+::
+
+    concepts/overview
+
+This page should explain:
+
+- the experiment lifecycle
+- the runtime tree
+- the pipeline stages
+- how plugins participate in execution
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Readers often struggle when concepts are introduced independently without showing
+their relationships. An overview page provides the **mental model needed to interpret
+the rest of the documentation**.
+
+
+
+4. Strengthen the User Guide
+----------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+The user guide currently includes only a small set of operational pages.
+
+However, SIERRA has a complex workflow that includes experiment definition,
+parameter sweeps, postprocessing, and result comparison.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Expand the user guide to include:
+
+::
+
+    user-guide/
+        project-structure
+        running-experiments
+        defining-experiments
+        experiment-templates
+        variables
+        batch-criteria
+        postprocessing
+        product-generation
+        comparing-results
+        debugging-and-logging
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+The user guide should provide a **complete operational workflow**.
+Currently, many usage details are scattered across concepts and plugin pages.
+Consolidating them improves discoverability and usability.
+
+
+
+5. Improve Tutorial Organization
+--------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+The tutorials include material about:
+
+- project plugins
+- generators
+- hooks
+- new batch criteria
+- plugin development
+
+However, these tutorials appear more like developer notes than guided learning experiences.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Reframe tutorials around concrete learning goals:
+
+::
+
+    tutorials/
+        your-first-project
+        creating-batch-criteria
+        writing-project-plugins
+        writing-sierra-plugins
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Tutorials should walk readers through **real tasks step-by-step**.
+Reframing them around tasks rather than internal features makes them more accessible.
+
+
+
+6. Introduce a Plugin System Overview
+-------------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+Plugin documentation is organized by plugin type:
+
+- engine
+- execenv
+- expdef
+- proc
+- prod
+- compare
+- storage
+
+While this is logical for experienced users, new readers may not understand the role
+of each plugin category.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Add a page:
+
+::
+
+    plugins/overview
+
+This page should describe:
+
+- the plugin architecture
+- plugin categories
+- how plugins participate in the pipeline
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Readers need context before diving into individual plugin categories.
+An overview prevents confusion and reduces cognitive load.
+
+
+
+7. Separate Plugin Usage from Plugin Implementation
+---------------------------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+Plugin documentation currently mixes:
+
+- how to use plugins
+- how plugins are implemented internally
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Use the following separation:
+
+Plugins Section:
+    How users enable and configure plugins.
+
+Architecture Section:
+    How plugins are implemented and integrated internally.
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Separating usage from implementation keeps the documentation relevant
+to both **users and developers** without overwhelming either group.
+
+
+
+8. Clarify the Architecture Section
+-----------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+Architecture pages describe:
+
+- execution model
+- plugin system
+- internal system design
+
+These pages are valuable but are not necessary for new users.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Ensure architecture pages appear later in the documentation hierarchy
+and are clearly labeled as **advanced or developer-oriented**.
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Readers who only want to run experiments should not need to understand
+internal execution mechanics.
+
+
+
+9. Clean Up the Reference Section
+---------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+The reference section includes a mix of content types:
+
+- CLI documentation
+- environment configuration
+- glossary
+- FAQ
+- philosophy
+- roadmap
+- contributing
+- citing
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Keep only true reference material:
+
+::
+
+    reference/
+        cli
+        subprograms
+        environment
+        glossary
+        citing
+
+Move other pages to more appropriate locations.
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Reference sections should contain **lookup material**, not narrative explanations
+or project metadata.
+
+
+
+10. Move Philosophy to the Concepts Section
+-------------------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+The philosophy page currently lives under reference.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Move it to:
+
+::
+
+    concepts/philosophy
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Philosophy explains design motivations and belongs with conceptual material,
+not reference documentation.
+
+
+
+11. Add a System Overview Page
+------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+Understanding the entire SIERRA system currently requires reading multiple pages
+across several sections.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Add a top-level overview page linked from the documentation landing page.
+
+The overview should summarize:
+
+- experiment definitions
+- runtime tree structure
+- pipeline stages
+- plugin roles
+- generated outputs
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+A system overview provides readers with the **big picture**, allowing them to
+navigate the rest of the documentation with a clear mental model.
+
+
+
+12. Add a Project Structure Page
+--------------------------------
+
+Current Situation
+~~~~~~~~~~~~~~~~~
+
+The documentation does not clearly describe the layout of a typical SIERRA project.
+
+Recommendation
+~~~~~~~~~~~~~~
+
+Add a page:
+
+::
+
+    user-guide/project-structure
+
+This page should explain:
+
+- expected directory layout
+- experiment configuration files
+- template locations
+- batch definitions
+- output directories
+
+Why This Change Helps
+~~~~~~~~~~~~~~~~~~~~~
+
+Most users begin by exploring example projects.
+Providing a clear explanation of project layout helps users understand how
+to organize their own experiments.
+
 SIERRA 2.0
 ==========
 

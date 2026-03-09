@@ -65,6 +65,7 @@ extensions = [
     "xref",
     "sphinx_last_updated_by_git",
     "sphinx_rtd_theme",
+    "pydata_sphinx_theme",
     "sphinx.ext.napoleon",
     "sphinxcontrib.plantuml",
     "sphinx_design",
@@ -236,7 +237,7 @@ sphinx_argparse_cli_prefix_document = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 plantuml = "java -jar /tmp/plantuml.jar"
 plantuml_url = "https://downloads.sourceforge.net/project/plantuml/plantuml.jar"
 
@@ -253,10 +254,24 @@ if not jarpath.exists():
 # documentation.
 #
 html_theme_options = {
-    "globaltoc_maxdepth": 2,
-    "navigation_depth": 4,
-    "collapse_navigation": False,
-    "sticky_navigation": True,
+    # "globaltoc_maxdepth": 2,
+    # "navigation_depth": 4,
+    # "collapse_navigation": False,
+    # "sticky_navigation": True,
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
+    "navbar_items": [
+        {"name": "Getting Started", "url": "src/getting-started/why-sierra"},
+        {"name": "Concepts", "url": "src/concepts/experimental-design"},
+        {"name": "User Guide", "url": "src/user-guide/running-experiments"},
+        {"name": "Tutorials", "url": "src/tutorials/project/project"},
+        {"name": "Plugins", "url": "src/plugins/index"},
+        {"name": "Architecture", "url": "src/architecture/execution-model"},
+        {"name": "Reference", "url": "src/reference/cli"},
+    ],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "navigation_depth": 3,
+    "show_toc_level": 2,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

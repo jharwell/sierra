@@ -204,11 +204,13 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. NOTE::
 
-         :ref:`--with-robot-rab<src/reference/cli:sierra-cli---with-robot-rab>` and
-         :ref:`--with-robot-leds<src/reference/cli:sierra-cli---with-robot-leds>` are required
-         here because the sample project's controllers use those sensor/actuator
-         types. SIERRA strips unused sensor and actuator XML tags by default to
-         reduce ARGoS's memory footprint; these flags restore them.
+         :ref:`--with-robot-rab<src/plugins/engine/argos/index:sierra-cli---with-robot-rab>`
+         :ref:and
+         :ref:`--with-robot-leds<src/plugins/engine/argos/index::sierra-cli---with-robot-leds>`
+         :ref:are required here because the sample project's controllers use
+         :ref:those sensor/actuator types. SIERRA strips unused sensor and
+         :ref:actuator XML tags by default to reduce ARGoS's memory footprint;
+         :ref:these flags restore them.
 
    .. tab-item:: ROS1+Gazebo
 
@@ -279,11 +281,11 @@ Next Steps
 You have run a complete SIERRA pipeline from experiment generation through
 graph output. From here:
 
-- **Connect your own code** — follow :doc:`setup` to create a project plugin
-  and run SIERRA against your own simulator or algorithm.
-- **Understand what was generated** — read :doc:`../user-guide/running-experiments`
-  for a full walkthrough of the output directory structure.
-- **Learn the concepts** — :doc:`../concepts/pipeline` explains each pipeline
+- **Connect your own code** — follow :ref:`getting-started/setup` to create a
+  project plugin and run SIERRA against your own simulator or algorithm.
+- **Understand what was generated** — read :ref:`concepts/run-time-tree` for a
+  full walkthrough of the output directory structure.
+- **Learn the concepts** — :ref:`concepts/pipeline` explains each pipeline
   stage and why it is structured the way it is.
-- **See more invocation examples** — :doc:`../user-guide/cli` has annotated
+- **See more invocation examples** — :ref:`user-guide/examples` has annotated
   examples for common scenarios.

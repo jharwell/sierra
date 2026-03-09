@@ -24,7 +24,7 @@ plugin with a new name, and use that.
 Furthermore, plugin names have the same constraints as python package
 names. E.g., no dots, so ``foo.bar`` is not a valid plugin name.
 
-.. _plugins/devguide/schemas:
+.. _tutorials/plugins/devguide/schemas:
 
 Schemas
 =======
@@ -98,7 +98,7 @@ multiple use cases.
 Plugins should respect all core SIERRA cmdline arguments, as well as all
 general-purpose arguments for all stages the plugin can be used in.
 
-.. _plugins/devguide/cmdline:
+.. _tutorials/plugins/devguide/cmdline:
 
 Extending the SIERRA Cmdline For Your Plugin
 ============================================
@@ -163,7 +163,7 @@ SIERRA.
 
 #. Try out your new cmdline! SIERRA should pick it up automatically. For
    example, if you have created a cmdline for an
-   :ref:`--engine<src/reference/cli:sierra-cli---engine>` plugin available as
+   :ref:`--engine<sierra-cli---engine>` plugin available as
    ``starfleet.enterprise``, if you set ``--log-level=DEBUG`` you should see
    something like this in SIERRA's output::
 

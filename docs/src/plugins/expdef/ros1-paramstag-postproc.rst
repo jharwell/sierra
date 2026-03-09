@@ -1,7 +1,7 @@
 .. SPDX-License-Identifier:  MIT
 
 Input ``sample.launch`` file is split into multiple files within the
-:ref:`usage/run-time-tree`:
+:ref:`concepts/run-time-tree`:
 
   - ``sample_runX_robotY.launch`` containing the ``<robot>`` tag in the
     original input file, which is changed to ``<launch>``. This has all

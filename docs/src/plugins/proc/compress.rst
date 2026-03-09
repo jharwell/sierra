@@ -26,6 +26,15 @@ uncompressed data can be removed after compression with
 :ref:`--compress-remove-after<src/plugins/proc/compress:sierra-cli---compress-remove-after>`. No
 data is lost--it's all in the archive!
 
+.. _plugins/proc/compress/ordering:
+
+Ordering Considerations
+=======================
+
+:ref:`plugins/proc/statistics` and/or :ref:`plugins/proc/collate` should proceed
+this plugin in the ``--proc`` chain if you want processed outputs to be included
+in the archive in addition to raw outputs.
+
 Usage
 =====
 

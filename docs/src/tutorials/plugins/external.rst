@@ -18,9 +18,9 @@ Recursive Plugin Search
 
 To support dynamic plugins which can be defined anywhere, each directory on the
 plugin path is searched recursively. Any file/directory matching a :ref:`schema
-<plugins/devguide/schemas>` that SIERRA supports will be loaded.  For example, if you
-have a plugin ``$HOME/git/organization/plugins/myplugin``, you can make it
-accessible in SIERRA in a number of different ways:
+<tutorials/plugins/devguide/schemas>` that SIERRA supports will be loaded.  For
+example, if you have a plugin ``$HOME/git/organization/plugins/myplugin``, you
+can make it accessible in SIERRA in a number of different ways:
 
 - Put ``$HOME/git`` on ``SIERRA_PLUGIN_PATH`` -> your plugin will be accessible
   as ``plugins.myplugin`` on the cmdline.

@@ -32,7 +32,7 @@ Required Steps
    In order to change attributes, add/remove tags, you will need to understand
    the XPath syntax for search in XML files.
 
-   ``get_attr_changelist()`` - Given whatever parameters that your variable was
+   ``gen_attr_changelist()`` - Given whatever parameters that your variable was
    passed during initialization (e.g. the boundaries of a range you want to vary
    it within), produce a list of sets, where each set is all changes that need
    to be made to the ``.xml`` template file in order to set the value of your
@@ -100,7 +100,7 @@ Required Steps
 
       def factory(cli_arg: str,
                   main_config: dict,
-                  batch_input_root: pathlib.path,
+                  batch_input_root: pathlib.Path,
                   **kwargs) -> MyVar:
       """
       Arguments:
@@ -144,40 +144,25 @@ Optional Steps
    .. NOTE:: This function is one of the two ways in which the requirement that
              the size of the arena (i.e., the volume or plane of real or
              simulation space) to use during experiments is known to SIERRA can
-             be communicated. For more details, see :ref:`req/exp/arena-size`.
+             be communicated. For more details, see :ref:`tutorials/project/new-bc/arena-size`.
 
 
-A Note About Arena Size
-=======================
+.. _tutorials/project/new-bc/arena-size:
 
-These requirements only apply if you want to execute :term:`Experiments
-<Experiment>` which have different arena sizes (e.g., you want to put the same #
-of agents in increasingly large/small areas to figure out how their behavior
-changes).
+Arena Size
+==========
 
-#. The experimental arena size for each :term:`Experiment` in all :term:`Batch
-   Experiments <Batch Experiment>` is defined. For experiments which will run in
-   simulation, this is usually obtained from the configured limits on the
-   simulated space set in the simulator input files(s). If your simulation
-   environment is more of a "treadmill" (i.e., it renders around agents as they
-   move and is effectively infinite), then you will have to create some
-   mechanism for a set size for the simulation.  For real-world experiments,
-   this is usually just an estimate of the lab/test range space size.
+If your batch criteria varies the size of the experimental arena, SIERRA needs
+to know the dimensions for each experiment. There are two ways to communicate
+this, tried in the following order:
 
-   There are two ways in which the arena size used in experiments can be
-   communicated to SIERRA, which SIERRA tries in the following order:
+#. Override :func:`~sierra.core.variables.batch_criteria.BaseBatchCriteria.arena_dims()`
+   in your criteria class. This also requires additional hooks in your engine
+   plugin — see :ref:`tutorials/plugins/engine`.
 
-   #. Through :term:`Batch Criteria` defining the ``arena_dims()`` function. See
-      :ref:`tutorials/project/new-bc` to see how to implement this method. This
-      method also requires additional hooks to be defined in the
-      :term:`Engine`--see :ref:`plugins/engine` for specifics.
+#. Encode the arena size as part of ``--scenario`` and implement the
+   corresponding parsing in your scenario generator — see
+   :ref:`tutorials/project/generators/scenario`.
 
-   #. Through the cmdline, by encoding it as part of what is passed to
-      --scenario. See
-      :ref:`tutorials/project/generators/scenario` to see how to implement this
-      method.
-
-   Both methods can be made to work equivalently, and can be mixed within and
-   across engines and batch criteria. That is, you can define some experiments
-   where the arena size is pulled from batch criteria, and some where it is
-   pulled from ``--scenario`` within the same engine/project.
+Both approaches can be mixed within the same project. If SIERRA cannot determine
+arena size from either source it will raise an error at stage 1.

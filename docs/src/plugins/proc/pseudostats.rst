@@ -24,6 +24,13 @@ which expects its outputs to be under that prefix.
           use ``--n-runs=>1`` , then you should use
           :ref:`plugins/proc/statistics` instead of this plugin.
 
+.. _plugins/proc/pseudostats/ordering:
+
+Ordering Considerations
+=======================
+
+Same as ``proc.statistics``; this plugin is a no-op drop-in for that plugin.
+
 Usage
 =====
 

@@ -1,4 +1,4 @@
-.. _reference/philosophy:
+.. _concepts/philosophy:
 
 ========================
 SIERRA Design Philosophy
@@ -97,7 +97,7 @@ pass :ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>`.
 Swiss Army Pipeline
 ===================
 
-SIERRA's 5-stage :ref:`pipeline <usage/pipeline>` is designed to be run in
+SIERRA's 5-stage :ref:`pipeline <concepts/pipeline>` is designed to be run in
 any subset. You should be able to re-run only stage 4 after tweaking a graph
 config, or only stages {3,4} after a fresh post-processing pass, without
 friction.
@@ -114,7 +114,7 @@ This is achieved through several structural choices:
   writes to files on disk, rather than keeping state in memory. This makes
   arbitrary stage subsets composable.
 
-- The :ref:`usage/run-time-tree` uses human-readable, non-hashed directory
+- The :ref:`concepts/run-time-tree` uses human-readable, non-hashed directory
   names, so researchers can inspect, copy, or hand off data at any stage
   without needing SIERRA to interpret it.
 
@@ -122,9 +122,10 @@ Separation of Data Types
 ========================
 
 Statistics generated during stage 3 are stored in *separate* files from the
-underlying data, even when the chosen :ref:`--storage<src/reference/cli:sierra-cli---storage>` or
-:ref:`--prod<src/reference/cli:sierra-cli---prod>` plugin could accommodate them in a single
-file. The reasons are:
+underlying data, even when the chosen
+:ref:`--storage<src/reference/cli:sierra-cli---storage>` or
+:ref:`--prod<src/reference/cli:sierra-cli---prod>` plugin could accommodate them
+in a single file. The reasons are:
 
 - **Readability.** For 2D and higher-dimensional data, separating statistics
   from raw values makes both files easier to inspect.
