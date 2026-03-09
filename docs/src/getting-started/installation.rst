@@ -45,21 +45,21 @@ Prerequisites
 SIERRA depends on a small set of OS-level utilities. Install them before
 running ``pip install``.
 
-.. tabs::
+.. tab-set::
 
-   .. group-tab:: Ubuntu / Debian
+   .. tab-item:: Ubuntu / Debian
 
       .. code-block:: bash
 
          sudo apt install parallel psmisc
 
-   .. group-tab:: Fedora / RHEL
+   .. tab-item:: Fedora / RHEL
 
       .. code-block:: bash
 
          sudo dnf install parallel psmisc
 
-   .. group-tab:: macOS
+   .. tab-item:: macOS
 
       .. code-block:: bash
 
@@ -113,11 +113,12 @@ reference in these docs.
 
    The package provides the following ROS node:
 
-   - ``sierra_timekeeper`` — Tracks elapsed time for an :term:`Experimental
-     Run` and terminates it once the duration specified by ``--exp-setup`` has
-     elapsed. ROS has no built-in time-bounded execution mechanism; this node
-     fills that gap. SIERRA automatically inserts the corresponding XML tag into
-     each ``.launch`` file it generates.
+   - ``sierra_timekeeper`` — Tracks elapsed time for an :term:`Experimental Run`
+     and terminates it once the duration specified by
+     :ref:`--exp-setup<src/reference/cli:sierra-cli---exp-setup>` has elapsed. ROS has no built-in
+     time-bounded execution mechanism; this node fills that gap. SIERRA
+     automatically inserts the corresponding XML tag into each ``.launch`` file
+     it generates.
 
 Next Steps
 ==========

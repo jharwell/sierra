@@ -25,7 +25,8 @@ Core
 .. envvar:: SIERRA_RCFILE
 
    Used to specify the path to a file to put cmdline args in to reduce the size
-   of cmdlines. Can also be passed directly via ``--rcfile``. Priority:
+   of cmdlines. Can also be passed directly via
+   :ref:`--rcfile<src/reference/cli:sierra-cli---rcfile>`. Priority:
 
    - ``--rcfile``
 
@@ -61,7 +62,8 @@ Core
    content/formatting requirements.
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
-   defined and ``--nodefile`` is not passed SIERRA will throw an error.
+   defined and :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` is not
+   passed SIERRA will throw an error.
 
 
 Plugins
@@ -71,11 +73,12 @@ Plugins
 
    Must be set to contain the library directory where you installed/built ARGoS,
    as well as the library directory for your project ``.so``. Checked to be
-   non-empty before running stage 2 for all ``--execenv`` plugins. SIERRA does
-   `not` modify this variable, so it needs to be setup properly prior to
-   invoking SIERRA (i.e., the directory containing the :term:`Project` ``.so``
-   file needs to be on it). SIERRA can't know, in general, where the location of
-   the C++ code corresponding to the loaded :term:`Project` is.
+   non-empty before running stage 2 for all
+   :ref:`--execenv<src/reference/cli:sierra-cli---execenv>` plugins. SIERRA does *not* modify this
+   variable, so it needs to be setup properly prior to invoking SIERRA (i.e.,
+   the directory containing the :term:`Project` ``.so`` file needs to be on
+   it). SIERRA can't know, in general, where the location of the C++ code
+   corresponding to the loaded :term:`Project` is.
 
 .. envvar:: LD_LIBRARY_PATH
 
@@ -86,9 +89,10 @@ Plugins
 
    When running on some execution environments, such as ``hpc.slurm,hpc.pbs``,
    any and all environment variables needed by your :term:`Project` should be
-   exported via the ``PARALLEL`` environment variable before invoking SIERRA,
-   because GNU parallel does not export the environment of the node it is
-   launched from to slave nodes (or even on the local machine). Something like::
+   exported via the :envvar:`PARALLEL` environment variable before invoking
+   SIERRA, because GNU parallel does not export the environment of the node it
+   is launched from to slave nodes (or even on the local machine). Something
+   like::
 
      export PARALLEL="--workdir . \
      --env PATH \

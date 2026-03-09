@@ -9,8 +9,8 @@ Runtime Directory Tree
    {1,2}, it will abort processing in order to preserve data integrity; this is
    not necessary to do for stages {3,4,5}, because those stages can be recreated
    using the results of stages {1,2}.  This behavior can be overwridden with
-   ``--exp-overwrite``, in which case the user assumes full responsibility for
-   ensuring the integrity of the experiment.
+   :ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>`, in which case the user
+   assumes full responsibility for ensuring the integrity of the experiment.
 
    Always better to check the arguments before hitting ENTER. Measure twice, cut
    once, as the saying goes.
@@ -37,18 +37,19 @@ complex. See also :ref:`philosophy`.
      - The root directory that SIERRA outputs EVERYTHING to. SIERRA will *read*
        configuration/inputs from where you tell it to, but all outputs generated
        during at any pipeline stage will appear under here.
-     - ``--sierra-root``. See :ref:`usage/cli` for more info.
+     - :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`.
 
    * - Batchroot
      - ALL files (generated experiment inputs, experiment outputs, deliverables,
        etc.) are written to this directory, which will be under
-       ``--sierra-root``.  Named using a combination of:
+       :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`.  Named using a
+       combination of:
 
        - ``--controller``
        - ``--scenario``
-       - ``--sierra-root``
-       - ``--expdef-template``
-       - ``--batch-criteria``
+       - :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`
+       - :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
+       - :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`
 
        Subsequent experiments using the same values for these cmdline
        arguments **WILL** result in the same calculated root directory for
@@ -83,11 +84,12 @@ Core Pipeline Directory Tree (Stages 1-2)
 -----------------------------------------
 
 When SIERRA runs stages 1-2, it creates a directory structure under whatever was
-passed as ``--sierra-root``.  The specifics of what directories/files get
-created *may* depend on the specific set of active plugins; see the :ref:`plugin
-docs <plugins>` for details. However, the SIERRA core creates a consistent set
-of directories during stages 1-2. for the purposes of explanation, I will use
-the following partial SIERRA option set to explain the core experiment tree::
+passed as :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`.  The specifics of what
+directories/files get created *may* depend on the specific set of active
+plugins; see the :ref:`plugin docs <plugins>` for details. However, the SIERRA
+core creates a consistent set of directories during stages 1-2. for the purposes
+of explanation, I will use the following partial SIERRA option set to explain
+the core experiment tree::
 
   --sierra-root=$HOME/exp\
   --controller=CATEGORY.my_controller\
@@ -158,7 +160,8 @@ The meaning of each directory is discussed below.
 
 - ``mytemplate-population_size.Log8/`` - The directory for the :term:`Batch
   Experiment` is named from a combination of the template input file used
-  (``--expdef-template``) and the :term:`Batch Criteria` (``--batch-criteria``).
+  (``--expdef-template``) and the :term:`Batch Criteria`
+  (:ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`).
 
 - ``exp-inputs`` - Root directory for :term:`Experimental<Experiment>` inputs;
   each experiment in the batch gets their own directory in here.

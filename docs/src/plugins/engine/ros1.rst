@@ -5,16 +5,18 @@
    support for doing so would not be difficult.
 
 #. Since SIERRA operates on a single template input file
-   (``--expdef-template``) when generating experimental definitions, all XML
-   parameters you want to be able to modify with SIERRA must be present in a
-   single ``.launch`` file. Other parameters you don't want to modify with
-   SIERRA can be present in other ``.launch`` or ``.world`` files, and using the
-   usual ``<include>`` mechanism. See also :ref:`philosophy`.
+   (:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`) when generating
+   experimental definitions, all XML parameters you want to be able to modify
+   with SIERRA must be present in a single ``.launch`` file. Other parameters
+   you don't want to modify with SIERRA can be present in other ``.launch`` or
+   ``.world`` files, and using the usual ``<include>`` mechanism. See also
+   :ref:`philosophy`.
 
-#. Within the template ``.launch`` file (``--expdef-template``), the root XML
-   tag must be ``<ros-configuration>`` . The ``<ros-configuration>`` tag is
-   stripped out by SIERRA during generation, and exists solely for the purposes
-   of conformance with the XML standard, which states that there can be only a
+#. Within the template ``.launch`` file
+   (:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`), the root XML tag
+   must be ``<ros-configuration>`` . The ``<ros-configuration>`` tag is stripped
+   out by SIERRA during generation, and exists solely for the purposes of
+   conformance with the XML standard, which states that there can be only a
    single root element (i.e., you can't have a ``<params>`` element and a
    ``<launch>`` element both at the root level--see options below). See
    :ref:`plugins/expdef` for details of required structure of passed
@@ -23,9 +25,9 @@
 
    :term:`Projects <Project>` can choose either of the following options for
    specifying controller parameters. See :ref:`plugins/expdef` for further
-   details of required structure of passed ``--expdef-template``, and what
-   changes are applied to them by SIERRA to use with ROS, depending on the
-   option chosen.
+   details of required structure of passed
+   :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`, and what changes are
+   applied to them by SIERRA to use with ROS, depending on the option chosen.
 
       - Use the ROS Parameter Server
 

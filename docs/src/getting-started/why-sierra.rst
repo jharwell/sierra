@@ -58,11 +58,12 @@ SLURM-managed cluster and prefers to develop code on her laptop.
 **How SIERRA helps:** SIERRA's :ref:`plugins/engine` and :ref:`plugins/execenv`
 plugins let Alice use the same project plugin and batch criteria definitions
 whether she is running on her laptop or the SLURM cluster — she only changes
-``--execenv``. The :ref:`plugins/storage` system handles rosbag and CSV outputs
-uniformly, and SIERRA's stochastic run management (``--n-runs``) handles the
-multiple seeds needed for :math:`\alpha` and :math:`\beta` automatically. Stage
-5 comparative graphs let her produce camera-ready :math:`\alpha` vs
-:math:`\beta` vs :math:`\gamma` comparisons directly.
+:ref:`--execenv<src/reference/cli:sierra-cli---execenv>`. The :ref:`plugins/storage` system
+handles rosbag and CSV outputs uniformly, and SIERRA's stochastic run management
+(:ref:`--n-runs<src/reference/cli:sierra-cli---n-runs>`) handles the multiple seeds needed for
+:math:`\alpha` and :math:`\beta` automatically. Stage 5 comparative graphs let
+her produce camera-ready :math:`\alpha` vs :math:`\beta` vs :math:`\gamma`
+comparisons directly.
 
 Use Case #2: Alice The Contagion Modeler
 ========================================
@@ -105,10 +106,10 @@ handful of servers in her lab.
 **How SIERRA helps:** SIERRA's plugin architecture lets Alice write one set of
 batch criteria definitions (population size, agent velocity) and run them
 against ARGoS, ROS1+Gazebo, and — once a NetLogo engine plugin exists — NetLogo,
-by changing only ``--engine``. The :ref:`plugins/execenv` ``hpc.adhoc`` plugin
-covers Alice's lab servers without needing a formal scheduler. Stage 4's
-rendering plugin produces the per-algorithm visual comparisons Bob needs, all
-from a single SIERRA invocation.
+by changing only :ref:`--engine<src/reference/cli:sierra-cli---engine>`. The
+:ref:`plugins/execenv` ``hpc.adhoc`` plugin covers Alice's lab servers without
+needing a formal scheduler. Stage 4's rendering plugin produces the
+per-algorithm visual comparisons Bob needs, all from a single SIERRA invocation.
 
 Use Case #3: Bob The Industry Modeling & Sim Developer
 ======================================================
@@ -124,12 +125,13 @@ Some projects are classified, so any integration with open-source tools must
 keep the proprietary code strictly separate.
 
 **How SIERRA helps:** SIERRA's :ref:`plugins/expdef` system supports JSON and
-YAML natively, so migrating the input format requires only changing ``--expdef``,
-not rewriting experiment definitions. The :ref:`plugins/prod` plugin system is
-extensible: Bob's team can write a custom ``prod`` plugin that generates
-interactive webplots while the rest of the pipeline remains unchanged. Because
-SIERRA's project plugins live in a separate repository from SIERRA itself,
-classified projects can be kept entirely private.
+YAML natively, so migrating the input format requires only changing
+``--expdef``, not rewriting experiment definitions. The :ref:`plugins/prod`
+plugin system is extensible: Bob's team can write a custom
+:ref:`--prod<src/reference/cli:sierra-cli---prod>` plugin that generates interactive webplots
+while the rest of the pipeline remains unchanged. Because SIERRA's project
+plugins live in a separate repository from SIERRA itself, classified projects
+can be kept entirely private.
 
 Use Case #4: Candace The ML Engineer
 =====================================

@@ -3,7 +3,7 @@
 
    SPDX-License-Identifier:  MIT
 
-.. _plugins/external:
+.. _tutorials/plugins/external:
 
 ======================
 Using External Plugins

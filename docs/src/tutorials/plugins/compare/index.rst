@@ -1,8 +1,8 @@
-.. _tutorials/plugin/compare:
+.. _tutorials/plugins/compare:
 
-=====================================
-Product Comparison Plugin (--compare)
-=====================================
+=========================================
+New Product Comparison Plugin (--compare)
+=========================================
 
 For the purposes of this tutorial, I will assume you are creating a new
 :term:`Plugin` ``microscope`` for comparing :term:`Products <Product>`.  Before
@@ -15,7 +15,8 @@ beginning:
 
 - Determine the type(s) of comparison your plugin will support: comparing
   *across* controllers, *across* scenarios, and *across* batch criteria. This is
-  driven by the ``--across`` stage 5 option common to all stage 5 plugins.
+  driven by the :ref:`--across<src/reference/cli:sierra-cli---across>` stage 5 option common to
+  all stage 5 plugins.
 
 To begin, create the following filesystem structure in
 ``$HOME/git/plugins/microscope``.
@@ -35,9 +36,9 @@ These files will be populated as you go through the rest of the tutorial.
 #. Create the following filesystem structure in
    ``$HOME/git/plugins/microscope``:
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab::  ``plugin.py``
+      .. tab-item::  ``plugin.py``
 
          .. include:: plugin.rst
 

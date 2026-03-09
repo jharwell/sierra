@@ -12,19 +12,14 @@ Experimental Design
 This is the landing page for designing experiments and working with data as it
 flows through SIERRA.
 
-.. _concepts/exp-design:
-
-Experimental Design
-===================
-
 In SIERRA, there are 3 main faculties that are used to design experiments:
 
-- The *controller*. In SIERRA, a ``--controller`` is simply a designation of
-  some aspect of an algorithm which you are running. Even if what you designate
-  as the controller is *not* actually controlling a significant part of the
-  behaviors, it *IS* the controlling knob from the perspective of the experiment
-  you want to run. Put another way, controllers designate the algorithm/thing
-  under test.
+- The *controller*. In SIERRA, a ``--controller`` is
+  simply a designation of some aspect of an algorithm which you are
+  running. Even if what you designate as the controller is *not* actually
+  controlling a significant part of the behaviors, it *IS* the controlling knob
+  from the perspective of the experiment you want to run. Put another way,
+  controllers designate the algorithm/thing under test.
 
 - The *scenario*. In SIERRA, the ``--scenario`` is simply a designation of some
   aspect(s) of the experimental context in which the controller will run. This
@@ -37,13 +32,14 @@ In SIERRA, there are 3 main faculties that are used to design experiments:
            equitably as possible, to allow you to define things with semantic
            labels which make sense to YOU.
 
-- The :term:`Batch Criteria`. In SIERRA, the ``--batch-criteria`` is the main
-  workhorse of designing experiments. It defines the *independent* variables
-  (you can have any number, defining an N-D experimental space). Each variable
-  can make pretty much any changes it wants to the experimental inputs, giving
-  you *massive* flexibility on how to set up your experiments. Variables are
-  combined combinatorically by the sets of changes they make to experimental
-  inputs to define the N-D experimental space.
+- The :term:`Batch Criteria`. In SIERRA, the
+  :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` is the main workhorse of
+  designing experiments. It defines the *independent* variables (you can have
+  any number, defining an N-D experimental space). Each variable can make pretty
+  much any changes it wants to the experimental inputs, giving you *massive*
+  flexibility on how to set up your experiments. Variables are combined
+  combinatorically by the sets of changes they make to experimental inputs to
+  define the N-D experimental space.
 
 
 Beyond this, the *dependent* variables are those which you select as important

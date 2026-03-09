@@ -15,6 +15,15 @@ SIERRA 2.0
 These are known limitations of the current design that need addressing before
 a 2.0 release can be cut.
 
+High-Dimension Batch Criteria Support
+-------------------------------------
+
+This is in the code already for 2D->1D slicing, in a very hacky/brittle way
+which probably doesn't work anymore. This needs to be reworked, tested, and
+documented. Being able to e.g., slice a 3D batch criteria along 2 dimensions to
+generate heatmaps would be an awesome upgrade. This will require changes to some
+of the stage 3 statistics code too.
+
 Stage {4,5}: Rework Deliverable Configuration
 ---------------------------------------------
 

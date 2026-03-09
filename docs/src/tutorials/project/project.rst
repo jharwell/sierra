@@ -57,21 +57,21 @@ Steps
      for all projects. Within this directory, the following files are used (not
      all files are required when running a stage that utilizes them):
 
-     .. tabs::
+     .. tab-set::
 
-        .. tab:: ``main.yaml``
+        .. tab-item:: ``main.yaml``
 
            Main SIERRA configuration file. This file is required for all
            pipeline stages. See :ref:`tutorials/project/config` for
            documentation.
 
-        .. tab:: ``controllers.yaml``
+        .. tab-item:: ``controllers.yaml``
 
            Configuration for controllers (input file/graph generation). This
            file is required for all pipeline stages. See
            :ref:`tutorials/project/config` for documentation.
 
-        .. tab:: ``graphs.yaml``
+        .. tab-item:: ``graphs.yaml``
 
            Configuration for graph generation. This
            file is optional. Used by multiple plugins. An incomplete list:
@@ -82,7 +82,7 @@ Steps
 
            - :ref:`plugins/prod/render`
 
-        .. tab:: ``models.yaml``
+        .. tab-item:: ``models.yaml``
 
            Configuration for intra- and inter-experiment models. This file is
            optional. If it is present, models defined in it will be run in
@@ -92,18 +92,19 @@ Steps
      expdef files needed by your project. This directory is required for all
      SIERRA projects.
 
-     .. tabs::
+     .. tab-set::
 
-        .. tab::  ``scenario.py``
+        .. tab-item::  ``scenario.py``
 
            Specifies classes and functions to enable SIERRA to generate expdef
-           file modifications to the ``--expdef-template`` based on what is
-           passed as ``--scenario`` on the cmdline. Contains the parser for
+           file modifications to the
+           :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` based on what
+           is passed pas ``--scenario`` on the cmdline. Contains the parser for
            parsing the contents of ``--scenario`` into a dictionary which can be
            used to configure experiments. This file is required. See
            :ref:`tutorials/project/generators/scenario` for documentation.
 
-        .. tab:: ``experiment.py``
+        .. tab-item:: ``experiment.py``
 
            Contains extensions to the per-:term:`Experiment` and
            per-:term:`Experimental Run` configuration that SIERRA performs. See
@@ -112,12 +113,13 @@ Steps
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
      the plugin/project that can be directly or indirectly used by the
-     ``--batch-criteria`` and ``--scenario`` cmdline arguments. This directory
-     is optional.
+     :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` and ``--scenario``
+     cmdline arguments. This directory is optional.
 
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
      plugin/project. This file is required, because all projects have to define
-     the ``--controller`` and ``--scenario`` arguments used by SIERRA. See
+     the ``--controller`` and
+     ``--scenario`` arguments used by SIERRA. See
      :ref:`plugins/devguide/cmdline` for steps.
 
    - ``project.py`` - Magic cookie python file that tells SIERRA that the
@@ -132,8 +134,8 @@ Steps
    automated graph generation during stage 4 is one of the most useful parts of
    SIERRA, so its kind of silly if you don't do this.
 
-#. Setup your ``--expdef-template`` appropriately by following
-   :ref:`plugins/expdef`.
+#. Setup your :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
+   appropriately by following :ref:`plugins/expdef`.
 
 Optional Steps
 ==============

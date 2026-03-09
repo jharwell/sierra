@@ -47,6 +47,15 @@ for the nodes you request for your HPC job.  Similarly, you may want to build
 your :term:`Project` ``.so`` (if your project is C/C++) natively on each
 different type of compute node SIERRA might be run on, for maximum efficiency.
 
+==========================
+Common HPC Cmdline Options
+==========================
+
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.execenv.hpc.cmdline
+   :func: sphinx_cmdline_stage2
+   :prog: sierra-cli
+
 .. toctree::
    :maxdepth: 1
 
@@ -70,6 +79,9 @@ will otherwise arise.
 
    prefectserver/local.rst
    prefectserver/dockerremote.rst
+
+
+.. _plugins/execenv/realrobot:
 
 Real Robot Plugins
 ==================

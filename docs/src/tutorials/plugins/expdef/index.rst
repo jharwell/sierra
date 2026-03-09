@@ -1,4 +1,4 @@
-.. _tutorials/plugin/expdef:
+.. _tutorials/plugins/expdef:
 
 ===========================================
 New Experiment Definition Plugin (--expdef)
@@ -9,9 +9,9 @@ For the purposes of this tutorial, I will assume you are creating a new
 from an imaginary "fizzbuzz" file type.
 
 Before we begin, see :ref:`plugins/expdef` to get a brief overview of the
-different components of ``--expdef-template`` files, independent of format. See
-also the :ref:`plugins/devguide` for a general overview of creating a new
-plugin.
+different components of :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
+files, independent of format. See also the :ref:`plugins/devguide` for a general
+overview of creating a new plugin.
 
 Each node (i.e., each element or attribute) must be uniquely identifiable by a
 unique string *path* from the root of the file to the element. This task is
@@ -48,9 +48,9 @@ These files will be populated as you go through the rest of the tutorial.
 #. Create the following filesystem structure in
    ``$HOME/git/plugins/fizzbuzz``:
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab::  ``plugin.py``
+      .. tab-item::  ``plugin.py``
 
          .. include:: plugin.rst
 

@@ -50,7 +50,9 @@ The following plugins are active in this stage:
    * - :ref:`Experiment definition <plugins/expdef>`
 
      - Generating inputs for the selected :term:`Engine` which can be executed
-       in stage 2 from the ``--expdef-template`` experiment template file.
+       in stage 2 from the
+       :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` experiment
+       template file.
 
    * - :ref:`Execution environment <plugins/execenv>`
 
@@ -72,9 +74,9 @@ experiment SIERRA runs is determined by:
 
 - ``--controller``
 - ``--scenario``
-- ``--sierra-root``
-- ``--expdef-template``
-- ``--batch-criteria``
+- :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`
+- :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
+- :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`
 
 Thus, these arguments must be the same between stage{1,2} if you want to execute
 the experiments you generated.
@@ -216,9 +218,8 @@ The following plugins are active in this stage:
           ``--scenario``. See :ref:`plugins/compare/graphs/inter-controller` for
           details.
 
-        - A single ``--controller`` across multiple scenarios. See
-          :ref:`plugins/compare/graphs/inter-scenario` for details.
-
-
+        - A single ``--controller`` across multiple
+          scenarios. See :ref:`plugins/compare/graphs/inter-scenario` for
+          details.
 
 Not part of default pipeline.

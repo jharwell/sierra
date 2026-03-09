@@ -1,4 +1,4 @@
-.. _tutorials/plugin/engine:
+.. _tutorials/plugins/engine:
 
 ============================
 New Engine Plugin (--engine)
@@ -108,9 +108,9 @@ Generating Experiments
 
 In ``generators/engine.py``, you may define the following functions:
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: ``for_all_exp()``
+   .. tab-item:: ``for_all_exp()``
 
       This function is required. It is used to generate expdef
       changes common to all :term:`Experiment Runs<Experimental Run>` in an
@@ -154,7 +154,7 @@ In ``generators/engine.py``, you may define the following functions:
              # called 'expdef'.
              expdef.flatten(["pathstring1", "pathstring2"])
 
-   .. tab:: ``for_single_exp_run()``
+   .. tab-item:: ``for_single_exp_run()``
 
       This function is required. It is used to generate expdef changes for a
       single :term:`Experimental Run` for your engine.
@@ -198,7 +198,7 @@ In ``generators/engine.py``, you may define the following functions:
                    cmdopts: Dictionary containing parsed cmdline options.
                """
 
-   .. tab:: ``arena_dims_from_criteria()``
+   .. tab-item:: ``arena_dims_from_criteria()``
 
       This function is optional; only needed if the dimensions are not specified
       on the cmdline for a scenario where you want to change the size of the
@@ -206,18 +206,18 @@ In ``generators/engine.py``, you may define the following functions:
       batch criteria involves changing them; e.g., evaluating behavior with
       different arena shapes. See :ref:`req/exp/arena-size` for more details.
 
-   .. code-block:: python
+      .. code-block:: python
 
-      import typing as tp
+         import typing as tp
 
-      from sierra.core import batch_criteria as bc
+         from sierra.core import batch_criteria as bc
 
-      def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
-          """
-          Arguments:
+         def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
+             """
+             Arguments:
 
-             criteria: The batch criteria built from cmdline specification
-          """
+                criteria: The batch criteria built from cmdline specification
+             """
 
 
 .. NOTE:: Neither of these functions is called directly in the SIERRA core;
@@ -227,9 +227,9 @@ In ``generators/engine.py``, you may define the following functions:
 
 #. In ``plugin.py``, you may define the following functions:
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab:: ``population_size_from_def()``
+      .. tab-item:: ``population_size_from_def()``
 
          .. code-block:: python
 
@@ -242,7 +242,7 @@ In ``generators/engine.py``, you may define the following functions:
                 """
                 pass
 
-      .. tab:: ``population_size_from_pickle()``
+      .. tab-item:: ``population_size_from_pickle()``
 
          .. code-block:: python
 
@@ -277,9 +277,9 @@ In ``generators/engine.py``, you may define the following functions:
    configuring experiments for engine typically involves putting the needed
    shell commands into a "language" that SIERRA understands.
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab:: BatchShellCmdsGenerator
+      .. tab-item:: BatchShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IBatchShellCmdsGenerator`.
@@ -319,7 +319,7 @@ In ``generators/engine.py``, you may define the following functions:
                 def post_batch_cmds(self) -> tp.List[types.ShellCmdSpec]:
                     return []
 
-      .. tab:: ExpShellCmdsGenerator
+      .. tab-item:: ExpShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
@@ -365,7 +365,7 @@ In ``generators/engine.py``, you may define the following functions:
 
 
 
-      .. tab:: ExpRunShellCmdsGenerator
+      .. tab-item:: ExpRunShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
@@ -505,19 +505,19 @@ Generating Products
 A Full Skeleton
 ===============
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: ``cmdline.py``
+   .. tab-item:: ``cmdline.py``
 
       .. literalinclude:: ./cmdline-engine.py
          :language: python
 
-   .. tab:: ``plugin.py``
+   .. tab-item:: ``plugin.py``
 
       .. literalinclude:: plugin.py
          :language: python
 
-   .. tab:: ``generators/engine.py``
+   .. tab-item:: ``generators/engine.py``
 
       .. literalinclude:: generators.py
          :language: python

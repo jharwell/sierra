@@ -1,4 +1,4 @@
-.. _plugins/overview:
+.. _plugins:
 
 ================
 Plugins Overview
@@ -22,51 +22,52 @@ own documentation, linked below.
      - Responsibility
 
    * - :ref:`Engine <plugins/engine>`
-     - ``--engine``
+     - :ref:`--engine<src/reference/cli:sierra-cli---engine>`
      - The simulator or robot platform experiments run on. Controls how
        ``--expdef-template`` files are modified in stage 1, how runs are
        launched in stage 2, and how engine-specific information (e.g., agent
        counts) is extracted during stages 3–5.
 
    * - :ref:`Execution environment <plugins/execenv>`
-     - ``--execenv``
+     - :ref:`--execenv<src/reference/cli:sierra-cli---execenv>`
      - Where and how experiments execute. Translates SIERRA's abstract "run
        these N experiments in parallel" request into concrete shell commands
        for a laptop, a SLURM cluster, a PBS cluster, or a robot network.
 
    * - :ref:`Experiment definition <plugins/expdef>`
-     - ``--expdef``
-     - The file format of ``--expdef-template``. Controls how SIERRA reads and
-       modifies template files to inject batch criteria changes in stage 1.
-       Supported formats include XML, JSON, and YAML.
+     - :ref:`--expdef<src/reference/cli:sierra-cli---expdef>`
+     - The file format of
+       :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`. Controls how
+       SIERRA reads and modifies template files to inject batch criteria changes
+       in stage 1.  Supported formats include XML, JSON, and YAML.
 
    * - :ref:`Storage <plugins/storage>`
-     - ``--storage``
+     - :ref:`--storage<src/reference/cli:sierra-cli---storage>`
      - How experimental output data is read from and written to disk in
        stages 3–5. Determines the in-memory representation (e.g.,
        ``pd.DataFrame``, ``nx.Graph``) that processing and product plugins
        receive. Defaults to ``storage.csv``.
 
    * - :ref:`Processors <plugins/proc>`
-     - ``--proc``
+     - :ref:`--proc<src/reference/cli:sierra-cli---proc>`
      - What to do with raw output data in stage 3. Multiple processors can be
        active simultaneously; common examples are statistics generation and
        intra-experiment data collation. At least one processor must be active
        for stage 4 to have anything to work with.
 
    * - :ref:`Product generators <plugins/prod>`
-     - ``--prod``
+     - :ref:`--prod<src/reference/cli:sierra-cli---prod>`
      - What products to generate from processed data in stage 4. The built-in
        ``prod.graphs`` plugin generates camera-ready graphs; ``prod.render``
        stitches simulation frames into videos.
 
    * - :ref:`Comparison generators <plugins/compare>`
-     - ``--compare``
+     - :ref:`--compare<src/reference/cli:sierra-cli---compare>`
      - How to compare products across controllers or scenarios in stage 5.
        Only active when ``--pipeline 5`` is passed.
 
-   * - :ref:`Project <tutorials/project>`
-     - ``--project``
+   * - :ref:`Project <tutorials/project/project>`
+     - :ref:`--project<src/reference/cli:sierra-cli---project>`
      - Your research code: batch criteria definitions, controller and scenario
        arguments, ``graphs.yaml`` graph configuration, and any processing
        hooks for your specific output data. See note below.
@@ -76,12 +77,12 @@ own documentation, linked below.
    provided by SIERRA or an engine vendor. The project plugin is your code. It
    cannot be shared across engines; if you want to run on both ARGoS and
    ROS1+Gazebo you need two project plugins, though they can share Python code
-   via ordinary imports. See :ref:`tutorials/project` for details.
+   via ordinary imports. See :ref:`tutorials/project/project` for details.
 
 For a deeper explanation of how these plugin types fit together at runtime —
 including why your available command line flags depend on which plugins you
 select, and which layer to change when something does not behave as expected —
-see :ref:`architecture/plugin-system`.
+see :ref:`arch/plugin-system`.
 
 Plugin Reference
 ================
@@ -89,19 +90,10 @@ Plugin Reference
 .. toctree::
    :maxdepth: 1
 
-   engine/index.rst
-   execenv/index.rst
-   storage/index.rst
-   expdef/index.rst
-   proc/index.rst
-   prod/index.rst
-   compare/index.rst
-
-Plugin Development
-==================
-
-.. toctree::
-   :maxdepth: 1
-
-   devguide.rst
-   external.rst
+   engine/index
+   execenv/index
+   storage/index
+   expdef/index
+   proc/index
+   prod/index
+   compare/index

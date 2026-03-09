@@ -173,8 +173,9 @@ changes).
       :term:`Engine`--see :ref:`plugins/engine` for specifics.
 
    #. Through the cmdline, by encoding it as part of what is passed to
-      ``--scenario``. See :ref:`tutorials/project/generators/scenario` to see
-      how to implement this method.
+      --scenario. See
+      :ref:`tutorials/project/generators/scenario` to see how to implement this
+      method.
 
    Both methods can be made to work equivalently, and can be mixed within and
    across engines and batch criteria. That is, you can define some experiments

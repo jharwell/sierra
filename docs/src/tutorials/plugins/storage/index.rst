@@ -1,4 +1,4 @@
-.. _tutorials/plugin/storage:
+.. _tutorials/plugins/storage:
 
 ==============================
 New Storage Plugin (--storage)
@@ -28,9 +28,9 @@ These files will be populated as you go through the rest of the tutorial.
 
 #. In ``plugin.py``, you must define the following functions:
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab:: ``supports_input()``
+      .. tab-item:: ``supports_input()``
 
          This function takes a file extension as an argument, and returns if the
          plugin supports it or not as an *input* format. This assumes a 1:1
@@ -45,7 +45,7 @@ These files will be populated as you go through the rest of the tutorial.
                 extension.
                 """
 
-      .. tab:: ``supports_output()``
+      .. tab-item:: ``supports_output()``
 
 
          This function takes a type as input, and returns if the plugin supports
@@ -72,9 +72,9 @@ These files will be populated as you go through the rest of the tutorial.
    - ``nx.Graph`` -> ``graph_read()/graph_write()`` are required.
 
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab:: ``df_read()``
+      .. tab-item:: ``df_read()``
 
          .. code-block:: python
 
@@ -86,7 +86,7 @@ These files will be populated as you go through the rest of the tutorial.
                 identify the file in the database (for example).
                 """
 
-      .. tab:: ``df_write()``
+      .. tab-item:: ``df_write()``
 
          .. code-block:: python
 
@@ -98,7 +98,7 @@ These files will be populated as you go through the rest of the tutorial.
                 you add it.
                 """
 
-      .. tab:: ``graph_read()``
+      .. tab-item:: ``graph_read()``
 
          .. code-block:: python
 
@@ -108,7 +108,7 @@ These files will be populated as you go through the rest of the tutorial.
                 at the specified path.
                 """
 
-      .. tab:: ``graph_write()``
+      .. tab-item:: ``graph_write()``
 
          .. code-block:: python
 

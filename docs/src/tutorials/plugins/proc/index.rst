@@ -1,4 +1,4 @@
-.. _tutorials/plugin/proc:
+.. _tutorials/plugins/proc:
 
 =================================================
 New Experiment Results Processing Plugin (--proc)
@@ -29,9 +29,9 @@ These files will be populated as you go through the rest of the tutorial.
 #. Create the following filesystem structure in
    ``$HOME/git/plugins/archive``:
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab::  ``plugin.py``
+      .. tab-item::  ``plugin.py``
 
          .. include:: plugin.rst
 

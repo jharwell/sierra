@@ -92,8 +92,8 @@ This plugin currently supports two different types of imagizing:
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/proc/imagize/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.proc.imagize.cmdline
    :func: sphinx_cmdline_stage3
    :prog: sierra-cli
 

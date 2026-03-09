@@ -19,15 +19,16 @@ the arena at the start of simulation across :term:`Experimental Runs
 <Experimental Run>` (if you want to do that) "dimensions" for a given world must
 be specified as part of the ``--scenario`` argument. If you don't specify
 dimensions as part of the ``--scenario`` argument, then you need to supply a
-list of valid robot positions via ``--robot-positions`` which SIERRA will choose
-from randomly for each robot.
+list of valid robot positions via
+:ref:`--robot-positions<src/plugins/engine/ros1gazebo/index:sierra-cli---robot-positions>`
+which SIERRA will choose from randomly for each robot.
 
 Requirements
 ============
 
 :envvar:`ROS_PACKAGE_PATH` must be set up properly prior to invoking SIERRA.
 
-.. include:: /src/plugins/engine/ros1
+.. include:: /src/plugins/engine/ros1.rst
 
 .. _plugins/engine/ros1gazebo/packages:
 
@@ -57,8 +58,8 @@ you.  The following batch criteria are defined which can be used with any
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/engine/ros1gazebo/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.engine.ros1gazebo.cmdline
    :func: sphinx_cmdline_stage1
    :prog: sierra-cli
 
@@ -77,6 +78,6 @@ Random Seeding For Reproducibility
 ROS1+Gazebo do not provide a random number generator manager, but SIERRA
 provides random seeds to each :term:`Experimental Run` which :term:`Project`
 code should use to manage random number generation, if needed, to maximize
-reproducability.  By default SIERRA does not overwrite its generated random seeds
-for each experiment once generated; you can override with
-``--no-preserve-seeds``.
+reproducability.  By default SIERRA does not overwrite its generated random
+seeds for each experiment once generated; you can override with
+:ref:`--no-preserve-seeds<src/reference/cli:sierra-cli---preserve-seeds>`.

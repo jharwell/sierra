@@ -16,4 +16,4 @@ between engines.
    ros1gazebo/index
    ros1robot/index
 
-Additional engines can be supported via :ref:`tutorials/plugin/engine`.
+Additional engines can be supported via :ref:`tutorials/plugins/engine`.

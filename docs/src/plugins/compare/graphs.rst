@@ -81,16 +81,16 @@ Inter-Scenario Comparison
 =========================
 
 Inter-scenario comparison compares the same ``--controller`` across multiple
-``--scenarios``. Only supports univariate batch criteria. Any collated CSV/graph
-can be used as a comparison graph! This includes any additional CSVs that a
-project creates on its own/by extending SIERRA via hooks.
+scenarios. Only supports univariate batch criteria. Any collated CSV/graph can
+be used as a comparison graph! This includes any additional CSVs that a project
+creates on its own/by extending SIERRA via hooks.
 
 When active, this comparison type will create the following directory tree. For
 the purposes of explanation, I will use the following partial SIERRA option sets
 to explain the additions to the experiment tree for stage 5::
 
    --pipeline 5 \
-   --scenario-comparison \
+   --across=scenarios \
    --batch-criteria population_size.Log8 \
    --scenarios-list=RN.16x16x2,PL.16x16x2 \
    --sierra-root=$HOME/exp"

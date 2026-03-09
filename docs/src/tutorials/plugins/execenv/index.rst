@@ -89,9 +89,9 @@ Running Experiments
    configuring experiments for engine typically involves putting the needed
    shell commands into a "language" that SIERRA understands.
 
-   .. tabs::
+   .. tab-set::
 
-      .. tab:: ExpRunShellCmdsGenerator
+      .. tab-item:: ExpRunShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
@@ -108,7 +108,7 @@ Running Experiments
            is started. The generated cmds are written to a text file that GNU
            parallel (or some other engine of your choice) will run in stage 2.
 
-      .. tab:: ExpShellCmdsGenerator
+      .. tab-item:: ExpShellCmdsGenerator
 
          This class is optional. If it is defined, it should conform to
          :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
@@ -147,9 +147,9 @@ Running Experiments
 A Full Skeleton
 ===============
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: ``plugin.py``
+   .. tab-item:: ``plugin.py``
 
       .. literalinclude:: plugin.py
          :language: python

@@ -21,9 +21,9 @@ Step 1: Install Engine-Specific Dependencies
 The sample project supports four engines. Pick the one you want to try and
 follow the instructions for it.
 
-.. tabs::
+.. tab-set::
 
-   .. group-tab:: ARGoS
+   .. tab-item:: ARGoS
 
       Install :term:`ARGoS` via your chosen method (from source or via
       the ``.deb`` package). Verify the install:
@@ -37,7 +37,7 @@ follow the instructions for it.
          If ``argos3`` is not found by your shell, SIERRA cannot launch any
          experiments. Make sure it is on your ``PATH`` before continuing.
 
-   .. group-tab:: ROS1+Gazebo
+   .. tab-item:: ROS1+Gazebo
 
       #. Install a supported ROS distribution. SIERRA supports **kinetic** and
          **noetic** only:
@@ -74,7 +74,7 @@ follow the instructions for it.
             catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local/ros/<distro>
             catkin build
 
-   .. group-tab:: JSONSim / YAMLSim
+   .. tab-item:: JSONSim / YAMLSim
 
       No engine-specific setup needed. These engines are included with SIERRA
       and run directly.
@@ -86,9 +86,9 @@ The trial installs a broader set of OS packages than the core SIERRA install
 requires, to enable all bundled plugins (graph rendering, video, LaTeX labels,
 etc.).
 
-.. tabs::
+.. tab-set::
 
-   .. group-tab:: Ubuntu / Debian
+   .. tab-item:: Ubuntu / Debian
 
       .. code-block:: bash
 
@@ -96,7 +96,7 @@ etc.).
            parallel psmisc pssh ffmpeg xvfb iputils-ping \
            cm-super texlive-fonts-recommended texlive-latex-extra dvipng
 
-   .. group-tab:: macOS
+   .. tab-item:: macOS
 
       .. code-block:: bash
 
@@ -106,9 +106,9 @@ etc.).
 Step 3: Clone and Build the Sample Project
 ==========================================
 
-.. tabs::
+.. tab-set::
 
-   .. group-tab:: ARGoS
+   .. tab-item:: ARGoS
 
       Based on the `ARGoS foraging example <https://www.argos-sim.info/examples.php>`_:
 
@@ -124,7 +124,7 @@ Step 3: Clone and Build the Sample Project
       where you compiled it). This allows multiple ARGoS versions to coexist on
       one system.
 
-   .. group-tab:: ROS1+Gazebo
+   .. tab-item:: ROS1+Gazebo
 
       Based on the `turtlebot3 simulation tutorials
       <https://github.com/ROBOTIS-GIT/turtlebot3_simulations>`_:
@@ -137,16 +137,16 @@ Step 3: Clone and Build the Sample Project
          catkin config --extend=$HOME/.local/ros/noetic
          catkin build
 
-   .. group-tab:: JSONSim / YAMLSim
+   .. tab-item:: JSONSim / YAMLSim
 
       No build step needed.
 
 Step 4: Set Up the Runtime Environment
 ======================================
 
-.. tabs::
+.. tab-set::
 
-   .. group-tab:: ARGoS
+   .. tab-item:: ARGoS
 
       .. code-block:: bash
 
@@ -155,14 +155,14 @@ Step 4: Set Up the Runtime Environment
 
       Replace ``<argos-install-prefix>`` with the same prefix used in Step 3.
 
-   .. group-tab:: ROS1+Gazebo
+   .. tab-item:: ROS1+Gazebo
 
       .. code-block:: bash
 
          export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project
          source /path/to/ros/setup.bash   # sets ROS_PACKAGE_PATH
 
-   .. group-tab:: JSONSim / YAMLSim
+   .. tab-item:: JSONSim / YAMLSim
 
       export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project
 
@@ -172,9 +172,9 @@ Step 5: Run SIERRA
 Pick your engine and paste the corresponding command. All examples clone the
 sample project to ``$HOME/research``; adjust if needed.
 
-.. tabs::
+.. tab-set::
 
-   .. group-tab:: ARGoS
+   .. tab-item:: ARGoS
 
       .. code-block:: bash
 
@@ -204,12 +204,13 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. NOTE::
 
-         ``--with-robot-rab`` and ``--with-robot-leds`` are required here
-         because the sample project's controllers use those sensor/actuator
-         types. SIERRA strips unused sensor and actuator XML tags by default
-         to reduce ARGoS's memory footprint; these flags restore them.
+         :ref:`--with-robot-rab<src/reference/cli:sierra-cli---with-robot-rab>` and
+         :ref:`--with-robot-leds<src/reference/cli:sierra-cli---with-robot-leds>` are required
+         here because the sample project's controllers use those sensor/actuator
+         types. SIERRA strips unused sensor and actuator XML tags by default to
+         reduce ARGoS's memory footprint; these flags restore them.
 
-   .. group-tab:: ROS1+Gazebo
+   .. tab-item:: ROS1+Gazebo
 
       .. code-block:: bash
 
@@ -234,7 +235,7 @@ sample project to ``$HOME/research``; adjust if needed.
       When complete, ``$HOME/research/exp`` contains the generated launch files
       and execution logs.
 
-   .. group-tab:: JSONSim
+   .. tab-item:: JSONSim
 
       .. code-block:: bash
 
@@ -253,7 +254,7 @@ sample project to ``$HOME/research``; adjust if needed.
       runs 4 independent simulations for 12 total. When complete,
       ``$HOME/research/exp`` contains all outputs and graphs.
 
-   .. group-tab:: YAMLSim
+   .. tab-item:: YAMLSim
 
       .. code-block:: bash
 

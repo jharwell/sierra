@@ -1,4 +1,4 @@
-.. _usage/deep-dive:
+.. _arch/deep-dive:
 
 =================================
 SIERRA Pipeline Stages: Deep Dive
@@ -34,9 +34,11 @@ batch experiment. The outputs of this phase include:
   inputs.
 
 - A modified expdef template file unique to each experiment in the batch which
-  contains modifications to the original ``--expdef-template`` from the
-  ``--batch-criteria`` This file (probably) *cannot* be actually run by the
-  selected engine (i.e., it is not well formed, yet).
+  contains modifications to the original
+  :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` from the
+  :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` This file (probably)
+  *cannot* be actually run by the selected engine (i.e., it is not well formed,
+  yet).
 
 .. plantuml::
 
@@ -90,13 +92,10 @@ include:
   through a combination of:
 
   - ``--controller``
-
-  - ``--batch-criteria``
-
-  - ``--engine``
-
-  - ``--project``
-
+  - ``--scenario``
+  - :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`
+  - :ref:`--engine<src/reference/cli:sierra-cli---engine>`
+  - :ref:`--project<src/reference/cli:sierra-cli---project>`
   - ``controllers.yaml``
 
 

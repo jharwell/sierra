@@ -3,15 +3,15 @@
 
    SPDX-License-Identifier:  MIT
 
-.. _plugins/devguide:
+.. _tutorials/plugins/devguide:
 
 ========================
 Plugin Development Guide
 ========================
 
-The page details some general guidelines that all SIERRA plugins should follow
-for maximum compatibility and usability, as well as tutorials for developing
-plugins common to all types.
+This is the landing page for SIERRA plugin development. It details some general
+guidelines that all SIERRA plugins should follow for maximum compatibility and
+usability, and ends with links to tutorials for each plugin type.
 
 Naming
 ======
@@ -103,7 +103,7 @@ general-purpose arguments for all stages the plugin can be used in.
 Extending the SIERRA Cmdline For Your Plugin
 ============================================
 
-This tutorial covers how add cmdline options for a new plugin of any type to
+This section covers how add cmdline options for a new plugin of any type to
 SIERRA.
 
 #. Create ``cmdline.py`` in your plugin directory alongside your ``plugin.py``
@@ -162,8 +162,9 @@ SIERRA.
         }
 
 #. Try out your new cmdline! SIERRA should pick it up automatically. For
-   example, if you have created a cmdline for an ``--engine`` plugin available
-   as ``starfleet.enterprise``, if you set ``--log-level=DEBUG`` you should see
+   example, if you have created a cmdline for an
+   :ref:`--engine<src/reference/cli:sierra-cli---engine>` plugin available as
+   ``starfleet.enterprise``, if you set ``--log-level=DEBUG`` you should see
    something like this in SIERRA's output::
 
      2025-08-16 17:19:40 INFO sierra.main - Dynamically building cmdline from selected plugins
@@ -194,8 +195,8 @@ SIERRA.
    in ``cmdline.py`` for a cmdline that contains arguments for stages
    {3,4,5}. Then, you can do::
 
-     .. argparse::
-        :filename: /path/to/plugin/cmdline.py
+     .. sphinx_argparse_cli::
+        :module: path.to.plugin.cmdline
         :func: sphinx_cmdline_multistage
         :prog: sierra-cli
 
@@ -203,22 +204,29 @@ SIERRA.
    recommended.
 
 
-Special Cases
--------------
+``--project`` plugins must define the ``--scenario`` and ``--controller``
+cmdline arguments to interact with the SIERRA core. Note that values for these
+cannot contain ``+``, as that is a reserved character for SIERRA directory
+paths.
 
-There are some small differences between adding options for say a ``--project``
-plugin vs. a ``--engine`` vs. any other plugin type; those are called out below.
+.. NOTE:: The ``--scenario`` argument can be used to encode the arena dimensions
+          used in an experiment; this is one of two ways to communicate to
+          SIERRA that size of the experimental arena for each
+          :term:`Experiment`. See :ref:`req/exp/arena-size` for more details.
 
-.. tabs::
+Next Steps
+==========
 
-   .. group-tab::  Projects
+Read :ref:`tutorials/plugins/external`, and then you're ready to write your
+first plugin:
 
-      Must define the ``--scenario`` and ``--controller`` cmdline arguments to
-      interact with the SIERRA core. Note that values for these cannot contain
-      ``+``, as that is a reserved character for SIERRA directory paths.
+.. toctree::
+   :maxdepth: 1
 
-      .. NOTE:: The ``--scenario`` argument can be used to encode the arena
-                dimensions used in an experiment; this is one of two ways to
-                communicate to SIERRA that size of the experimental arena for
-                each :term:`Experiment`. See :ref:`req/exp/arena-size` for more
-                details.
+   engine/index
+   execenv/index
+   storage/index
+   expdef/index
+   proc/index
+   prod/index
+   compare/index

@@ -18,7 +18,7 @@ products in stage 4.
 This plugin processes at the file level for each :term:`Experimental Run`. All
 :term:`Raw Output Data` files produced by each run are gathered and statistics
 calculated, and the results written out as described in the
-:ref:`usage/run-time-tree`.
+:ref:`concepts/run-time-tree`.
 
 This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
 supports ``pd.DataFrame`` objects.
@@ -31,10 +31,11 @@ When run:
   supported for categorical data.
 
 .. NOTE:: This plugin is not intended for use with projects whose output is
-          deterministic. That is, if you always use ``--n-runs=1`` because
-          your code doesn't have any randomness/produces deterministic output,
-          then you should consider using :ref:`plugins/proc/copy` instead of
+          deterministic. That is, if you always use ``--n-runs=1`` because your
+          code doesn't have any randomness/produces deterministic output, then
+          you should consider using :ref:`plugins/proc/pseudostats` instead of
           this plugin.
+
 Usage
 =====
 
@@ -61,8 +62,8 @@ though that might change in the future.
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/proc/statistics/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.proc.statistics.cmdline
    :func: sphinx_cmdline_multistage
    :prog: sierra-cli
 

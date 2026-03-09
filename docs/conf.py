@@ -60,9 +60,8 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.graphviz",
     "sphinxcontrib.video",
-    "sphinx_tabs.tabs",
     "sphinx.ext.inheritance_diagram",
-    "sphinxarg.ext",
+    "sphinx_argparse_cli",
     "xref",
     "sphinx_last_updated_by_git",
     "sphinx_rtd_theme",
@@ -141,8 +140,6 @@ math_number_all = True
 math_eqref_format = "Eq. {number}"
 
 nitpick_ignore = [
-    ("py:class", "pandas.core.frame.DataFrame"),
-    ("py:class", "pandas.core.groupby.generic.DataFrameGroupBy"),
     ("py:class", "argparse"),
     ("py:class", "module"),
     ("py:class", "implements.Interface"),
@@ -207,14 +204,6 @@ xref_links = {
         "Maximizing Energy Efficiency in Swarm Robotics",
         "https://arxiv.org/abs/1906.01957",
     ),
-    "Hecker2015": (
-        "Hecker2015",
-        "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf",
-    ),
-    "Rosenfeld2006": (
-        "Rosenfeld2006",
-        "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf",
-    ),
     "SIERRA_GITHUB": (
         "https://github.com/jharwell/sierra.git",
         "https://github.com/jharwell/sierra.git",
@@ -240,7 +229,7 @@ xref_links = {
 }
 
 sphinx_tabs_disable_tab_closing = True
-# sphinx_tabs_disable_css_loading = True # True=tabs render more as buttons -_-
+sphinx_argparse_cli_prefix_document = True
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -420,6 +409,9 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "matplotlib": ("https://matplotlib.org", None),
     "sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/dev", None),
+    # Source - https://stackoverflow.com/a/78924692
+    # Posted by bzm3r
+    # Retrieved 2026-03-09, License - CC BY-SA 4.0
+    "polars": ("https://docs.pola.rs/api/python/stable", None),
     "implements": ("https://implements.readthedocs.io/en/latest/", None),
 }

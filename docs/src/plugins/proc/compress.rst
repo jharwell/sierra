@@ -23,7 +23,8 @@ ungodly amounts of data.
 This plugin processes at the file level for each :term:`Experimental Run`. The
 entire output tree is compressed to a ``.tar.gz`` file. Optionally, the
 uncompressed data can be removed after compression with
-``--compress-remove-after``. No data is lost--it's all in the archive!
+:ref:`--compress-remove-after<src/plugins/proc/compress:sierra-cli---compress-remove-after>`. No
+data is lost--it's all in the archive!
 
 Usage
 =====
@@ -34,7 +35,7 @@ This plugin can be selected by adding ``proc.decompress`` to the list passed to
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/proc/compress/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.proc.compress.cmdline
    :func: sphinx_cmdline_stage3
    :prog: sierra-cli

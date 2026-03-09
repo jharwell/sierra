@@ -5,9 +5,11 @@
 
 .. _concepts/dataflow:
 
-=========================================
-Dataflow in SIERRA Across Pipeline Stages
-=========================================
+===============================
+Dataflow Across Pipeline Stages
+===============================
+
+.. _concepts/dataflow/stage3:
 
 Stage 3 Dataflow
 ================
@@ -206,6 +208,8 @@ processing.
 Some examples of plugins performing this reduce operation:
 
 - :ref:`plugins/proc/collate`
+
+.. _concepts/dataflow/stage4:
 
 Stage 4 Dataflow
 ================

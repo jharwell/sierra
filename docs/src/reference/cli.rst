@@ -16,31 +16,43 @@ SIERRA Core
 These options apply to all :term:`Experiments <Experiment>`, :term:`Engines
 <Engine>`, :term:`Batch Criteria`, etc.
 
-Bootstrap+Multi-stage Options
------------------------------
+Bootstrap Options
+-----------------
 
-.. argparse::
-   :filename: ../sierra/core/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.core.cmdline
+   :func: sphinx_cmdline_bootstrap
+   :prog: sierra-cli
+
+Multi-stage Options
+-------------------
+
+.. sphinx_argparse_cli::
+   :module: sierra.core.cmdline
    :func: sphinx_cmdline_multistage
+
 
 Stage1: Generating Experiments
 ------------------------------
 
-None for the moment.
+.. sphinx_argparse_cli::
+   :module: sierra.core.cmdline
+   :func: sphinx_cmdline_stage1
 
 Stage2: Running Experiments
 ---------------------------
 
-None for the moment.
+.. sphinx_argparse_cli::
+   :module: sierra.core.cmdline
+   :func: sphinx_cmdline_stage2
 
 
 Stage3: Processing Experiment Results
 -------------------------------------
 
-.. argparse::
-   :filename: ../sierra/core/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.core.cmdline
    :func: sphinx_cmdline_stage3
-   :prog: SIERRA
 
 
 Stage4: Product Generation

@@ -24,9 +24,10 @@ Requirements
 - ``__CONTROLLER__`` - Tag used when as a placeholder for selecting which
   controller present in an input file (if there are multiple) a user wants to
   use for a specific :term:`Experiment`. Can appear in JSON attributes. This
-  makes auto-population of the controller name based on the ``--controller``
-  argument and the contents of ``controllers.yaml`` (see
-  :ref:`tutorials/project/config` for details) in template input files possible.
+  makes auto-population of the controller name based on the
+  ``--controller`` argument and the contents of
+  ``controllers.yaml`` (see :ref:`tutorials/project/config` for details) in
+  template input files possible.
 
 Furthermore, while JSON treats keys mapping to subtrees and keys mapping to
 literal attributes equivalently, SIERRA does not, in order to provide uniformity

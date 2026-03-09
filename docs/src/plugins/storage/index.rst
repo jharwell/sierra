@@ -55,7 +55,7 @@ storage plugins which come with SIERRA; additional formats can be supported via
 Other plugins in stages 3-5 may require a specific output format; see individual
 docs for details.
 
-.. TIP:: If you are :ref:`tutorials/plugin/storage`, follow the Unix philosophy
+.. TIP:: If you are :ref:`tutorials/plugins/storage`, follow the Unix philosophy
          of doing one thing well, and make multiple smaller plugins, rather than
          1 storage plugin which handles all of your custom types/formats.
 

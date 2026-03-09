@@ -21,21 +21,23 @@ how to write a plugin, see :ref:`plugins/devguide`.
 Infrastructure Plugins vs. the Project Plugin
 ==============================================
 
-All plugins selected via ``--engine``, ``--execenv``, ``--expdef``,
-``--storage``, ``--proc``, ``--prod``, and ``--compare`` are *infrastructure*
-plugins — they are either built into SIERRA or provided by an engine vendor, and
-they are interchangeable in the sense that you can swap one for another without
-touching your research code.
+All plugins selected via :ref:`--engine<src/reference/cli:sierra-cli---engine>`,
+:ref:`--execenv<src/reference/cli:sierra-cli---execenv>`, :ref:`--expdef<src/reference/cli:sierra-cli---expdef>`,
+:ref:`--storage<src/reference/cli:sierra-cli---storage>`, :ref:`--proc<src/reference/cli:sierra-cli---proc>`,
+:ref:`--prod<src/reference/cli:sierra-cli---prod>`, and :ref:`--compare<src/reference/cli:sierra-cli---compare>` are
+*infrastructure* plugins — they are either built into SIERRA or provided by an
+engine vendor, and they are interchangeable in the sense that you can swap one
+for another without touching your research code.
 
-The ``--project`` plugin is different. It is your code: batch criteria, controller
-and scenario definitions, graph configuration, and any processing hooks
-specific to your output data. Everything that makes your experiments distinct
-lives there.
+The :ref:`--project<src/reference/cli:sierra-cli---project>` plugin is different. It is your code:
+batch criteria, controller..  and scenario definitions, graph configuration, and
+any processing hooks specific to your output data. Everything that makes your
+experiments distinct lives there.
 
 A consequence is that project plugins are not portable across engines. Running
 the same research on both ARGoS and ROS1+Gazebo requires two project plugins,
 one targeting each engine, though they can share Python code via ordinary
-imports. See :ref:`tutorials/project` for details.
+imports. See :ref:`tutorials/project/project` for details.
 
 Why Your Available Flags Depend on Which Plugins You Select
 ============================================================
@@ -43,8 +45,8 @@ Why Your Available Flags Depend on Which Plugins You Select
 SIERRA does not have a fixed set of command line options. Before parsing any
 experiment arguments, SIERRA loads the plugins you have selected and each one
 contributes its own argument groups to the parser. This is why ``sierra-cli
---help`` output changes depending on what ``--engine`` and ``--execenv`` you
-pass.
+--help`` output changes depending on what :ref:`--engine<src/reference/cli:sierra-cli---engine>`
+and :ref:`--execenv<src/reference/cli:sierra-cli---execenv>` you pass.
 
 At ``--log-level=DEBUG`` you can watch this happen::
 
@@ -80,32 +82,33 @@ obvious home:
    * - To change this...
      - ...look here
 
-   * - How ``--expdef-template`` files are modified to produce per-experiment
-       inputs
-     - The engine plugin (``--engine``)
+   * - How :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` files are
+       modified to produce per-experiment inputs
+     - The engine plugin (:ref:`--engine<src/reference/cli:sierra-cli---engine>`)
 
    * - How runs are launched — the actual shell command
-     - The engine plugin (``--engine``)
+     - The engine plugin (:ref:`--engine<src/reference/cli:sierra-cli---engine>`)
 
    * - How many runs execute in parallel and on which machines
-     - The execution environment plugin (``--execenv``)
+     - The execution environment plugin (:ref:`--execenv<src/reference/cli:sierra-cli---execenv>`)
 
    * - Which environment variables are forwarded into child processes
-     - The execution environment plugin (``--execenv``); see also
-       :ref:`plugins/execenv`
+     - The execution environment plugin
+       (:ref:`--execenv<src/reference/cli:sierra-cli---execenv>`); see also :ref:`plugins/execenv`.
 
-   * - Which ``--batch-criteria``, ``--controller``, and ``--scenario`` values
-       are valid
-     - The project plugin (``--project``)
+   * - Which :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`,
+       ``--controller``, and ``--scenario`` values are valid
+     - The project plugin (:ref:`--project<src/reference/cli:sierra-cli---project>`)
 
    * - Which graphs are generated and how they are configured
-     - ``graphs.yaml`` in the project plugin (``--project``)
+     - ``graphs.yaml`` in the project plugin
+       (:ref:`--project<src/reference/cli:sierra-cli---project>`)
 
    * - What happens to raw output data in stage 3
-     - The active processor plugins (``--proc``)
+     - The active processor plugins (:ref:`--proc<src/reference/cli:sierra-cli---proc>`)
 
    * - What products are generated in stage 4
-     - The active product plugins (``--prod``)
+     - The active product plugins (:ref:`--prod<src/reference/cli:sierra-cli---prod>`)
 
    * - The pipeline structure, stage ordering, or filesystem layout
      - These are fixed by the SIERRA core and are not overridable by plugins

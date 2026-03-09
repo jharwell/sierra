@@ -1,8 +1,8 @@
 .. _getting-started/setup:
 
-=============================
+===========================
 Setting Up Your Own Project
-=============================
+===========================
 
 This page walks you through connecting SIERRA to your own code. By the end you
 will have a working ``sierra-cli`` invocation against your own simulator or
@@ -38,7 +38,8 @@ Step 2: Create a Project Plugin
 
 A :term:`Project` plugin is the bridge between your code and SIERRA. It tells
 SIERRA how to translate command-line arguments into experiment configuration,
-where to find your controller, and how to interpret ``--scenario``.
+where to find your controller, and how to interpret
+``--scenario``.
 
 Follow :ref:`tutorials/project/project` to create your project plugin. The
 sample projects at :xref:`SIERRA_SAMPLE_PROJECT` provide working examples for
@@ -63,19 +64,19 @@ needs at least four things:
    * - Argument
      - Purpose
 
-   * - ``--engine``
+   * - :ref:`--engine<src/reference/cli:sierra-cli---engine>`
      - The simulation or robot execution engine to use. See
        :ref:`plugins/engine` for available options.
 
-   * - ``--execenv``
+   * - :ref:`--execenv<src/reference/cli:sierra-cli---execenv>`
      - Where and how to run experiments (local, SLURM, AWS Batch, etc.). See
        :ref:`plugins/execenv` for available plugins.
 
-   * - ``--batch-criteria``
+   * - :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`
      - The independent variable you want to vary across the batch. See
        :ref:`tutorials/project/new-bc` if you need to define a new one.
 
-   * - ``--project``
+   * - :ref:`--project<src/reference/cli:sierra-cli---project>`
      - The project plugin to load (the one you created in Step 2).
 
 The remaining required arguments fill in the specifics:
@@ -87,11 +88,11 @@ The remaining required arguments fill in the specifics:
    * - Argument
      - Purpose
 
-   * - ``--expdef-template``
+   * - :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
      - The template input file for your experiment. See :ref:`plugins/expdef`
        for supported formats and requirements.
 
-   * - ``--n-runs``
+   * - :ref:`--n-runs<src/reference/cli:sierra-cli---n-runs>`
      - How many independent runs to execute per experiment. Used to average
        over stochasticity; set to 1 for deterministic simulations.
 
@@ -104,7 +105,7 @@ The remaining required arguments fill in the specifics:
      - Arena size, environment type, and other contextual settings.
        Project-dependent; can also be derived from the batch criteria.
 
-   * - ``--sierra-root``
+   * - :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`
      - Root directory where all SIERRA outputs will be written.
 
 .. dropdown:: Environment variables to set before invoking
@@ -138,9 +139,10 @@ spelunking later.
 
 The key principle: **SIERRA never deletes your data.** If a directory that
 SIERRA needs to create already exists, it will abort during stages 1–2 rather
-than risk overwriting experimental results. Pass ``--exp-overwrite`` to
-override this when you deliberately want to rerun. See :ref:`philosophy` for
-the reasoning behind this behaviour.
+than risk overwriting experimental results. Pass
+:ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>` to override this when you
+deliberately want to rerun. See :ref:`philosophy` for the reasoning behind this
+behaviour.
 
 Next Steps
 ==========

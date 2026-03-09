@@ -144,17 +144,18 @@ Real-Robot Execution Topology
 
 For real-robot engines, the execution topology during a single run is:
 
-- **Host machine** — the machine SIERRA is invoked from. Acts as the ROS
-  master (unless ``--no-master-node`` is passed). SIERRA coordinates the
-  entire run from here.
+- **Host machine** — the machine SIERRA is invoked from. Acts as the ROS master
+  (unless :ref:`--no-master-node<src/reference/cli:sierra-cli---no-master-node>` is
+  passed). SIERRA coordinates the entire run from here.
 
 - **Robot nodes** — each robot listed in the nodefile receives its controller
   subprocess via SSH, dispatched by GNU parallel using the ``host`` argument
   passed to each hook.
 
-- **Inter-run pause** — after all subprocesses for a run complete, SIERRA
-  waits ``--exec-inter-run-pause`` seconds before starting the next run,
-  giving time to physically reset robot positions and the environment.
+- **Inter-run pause** — after all subprocesses for a run complete, SIERRA waits
+  :ref:`--exec-inter-run-pause<src/reference/cli:sierra-cli---exec-inter-run-pause>` seconds
+  before starting the next run, giving time to physically reset robot positions
+  and the environment.
 
 How the Execution Environment Controls Concurrency
 ==================================================
@@ -163,12 +164,12 @@ The paradigm determines the *structure* of cmdfiles; the execution environment
 determines *how many lines* from those cmdfiles execute simultaneously. The
 relevant controls are:
 
-- ``--exec-jobs-per-node`` — explicit override of concurrent jobs per node.
-  This is the most direct control if you know how many things you want running
-  at once.
+- :ref:`--exec-jobs-per-node<src/reference/cli:sierra-cli---exec-jobs-per-node>` — explicit
+  override of concurrent jobs per node.  This is the most direct control if you
+  know how many things you want running at once.
 
 - HPC scheduler parameters — for SLURM and PBS environments, SIERRA reads
-  ``SLURM_TASKS_PER_NODE`` or ``PBS_NUM_PPN`` to set concurrency
+  :envvar`SLURM_TASKS_PER_NODE` or :envvar:`PBS_NUM_PPN` to set concurrency
   automatically from the resources the scheduler has allocated. See
   :ref:`plugins/execenv` for the full variable list each environment reads.
 

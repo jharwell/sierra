@@ -16,25 +16,25 @@ In all examples:
 - ``$HOME/git/sierra-sample-project/projects`` contains the project plugins
 - ``$HOME/git/mycode`` contains any C++ project code library
 
-Paths in ``--expdef-template`` are relative to the directory you invoke
-``sierra-cli`` from. All examples assume invocation from
-``$HOME/git/sierra-sample-project``. Adjust paths for your own setup.
+Paths in :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` are relative to
+the directory you invoke ``sierra-cli`` from. All examples assume invocation
+from ``$HOME/git/sierra-sample-project``. Adjust paths for your own setup.
 
-.. NOTE:: ``--execenv=hpc.local`` runs experiments on the machine SIERRA is
-   invoked from, using GNU parallel for concurrency. Despite the ``hpc``
-   prefix, no cluster is required — it is the right choice for laptops and
-   workstations.
+.. NOTE:: :ref:`--execenv=hpc.local<src/reference/cli:sierra-cli---execenv>` ``=hpc-local`` runs
+   experiments on the machine SIERRA is invoked from, using GNU parallel for
+   concurrency. Despite the ``hpc`` prefix, no cluster is required — it is the
+   right choice for laptops and workstations.
 
-.. NOTE:: ``--exp-setup`` is supported by the ARGoS and ROS1-based engines.
-   It is not universally required — check your engine's documentation before
-   using it. See :ref:`usage/vars/expsetup` for details.
+.. NOTE:: :ref:`--exp-setup<src/reference/cli:sierra-cli---exp-setup>` is supported by the ARGoS
+   and ROS1-based engines.  It is not universally required — check your engine's
+   documentation before using it. See :ref:`usage/vars/expsetup` for details.
 
 .. NOTE:: When running with GNU parallel-based execution environments, SIERRA
    automatically forwards :envvar:`LD_LIBRARY_PATH`, :envvar:`PYTHONPATH`, and
    :envvar:`PATH` into the parallel child environment. You only need to set
    :envvar:`PARALLEL` for additional variables your project requires. See the
-   documentation for your chosen ``--execenv`` plugin for the full list of what
-   it exports automatically.
+   documentation for your chosen :ref:`--execenv<src/reference/cli:sierra-cli---execenv>` plugin
+   for the full list of what it exports automatically.
 
 .. IMPORTANT:: Examples are grouped by engine and can be pasted directly into a
    terminal. Many flags use SIERRA core functionality that is not
@@ -45,12 +45,11 @@ Paths in ``--expdef-template`` are relative to the directory you invoke
 .. TIP:: To shorten long command lines, SIERRA supports an rcfile via
    ``--rcfile`` / :envvar:`SIERRA_RCFILE`.
 
---------------
 ARGoS Examples
---------------
+==============
 
 Basic Example
-~~~~~~~~~~~~~
+-------------
 
 The simplest way to use ARGoS with SIERRA:
 
@@ -78,7 +77,7 @@ On a reasonable machine this takes about 10 minutes. Outputs appear under
 ``$HOME/exp``; see :ref:`usage/run-time-tree` for the directory layout.
 
 HPC Example
-~~~~~~~~~~~
+-----------
 
 To run on a SLURM-managed cluster, invoke SIERRA inside an ``sbatch`` script or
 via ``srun``:
@@ -114,15 +113,15 @@ via ``srun``:
    --scenario=LowBlockCount.10x10x2 \
    --batch-criteria population_size.Log64
 
-This requests 10 nodes with 6 tasks and 4 CPUs per task (24 cores per node,
-240 total). ``--physics-n-engines`` is not passed — SIERRA computes it from the
-SLURM parameters. SIERRA runs simulations 6 at a time per node (up to 60
-concurrently); all 96 runs for each experiment complete before the next
-experiment begins. Each simulation runs for 10,000 seconds in the same scenario
-as the basic example above.
+This requests 10 nodes with 6 tasks and 4 CPUs per task (24 cores per node, 240
+total). :ref:`--physics-n-engines<src/reference/cli:sierra-cli---physics-n-engines>` is not
+passed — SIERRA computes it from the SLURM parameters. SIERRA runs simulations 6
+at a time per node (up to 60 concurrently); all 96 runs for each experiment
+complete before the next experiment begins. Each simulation runs for 10,000
+seconds in the same scenario as the basic example above.
 
-:envvar:`LD_LIBRARY_PATH` does not need to appear in ``PARALLEL`` here — the
-``hpc.slurm`` plugin exports it automatically alongside :envvar:`PATH` and
+:envvar:`LD_LIBRARY_PATH` does not need to appear in :envvar:`PARALLEL` here —
+the ``hpc.slurm`` plugin exports it automatically alongside :envvar:`PATH` and
 :envvar:`PYTHONPATH`. Only :envvar:`ARGOS_PLUGIN_PATH` needs to be forwarded
 explicitly because it is project-specific.
 
@@ -133,7 +132,7 @@ and you can conditionally set :envvar:`ARGOS_PLUGIN_PATH` to point to the
 corresponding compiled libraries.
 
 Rendering Example
-~~~~~~~~~~~~~~~~~
+-----------------
 
 Use ARGoS's image-capture capability to produce simulation videos:
 
@@ -158,15 +157,15 @@ rendering. During stage 4 the captured frames are stitched into videos using
 :program:`ffmpeg` (see :ref:`usage/run-time-tree` for where videos appear). No
 graphs are generated because ``--exp-graphs=none`` is passed.
 
-The ``--camera-config`` option lets you specify static or dynamic camera
-arrangements, such as a circular pan around the arena.
+The :ref:`--camera-config<src/reference/cli:sierra-cli---camera-config>` option lets you specify
+static or dynamic camera arrangements, such as a circular pan around the arena.
 
-.. NOTE:: ARGoS can capture many thousands of images per simulation depending
-   on run length. Keep ``--n-runs`` small when rendering to avoid filling the
-   filesystem.
+.. NOTE:: ARGoS can capture many thousands of images per simulation depending on
+   run length. Keep :ref:`--n-runs<src/reference/cli:sierra-cli---n-runs>` small when rendering to
+   avoid filling the filesystem.
 
 Bivariate Batch Criteria Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 Vary two parameters jointly across a grid of experiments:
 
@@ -199,12 +198,11 @@ long time and can be disabled with ``--project-no-HM``.
 ``max_speed.1.9.C5`` can also be used on its own as a univariate criterion —
 remove the ``population_size`` argument to get a univariate example.
 
---------------------
 ROS1+Gazebo Examples
---------------------
+====================
 
 Basic Example
-~~~~~~~~~~~~~
+-------------
 
 The simplest way to use SIERRA with the ROS1+Gazebo engine:
 
@@ -230,7 +228,7 @@ Each run is 10 seconds of simulated time. Outputs appear under ``$HOME/exp``;
 see :ref:`usage/run-time-tree` for the directory layout.
 
 HPC Example
-~~~~~~~~~~~
+-----------
 
 To run on a SLURM-managed cluster:
 
@@ -272,10 +270,10 @@ because this example has no engine-specific library paths beyond what
 ``hpc.slurm`` already exports automatically (:envvar:`LD_LIBRARY_PATH`,
 :envvar:`PATH`, :envvar:`PYTHONPATH`). If your ROS project requires additional
 paths — for example, a custom :envvar:`ROS_PACKAGE_PATH` entry — add them to
-``PARALLEL`` as shown in the ARGoS HPC example.
+:envvar:`PARALLEL` as shown in the ARGoS HPC example.
 
 Bivariate Batch Criteria Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 Vary two parameters jointly:
 
@@ -298,12 +296,11 @@ speed values from ``max_speed.1.9.C5``). See the ARGoS bivariate example for a
 full explanation of bivariate batch criteria mechanics — the behaviour is
 identical across engines.
 
--------------------
 ROS1+Robot Examples
--------------------
+===================
 
 Basic Example
-~~~~~~~~~~~~~
+-------------
 
 The simplest way to use SIERRA with physical robots:
 
@@ -335,19 +332,20 @@ next run begins.
 the appropriate subset when the swarm size is less than 6. You can also omit
 ``--nodefile`` and set :envvar:`SIERRA_NODEFILE` instead.
 
-No ROS master node is needed for this setup, so ``--no-master-node`` is passed.
-After all runs complete and SIERRA finishes stages 3 and 4, outputs appear under
-``$HOME/exp``; see :ref:`usage/run-time-tree` for the directory layout.
+No ROS master node is needed for this setup, so
+:ref:`--no-master-node<src/reference/cli:sierra-cli---no-master-node>` is passed.  After all runs
+complete and SIERRA finishes stages 3 and 4, outputs appear under ``$HOME/exp``;
+see :ref:`usage/run-time-tree` for the directory layout.
 
------------------------
 JSONSim / YAMLSim Notes
------------------------
+=======================
 
 JSONSim and YAMLSim are lightweight built-in engines that require no external
 simulator install. They are meant to show that SIERRA can work with programs
-that take JSON/YAML as input. Neither engine uses ``--exp-setup`` — timing is
-configured through engine-specific means. The ARGoS examples above otherwise
-translate directly; replace the engine, project, and template arguments:
+that take JSON/YAML as input. Neither engine uses
+:ref:`--exp-setup<src/reference/cli:sierra-cli---exp-setup>` — timing is configured through
+engine-specific means. The ARGoS examples above otherwise translate directly;
+replace the engine, project, and template arguments:
 
 .. code-block:: bash
 
@@ -377,19 +375,21 @@ translate directly; replace the engine, project, and template arguments:
    --scenario=scenario1 \
    --batch-criteria noise_floor.1.9.C3
 
-All other SIERRA flags — ``--execenv``, ``--n-runs``, ``--batch-criteria``,
-etc. — work identically across both engines.
+All other SIERRA flags — :ref:`--execenv<src/reference/cli:sierra-cli---execenv>`,
+:ref:`--n-runs<src/reference/cli:sierra-cli---n-runs>`,
+:ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`, etc. — work identically
+across both engines.
 
---------------------------
 Selective Pipeline Examples
---------------------------
+===========================
 
-By default SIERRA runs all four stages (1–4) sequentially. Use ``--pipeline``
-to run a subset — common when inspecting generated inputs before committing to
-a full run, or when regenerating graphs without re-running experiments.
+By default SIERRA runs all four stages (1–4) sequentially. Use
+:ref:`--pipeline<src/reference/cli:sierra-cli---pipeline>` to run a subset — common when
+inspecting generated inputs before committing to a full run, or when
+regenerating graphs without re-running experiments.
 
-Inspect generated inputs before running
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Inspect Generated Inputs Before Running
+----------------------------------------
 
 Run stage 1 only to generate experiment input files without executing anything:
 
@@ -413,8 +413,8 @@ After this completes, inspect the generated files under
 verifying that batch criteria and controller configuration are producing the
 expected input variations.
 
-Regenerate graphs without re-running experiments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Regenerate Graphs Without Re-Running Experiments
+------------------------------------------------
 
 Run stages 3 and 4 only to reprocess existing experimental outputs and
 regenerate all graphs — for example after tweaking graph YAML configuration:
@@ -435,14 +435,14 @@ regenerate all graphs — for example after tweaking graph YAML configuration:
    --batch-criteria population_size.Log8 \
    --pipeline 3 4
 
-``--exp-setup`` is included here because stage 3 uses it to compute the
-expected number of datapoints per run when building statistics. Stages 3 and 4
-read from ``exp-outputs/`` (written during stage 2) and are safe to re-run any
-number of times without affecting the underlying experimental data.
+:ref:`--exp-setup<src/reference/cli:sierra-cli---exp-setup>` is included here because stage 3 uses
+it to compute the expected number of datapoints per run when building
+statistics. Stages 3 and 4 read from ``exp-outputs/`` (written during stage 2)
+and are safe to re-run any number of times without affecting the underlying
+experimental data.
 
-----------------
 Stage 5 Examples
-----------------
+================
 
 Stage 5 generates comparative products across multiple batch experiments that
 were previously processed by stages 1–4. It is not engine-specific — the
@@ -450,11 +450,13 @@ examples below use the ARGoS sample project but the flags work identically with
 other engines.
 
 Stage 5 is not part of the default pipeline and must be requested explicitly
-with ``--pipeline 5``. SIERRA derives ``--scenario`` and ``--batch-criteria``
-from the existing output tree, so they do not need to be passed.
+with :ref:`--pipeline 5<src/reference/cli:sierra-cli---pipeline>`. SIERRA
+derives ``--scenario`` and
+:ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` from the
+existing output tree, so they do not need to be passed.
 
 Scenario Comparison
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Compare a single controller across all scenarios it has been run on:
 
@@ -476,7 +478,7 @@ multiple batch criteria in the same scenario, SIERRA generates a unique set of
 graphs for each scenario–batch-criteria combination.
 
 Controller Comparison
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 Compare multiple controllers in the scenarios they have all been run on:
 

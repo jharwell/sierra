@@ -61,8 +61,8 @@ This plugin does not require additional plugins to be active when it is run.
 Cmdline Interface
 -----------------
 
-.. argparse::
-   :filename: ../sierra/plugins/proc/collate/cmdline.py
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.proc.collate.cmdline
    :func: sphinx_cmdline_multistage
    :prog: sierra-cli
 

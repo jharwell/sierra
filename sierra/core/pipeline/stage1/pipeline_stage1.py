@@ -21,10 +21,10 @@ class PipelineStage1:
     """Generates a :term:`Batch Experiment` for running during stage 2.
 
     Generated experimental input files are written to the filesystem, and can be
-    be used in stage 2 to launch simulations/real robot controller. This stage
+    be used in stage 2 to launch simulations/real robot controller.  This stage
     is idempotent with default settings; this can be overridden with
-    ``--no-preserve-seeds``, in which case this stage is no longer idempotent.
-
+    :ref:`--no-preserve-seeds<sierra-cli---preserve-seeds>`, in which case this
+    stage is no longer idempotent.
     """
 
     def __init__(
