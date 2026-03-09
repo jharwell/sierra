@@ -29,7 +29,7 @@ state "Pipeline" as pipeline
 
 ' Labels for rows
 state "Input\nArtifacts" as input_artifacts #lightcyan
-state "Output\Artifacts" as output_artifacts #skyblue
+state "Output\nArtifacts" as output_artifacts #skyblue
 state "Active\nPlugins" as plugins #Lightcoral
 state "Active\nComputing\nresources" as resources #Cornflowerblue
 

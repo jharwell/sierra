@@ -14,7 +14,7 @@ automatically for you!
    main
    controllers
 
-See :ref:`plugins/proc/collate` for ``config/collate.yaml
+See :ref:`plugins/proc/collate` for `config/collate.yaml`.
 
 .. NOTE:: There is not currently a ``scenarios.yaml`` complement to the
           ``controllers.yaml``. This is by design. The specified

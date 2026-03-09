@@ -3,3 +3,19 @@
     /* white-space-collapse: collapse; This property is deprecated and not needed */
     /* text-wrap: normal; This property is experimental and not needed */
 }
+
+/* .navbar-brand { */
+/*     flex-direction: column; */
+/*     align-items: flex-start; */
+/* } */
+
+/* .navbar-brand img { */
+/*     margin-bottom: 4px; */
+/*     margin-right: 0; */
+/* } */
+
+.navbar-brand img {
+    height: 120px;  /* default is usually around 30px */
+    margin-right: 0px;
+    /* width: auto; */
+}

@@ -1,8 +1,8 @@
 .. _concepts/pipeline:
 
-===============
-SIERRA Pipeline
-===============
+========
+Pipeline
+========
 
 This page provides a more detailed overview of its pipeline, expanding on the
 architectural diagram, as well as deep-dives for what happens in each stage. For
@@ -64,7 +64,7 @@ See also:
 - :ref:`reference/cli`
 
 Part of default pipeline. For a deep dive into design and functionality, see
-the :ref:`deep dive <usage/deep-dive/stage1>`.
+the :ref:`deep dive <arch/deep-dive/stage1>`.
 
 Stage 2: Experiment Execution
 =============================

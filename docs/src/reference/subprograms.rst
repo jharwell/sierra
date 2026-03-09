@@ -1,8 +1,8 @@
 .. _reference/subprograms:
 
-==================
-SIERRA Subprograms
-==================
+===========
+Subprograms
+===========
 
 These are the shell programs which SIERRA *may* use internally when running,
 depending on what you are doing.

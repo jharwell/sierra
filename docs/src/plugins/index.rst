@@ -1,8 +1,8 @@
 .. _plugins:
 
-================
-Plugins Overview
-================
+===============
+Builtin Plugins
+===============
 
 SIERRA's behaviour is almost entirely determined by the plugins you select on
 the command line. The core provides the pipeline skeleton — five ordered stages,

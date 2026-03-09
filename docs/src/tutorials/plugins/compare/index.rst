@@ -16,7 +16,7 @@ beginning:
 
 - Determine the type(s) of comparison your plugin will support: comparing
   *across* controllers, *across* scenarios, and *across* batch criteria. This is
-  driven by the :ref:`--across<src/reference/cli:sierra-cli---across>` stage 5 option common to
+  driven by the :ref:`--across<src/plugins/compare/graphs:sierra-cli---across>` stage 5 option common to
   all stage 5 plugins.
 
 To begin, create the following filesystem structure in
@@ -32,7 +32,7 @@ To begin, create the following filesystem structure in
 These files will be populated as you go through the rest of the tutorial.
 
 #. Create additional cmdline arguments for the new engine by following
-   :ref:`plugins/devguide/cmdline`.
+   :ref:`tutorials/plugins/devguide/cmdline`.
 
 #. Create the following filesystem structure in
    ``$HOME/git/plugins/microscope``:

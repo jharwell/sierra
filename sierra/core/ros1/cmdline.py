@@ -81,6 +81,10 @@ class ROSCmdline(PluginCmdline):
 
 
 def sphinx_cmdline_multistage():
+    return ROSCmdline([], [-1]).parser
+
+
+def sphinx_cmdline_stage1():
     return ROSCmdline([], [1]).parser
 
 

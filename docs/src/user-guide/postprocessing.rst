@@ -31,7 +31,7 @@ the built-in plugins are documented in their respective pages:
 - :ref:`plugins/proc/decompress/ordering`
 - :ref:`plugins/proc/imagize/ordering`
 - :ref:`plugins/proc/modelrunner/ordering`
-  - :ref:`plugins/proc/pseudostats/ordering`
+- :ref:`plugins/proc/pseudostats/ordering`
 
 Common compositions:
 

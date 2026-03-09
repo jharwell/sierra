@@ -28,8 +28,6 @@ Requirements
 
 :envvar:`ROS_PACKAGE_PATH` must be set up properly prior to invoking SIERRA.
 
-.. include:: /src/plugins/engine/ros1.rst
-
 .. _plugins/engine/ros1gazebo/packages:
 
 OS Packages

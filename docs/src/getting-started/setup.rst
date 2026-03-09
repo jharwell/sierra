@@ -139,7 +139,7 @@ The key principle: **SIERRA never deletes your data.** If a directory that
 SIERRA needs to create already exists, it will abort during stages 1–2 rather
 than risk overwriting experimental results. Pass
 :ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>` to override
-this when you deliberately want to rerun. See :ref:`conceptsphilosophy` for the
+this when you deliberately want to rerun. See :ref:`concepts/philosophy` for the
 reasoning behind this behaviour.
 
 Next Steps

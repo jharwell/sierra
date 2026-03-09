@@ -36,6 +36,14 @@ When run:
           you should consider using :ref:`plugins/proc/pseudostats` instead of
           this plugin.
 
+.. _plugins/proc/statistics/ordering:
+
+Ordering Considerations
+=======================
+
+::ref:`plugins/proc/decompress` should proceed this plugin in the ``--proc``
+chain if you previously compressed the data.
+
 Usage
 =====
 

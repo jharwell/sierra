@@ -115,7 +115,7 @@ docs.
 
    - ``sierra_timekeeper`` — Tracks elapsed time for an :term:`Experimental Run`
      and terminates it once the duration specified by
-     :ref:`--exp-setup<src/plugins/engine/ros1:sierra-cli---exp-setup>` has
+     :ref:`--exp-setup<src/plugins/engine/index:sierra-cli---exp-setup>` has
      elapsed. ROS has no built-in time-bounded execution mechanism; this node
      fills that gap. SIERRA automatically inserts the corresponding XML tag into
      each ``.launch`` file it generates.

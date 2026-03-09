@@ -1,8 +1,8 @@
 .. _concepts/philosophy:
 
-========================
-SIERRA Design Philosophy
-========================
+=================
+Design Philosophy
+=================
 
 This document outlines the core ideas behind SIERRA's design. Understanding
 these helps explain *why* SIERRA works the way it does — including choices that

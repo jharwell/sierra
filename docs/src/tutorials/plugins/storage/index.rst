@@ -24,7 +24,7 @@ To begin, create the following filesystem structure in
 These files will be populated as you go through the rest of the tutorial.
 
 #. Create additional cmdline arguments for the new engine by following
-   :ref:`plugins/devguide/cmdline`.
+   :ref:`tutorials/plugins/devguide/cmdline`.
 
 #. In ``plugin.py``, you must define the following functions:
 

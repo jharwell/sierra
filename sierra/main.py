@@ -368,5 +368,17 @@ def main():
         app()
 
 
+def main_deprecated():
+    import warnings
+
+    warnings.warn(
+        "sierra-cli is deprecated and will be removed in a future release. "
+        "Use 'sierra' instead.",
+        FutureWarning,
+        stacklevel=2,
+    )
+    main()
+
+
 if __name__ == "__main__":
     main()

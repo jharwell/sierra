@@ -33,6 +33,14 @@ Usage
 This plugin can be selected by adding ``compare.graphs`` to ``--compare`` during
 stage 5.
 
+Cmdline Interface
+-----------------
+
+.. sphinx_argparse_cli::
+   :module: sierra.plugins.compare.graphs.cmdline
+   :func: sphinx_cmdline_stage5
+   :prog: sierra-cli
+
 .. _plugins/compare/graphs/inter-controller:
 
 Inter-Controller Comparison

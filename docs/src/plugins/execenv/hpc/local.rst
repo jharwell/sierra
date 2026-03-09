@@ -9,7 +9,7 @@ default HPC environment in which SIERRA will run all :term:`Experimental Runs
 parallel.  The # simultaneous simulations will be determined by a number of
 factors, including:
 
-- :ref:`--exec-jobs-per-node<src/plugins/execenv/hpc:sierra-cli---exec-jobs-per-node>`
+- :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra-cli---exec-jobs-per-node>`
 
 - The selected :term:`Engine`'s parallelism paradigm and its specific
   configuration.

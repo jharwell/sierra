@@ -28,8 +28,6 @@ which can't manage network mounted filesystems).
 Requirements
 ============
 
-.. include:: /src/plugins/engine/ros1.rst
-
 #. All data from multiple robots somehow ends up accessible through the
    filesystem on the host machine SIERRA is invoked on, as if the same
    experimental run was locally with a simulator. There are several ways to

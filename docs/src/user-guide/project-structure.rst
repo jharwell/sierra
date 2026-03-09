@@ -56,7 +56,7 @@ File and Directory Reference
 ``cmdline.py``
    Defines the ``--controller`` and ``--scenario`` arguments for this project,
    and any other project-specific command-line options. Required for all
-   projects. See :ref:`plugins/devguide/cmdline`.
+   projects. See :ref:`tutorials/plugins/devguide/cmdline`.
 
 ``config/main.yaml``
    Core SIERRA configuration: the ``run_metrics_leaf`` key (the subdirectory
@@ -130,6 +130,33 @@ Where Outputs Go
 
 SIERRA writes nothing into the project directory. All outputs — generated
 experiment inputs, raw run outputs, statistics, graphs — go under
-``--sierra-root``, organised by project, controller, scenario, and batch
-criteria. See :ref:`concepts/run-time-tree` for the full output directory
-structure.
+:ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`, organized by
+project, controller, scenario, and batch criteria. See
+:ref:`concepts/run-time-tree` for the full output directory structure.
+
+.. plantuml::
+   :caption: The three separate filesystem locations SIERRA works with.
+             The project directory and template are user-managed inputs;
+             sierra-root is entirely SIERRA-managed output.
+
+   !theme cerulean
+   skinparam backgroundColor transparent
+   skinparam defaultFontSize 16
+   skinparam DefaultFontColor #black
+   skinparam stateFontStyle bold
+
+   skinparam defaultFontName sans-serif
+   skinparam defaultFontStyle bold
+   skinparam ArrowThickness 3
+   skinparam componentBorderThickness 3
+   skinparam packageBorderThickness 3
+
+   package "Your repository" {
+     component "Project directory\n(on SIERRA_PLUGIN_PATH)\n\ncmdline.py\nconfig/\ngenerators/\nvariables/" as PROJ
+     component "Experiment template\n(--expdef-template)\n\ntemplate.xml / .json\n.yaml / .launch" as TMPL
+   }
+
+   component "sierra-root\n(--sierra-root)\n\nAll generated inputs,\nraw outputs, statistics,\nand graphs land here.\nSIERRA manages this entirely." as ROOT #d6eaf8
+
+   PROJ --> ROOT : "configures stage 1–5\nbehaviour"
+   TMPL --> ROOT : "modified by stage 1\nto produce exp inputs"

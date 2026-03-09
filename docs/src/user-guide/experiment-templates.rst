@@ -20,16 +20,16 @@ it. For token syntax and format-specific restrictions, see
 What Stage 1 Does With Your Template
 =====================================
 
-For each experiment in the batch, stage 1 applies modifications from
-batch criteria and ``controllers.yaml`` to the template, substitutes
-tokens, then writes one copy per experimental run with a unique random
-seed injected. Each copy is named ``<template-stem>_run<N>`` and placed
-in the experiment's input directory under :ref:`--sierra-root
-<sierra-cli---sierra-root>`. Stage 1 also writes a GNU parallel command
-file for stage 2 to consume. See :ref:`concepts/run-time-tree` for the
-full directory layout.
+For each experiment in the batch, stage 1 applies modifications from batch
+criteria and ``controllers.yaml`` to the template, substitutes tokens, then
+writes one copy per experimental run with a unique random seed injected. Each
+copy is named ``<template-stem>_run<N>`` and placed in the experiment's input
+directory under :ref:`--sierra-root
+<src/reference/cli:sierra-cli---sierra-root>`. Stage 1 also writes a GNU
+parallel command file for stage 2 to consume. See :ref:`concepts/run-time-tree`
+for the full directory layout.
 
-See :ref:`stage1 deep dive<arch/deep-dive/stage>` for the details of this
+See :ref:`stage1 deep dive<arch/deep-dive/stage1>` for the details of this
 process.
 
 .. _user-guide/experiment-templates/random-seeds:

@@ -54,7 +54,7 @@ Creating The Cmdline Interface
 ==============================
 
 #. Create additional cmdline arguments for the new engine by following
-   :ref:`plugins/devguide/cmdline` for engines.
+   :ref:`tutorials/plugins/devguide/cmdline` for engines.
 
 #. Defining any additional configuration/argument checking beyond what is
    possible in argparse via ``cmdline_postparse_configure()`` in your

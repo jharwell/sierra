@@ -47,7 +47,7 @@ Creating The Cmdline Interface
 ==============================
 
 #. Create additional cmdline arguments for the new execution environment by
-   following :ref:`plugins/devguide/cmdline`.
+   following :ref:`tutorials/plugins/devguide/cmdline`.
 
 #. Defining any additional configuration/argument checking beyond what is
    possible in argparse via ``cmdline_postparse_configure()`` in your

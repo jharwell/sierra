@@ -112,6 +112,33 @@ Mapped to documentation sections:
 Each section answers a **different type of question**. Contributors should
 ensure that new documentation fits the purpose of its section.
 
+Colour Scheme
+-------------
+
+This is a general guide so I don't forget--deviate when necessary.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 20 60
+
+   * - Role
+     - Colour
+     - Notes
+   * - Stage headers
+     - ``#e8daef``
+     - Purple; container header, distinct from all data-flow colours
+   * - Input artifacts
+     - ``#ebf5fb``
+     - Near-white blue
+   * - Output artifacts
+     - ``#5dade2``
+     - Mid-dark blue; clearly a step darker than input
+   * - Active plugins
+     - ``#fdebd0``
+     - Amber
+   * - Compute resources
+     - ``#a9dfbf``
+     - Green; distinct from the blue data-flow family
 
 Top-Level Documentation Structure
 ---------------------------------

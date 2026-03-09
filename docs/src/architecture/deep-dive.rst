@@ -1,14 +1,14 @@
 .. _arch/deep-dive:
 
-=================================
-SIERRA Pipeline Stages: Deep Dive
-=================================
+==========================
+Pipeline Stages: Deep Dive
+==========================
 
 This page dives deeps into the high level design of each of the SIERRA pipeline
 stages. You don't need to know any of this in order to use SIERRA successfully,
 but it doesn't hurt.
 
-.. _usage/deep-dive/stage1:
+.. _arch/deep-dive/stage1:
 
 Stage 1
 =======

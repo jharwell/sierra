@@ -206,7 +206,7 @@ sample project to ``$HOME/research``; adjust if needed.
 
          :ref:`--with-robot-rab<src/plugins/engine/argos/index:sierra-cli---with-robot-rab>`
          :ref:and
-         :ref:`--with-robot-leds<src/plugins/engine/argos/index::sierra-cli---with-robot-leds>`
+         :ref:`--with-robot-leds<src/plugins/engine/argos/index:sierra-cli---with-robot-leds>`
          :ref:are required here because the sample project's controllers use
          :ref:those sensor/actuator types. SIERRA strips unused sensor and
          :ref:actuator XML tags by default to reduce ARGoS's memory footprint;

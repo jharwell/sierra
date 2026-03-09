@@ -9,7 +9,7 @@
 Imagizing
 =========
 
-SIERRA\'s capabilities for imagizing (translating from :term:`Raw Output Data`
+SIERRA's capabilities for imagizing (translating from :term:`Raw Output Data`
 files into images) are detailed in this section. Imagize inputs are treated as
 snapshots of data over time, and after being be turned into image files in stage
 3 they can be rendered into videos in stage 4 (see :ref:`plugins/prod/render`).

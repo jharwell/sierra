@@ -24,7 +24,7 @@ requirements apply regardless of format:
 #. **Single file.** The template must be a single file. Any configuration not
    reachable within it cannot be varied by SIERRA. If your simulator normally
    uses multiple config files, provide an ``expdef_flatten()`` hook in your
-   engine plugin to collapse them at stage 1 startup---see
+   engine plugin to collapse them at stage 1 startup--see
    :ref:`tutorials/plugins/engine`.
 
    If your simulator normally expects multiple configuration files (a common
@@ -115,7 +115,7 @@ Format-Specific Restrictions
 **ROS1 launch files**
    A dialect of XML. Subject to the XML restrictions above, plus the
    ``sierra`` namespace reservation and ``__UUID__`` token described
-   under :ref:`plugins/expdef/tokens`.
+   under :ref:`tutorials/plugins/expdef/tokens`.
 
 Creating a New Expdef Plugin
 ============================

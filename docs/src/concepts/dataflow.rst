@@ -324,6 +324,8 @@ experiment along some axis of interest.
 Once processed, products can be generate directly from the inter-experiment
 files with a 1:1 mapping as above.
 
+.. _concepts/dataflow/stage5:
+
 Stage 5 Inter-Batch Dataflow
 ============================
 

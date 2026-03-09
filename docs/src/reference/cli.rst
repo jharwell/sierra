@@ -1,8 +1,8 @@
 .. _reference/cli:
 
-==================================
-SIERRA Core Command Line Reference
-==================================
+===========================
+Core Command Line Reference
+===========================
 
 If an option is given more than once, the last such occurrence is
 used. If both the shortform and longform variants of an option are passed with

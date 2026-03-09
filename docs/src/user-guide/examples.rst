@@ -1,8 +1,8 @@
-.. _usage/examples:
+.. _user-guide/examples:
 
-=======================
-SIERRA Usage By Example
-=======================
+================
+Usage By Example
+================
 
 This page contains annotated ``sierra-cli`` invocations to help you craft your
 own. All examples use project plugins from the SIERRA sample project:
@@ -341,7 +341,7 @@ the appropriate subset when the swarm size is less than 6. You can also omit
 ``--nodefile`` and set :envvar:`SIERRA_NODEFILE` instead.
 
 No ROS master node is needed for this setup, so
-:ref:`--no-master-node<src/reference/ros:sierra-cli---no-master-node>` is
+:ref:`--no-master-node<src/plugins/engine/index:sierra-cli---no-master-node>` is
 passed.  After all runs complete and SIERRA finishes stages 3 and 4, outputs
 appear under ``$HOME/exp``; see :ref:`concepts/run-time-tree` for the directory
 layout.

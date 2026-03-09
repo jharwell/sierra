@@ -41,4 +41,4 @@ are:
    json.rst
    yaml.rst
 
-Additional formats can be supported via :ref:`tutorials/plugin/expdef`.
+Additional formats can be supported via :ref:`tutorials/plugins/expdef`.

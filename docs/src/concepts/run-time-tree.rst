@@ -21,10 +21,10 @@ Basic Structure
 
 The SIERRA run-time directory tree is intentionally designed to support multiple
 :term:`Projects <Project>`, multiple :term:`Batch Criteria`, multiple
-controllers/scenarios (see :ref:`exp/design` for more info), with multiple
-template input files, without having to worry about collisions. Thus, when
-starting out with SIERRA, the directory structure may seem needlessly
-complex. See also :ref:`philosophy`.
+controllers/scenarios (see :ref:`concepts/exp-design` for more info),
+with multiple template input files, without having to worry about
+collisions. Thus, when starting out with SIERRA, the directory structure may
+seem needlessly complex. See also :ref:`concepts/philosophy`.
 
 .. list-table::
    :header-rows: 1
@@ -174,24 +174,17 @@ The meaning of each directory is discussed below.
     appended to it (e.g. ``my-template_run0.argos`` is the input file for
     simulation 0).
 
-      - ``commands.txt``
-
-      - ``my-template_run0.argos``
-
-      - ``my-template_run1.argos``
-
-      - ``my-template_run2.argos``
-
-      - ``my-template_run3.argos``
+    - ``commands.txt``
+    - ``my-template_run0.argos``
+    - ``my-template_run1.argos``
+    - ``my-template_run2.argos``
+    - ``my-template_run3.argos``
 
   - ``c1-exp1/``
 
     - ``my-template_run0.argos``
-
     - ``my-template_run1.argos``
-
     - ``my-template_run2.argos``
-
     - ``my-template_run3.argos``
 
   - ``c1-exp2/``
@@ -207,21 +200,15 @@ The meaning of each directory is discussed below.
     output.
 
     - ``my-template_run0_output``
-
     - ``my-template_run1_output``
-
     - ``my-template_run2_output``
-
     - ``my-template_run3_output``
 
   - ``c1-exp1/``
 
     - ``my-template_run0_output``
-
     - ``my-template_run1_output``
-
     - ``my-template_run2_output``
-
     - ``my-template_run3_output``
 
   - ``c1-exp2/``
@@ -235,3 +222,69 @@ The meaning of each directory is discussed below.
 .. NOTE:: The above tree assumes that the :ref:`parallelism paradigm
           <tutorials/plugin/engine/config>` is ``per-exp``; if you select a
           different paradigm, then the structure will look slightly different.
+
+Why Such a Deeply Nested Structure?
+-----------------------------------
+
+You might naturally wonder why the runtime tree is the way it is, and the answer
+is flexibility. Each level in the structure is derived from a specific
+command-line argument, making every path deterministic.  Multiple projects,
+controllers, and batch criteria coexist under a single sierra-root without
+collision:
+
+.. plantuml::
+
+   @startuml
+   !theme cerulean
+   skinparam backgroundColor transparent
+   skinparam defaultFontSize 24
+   skinparam defaultFontName sans-serif
+   skinparam defaultFontStyle bold
+   skinparam ArrowThickness 3
+   skinparam RectangleBorderThickness 3
+   skinparam DefaultFontColor #black
+   skinparam stateFontStyle bold
+
+   rectangle "--sierra-root\ne.g. $HOME/exp" as ROOT #d6eaf8 {
+
+     rectangle "--project fordyca" as PROJ1 #aed6f1 {
+
+       rectangle "--controller ALG.ctrl_a" as CTRL1 #85c1e9 {
+         rectangle "--scenario SS.12x6" as SCEN1 #5dade2 {
+           rectangle "template-population_size.Log8" as B1 #2e86c1 {
+             rectangle "exp-inputs/" as I1 #d5f5e3
+             rectangle "exp-outputs/" as O1 #fdebd0
+             rectangle "scratch/" as S1 #f2f3f4
+           }
+           rectangle "template-max_speed.1.4.C4" as B2 #2e86c1 {
+             rectangle "exp-inputs/" as I2 #d5f5e3
+             rectangle "exp-outputs/" as O2 #fdebd0
+             rectangle "scratch/" as S2 #f2f3f4
+           }
+         }
+       }
+
+       rectangle "--controller ALG.ctrl_b" as CTRL2 #85c1e9 {
+         rectangle "--scenario multibody.100x100" as SCEN2 #5dade2 {
+           rectangle "template-impulse_factory.Linear3" as B3 #2e86c1 {
+             rectangle "exp-inputs/" as I3 #d5f5e3
+             rectangle "exp-outputs/" as O3 #fdebd0
+             rectangle "scratch/" as S3 #f2f3f4
+           }
+         }
+       }
+     }
+
+     rectangle "--project my_other_project" as PROJ2 #aed6f1 {
+       rectangle "--controller OTH.ctrl_x" as CTRL3 #85c1e9 {
+         rectangle "--scenario dataset1" as SCEN3 #5dade2 {
+           rectangle "template-collusion_ratio.Log16" as B4 #2e86c1 {
+             rectangle "exp-inputs/" as I4 #d5f5e3
+             rectangle "exp-outputs/" as O4 #fdebd0
+             rectangle "scratch/" as S4 #f2f3f4
+           }
+         }
+       }
+     }
+   }
+   @enduml

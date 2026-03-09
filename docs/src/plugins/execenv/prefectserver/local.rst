@@ -14,8 +14,7 @@ This plugin defines the following prefect artifacts:
   Run>` in each :term:`Experiment` in parallel.
 
 - ``sierra-pool`` work pool which the prefect workers live in. The # workers is
-  determined by the selected :term:`Engine` and/or
-  :ref:`--exec-jobs-per-node<src/execenv/hpc/index:sierra-cli---exec-jobs-per-node>`.
+  determined by the selected :term:`Engine`.
 
 - ``sierra-queue`` work queue which the SIERRA prefect workers pull tasks from.
 

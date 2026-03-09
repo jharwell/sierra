@@ -1,3 +1,5 @@
+.. _tutorials/project/config/controllers:
+
 =======================
 config/controllers.yaml
 =======================
@@ -32,8 +34,8 @@ Special Block
 
 Each controller category and each individual controller may define any number of
 {xml,json,yaml} blocks specifying changes to apply to the
-:ref:`--expdef-template<sierra-cli---expdef-template>`. Three subsection keys
-are supported, each taking a list of three-element lists:
+:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`. Three
+subsection keys are supported, each taking a list of three-element lists:
 
 ``attr_change``
    Modify an existing attribute. Format: ``[path, attr, value]`` where
@@ -50,16 +52,17 @@ are supported, each taking a list of three-element lists:
 
 All three subsections are optional. The path syntax in each list entry depends
 on your template format: XPath for XML, JSONPath for JSON, YAMLPath for YAML.
-See :ref:`plugins/expdef/format-restrictions` for the full format reference.
+See :ref:`tutorials/plugins/expdef/format-restrictions` for the full format
+reference.
 
 .. _tutorials/project/config/controllers/tokens:
 
 Special Tokens in ``controllers.yaml``
-=======================================
+======================================
 
 Two special tokens can appear in ``controllers.yaml`` path expressions and
-values, regardless of template format. See :ref:`plugins/expdef/tokens` for
-their full definitions.
+values, regardless of template format. See
+:ref:`tutorials/plugins/expdef/tokens` for their full definitions.
 
 ``__CONTROLLER__``
    Used in ``attr_change`` entries to target the controller element in the

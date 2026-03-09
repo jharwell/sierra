@@ -19,6 +19,54 @@ pipeline** (:ref:`concepts/pipeline`), writes everything to a predictable
 **directory tree** (:ref:`concepts/run-time-tree`), and passes data between
 stages according to a consistent **dataflow model** (:ref:`concepts/dataflow`).
 
+.. plantuml::
+   :caption: How SIERRA's core concepts relate to one another.
+
+   @startuml
+   !theme cerulean
+   skinparam backgroundColor transparent
+   skinparam defaultFontSize 48
+   skinparam DefaultFontColor #black
+   skinparam stateFontStyle bold
+
+   skinparam defaultFontName sans-serif
+   skinparam defaultFontStyle bold
+   skinparam ArrowThickness 3
+   skinparam RectangleBorderThickness 3
+
+   rectangle "Experimental Design" as ED {
+     rectangle "--controller"     as CTRL
+     rectangle "--scenario"       as SCEN
+     rectangle "--batch-criteria" as BC
+   }
+
+   rectangle "Batch Experiment" as BATCH {
+     rectangle "exp0" as E0
+     rectangle "exp1" as E1
+     rectangle "expN" as EN
+   }
+
+   rectangle "Pipeline" as PIPE {
+     rectangle "1. Generate"          as S1
+     rectangle "2. Execute"           as S2
+     rectangle "3. Post-process"      as S3
+     rectangle "4. Generate products" as S4
+     rectangle "5. Compare"           as S5
+   }
+
+   rectangle "Runtime Tree\n(--sierra-root)" as RT
+
+   ED     --> BATCH : "instantiates"
+   BATCH  --> S1    : "feeds"
+   S1     --> S2
+   S2     --> S3
+   S3     --> S4
+   S4     --> S5    : "optional"
+   S1     --> RT    : "writes inputs"
+   S2     --> RT    : "writes outputs"
+   S3     --> RT    : "writes stats"
+   S4     --> RT    : "writes graphs"
+
 How the Concepts Relate
 =======================
 

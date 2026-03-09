@@ -1,2 +1,0 @@
-.. toctree::
-   /autoapi/index.rst

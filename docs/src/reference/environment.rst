@@ -28,11 +28,11 @@ Core
    of cmdlines. Can also be passed directly via
    :ref:`--rcfile<src/reference/cli:sierra-cli---rcfile>`. Priority:
 
-   - ``--rcfile``
+   #. ``--rcfile``
 
-   - ``SIERRA_RCFILE``
+   #. ``SIERRA_RCFILE``
 
-   - ``~/.sierrarc``
+   #. ``~/.sierrarc``
 
    .. NOTE:: You can't pass shortform cmdline arguments in the rcfile, or
              arguments which are marked as required in their cmdline definition.

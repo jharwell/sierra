@@ -15,9 +15,8 @@ code.
 Log Levels
 ==========
 
-SIERRA's verbosity is controlled by
-:ref:`--log-level <sierra-cli---log-level>`. Levels from least to most
-verbose:
+SIERRA's verbosity is controlled by :ref:`--log-level
+<src/reference/cli:sierra-cli---log-level>`. Levels from least to most verbose:
 
 ``ERROR``
    Only fatal errors. Use when you want to suppress all informational
@@ -72,15 +71,15 @@ Stage Failure Patterns
    runs produced output files with the same number of rows and columns.
    SIERRA relies on uniform CSV shapes for statistics generation and does
    not validate them by default. Pass :ref:`--df-verify
-   <sierra-cli---df-verify>` to catch this explicitly:
+   <src/reference/cli:sierra-cli---df-verify>` to catch this explicitly:
 
    .. code-block:: bash
 
       sierra-cli ... --pipeline 3 --df-verify
 
    If verification fails, examine which runs produced shorter outputs and
-   why. For real robot experiments where minor timing differences are
-   expected, :ref:`--df-homogenize <sierra-cli---df-homogenize>` can pad
+   why. For real robot experiments where minor timing differences are expected,
+   :ref:`--df-homogenize <src/reference/cli:sierra-cli---df-homogenize>` can pad
    or zero-fill short columns rather than failing:
 
    .. code-block:: bash

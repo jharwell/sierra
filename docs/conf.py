@@ -107,28 +107,21 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "flycheck"]
 root_doc = "index"
 
 if not os.getenv("READTHEDOCS"):
-    if "html" in sys.argv:
-        builtins.__sphinx_build_html__ = True
-        exclude_patterns = ["man/*.rst"]
-        root_doc = "index"
-    elif "man" in sys.argv:
+    if "man" in sys.argv:
         builtins.__sphinx_build_man__ = True
         exclude_patterns.extend(
             [
-                "src/tutorials",
-                "src/contributing.rst",
-                "src/quickstart.rst",
-                "src/faq.rst",
-                "src/usage/index.rst",
-                "html.rst",
+                "src",
             ]
         )
-        root_doc = "man/sierra"
+        root_doc = "man/sierra.1"
 
     elif "linkcheck" in sys.argv:
         pass
-    else:
-        assert False, "Must pass -b {html,man,linkcheck} to build docs"
+    else:  # Assum html in sys.argv:
+        builtins.__sphinx_build_html__ = True
+        exclude_patterns = ["man/*.rst"]
+        root_doc = "index"
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -147,6 +140,7 @@ nitpick_ignore = [
     ("py:class", "xml.etree.ElementTree"),
     ("py:class", "multiprocessing.context.BaseContext.JoinableQueue"),
     ("py:class", "multiprocessing.context.BaseContext.Queue"),
+    ("py:class", "polars.DataFrame"),
     # 2025-04-15 [JRH]: These are necessary because type aliases aren't handled
     # well by autoapi currently. Maybe once SIERRA moves to python 3.10, or even
     # 3.12 these can go away.
@@ -240,7 +234,7 @@ sphinx_argparse_cli_prefix_document = True
 html_theme = "pydata_sphinx_theme"
 plantuml = "java -jar /tmp/plantuml.jar"
 plantuml_url = "https://downloads.sourceforge.net/project/plantuml/plantuml.jar"
-
+smartquotes = False
 
 jarpath = pathlib.Path("/tmp/plantuml.jar")
 if not jarpath.exists():
@@ -254,24 +248,16 @@ if not jarpath.exists():
 # documentation.
 #
 html_theme_options = {
-    # "globaltoc_maxdepth": 2,
-    # "navigation_depth": 4,
-    # "collapse_navigation": False,
-    # "sticky_navigation": True,
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["navbar-nav"],
-    "navbar_items": [
-        {"name": "Getting Started", "url": "src/getting-started/why-sierra"},
-        {"name": "Concepts", "url": "src/concepts/experimental-design"},
-        {"name": "User Guide", "url": "src/user-guide/running-experiments"},
-        {"name": "Tutorials", "url": "src/tutorials/project/project"},
-        {"name": "Plugins", "url": "src/plugins/index"},
-        {"name": "Architecture", "url": "src/architecture/execution-model"},
-        {"name": "Reference", "url": "src/reference/cli"},
-    ],
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
     "navigation_depth": 3,
     "show_toc_level": 2,
+    "header_links_before_dropdown": 8,
+    "logo": {
+        "image_light": "figures/logo-only-small-with-name.png",
+        "text": f"{version}",
+    },
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -339,63 +325,11 @@ latex_documents = [
 autosectionlabel_prefix_document = True
 man_pages = [
     (
-        "man/sierra-cli",
-        "sierra-cli",
-        "The SIERRA Command Line Interface (CLI).",
-        [author],
-        1,
-    ),
-    (
-        "man/sierra-usage",
-        "sierra-usage",
-        "How to use SIERRA. This covers all non-command line interface aspects.",
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-plugins",
-        "sierra-plugins",
-        "SIERRA's builtin plugins.",
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-examples",
-        "sierra-examples",
-        (
-            "Examples of SIERRA usage. These examples all assume that you have "
-            "successfully set up SIERRA with a project of your choice."
-        ),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-glossary",
-        "sierra-glossary",
-        ("Glossary of SIERRA terminology."),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-api",
-        "sierra-api",
-        ("SIERRA API reference."),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra-tutorials",
-        "sierra-tutorials",
-        ("SIERRA tutorials."),
-        [author],
-        7,
-    ),
-    (
-        "man/sierra",
+        "man/sierra.1",
         "sierra",
         "reSearch pIpEline for Reproducability, Reusability, and Automation.",
         [author],
-        7,
+        1,
     ),
 ]
 man_show_urls = True
