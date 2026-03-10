@@ -136,7 +136,7 @@ Steps
 
            Specifies classes and functions to enable SIERRA to generate expdef
            file modifications to the
-           :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` based on what
+           :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` based on what
            is passed pas ``--scenario`` on the cmdline. Contains the parser for
            parsing the contents of ``--scenario`` into a dictionary which can be
            used to configure experiments. This file is required. See
@@ -151,7 +151,7 @@ Steps
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
      the plugin/project that can be directly or indirectly used by the
-     :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` and ``--scenario``
+     :ref:`--batch-criteria<src/reference/cli:sierra---batch-criteria>` and ``--scenario``
      cmdline arguments. This directory is optional.
 
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
@@ -172,7 +172,7 @@ Steps
    automated graph generation during stage 4 is one of the most useful parts of
    SIERRA, so its kind of silly if you don't do this.
 
-#. Setup your :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
+#. Setup your :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`
    appropriately by following :ref:`user-guide/experiment-templates`.
 
 Optional Steps

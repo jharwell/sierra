@@ -6,7 +6,7 @@ Batch Criteria
 
 A batch criteria is an experimental variable — an axis of the parameter space
 your experiment explores. It defines a *range* of modifications to an experiment
-template (:ref:`--expdef-template <src/reference/cli:sierra-cli---expdef-template>`), one per
+template (:ref:`--expdef-template <src/reference/cli:sierra---expdef-template>`), one per
 experiment in the batch, in parameter space terms. In implementation terms, this
 can translate to multiple changes to the template file, which makes SIERRA
 incredibly powerful how you can define experiments.  The full set of experiments

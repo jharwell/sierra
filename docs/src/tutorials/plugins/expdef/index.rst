@@ -16,7 +16,7 @@ Template File Contract
 ======================
 
 An experiment definition template is a single file passed to
-:ref:`--expdef-template <src/reference/cli:sierra-cli---expdef-template>`. SIERRA
+:ref:`--expdef-template <src/reference/cli:sierra---expdef-template>`. SIERRA
 reads it once per batch and applies modifications from batch criteria and
 ``controllers.yaml`` to produce per-experiment, per-run input files. Two
 requirements apply regardless of format:

@@ -22,52 +22,52 @@ own documentation, linked below.
      - Responsibility
 
    * - :ref:`Engine <plugins/engine>`
-     - :ref:`--engine<src/reference/cli:sierra-cli---engine>`
+     - :ref:`--engine<src/reference/cli:sierra---engine>`
      - The simulator or robot platform experiments run on. Controls how
        ``--expdef-template`` files are modified in stage 1, how runs are
        launched in stage 2, and how engine-specific information (e.g., agent
        counts) is extracted during stages 3–5.
 
    * - :ref:`Execution environment <plugins/execenv>`
-     - :ref:`--execenv<src/reference/cli:sierra-cli---execenv>`
+     - :ref:`--execenv<src/reference/cli:sierra---execenv>`
      - Where and how experiments execute. Translates SIERRA's abstract "run
        these N experiments in parallel" request into concrete shell commands
        for a laptop, a SLURM cluster, a PBS cluster, or a robot network.
 
    * - :ref:`Experiment definition <plugins/expdef>`
-     - :ref:`--expdef<src/reference/cli:sierra-cli---expdef>`
+     - :ref:`--expdef<src/reference/cli:sierra---expdef>`
      - The file format of
-       :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`. Controls how
+       :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`. Controls how
        SIERRA reads and modifies template files to inject batch criteria changes
        in stage 1.  Supported formats include XML, JSON, and YAML.
 
    * - :ref:`Storage <plugins/storage>`
-     - :ref:`--storage<src/reference/cli:sierra-cli---storage>`
+     - :ref:`--storage<src/reference/cli:sierra---storage>`
      - How experimental output data is read from and written to disk in
        stages 3–5. Determines the in-memory representation (e.g.,
        ``pd.DataFrame``, ``nx.Graph``) that processing and product plugins
        receive. Defaults to ``storage.csv``.
 
    * - :ref:`Processors <plugins/proc>`
-     - :ref:`--proc<src/reference/cli:sierra-cli---proc>`
+     - :ref:`--proc<src/reference/cli:sierra---proc>`
      - What to do with raw output data in stage 3. Multiple processors can be
        active simultaneously; common examples are statistics generation and
        intra-experiment data collation. At least one processor must be active
        for stage 4 to have anything to work with.
 
    * - :ref:`Product generators <plugins/prod>`
-     - :ref:`--prod<src/reference/cli:sierra-cli---prod>`
+     - :ref:`--prod<src/reference/cli:sierra---prod>`
      - What products to generate from processed data in stage 4. The built-in
        ``prod.graphs`` plugin generates camera-ready graphs; ``prod.render``
        stitches simulation frames into videos.
 
    * - :ref:`Comparison generators <plugins/compare>`
-     - :ref:`--compare<src/reference/cli:sierra-cli---compare>`
+     - :ref:`--compare<src/reference/cli:sierra---compare>`
      - How to compare products across controllers or scenarios in stage 5.
        Only active when ``--pipeline 5`` is passed.
 
    * - :ref:`Project <tutorials/project/project>`
-     - :ref:`--project<src/reference/cli:sierra-cli---project>`
+     - :ref:`--project<src/reference/cli:sierra---project>`
      - Your research code: batch criteria definitions, controller and scenario
        arguments, ``graphs.yaml`` graph configuration, and any processing
        hooks for your specific output data. See note below.

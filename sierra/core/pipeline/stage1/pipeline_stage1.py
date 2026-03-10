@@ -23,7 +23,7 @@ class PipelineStage1:
     Generated experimental input files are written to the filesystem, and can be
     be used in stage 2 to launch simulations/real robot controller.  This stage
     is idempotent with default settings; this can be overridden with
-    :ref:`--no-preserve-seeds<src/reference/cli:sierra-cli---preserve-seeds>`,
+    :ref:`--no-preserve-seeds<src/reference/cli:sierra---preserve-seeds>`,
     in which case this stage is no longer idempotent.
     """
 

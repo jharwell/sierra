@@ -335,7 +335,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
             "When reporting, please include as much information as you "
             "can. Ideally:\n\n"
             "1. What you were trying to do in SIERRA.\n"
-            "2. The terminal output of sierra-cli, including the "
+            "2. The terminal output of sierra, including the "
             "below traceback.\n"
             "3. The exact command you used to run SIERRA.\n"
             "\n"
@@ -372,7 +372,7 @@ def main_deprecated():
     import warnings
 
     warnings.warn(
-        "sierra-cli is deprecated and will be removed in a future release. "
+        "sierra is deprecated and will be removed in a future release. "
         "Use 'sierra' instead.",
         FutureWarning,
         stacklevel=2,

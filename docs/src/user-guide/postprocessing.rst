@@ -38,13 +38,13 @@ Common compositions:
 .. code-block:: bash
 
    # Default: statistics then collation
-   sierra-cli ... --proc proc.statistics proc.collate
+   sierra ... --proc proc.statistics proc.collate
 
    # Add imagizing for later video rendering via prod.render
-   sierra-cli ... --proc proc.statistics proc.collate proc.imagize
+   sierra ... --proc proc.statistics proc.collate proc.imagize
 
    # Compress raw outputs after processing to recover disk space
-   sierra-cli ... --proc proc.statistics proc.collate proc.compress
+   sierra ... --proc proc.statistics proc.collate proc.compress
 
    # Decompress, reprocess, recompress after fixing a stage 3 issue
-   sierra-cli ... --proc proc.decompress proc.statistics proc.collate proc.compress
+   sierra ... --proc proc.decompress proc.statistics proc.collate proc.compress

@@ -33,7 +33,7 @@ In SIERRA, there are 3 main faculties that are used to design experiments:
            labels which make sense to YOU.
 
 - The :term:`Batch Criteria`. In SIERRA, the
-  :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` is the main workhorse of
+  :ref:`--batch-criteria<src/reference/cli:sierra---batch-criteria>` is the main workhorse of
   designing experiments. It defines the *independent* variables (you can have
   any number, defining an N-D experimental space). Each variable can make pretty
   much any changes it wants to the experimental inputs, giving you *massive*

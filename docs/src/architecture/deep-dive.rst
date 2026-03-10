@@ -35,8 +35,8 @@ batch experiment. The outputs of this phase include:
 
 - A modified expdef template file unique to each experiment in the batch which
   contains modifications to the original
-  :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` from the
-  :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>` This file (probably)
+  :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` from the
+  :ref:`--batch-criteria<src/reference/cli:sierra---batch-criteria>` This file (probably)
   *cannot* be actually run by the selected engine (i.e., it is not well formed,
   yet).
 
@@ -93,9 +93,9 @@ include:
 
   - ``--controller``
   - ``--scenario``
-  - :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`
-  - :ref:`--engine<src/reference/cli:sierra-cli---engine>`
-  - :ref:`--project<src/reference/cli:sierra-cli---project>`
+  - :ref:`--batch-criteria<src/reference/cli:sierra---batch-criteria>`
+  - :ref:`--engine<src/reference/cli:sierra---engine>`
+  - :ref:`--project<src/reference/cli:sierra---project>`
   - ``controllers.yaml``
 
 

@@ -7,18 +7,18 @@ Rendering
 SIERRA's capabilities for rendering video outputs are detailed in this
 section. SIERRA can render frames (images) into videos from 3 sources:
 
-- Those captured using :ref:`--engine-vc<src/reference/cli:sierra-cli---engine-vc>`.
+- Those captured using :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>`.
 
 - Those imagized from project :term:`Raw Output Data` files via ``--proc
   proc.imagize`` using
-  :ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`. See
+  :ref:`--project-rendering<src/plugins/prod/render:sierra---project-rendering>`. See
   :ref:`here <plugins/proc/imagize>` for details about the project-based
   imagizing plugin.
 
 .. NOTE:: Using BOTH the engine and project rendering capabilities
    simultaneously IS possible, but discouraged unless you have multiple
    terrabytes of disk space
-   available. :ref:`--exp-range<src/reference/cli:sierra-cli---exp-range>` is
+   available. :ref:`--exp-range<src/reference/cli:sierra---exp-range>` is
    your friend.
 
 This plugin uses :program:`ffmpeg` to do the actual rendering, and so it must be
@@ -66,10 +66,10 @@ experiment will accrue in subdirectories under here. E.g.::
 
 Which videos will be rendered is read from the ``imagizing`` section of project
 ``graphs.yaml`` for
-:ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`. For
+:ref:`--project-rendering<src/plugins/prod/render:sierra---project-rendering>`. For
 ``engine-vc``, all matching image directories within each experiment are
 unconditionally rendered. If you only care about some of them, you can use
-:ref:`--exp-range<src/reference/cli:sierra-cli---exp-range>` to only render
+:ref:`--exp-range<src/reference/cli:sierra---exp-range>` to only render
 videos for some experiments.
 
 Cmdline Interface
@@ -78,7 +78,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.prod.render.cmdline
    :func: sphinx_cmdline_stage4
-   :prog: sierra-cli
+   :prog: sierra
 
 
 .. _plugins/prod/render/usage/engine:
@@ -107,7 +107,7 @@ rendered into videos in stage 4.
 To use:
 
 - Pass
-  :ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`
+  :ref:`--project-rendering<src/plugins/prod/render:sierra---project-rendering>`
   during stage 4 after running imagizing via ``--proc proc.imagize`` during
   stage 3, either on the same invocation or a previous one. SIERRA will take the
   imagized files previously created and generate a set of a videos in
@@ -120,7 +120,7 @@ To use:
    Rendering the heatmaps does not happen automatically every time as part of
    stage 4 because it can take a LONG time and is idempotent. You should only
    pass
-   :ref:`--project-rendering<src/plugins/prod/render:sierra-cli---project-rendering>`
+   :ref:`--project-rendering<src/plugins/prod/render:sierra---project-rendering>`
    the first time you run stage 4 after having run stage 3 with ``--proc
    proc.imagize``.
 

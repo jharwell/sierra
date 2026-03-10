@@ -38,7 +38,7 @@ XML-based Engine Examples
 =========================
 
 Examples of the structure/required content of the XML file passed to SIERRA via
-:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` for each built-in
+:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` for each built-in
 XML-based :term:`Engine` are below. Use them as a starting point/in tandem with
 :xref:`SIERRA_SAMPLE_PROJECT` to create your own conforming input files. Note
 that the contents shown is what is passed to SIERRA; i.e., prior to any

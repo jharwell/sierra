@@ -63,8 +63,8 @@ Project & Plugin Design
 
    A: There are three approaches depending on what you need to share and whether
    it must be selectable via
-   :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`. See
+   :ref:`--batch-criteria<src/reference/cli:sierra---batch-criteria>`. See
    :ref:`tutorials/project/project` for a full walkthrough of each option,
    including a "common project" pattern, a separate Python package approach, and
    a namespace-lifting technique for
-   :ref:`--batch-criteria<src/reference/cli:sierra-cli---batch-criteria>`-selectable classes.
+   :ref:`--batch-criteria<src/reference/cli:sierra---batch-criteria>`-selectable classes.

@@ -16,7 +16,7 @@ beginning:
 
 - Determine the type(s) of comparison your plugin will support: comparing
   *across* controllers, *across* scenarios, and *across* batch criteria. This is
-  driven by the :ref:`--across<src/plugins/compare/graphs:sierra-cli---across>` stage 5 option common to
+  driven by the :ref:`--across<src/plugins/compare/graphs:sierra---across>` stage 5 option common to
   all stage 5 plugins.
 
 To begin, create the following filesystem structure in

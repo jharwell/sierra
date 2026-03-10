@@ -62,7 +62,7 @@ Ordering Considerations
 =======================
 
 Invokes ``proc.statistics`` internally unless
-:ref:`--imagize-no-stats<src/plugins/proc/imagize:sierra-cli---imagize-no-stats>`
+:ref:`--imagize-no-stats<src/plugins/proc/imagize:sierra---imagize-no-stats>`
 is passed. Placing it after an explicit ``proc.statistics`` in the chain without
 that flag runs statistics twice.
 
@@ -104,7 +104,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.proc.imagize.cmdline
    :func: sphinx_cmdline_stage3
-   :prog: sierra-cli
+   :prog: sierra
 
 Examples
 ========

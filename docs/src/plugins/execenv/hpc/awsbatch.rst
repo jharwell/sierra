@@ -19,7 +19,7 @@ this plugin, SIERRA expects:
   bash script with a variable being set/unset by the node 0 job is a simple way
   to accomplish this.
 
-- All nodes in :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` or
+- All nodes in :ref:`--nodefile<src/reference/cli:sierra---nodefile>` or
   :envvar:`SIERRA_NODEFILE` are available when SIERRA starts. This generally
   means node 0 needs to wait/poll worker nodes until they are all available, and
   *then* launching SIERRA.
@@ -28,7 +28,7 @@ this plugin, SIERRA expects:
 
 - Nodes can communicate with each other via ssh on port 22.
 
-.. WARNING:: :ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>` *MUST* be on a
+.. WARNING:: :ref:`--sierra-root<src/reference/cli:sierra---sierra-root>` *MUST* be on a
              shared EFS mount/something similar in the docker image, or things
              will not work.
 
@@ -115,6 +115,6 @@ are not defined SIERRA will throw an error.
    * - :envvar:`SIERRA_NODEFILE`
      - Contains hostnames/IP address of all compute nodes SIERRA can use. Same
        format as GNU parallel ``--sshloginfile``.  :envvar:`SIERRA_NODEFILE`
-       must be defined or :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` passed. If
+       must be defined or :ref:`--nodefile<src/reference/cli:sierra---nodefile>` passed. If
        neither is true, SIERRA will throw an error.
-     - :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>`
+     - :ref:`--nodefile<src/reference/cli:sierra---nodefile>`

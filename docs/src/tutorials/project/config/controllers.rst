@@ -34,7 +34,7 @@ Special Block
 
 Each controller category and each individual controller may define any number of
 {xml,json,yaml} blocks specifying changes to apply to the
-:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`. Three
+:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`. Three
 subsection keys are supported, each taking a list of three-element lists:
 
 ``attr_change``

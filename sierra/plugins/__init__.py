@@ -35,11 +35,11 @@ class PluginCmdline(cmdline.BaseCmdline):
         """
         if parents:
             self.parser = argparse.ArgumentParser(
-                prog="sierra-cli", parents=parents, add_help=False, allow_abbrev=False
+                prog="sierra", parents=parents, add_help=False, allow_abbrev=False
             )
         else:
             self.parser = argparse.ArgumentParser(
-                prog="sierra-cli", add_help=False, allow_abbrev=False
+                prog="sierra", add_help=False, allow_abbrev=False
             )
 
         self.multistage = self.parser.add_argument_group(

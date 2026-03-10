@@ -30,7 +30,7 @@ Requirements
    support for doing so would not be difficult.
 
 #. Since SIERRA operates on a single template input file
-   (:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`)
+   (:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`)
    when generating experimental definitions, all XML parameters you want to be
    able to modify with SIERRA must be present in a single ``.launch``
    file. Other parameters you don't want to modify with SIERRA can be present in
@@ -38,7 +38,7 @@ Requirements
    mechanism. See also :ref:`concepts/philosophy`.
 
 #. Within the template ``.launch`` file
-   (:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`),
+   (:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`),
    the root XML tag must be ``<ros-configuration>`` . The
    ``<ros-configuration>`` tag is stripped out by SIERRA during generation, and
    exists solely for the purposes of conformance with the XML standard, which
@@ -51,7 +51,7 @@ Requirements
    :term:`Projects <Project>` can choose either of the following options for
    specifying controller parameters. See :ref:`plugins/expdef` for further
    details of required structure of passed
-   :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`, and
+   :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`, and
    what changes are applied to them by SIERRA to use with ROS, depending on the
    option chosen.
 
@@ -95,9 +95,9 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.core.ros1.cmdline
    :func: sphinx_cmdline_multistage
-   :prog: sierra-cli
+   :prog: sierra
 
 .. sphinx_argparse_cli::
    :module: sierra.core.ros1.cmdline
    :func: sphinx_cmdline_stage1
-   :prog: sierra-cli
+   :prog: sierra

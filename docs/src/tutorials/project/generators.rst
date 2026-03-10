@@ -11,7 +11,7 @@ Telling SIERRA About Scenario Details
 
 To enable SIERRA to generate experiment definitions based on the ``--scenario``
 you specify, create ``generators/scenario.py`` in your
-:ref:`--project<src/reference/cli:sierra-cli---project>` directory.
+:ref:`--project<src/reference/cli:sierra---project>` directory.
 
 Within this file, you must define the following functions:
 

@@ -39,7 +39,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.compare.graphs.cmdline
    :func: sphinx_cmdline_stage5
-   :prog: sierra-cli
+   :prog: sierra
 
 .. _plugins/compare/graphs/inter-controller:
 
