@@ -21,7 +21,7 @@ spread across multiple robots using GNU parallel.
 
 SIERRA designates the host machine as the ROS master, and allows you to
 (optionally) specify configuration for running one or more nodes on it in the
-:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` to gather data from
+:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` to gather data from
 robots (see below). This is helpful in some situations (e.g., simple robots
 which can't manage network mounted filesystems).
 
@@ -89,7 +89,7 @@ invocation:
 - The robots have static IP addresses, or are always allocated an IP from a
   known set so you can pass the set of IPs to SIERRA to use. This set of IP
   address/hostnames can be explicitly passed to SIERRA via
-  :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` or implicitly
+  :ref:`--nodefile<src/reference/cli:sierra---nodefile>` or implicitly
   passed via :envvar:`SIERRA_NODEFILE`.
 
 - The ROS environment is setup either in the ``.bashrc`` for the robot login
@@ -145,7 +145,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.engine.ros1robot.cmdline
    :func: sphinx_cmdline_stage1
-   :prog: sierra-cli
+   :prog: sierra
 
 Environment Variables
 =====================
@@ -170,4 +170,4 @@ for details on the format of the provided seed.
 
 By default SIERRA does not overwrite its generated random seeds for each
 experiment once generated; you can override with
-:ref:`--no-preserve-seeds<src/reference/cli:sierra-cli---preserve-seeds>`.
+:ref:`--no-preserve-seeds<src/reference/cli:sierra---preserve-seeds>`.

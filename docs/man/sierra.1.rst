@@ -80,7 +80,7 @@ Bootstrap Options
 .. sphinx_argparse_cli::
    :module: sierra.core.cmdline
    :func: sphinx_cmdline_bootstrap
-   :prog: sierra-cli
+   :prog: sierra
 
 Multi-stage Options
 -------------------

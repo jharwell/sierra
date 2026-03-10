@@ -4,7 +4,7 @@
 Installing SIERRA
 =================
 
-This page covers everything you need before running ``sierra-cli`` for the
+This page covers everything you need before running ``sierra`` for the
 first time.
 
 .. _getting-started/installation/os:
@@ -88,14 +88,14 @@ Installing SIERRA
 
    pip3 install sierra-research
 
-This installs the ``sierra-cli`` executable and all Python dependencies. After
+This installs the ``sierra`` executable and all Python dependencies. After
 installation, verify it works:
 
 .. code-block:: bash
 
-   sierra-cli --help
+   sierra --help
 
-Man pages are also installed and can be browsed offline via ``man sierra-cli``,
+Man pages are also installed and can be browsed offline via ``man sierra``,
 ``man sierra-usage``, ``man sierra-plugins``, ``man sierra-examples``, and ``man
 sierra-glossary``. See :ref:`reference/cli` for the full CLI reference in these
 docs.
@@ -115,7 +115,7 @@ docs.
 
    - ``sierra_timekeeper`` — Tracks elapsed time for an :term:`Experimental Run`
      and terminates it once the duration specified by
-     :ref:`--exp-setup<src/plugins/engine/index:sierra-cli---exp-setup>` has
+     :ref:`--exp-setup<src/plugins/engine/index:sierra---exp-setup>` has
      elapsed. ROS has no built-in time-bounded execution mechanism; this node
      fills that gap. SIERRA automatically inserts the corresponding XML tag into
      each ``.launch`` file it generates.

@@ -63,7 +63,7 @@ Common HPC Cmdline Options
 .. sphinx_argparse_cli::
    :module: sierra.plugins.execenv.hpc.cmdline
    :func: sphinx_cmdline_stage2
-   :prog: sierra-cli
+   :prog: sierra
 
 Prefect-based Plugins
 =====================

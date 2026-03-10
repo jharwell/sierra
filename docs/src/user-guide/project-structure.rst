@@ -130,7 +130,7 @@ Where Outputs Go
 
 SIERRA writes nothing into the project directory. All outputs — generated
 experiment inputs, raw run outputs, statistics, graphs — go under
-:ref:`--sierra-root<src/reference/cli:sierra-cli---sierra-root>`, organized by
+:ref:`--sierra-root<src/reference/cli:sierra---sierra-root>`, organized by
 project, controller, scenario, and batch criteria. See
 :ref:`concepts/run-time-tree` for the full output directory structure.
 

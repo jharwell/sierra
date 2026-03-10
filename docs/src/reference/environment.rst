@@ -26,7 +26,7 @@ Core
 
    Used to specify the path to a file to put cmdline args in to reduce the size
    of cmdlines. Can also be passed directly via
-   :ref:`--rcfile<src/reference/cli:sierra-cli---rcfile>`. Priority:
+   :ref:`--rcfile<src/reference/cli:sierra---rcfile>`. Priority:
 
    #. ``--rcfile``
 
@@ -62,7 +62,7 @@ Core
    content/formatting requirements.
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
-   defined and :ref:`--nodefile<src/reference/cli:sierra-cli---nodefile>` is not
+   defined and :ref:`--nodefile<src/reference/cli:sierra---nodefile>` is not
    1passed SIERRA will throw an error.
 
 
@@ -74,7 +74,7 @@ Plugins
    Must be set to contain the library directory where you installed/built ARGoS,
    as well as the library directory for your project ``.so``. Checked to be
    non-empty before running stage 2 for all
-   :ref:`--execenv<src/reference/cli:sierra-cli---execenv>` plugins. SIERRA does *not* modify this
+   :ref:`--execenv<src/reference/cli:sierra---execenv>` plugins. SIERRA does *not* modify this
    variable, so it needs to be setup properly prior to invoking SIERRA (i.e.,
    the directory containing the :term:`Project` ``.so`` file needs to be on
    it). SIERRA can't know, in general, where the location of the C++ code

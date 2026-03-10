@@ -53,7 +53,7 @@ like this in your template input file:
 
    See also :ref:`tutorials/project/config`.
 
-#. :ref:`--project<src/reference/cli:sierra-cli---project>` matches the name of
+#. :ref:`--project<src/reference/cli:sierra---project>` matches the name of
    the C++ library for the project (i.e. ``--project.so``), unless
    ``library_name`` is present in ``sierra.main.run`` YAML config. See
    :ref:`tutorials/project/config` for details. For example if you pass
@@ -111,7 +111,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.engine.argos.cmdline
    :func: sphinx_cmdline_stage1
-   :prog: sierra-cli
+   :prog: sierra
 
 
 Environment Variables
@@ -123,7 +123,7 @@ Execution Environments
 ======================
 
 The # threads per :term:`experimental run <Experimental Run>` is defined with
-:ref:`--physics-n-engines<src/plugins/engine/argos/index:sierra-cli---physics-n-engines>`,
+:ref:`--physics-n-engines<src/plugins/engine/argos/index:sierra---physics-n-engines>`,
 and that option is required for the ``--execenv=hpc.local`` environment during
 stage 1.
 
@@ -135,7 +135,7 @@ uses to seed each experiment. :term:`Project` code should use this mechanism or
 a similar random seed generator manager seeded by the same value so that
 experiments can be reproduced exactly. By default SIERRA does not overwrite its
 generated random seeds for each experiment once generated; you can override with
-:ref:`--no-preserve-seeds<src/reference/cli:sierra-cli---preserve-seeds>`.
+:ref:`--no-preserve-seeds<src/reference/cli:sierra---preserve-seeds>`.
 
 Visual Capture and Rendering
 ============================
@@ -150,20 +150,20 @@ To use:
 - Install :program:`Xvfb` so that it can installed/can be found by the shell
   during stage 2.
 
-- Pass :ref:`--engine-vc<src/reference/cli:sierra-cli---engine-vc>` during
+- Pass :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>` during
   stage 2. This will slow ARGoS down a LOT, so if you use it,
-  :ref:`--n-runs<src/reference/cli:sierra-cli---n-runs>` should probably be low,
+  :ref:`--n-runs<src/reference/cli:sierra---n-runs>` should probably be low,
   unless you have gobs of computing power available. ARGoS will output captured
   frames to ``frames/`` in each experimental run output directory.
 
-- Pass :ref:`--engine-vc<src/reference/cli:sierra-cli---engine-vc>` during stage
+- Pass :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>` during stage
   4, which causes frames captured during stage 2 to be stitched together into a
   unique video file using :program:`ffmpeg` (precise command configurable via
-  :ref:`--render-cmd-opts<src/plugins/prod/render:sierra-cli---render-cmd-opts>`),
+  :ref:`--render-cmd-opts<src/plugins/prod/render:sierra---render-cmd-opts>`),
   and output under ``<batch_root>/videos/<exp>``.
 
-.. NOTE:: During stage 1 :ref:`--engine-vc<src/reference/cli:sierra-cli---engine-vc>` causes the
+.. NOTE:: During stage 1 :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>` causes the
           ARGoS Qt/OpenGL ``<visualization>`` subtree to be added to the
-          :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` when generating
+          :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` when generating
           experimental inputs; it is removed otherwise. If ``<visualization>``
           already exists, it is removed and re-created.

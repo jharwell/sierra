@@ -1,7 +1,7 @@
 .. SPDX-License-Identifier:  MIT
 
 The provided
-:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>` will
+:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` will
 look like this when populated within :ref:`concepts/run-time-tree`:
 
 .. code-block:: XML

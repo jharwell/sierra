@@ -13,7 +13,7 @@ paths if you work somewhere else.
 .. note::
 
    Complete :doc:`installation` before starting here. The steps below assume
-   ``sierra-cli`` is already on your ``PATH``.
+   ``sierra`` is already on your ``PATH``.
 
 Step 1: Install Engine-Specific Dependencies
 =============================================
@@ -178,7 +178,7 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. code-block:: bash
 
-         sierra-cli \
+         sierra \
            --sierra-root=$HOME/research/exp \
            --expdef-template=$HOME/research/sierra-sample-project/exp/argos/template.argos \
            --n-runs=4 \
@@ -204,9 +204,9 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. NOTE::
 
-         :ref:`--with-robot-rab<src/plugins/engine/argos/index:sierra-cli---with-robot-rab>`
+         :ref:`--with-robot-rab<src/plugins/engine/argos/index:sierra---with-robot-rab>`
          :ref:and
-         :ref:`--with-robot-leds<src/plugins/engine/argos/index:sierra-cli---with-robot-leds>`
+         :ref:`--with-robot-leds<src/plugins/engine/argos/index:sierra---with-robot-leds>`
          :ref:are required here because the sample project's controllers use
          :ref:those sensor/actuator types. SIERRA strips unused sensor and
          :ref:actuator XML tags by default to reduce ARGoS's memory footprint;
@@ -216,7 +216,7 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. code-block:: bash
 
-         sierra-cli \
+         sierra \
            --sierra-root=$HOME/research/exp \
            --expdef-template=$HOME/research/sierra-sample-project/exp/ros1gazebo/turtlebot3_house.launch \
            --n-runs=4 \
@@ -241,7 +241,7 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. code-block:: bash
 
-         sierra-cli \
+         sierra \
            --sierra-root=$HOME/research/exp \
            --expdef-template=$HOME/research/sierra-sample-project/exp/jsonsim/template.json \
            --n-runs=4 \
@@ -260,7 +260,7 @@ sample project to ``$HOME/research``; adjust if needed.
 
       .. code-block:: bash
 
-         sierra-cli \
+         sierra \
            --sierra-root=$HOME/research/exp \
            --expdef-template=$HOME/research/sierra-sample-project/exp/yamlsim/template.yaml \
            --n-runs=4 \

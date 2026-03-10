@@ -6,7 +6,7 @@ Graph Generation
 
 This plugin generates graphs using holoviews during stage 4; any graph type
 supported by a holoviews backend can be selected with
-:ref:`--graphs-backend<src/plugins/prod/graphs:sierra-cli---graphs-backend>`.
+:ref:`--graphs-backend<src/plugins/prod/graphs:sierra---graphs-backend>`.
 Since this plugin uses holoviews to do all the heavy lifting, you may wonder
 "Why wrap holoviews backends at all?" A wrapper of a wrapper would seem
 gratuitous at first glance. The reason is that SIERRA's wrapping here enables
@@ -61,7 +61,7 @@ types of analyses:
   from each :term:`Experiment` in a :term:`Batch Experiment`.
 
 Within each of these logical graph types, any
-:ref:`--graphs-backend<src/plugins/prod/graphs:sierra-cli---graphs-backend>` can
+:ref:`--graphs-backend<src/plugins/prod/graphs:sierra---graphs-backend>` can
 be specified to generate the actual graphs; overrideable on a per-graph
 basis. This makes generating mixed e.g. static graphs for inclusion in
 presentations and interactive graphs for inclusion in webpages easy.
@@ -147,7 +147,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.prod.graphs.cmdline
    :func: sphinx_cmdline_multistage
-   :prog: sierra-cli
+   :prog: sierra
 
 Configuration
 =============
@@ -278,7 +278,7 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
 
       ::
 
-         sierra-cli \
+         sierra \
            --sierra-root=~/test \
            --controller=foraging.footbot_foraging \
            --engine=engine.argos \
@@ -480,7 +480,7 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
 
       ::
 
-         sierra-cli \
+         sierra \
             --sierra-root=~/test \
             --controller=default.default \
             --engine=plugins.yamlsim \

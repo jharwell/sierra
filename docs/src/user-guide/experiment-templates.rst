@@ -7,7 +7,7 @@ Experiment Templates
 ====================
 
 The experiment template---passed via
-:ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`---is
+:ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`---is
 the starting point for all experiment generation. Stage 1 reads it once, applies
 modifications from your batch criteria and controller configuration, and writes
 one input file per experimental run into the batch input tree. This page
@@ -25,7 +25,7 @@ criteria and ``controllers.yaml`` to the template, substitutes tokens, then
 writes one copy per experimental run with a unique random seed injected. Each
 copy is named ``<template-stem>_run<N>`` and placed in the experiment's input
 directory under :ref:`--sierra-root
-<src/reference/cli:sierra-cli---sierra-root>`. Stage 1 also writes a GNU
+<src/reference/cli:sierra---sierra-root>`. Stage 1 also writes a GNU
 parallel command file for stage 2 to consume. See :ref:`concepts/run-time-tree`
 for the full directory layout.
 
@@ -43,7 +43,7 @@ plugin's random seed configuration — you do not need to add a token or
 placeholder for it. SIERRA generates new seeds for each batch by
 default; if you need to regenerate a batch with the same seed sequence
 (for debugging or exact replication), pass :ref:`--exp-overwrite
-<src/reference/cli:sierra-cli---exp-overwrite>`.
+<src/reference/cli:sierra---exp-overwrite>`.
 
 The ``random_seed`` attribute in the template file for the :xref:`ARGoS sample
 project <SIERRA_SAMPLE_PROJECT>` (``framework/experiment/@random_seed``) is an

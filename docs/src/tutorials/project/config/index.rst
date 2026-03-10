@@ -20,7 +20,7 @@ See :ref:`plugins/proc/collate` for `config/collate.yaml`.
           ``controllers.yaml``. This is by design. The specified
           --scenario more often than not has a detailed/complex set of changes
           to make to an
-          :ref:`--expdef-template<src/reference/cli:sierra-cli---expdef-template>`
+          :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`
           which is not well-suited to a declarative paradigm, whereas the
           specified ``--controller`` more often than not has a simple set of
           changes to make to an ``--expdef-template``. Put another way,

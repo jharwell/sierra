@@ -146,7 +146,7 @@ For real-robot engines, the execution topology during a single run is:
 
 - **Host machine** — the machine SIERRA is invoked from. Acts as the ROS master
   (unless
-  :ref:`--no-master-node<src/plugins/engine/index:sierra-cli---no-master-node>`
+  :ref:`--no-master-node<src/plugins/engine/index:sierra---no-master-node>`
   is passed). SIERRA coordinates the entire run from here.
 
 - **Robot nodes** — each robot listed in the nodefile receives its controller
@@ -154,7 +154,7 @@ For real-robot engines, the execution topology during a single run is:
   passed to each hook.
 
 - **Inter-run pause** — after all subprocesses for a run complete, SIERRA waits
-  :ref:`--exec-inter-run-pause<src/plugins/engine/ros1robot:sierra-cli---exec-inter-run-pause>`
+  :ref:`--exec-inter-run-pause<src/plugins/engine/ros1robot:sierra---exec-inter-run-pause>`
   seconds before starting the next run, giving time to physically reset robot
   positions and the environment.
 
@@ -165,7 +165,7 @@ The paradigm determines the *structure* of cmdfiles; the execution environment
 determines *how many lines* from those cmdfiles execute simultaneously. The
 relevant controls are:
 
-- :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra-cli---exec-jobs-per-node>` — explicit
+- :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra---exec-jobs-per-node>` — explicit
   override of concurrent jobs per node.  This is the most direct control if you
   know how many things you want running at once.
 

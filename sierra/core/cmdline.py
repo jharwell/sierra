@@ -37,9 +37,9 @@ class ArgumentParser(argparse.ArgumentParser):
     """
 
     HELP_MSG = (
-        "Usage:\n\nsierra-cli [-v | --version] [OPTION]...\n\n"
+        "Usage:\n\nsierra [-v | --version] [OPTION]...\n\n"
         "What command line options SIERRA accepts depends on the loaded\n"
-        "plugin set. 'man sierra-cli' will give you the full set of options\n"
+        "plugin set. 'man sierra' will give you the full set of options\n"
         "that comes with SIERRA.\n\n"
     )
 
@@ -98,13 +98,9 @@ class BootstrapCmdline(BaseCmdline):
     def __init__(self) -> None:
         super().__init__()
 
-        self.parser = ArgumentParser(add_help=True, allow_abbrev=False)
+        self.parser = ArgumentParser(prog="sierra", add_help=True, allow_abbrev=False)
 
-        bootstrap = self.parser.add_argument_group(
-            "Bootstrap options", "Bare-bones options for bootstrapping SIERRA"
-        )
-
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--project",
             help="""
                  Specify which :term:`Project` to load.
@@ -112,7 +108,7 @@ class BootstrapCmdline(BaseCmdline):
             + self.stage_usage_doc([1, 2, 3, 4, 5]),
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--version",
             "-v",
             help="""
@@ -121,7 +117,7 @@ class BootstrapCmdline(BaseCmdline):
             action="store_true",
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--log-level",
             choices=["ERROR", "INFO", "WARNING", "DEBUG", "TRACE"],
             help="""
@@ -131,7 +127,7 @@ class BootstrapCmdline(BaseCmdline):
             default="INFO",
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--engine",
             help="""
                  This argument defines the :term:`Engine` you want to run
@@ -146,35 +142,35 @@ class BootstrapCmdline(BaseCmdline):
                  you would expect for using path names to address python
                  packages).  The engines which come with SIERRA are:
 
-                     - ``engine.argos`` - This directs SIERRA to run experiments
-                       using the :term:`ARGoS` simulator.  Selecting this engine
-                       assumes your code has been developed and configured for
-                       ARGoS.
+                 - ``engine.argos`` - This directs SIERRA to run experiments
+                   using the :term:`ARGoS` simulator.  Selecting this engine
+                   assumes your code has been developed and configured for
+                   ARGoS.
 
-                     - ``engine.ros1gazebo`` - This directs SIERRA to run
-                       experiments using the :term:`Gazebo` simulator and
-                       :term:`ROS1`.  Selecting this engine assumes your code
-                       has been developed and configured for Gazebo and ROS1.
+                 - ``engine.ros1gazebo`` - This directs SIERRA to run
+                   experiments using the :term:`Gazebo` simulator and
+                   :term:`ROS1`.  Selecting this engine assumes your code
+                   has been developed and configured for Gazebo and ROS1.
 
-                     - ``engine.ros1robot`` - This directs SIERRA to run
-                       experiments using :term:`ROS1` on a real robot of your
-                       choosing.  Selecting this engine assumes your code has
-                       been developed and configured for ROS1.
+                 - ``engine.ros1robot`` - This directs SIERRA to run
+                   experiments using :term:`ROS1` on a real robot of your
+                   choosing.  Selecting this engine assumes your code has
+                   been developed and configured for ROS1.
                  """,
             default="engine.argos",
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--skip-pkg-checks",
             help="""
                  Skip the usual startup package checks.  Only do this if you are
                  SURE you will never use the SIERRA functionality which requires
-                 packages you don\'t have installed/can\'t install.
+                 packages you do not have installed or cannot install.
                  """,
             action="store_true",
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--execenv",
             help="""
                  This argument defines `how` experiments are going to be run,
@@ -186,41 +182,41 @@ class BootstrapCmdline(BaseCmdline):
                  packages).  The execution environments which come with SIERRA
                  are:
 
-                     - ``hpc.local`` - This directs SIERRA to run experiments on
-                       the local machine.  See :ref:`plugins/execenv/hpc/local`
-                       for a detailed description.
+                 - ``hpc.local`` - This directs SIERRA to run experiments on
+                   the local machine.  See :ref:`plugins/execenv/hpc/local`
+                   for a detailed description.
 
-                     - ``hpc.pbs`` - The directs SIERRA to run experiments
-                       spread across multiple allocated nodes in an HPC
-                       computing environment managed by TORQUE-PBS.  See
-                       :ref:`plugins/execenv/hpc/pbs` for a detailed
-                       description.
+                 - ``hpc.pbs`` - The directs SIERRA to run experiments
+                   spread across multiple allocated nodes in an HPC
+                   computing environment managed by TORQUE-PBS.  See
+                   :ref:`plugins/execenv/hpc/pbs` for a detailed
+                   description.
 
-                     - ``hpc.slurm`` - The directs SIERRA to run experiments
-                       spread across multiple allocated nodes in an HPC
-                       computing environment managed by SLURM.  See
-                       :ref:`plugins/execenv/hpc/slurm` for a detailed
-                       description.
+                 - ``hpc.slurm`` - The directs SIERRA to run experiments
+                   spread across multiple allocated nodes in an HPC
+                   computing environment managed by SLURM.  See
+                   :ref:`plugins/execenv/hpc/slurm` for a detailed
+                   description.
 
-                     - ``hpc.adhoc`` - This will direct SIERRA to run
-                       experiments on an ad-hoc network of computers.  See
-                       :ref:`plugins/execenv/hpc/adhoc` for a detailed
-                       description.
+                 - ``hpc.adhoc`` - This will direct SIERRA to run
+                   experiments on an ad-hoc network of computers.  See
+                   :ref:`plugins/execenv/hpc/adhoc` for a detailed
+                   description.
 
-                     - ``prefectserver.local`` - This will direct SIERRA to run
-                       experiments locally using a spun-up :term:`Prefect` job
-                       scheduler/server.  See
-                       :ref:`plugins/execenv/prefectserver/local` for a
-                       detailed description.
+                 - ``prefectserver.local`` - This will direct SIERRA to run
+                   experiments locally using a spun-up :term:`Prefect` job
+                   scheduler/server.  See
+                   :ref:`plugins/execenv/prefectserver/local` for a
+                   detailed description.
 
-                     - ``prefectserver.dockerremote`` - This will direct SIERRA
-                       to run experiments remote using a :term:`Prefect` job
-                       scheduler/server in docker containers.  See
-                       :ref:`plugins/execenv/prefectserver/dockerremote` for a
-                       detailed description.
+                 - ``prefectserver.dockerremote`` - This will direct SIERRA
+                   to run experiments remote using a :term:`Prefect` job
+                   scheduler/server in docker containers.  See
+                   :ref:`plugins/execenv/prefectserver/dockerremote` for a
+                   detailed description.
 
-                     - ``robot.turtlebot3`` - This will direct SIERRA to run
-                       experiments on real Turtlebots.
+                 - ``robot.turtlebot3`` - This will direct SIERRA to run
+                   experiments on real Turtlebots.
 
                  Not all engines support all execution environments.
                  """
@@ -228,7 +224,7 @@ class BootstrapCmdline(BaseCmdline):
             default="hpc.local",
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--expdef",
             help="""
                  Specify the experiment definition format, so that SIERRA can
@@ -238,18 +234,18 @@ class BootstrapCmdline(BaseCmdline):
                  :envvar:`SIERRA_PLUGIN_PATH` can be used, but the ones that
                  come with SIERRA are:
 
-                     - ``expdef.xml`` - Experimental definitions are created
-                       from XML files.  This causes ``--expdef-template`` to be
-                       parsed as XML.
+                 - ``expdef.xml`` - Experimental definitions are created
+                   from XML files.  This causes ``--expdef-template`` to be
+                   parsed as XML.
 
-                     - ``expdef.json`` - Experimental definitions are created
-                       from json files.  This causes ``--expdef-template`` to be
-                       parsed as JSON.
+                 - ``expdef.json`` - Experimental definitions are created
+                   from json files.  This causes ``--expdef-template`` to be
+                   parsed as JSON.
                  """
             + self.stage_usage_doc([1, 4, 5]),
             default="expdef.xml",
         )
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--storage",
             help="""
                  Specify the storage medium for :term:`Experimental Run`
@@ -257,11 +253,11 @@ class BootstrapCmdline(BaseCmdline):
                  read them.  Any plugin on :envvar:`SIERRA_PLUGIN_PATH`, but the
                  ones that come with SIERRA are:
 
-                     - ``storage.csv`` - Experimental run outputs are stored in
-                       a per-run directory as one or more CSV files.
+                 - ``storage.csv`` - Experimental run outputs are stored in
+                   a per-run directory as one or more CSV files.
 
-                     - ``storage.arrow`` - Experimental run outputs are stored
-                       in a per-run directory as one or more apache arrow files.
+                 - ``storage.arrow`` - Experimental run outputs are stored
+                   in a per-run directory as one or more apache arrow files.
 
                  Regardless of the value of this option, SIERRA always generates
                  CSV files as it runs and averages outputs, generates graphs,
@@ -271,7 +267,7 @@ class BootstrapCmdline(BaseCmdline):
             default="storage.csv",
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--proc",
             help="""
                  Specify the set of plugins to run during stage 3 for data
@@ -301,7 +297,7 @@ class BootstrapCmdline(BaseCmdline):
             default=["proc.statistics", "proc.collate"],
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--prod",
             help="""
                  Specify the set of plugins to run during stage 4 for
@@ -310,18 +306,18 @@ class BootstrapCmdline(BaseCmdline):
                  plugin on :envvar:`SIERRA_PLUGIN_PATH` can be used, but the
                  ones that come with SIERRA are:
 
-                     - ``prod.graphs`` - Generate graphs :term:`Processed Output
-                       Data` files.
+                 - ``prod.graphs`` - Generate graphs :term:`Processed Output
+                   Data` files.
 
-                     - ``prod.render`` - Render previously :term:`imagized
-                       <Imagize>` files into videos.
+                 - ``prod.render`` - Render previously :term:`imagized
+                   <Imagize>` files into videos.
                  """
             + self.stage_usage_doc([4]),
             nargs="+",
             default=["prod.graphs"],
         )
 
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--compare",
             help="""
                  Specify the set of plugins to run during stage 5 for
@@ -330,14 +326,14 @@ class BootstrapCmdline(BaseCmdline):
                  plugin on :envvar:`SIERRA_PLUGIN_PATH` can be used, but the
                  ones that come with SIERRA are:
 
-                     - ``compare.graphs`` - Combine previously generated graphs
-                       onto a single plot.
+                 - ``compare.graphs`` - Combine previously generated graphs
+                   onto a single plot.
                  """
             + self.stage_usage_doc([5]),
             nargs="+",
             default=["compare.graphs"],
         )
-        bootstrap.add_argument(
+        self.parser.add_argument(
             "--rcfile",
             help="""
                  Specify the rcfile SIERRA should read additional cmdline
@@ -365,11 +361,11 @@ class CoreCmdline(BaseCmdline):
         """
         if parents is not None:
             self.parser = ArgumentParser(
-                prog="sierra-cli", parents=parents, add_help=False, allow_abbrev=False
+                prog="sierra", parents=parents, add_help=False, allow_abbrev=False
             )
         else:
             self.parser = ArgumentParser(
-                prog="sierra-cli", add_help=False, allow_abbrev=False
+                prog="sierra", add_help=False, allow_abbrev=False
             )
 
         self.multistage = self.parser.add_argument_group(
@@ -558,23 +554,23 @@ class CoreCmdline(BaseCmdline):
             help="""
                  Define which stages of the experimental pipeline to run:
 
-                     - Stage1 - Generate the experiment definition from the
-                       template input file, batch criteria, and other command
-                       line options.  Part of default pipeline.
+                 - Stage1 - Generate the experiment definition from the
+                   template input file, batch criteria, and other command
+                   line options.  Part of default pipeline.
 
-                     - Stage2 - Run a previously generated experiment.  Part of
-                       default pipeline.
+                 - Stage2 - Run a previously generated experiment.  Part of
+                   default pipeline.
 
-                     - Stage3 - Post-process experimental results after running
-                       the batch experiment; some parts of this can be done in
-                       parallel.  Part of default pipeline.
+                 - Stage3 - Post-process experimental results after running
+                   the batch experiment; some parts of this can be done in
+                   parallel.  Part of default pipeline.
 
-                     - Stage4 - Perform deliverable/product generation after
-                       processing results for a batch experiment, which can
-                       include shiny graphs and videos.  Part of default
-                       pipeline.
+                 - Stage4 - Perform deliverable/product generation after
+                   processing results for a batch experiment, which can
+                   include shiny graphs and videos.  Part of default
+                   pipeline.
 
-                     - Stage5 - Compare generated products.
+                 - Stage5 - Compare generated products.
                  """,
             type=int,
             nargs="*",
@@ -744,20 +740,20 @@ class CoreCmdline(BaseCmdline):
                  provides the following options when processing dataframes
                  during stage {3, 4} to to homogenize them:
 
-                     - ``none`` - Don't do anything.  This may or may not
-                       produce crashes during stage 4, depending on what you are
-                       doing.
+                 - ``none`` - Don't do anything.  This may or may not
+                   produce crashes during stage 4, depending on what you are
+                   doing.
 
-                     - ``pad`` - Project last valid value in columns which are
-                       too short down the column to make it match those which
-                       are longer.
+                 - ``pad`` - Project last valid value in columns which are
+                   too short down the column to make it match those which
+                   are longer.
 
                  Note that this may result in invalid data/graphs if the filled
                  columns are intervallic, interval average, or cumulative
                  average data.  If the data is a cumulative count of something,
                  then this policy will have no ill effects.
 
-                     - ``zero`` - Same as ``pad``, but always fill with zeroes.
+                 - ``zero`` - Same as ``pad``, but always fill with zeroes.
 
                  Homogenization is performed just before writing dataframes to
                  the specified storage medium.  Useful with real robot

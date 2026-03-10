@@ -16,7 +16,7 @@ Log Levels
 ==========
 
 SIERRA's verbosity is controlled by :ref:`--log-level
-<src/reference/cli:sierra-cli---log-level>`. Levels from least to most verbose:
+<src/reference/cli:sierra---log-level>`. Levels from least to most verbose:
 
 ``ERROR``
    Only fatal errors. Use when you want to suppress all informational
@@ -45,8 +45,8 @@ SIERRA's verbosity is controlled by :ref:`--log-level
 
 .. code-block:: bash
 
-   sierra-cli ... --log-level DEBUG
-   sierra-cli ... --log-level TRACE
+   sierra ... --log-level DEBUG
+   sierra ... --log-level TRACE
 
 .. tip::
 
@@ -71,20 +71,20 @@ Stage Failure Patterns
    runs produced output files with the same number of rows and columns.
    SIERRA relies on uniform CSV shapes for statistics generation and does
    not validate them by default. Pass :ref:`--df-verify
-   <src/reference/cli:sierra-cli---df-verify>` to catch this explicitly:
+   <src/reference/cli:sierra---df-verify>` to catch this explicitly:
 
    .. code-block:: bash
 
-      sierra-cli ... --pipeline 3 --df-verify
+      sierra ... --pipeline 3 --df-verify
 
    If verification fails, examine which runs produced shorter outputs and
    why. For real robot experiments where minor timing differences are expected,
-   :ref:`--df-homogenize <src/reference/cli:sierra-cli---df-homogenize>` can pad
+   :ref:`--df-homogenize <src/reference/cli:sierra---df-homogenize>` can pad
    or zero-fill short columns rather than failing:
 
    .. code-block:: bash
 
-      sierra-cli ... --pipeline 3 --df-homogenize pad
+      sierra ... --pipeline 3 --df-homogenize pad
 
    Use ``pad`` only if the filled columns represent cumulative counts or
    similarly stable data. For intervallic or averaged data, padding
@@ -98,7 +98,7 @@ Stage Failure Patterns
 
    .. code-block:: bash
 
-      sierra-cli ... --pipeline 4 --log-level TRACE
+      sierra ... --pipeline 4 --log-level TRACE
 
    Look for lines showing which ``src_stem`` values are being searched
    and which CSV files are present. A common cause is a trailing
@@ -152,7 +152,7 @@ To verify the plugin search path SIERRA is actually using, run with
 
 .. code-block:: bash
 
-   sierra-cli ... --log-level DEBUG --pipeline 1 2>&1 | grep "plugins in\|sys.path\|Updated"
+   sierra ... --log-level DEBUG --pipeline 1 2>&1 | grep "plugins in\|sys.path\|Updated"
 
 .. _user-guide/debugging-and-logging/minimal-batch:
 
@@ -165,7 +165,7 @@ Use ``builtin.MonteCarlo.C1`` to produce a single experiment and
 
 .. code-block:: bash
 
-   sierra-cli                                   \
+   sierra                                   \
      --project        myproject                 \
      --engine         engine.argos              \
      --expdef-template exp/template.argos       \

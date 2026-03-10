@@ -163,7 +163,7 @@ SIERRA.
 
 #. Try out your new cmdline! SIERRA should pick it up automatically. For
    example, if you have created a cmdline for an
-   :ref:`--engine<src/reference/cli:sierra-cli---engine>` plugin available as
+   :ref:`--engine<src/reference/cli:sierra---engine>` plugin available as
    ``starfleet.enterprise``, if you set ``--log-level=DEBUG`` you should see
    something like this in SIERRA's output::
 
@@ -198,7 +198,7 @@ SIERRA.
      .. sphinx_argparse_cli::
         :module: path.to.plugin.cmdline
         :func: sphinx_cmdline_multistage
-        :prog: sierra-cli
+        :prog: sierra
 
    in your documentation to generate some nice docs. This step is optional but
    recommended.

@@ -55,7 +55,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.proc.pseudostats.cmdline
    :func: sphinx_cmdline_multistage
-   :prog: sierra-cli
+   :prog: sierra
 
 .. WARNING:: If you use ``--dataop=move``, all of your experimental data will be
              moved from its original output directories to

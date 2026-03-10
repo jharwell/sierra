@@ -92,7 +92,7 @@ anything in stages {1,2} without explicit permission, because losing those
 outputs in a later stage would be irreversible. Files generated in stages
 {3,4,5} are derived from stage {1,2} outputs and can be safely regenerated, so
 SIERRA will overwrite them freely. To override the protection on stages {1,2},
-pass :ref:`--exp-overwrite<src/reference/cli:sierra-cli---exp-overwrite>`.
+pass :ref:`--exp-overwrite<src/reference/cli:sierra---exp-overwrite>`.
 
 Swiss Army Pipeline
 ===================
@@ -123,8 +123,8 @@ Separation of Data Types
 
 Statistics generated during stage 3 are stored in *separate* files from the
 underlying data, even when the chosen
-:ref:`--storage<src/reference/cli:sierra-cli---storage>` or
-:ref:`--prod<src/reference/cli:sierra-cli---prod>` plugin could accommodate them
+:ref:`--storage<src/reference/cli:sierra---storage>` or
+:ref:`--prod<src/reference/cli:sierra---prod>` plugin could accommodate them
 in a single file. The reasons are:
 
 - **Readability.** For 2D and higher-dimensional data, separating statistics

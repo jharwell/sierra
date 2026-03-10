@@ -20,7 +20,7 @@ the arena at the start of simulation across :term:`Experimental Runs
 be specified as part of the ``--scenario`` argument. If you don't specify
 dimensions as part of the ``--scenario`` argument, then you need to supply a
 list of valid robot positions via
-:ref:`--robot-positions<src/plugins/engine/ros1gazebo/index:sierra-cli---robot-positions>`
+:ref:`--robot-positions<src/plugins/engine/ros1gazebo/index:sierra---robot-positions>`
 which SIERRA will choose from randomly for each robot.
 
 Requirements
@@ -59,7 +59,7 @@ Cmdline Interface
 .. sphinx_argparse_cli::
    :module: sierra.plugins.engine.ros1gazebo.cmdline
    :func: sphinx_cmdline_stage1
-   :prog: sierra-cli
+   :prog: sierra
 
 
 Environment Variables
@@ -78,4 +78,4 @@ provides random seeds to each :term:`Experimental Run` which :term:`Project`
 code should use to manage random number generation, if needed, to maximize
 reproducability.  By default SIERRA does not overwrite its generated random
 seeds for each experiment once generated; you can override with
-:ref:`--no-preserve-seeds<src/reference/cli:sierra-cli---preserve-seeds>`.
+:ref:`--no-preserve-seeds<src/reference/cli:sierra---preserve-seeds>`.
