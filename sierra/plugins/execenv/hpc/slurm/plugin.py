@@ -12,7 +12,6 @@ import pathlib
 import os
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
@@ -59,8 +58,7 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     """Generate the cmd to correctly invoke GNU Parallel on SLURM HPC."""
 
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:

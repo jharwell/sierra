@@ -136,7 +136,6 @@ math_eqref_format = "Eq. {number}"
 nitpick_ignore = [
     ("py:class", "argparse"),
     ("py:class", "module"),
-    ("py:class", "implements.Interface"),
     ("py:class", "xml.etree.ElementTree"),
     ("py:class", "multiprocessing.context.BaseContext.JoinableQueue"),
     ("py:class", "multiprocessing.context.BaseContext.Queue"),
@@ -255,7 +254,8 @@ html_theme_options = {
     "show_toc_level": 2,
     "header_links_before_dropdown": 8,
     "logo": {
-        "image_light": "figures/logo-only-small-with-name.png",
+        "image_light": "_static/logo-only-small-with-name.png",
+        "image_dark": "_static/logo-only-small-with-name-dark.png",
         "text": f"{version}",
     },
 }
@@ -362,5 +362,4 @@ intersphinx_mapping = {
     # Posted by bzm3r
     # Retrieved 2026-03-09, License - CC BY-SA 4.0
     "polars": ("https://docs.pola.rs/api/python/stable", None),
-    "implements": ("https://implements.readthedocs.io/en/latest/", None),
 }

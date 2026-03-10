@@ -13,7 +13,6 @@ import typing as tp
 import logging
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
@@ -22,8 +21,7 @@ from sierra.core.experiment import definition
 from sierra.core import types, config
 
 
-@implements.implements(IBaseVariable)
-class PhysicsEngines:
+class PhysicsEngines(IBaseVariable):
     """Defines 2D/3D physics engines within ARGoS and how they are laid out.
 
     Attributes:

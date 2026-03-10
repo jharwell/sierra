@@ -10,7 +10,6 @@ import xml.etree.ElementTree as ET
 import typing as tp
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.experiment import definition
@@ -152,8 +151,7 @@ def root_querypath() -> str:
     return "."
 
 
-@implements.implements(definition.BaseExpDef)
-class ExpDef:
+class ExpDef(definition.BaseExpDef):
     """Read, write, and modify parsed XML files into experiment definitions."""
 
     def __init__(

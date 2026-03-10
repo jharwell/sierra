@@ -10,7 +10,6 @@ ARGoS headless QT rendering configuration.
 import typing as tp
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
@@ -21,8 +20,7 @@ from sierra.core import types
 import sierra.plugins.engine.argos.variables.exp_setup as exp
 
 
-@implements.implements(IBaseVariable)
-class ARGoSQTHeadlessRendering:
+class ARGoSQTHeadlessRendering(IBaseVariable):
     """
     Sets up ARGoS headless rendering with QT.
 

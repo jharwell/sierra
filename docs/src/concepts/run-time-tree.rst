@@ -220,7 +220,7 @@ The meaning of each directory is discussed below.
     specific experiments to better plan/schedule time on HPC clusters, etc.
 
 .. NOTE:: The above tree assumes that the :ref:`parallelism paradigm
-          <tutorials/plugin/engine/config>` is ``per-exp``; if you select a
+          <tutorials/plugins/engine/config>` is ``per-exp``; if you select a
           different paradigm, then the structure will look slightly different.
 
 Why Such a Deeply Nested Structure?

@@ -71,7 +71,7 @@ Creating The Cmdline Interface
           any modifications/additions.
           """
 
-.. _tutorials/plugin/engine/config:
+.. _tutorials/plugins/engine/config:
 
 Configuring The Experimental Environment
 ========================================
@@ -101,7 +101,7 @@ function.
 
 See :ref:`arch/execution-model` for more info.
 
-.. _tutorials/plugin/engine/exp:
+.. _tutorials/plugins/engine/exp:
 
 Generating Experiments
 ======================
@@ -295,7 +295,7 @@ In ``generators/engine.py``, you may define the following functions:
          - Post-batch cleanup cmds run after all experiments have been executed.
 
          This generator corresponds to ``per-batch`` parallelism; see
-         :ref:`tutorials/plugin/engine/config` for details.
+         :ref:`tutorials/plugins/engine/config` for details.
 
          .. code-block:: python
 
@@ -306,8 +306,7 @@ In ``generators/engine.py``, you may define the following functions:
             from sierra.core.experiment import bindings
             from sierra.core import types, utils
 
-            @implements.implements(bindings.IBatchRunShellCmdsGenerator)
-            class BatchShellCmdsGenerator():
+            class BatchShellCmdsGenerator(bindings.IBatchRunShellCmdsGenerator):
                 def __init__(self,
                              cmdopts: types.Cmdopts,
                              exp_num: int) -> None:
@@ -339,7 +338,7 @@ In ``generators/engine.py``, you may define the following functions:
                         need to define it.
 
          This generator corresponds to ``per-exp`` parallelism; see
-         :ref:`tutorials/plugin/engine/config` for details.
+         :ref:`tutorials/plugins/engine/config` for details.
 
          .. code-block:: python
 
@@ -350,8 +349,7 @@ In ``generators/engine.py``, you may define the following functions:
             from sierra.core.experiment import bindings
             from sierra.core import types, utils
 
-            @implements.implements(bindings.IExpRunShellCmdsGenerator)
-            class ExpShellCmdsGenerator():
+            class ExpShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
                 def __init__(self,
                              cmdopts: types.Cmdopts,
                              exp_num: int) -> None:
@@ -382,7 +380,7 @@ In ``generators/engine.py``, you may define the following functions:
            parallel (or some other engine of your choice) will run in stage 2.
 
          This generator corresponds to ``per-exp`` parallelism; see
-         :ref:`tutorials/plugin/engine/config` for details.
+         :ref:`tutorials/plugins/engine/config` for details.
 
          .. code-block:: python
 
@@ -395,8 +393,7 @@ In ``generators/engine.py``, you may define the following functions:
             from sierra.core.variables import batch_criteria as bc
             from sierra.core import types, utils
 
-            @implements.implements(bindings.IExpRunShellCmdsGenerator)
-            class ExpRunShellCmdsGenerator():
+            class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
                 def __init__(self,
                      cmdopts: types.Cmdopts,
                      criteria: bc.BatchCriteria,
@@ -479,7 +476,7 @@ In ``generators/engine.py``, you may define the following functions:
           pass
 
 
-.. _tutorials/plugin/engine/prod:
+.. _tutorials/plugins/engine/prod:
 
 Generating Products
 ===================
@@ -531,4 +528,4 @@ about it by putting ``$HOME/git/plugins/`` on your :envvar:`SIERRA_PLUGIN_PATH`
 so that your engine can be selected via ``--engine=engine.matrix``.
 
 .. NOTE:: If your engine supports/requires a new execution environment, head
-          over to :ref:`tutorials/plugin/execenv`.
+          over to :ref:`tutorials/plugins/execenv`.

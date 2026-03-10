@@ -84,7 +84,7 @@ def session_setup(func):
         setup_env(session)
         executable = session.run(
             "which",
-            "sierra-cli",
+            "sierra",
             silent=True,
         )
         coverage_cmd = f"coverage run --debug=debug {executable}"

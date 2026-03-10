@@ -7,7 +7,6 @@
 import typing as tp
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
@@ -17,8 +16,7 @@ from sierra.core.experiment import definition
 WALL_WIDTH = 0.4
 
 
-@implements.implements(IBaseVariable)
-class ArenaShape:
+class ArenaShape(IBaseVariable):
     """Maps a list of desired arena dimensions sets of XML changes.
 
     This class is a base class which should (almost) never be used on its

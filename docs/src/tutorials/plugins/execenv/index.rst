@@ -1,4 +1,4 @@
-.. _tutorials/plugin/execenv:
+.. _tutorials/plugins/execenv:
 
 ============================================
 New Execution Environment Plugin (--execenv)

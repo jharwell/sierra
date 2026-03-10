@@ -145,13 +145,7 @@ include = ["sierra"]
 # that with uv until you install SIERRA. So we punt for now, and
 # modify this file in CI to generate the man pages as needed.
 [tool.hatch.build.targets.wheel.shared-data]
-"sierra/data/man/sierra.7" = "share/man/man7/sierra.7"
-"sierra/data/man/sierra-cli.1" = "share/man/man1/sierra-cli.1"
-"sierra/data/man/sierra-examples.7" = "share/man/man7/sierra-examples.7"
-"sierra/data/man/sierra-exec-envs.7" = "share/man/man7/sierra-exec-envs.7"
-"sierra/data/man/sierra-glossary.7" = "share/man/man7/sierra-glossary.7"
-"sierra/data/man/sierra-engines.7" = "share/man/man7/sierra-engines.7"
-"sierra/data/man/sierra-usage.7" = "share/man/man7/sierra-usage.7"
+"sierra/data/man/sierra.1" = "share/man/man7/sierra.1"
 
 [[tool.uv.index]]
 name = "testpypi"

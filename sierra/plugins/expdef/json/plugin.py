@@ -10,7 +10,6 @@ import typing as tp
 import json
 
 # 3rd party packages
-import implements
 from jsonpath_ng.ext import parse as jpparse
 
 # Project packages
@@ -70,8 +69,7 @@ def root_querypath() -> str:
     return "$"
 
 
-@implements.implements(definition.BaseExpDef)
-class ExpDef:
+class ExpDef(definition.BaseExpDef):
     """Read, write, and modify parsed JSON files into experiment definitions."""
 
     def __init__(

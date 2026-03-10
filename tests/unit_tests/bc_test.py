@@ -19,7 +19,7 @@ from sierra import main
 
 def test_univar_argos():
     args = [
-        "sierra-cli",
+        "sierra",
         "--sierra-root=/tmp/sierra",
         "--engine=engine.argos",
         "--project=projects.sample_argos",
@@ -72,7 +72,7 @@ def test_univar_argos():
 # which contain more than 1 thing in their attr change set.
 def test_univar_jsonsim():
     args = [
-        "sierra-cli",
+        "sierra",
         "--sierra-root=/tmp/sierra",
         "--engine=plugins.jsonsim",
         "--project=projects.sample_jsonsim",
@@ -118,7 +118,7 @@ def test_univar_jsonsim():
 
 def test_bivar_argos():
     args = [
-        "sierra-cli",
+        "sierra",
         "--sierra-root=/tmp/sierra",
         "--engine=engine.argos",
         "--project=projects.sample_argos",

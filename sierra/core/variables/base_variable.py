@@ -6,13 +6,12 @@
 import typing as tp
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.experiment import definition
 
 
-class IBaseVariable(implements.Interface):
+class IBaseVariable:
     """Interface that all variables must implement."""
 
     def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:

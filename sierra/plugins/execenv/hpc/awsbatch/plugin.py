@@ -15,7 +15,6 @@ import os
 import logging
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types, utils
@@ -60,8 +59,7 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-@implements.implements(bindings.IBatchShellCmdsGenerator)
-class BatchShellCmdsGenerator:
+class BatchShellCmdsGenerator(bindings.IBatchShellCmdsGenerator):
     """Generate the cmd to correctly invoke GNU Parallel on AWS Batch HPC."""
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:

@@ -16,7 +16,6 @@ import logging
 import argparse
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import utils, types, config
@@ -27,8 +26,7 @@ import sierra.core.plugin as pm
 _logger = logging.getLogger(__name__)
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     """Dispatcher for shell cmd generation for an :term:`Experiment`.
 
     Dispatches generation to the selected execution environment.  Called during
@@ -60,8 +58,7 @@ class ExpShellCmdsGenerator:
         return self.env.post_exp_cmds()
 
 
-@implements.implements(bindings.IBatchShellCmdsGenerator)
-class BatchShellCmdsGenerator:
+class BatchShellCmdsGenerator(bindings.IBatchShellCmdsGenerator):
     """Dispatcher for shell cmd generation for a :term:`Batch Experiment`.
 
     Dispatches generation to the selected execution environment.  Called during

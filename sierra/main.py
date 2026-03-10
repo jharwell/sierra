@@ -13,6 +13,7 @@ import multiprocessing as mp
 import pathlib
 import argparse
 import typing as tp
+import warnings
 
 # 3rd party packages
 
@@ -369,7 +370,6 @@ def main():
 
 
 def main_deprecated():
-    import warnings
 
     warnings.warn(
         "sierra is deprecated and will be removed in a future release. "

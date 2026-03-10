@@ -12,15 +12,13 @@ import shutil
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     """
     Generate the commands for local HPC (experiment-level parallelism).
     """
@@ -80,8 +78,7 @@ class ExpShellCmdsGenerator:
         return [types.ShellCmdSpec(cmd=parallel, shell=True, wait=True)]
 
 
-@implements.implements(bindings.IBatchShellCmdsGenerator)
-class BatchShellCmdsGenerator:
+class BatchShellCmdsGenerator(bindings.IBatchShellCmdsGenerator):
     """
     Generate the commands for local HPC (batch-level parallelism).
     """

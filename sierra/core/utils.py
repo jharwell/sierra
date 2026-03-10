@@ -220,7 +220,7 @@ def exp_include_filter(inc_spec: tp.Optional[str], target: list, n_exps: int):
 
 
 def bivar_exp_labels_calc(
-    exp_dirs: types.PathList,
+    exp_dirs: list[str],
 ) -> tuple[list[str], list[str]]:
     """
     Calculate the labels for bivariant experiment graphs.

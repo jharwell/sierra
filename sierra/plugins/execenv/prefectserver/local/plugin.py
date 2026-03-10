@@ -8,15 +8,13 @@ import typing as tp
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
 
 
-@implements.implements(bindings.IBatchShellCmdsGenerator)
-class BatchShellCmdsGenerator:
+class BatchShellCmdsGenerator(bindings.IBatchShellCmdsGenerator):
     """
     Generate commands to invoke :term:`Prefect` for local computing.
     """

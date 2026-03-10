@@ -16,7 +16,6 @@ import math
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.plugins.engine.argos.variables import constant_density as cd
@@ -26,8 +25,7 @@ from sierra.core.experiment import definition
 from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bcbridge.IGraphable)
-class PopulationConstantDensity(cd.ConstantDensity):
+class PopulationConstantDensity(cd.ConstantDensity, bcbridge.IGraphable):
     """Defines XML changes for maintain population density across arena sizes.
 
     This class is a base class which should (almost) never be used on its
@@ -136,9 +134,7 @@ def calc_dims(
             kw["arena_x"] + attr["cardinality"] * attr["arena_size_inc"],
             attr["arena_size_inc"],
         )
-        return [
-            utils.ArenaExtent(Vector3D(x, int(x / 2), kw["arena_z"])) for x in r
-        ]
+        return [utils.ArenaExtent(Vector3D(x, int(x / 2), kw["arena_z"])) for x in r]
 
     if is_1x1:
         r = range(

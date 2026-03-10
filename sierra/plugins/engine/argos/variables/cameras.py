@@ -14,7 +14,6 @@ import typing as tp
 import math
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
@@ -25,8 +24,7 @@ from sierra.core.vector import Vector3D
 import sierra.plugins.engine.argos.variables.exp_setup as exp
 
 
-@implements.implements(IBaseVariable)
-class QTCameraTimeline:
+class QTCameraTimeline(IBaseVariable):
     """Defines when/how to switch between camera perspectives within ARGoS.
 
     Attributes:
@@ -157,8 +155,7 @@ class QTCameraTimeline:
         return index, up, look_at, pos
 
 
-@implements.implements(IBaseVariable)
-class QTCameraOverhead:
+class QTCameraOverhead(IBaseVariable):
     """Defines a single overhead camera perspective within ARGoS.
 
     Attributes:

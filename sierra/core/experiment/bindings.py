@@ -12,14 +12,13 @@ import typing as tp
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
 import sierra.core.variables.batch_criteria as bc
 
 
-class IBatchShellCmdsGenerator(implements.Interface):
+class IBatchShellCmdsGenerator:
     """Shell command generator for ``per-batch`` parallelism.
 
     See :ref:`arch/execution-model` for a full explanation of the parallelism
@@ -76,7 +75,7 @@ class IBatchShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
 
-class IExpShellCmdsGenerator(implements.Interface):
+class IExpShellCmdsGenerator:
     """Shell command generator for ``per-exp`` parallelism.
 
     See :ref:`arch/execution-model` for a full explanation of the parallelism
@@ -149,7 +148,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
 
-class IExpRunShellCmdsGenerator(implements.Interface):
+class IExpRunShellCmdsGenerator:
     """Shell command generator for ``per-run`` parallelism.
 
     See :ref:`arch/execution-model` for a full explanation of the parallelism
@@ -223,7 +222,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
 
-class IExpConfigurer(implements.Interface):
+class IExpConfigurer:
     """Perform additional configuration after creating experiments in stage 1.
 
     E.g., creating directories to store outputs in if they are not created by

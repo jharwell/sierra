@@ -13,8 +13,7 @@ from sierra.plugins.execenv import hpc
 from engine.matrix import cmdline as cmd
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
     """
@@ -29,8 +28,7 @@ class ExpShellCmdsGenerator:
         return []
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator:
+class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
     """
@@ -60,8 +58,7 @@ class ExpRunShellCmdsGenerator:
         return []
 
 
-@implements.implements(bindings.IExpConfigurer)
-class ExpConfigurer:
+class ExpConfigurer(bindings.IExpConfigurer):
     """A class that conforms to
     :class:`~sierra.core.experiment.bindings.IExpConfigurer`.
     """

@@ -16,7 +16,6 @@ import logging
 import pickle
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
@@ -91,7 +90,7 @@ class WriterConfig:
         self.values.append(value)
 
 
-class BaseExpDef(implements.Interface):
+class BaseExpDef:
     """Base class for experiment definitions."""
 
     def __init__(

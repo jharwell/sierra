@@ -12,7 +12,6 @@ See :ref:`user-guide/vars/expsetup` for usage documentation.
 import typing as tp
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
@@ -21,7 +20,6 @@ from sierra.core import config
 from sierra.core.variables import exp_setup
 
 
-@implements.implements(IBaseVariable)
 class ExpSetup:
     """
     Defines the experimental setup for ROS experiments.

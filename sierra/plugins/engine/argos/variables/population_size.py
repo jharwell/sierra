@@ -12,7 +12,6 @@ import typing as tp
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
@@ -22,9 +21,9 @@ from sierra.core.variables import population_size
 from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bcbridge.IGraphable)
-@implements.implements(bc.IQueryableBatchCriteria)
-class PopulationSize(population_size.PopulationSize):
+class PopulationSize(
+    population_size.PopulationSize, bcbridge.IGraphable, bc.IQueryableBatchCriteria
+):
     """A univariate range of swarm sizes used to define batch experiments.
 
     This class is a base class which should (almost) never be used on its

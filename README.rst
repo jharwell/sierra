@@ -1,7 +1,3 @@
-===========================================================================
-SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
-===========================================================================
-
 .. |pepy-downloads| image:: https://pepy.tech/badge/sierra-research
                     :target: https://pepy.tech/project/sierra-research
 
@@ -21,8 +17,8 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |license| image:: https://img.shields.io/github/license/jharwell/sierra
    :alt: GitHub License
 
-.. |doi| image:: https://zenodo.org/badge/125774567.svg
-         :target: https://zenodo.org/badge/latestdoi/125774567
+.. |doi| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6834758.svg
+         :target: https://doi.org/10.5281/zenodo.6834758
 
 .. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
           :target: https://sierra.readthedocs.io/en/master/
@@ -30,6 +26,8 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
                  :target: https://github.com/jharwell/sierra/graphs/commit-activity
 
+.. image:: docs/_static/logo-banner.png
+   :width: 400px
 
 +---------------+--------------------------------------------------------------------+
 | Usage         | |pepy-downloads| |pypi-version| |supported-pythons| |os-supported| |
@@ -38,17 +36,17 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 +---------------+--------------------------------------------------------------------+
 | Development   | |ci-analysis-devel| |ci-coverage-devel|                            |
 +---------------+--------------------------------------------------------------------+
-| Miscellaneous |    |license| |doi| |docs| |maintenance|                            |
+| Miscellaneous | |license| |doi| |docs| |maintenance|                               |
 +---------------+--------------------------------------------------------------------+
-
 
 Quick Links
 ===========
 
+- `Quick Start`_ — Install and run your first experiment
 - `What is SIERRA?`_ — Overview and architecture
 - `Features at a Glance`_ — Supported platforms and capabilities
 - `Why SIERRA?`_ — Motivation and comparison with alternatives
-- `Quick Start`_ — Install and run your first experiment
+- `Limitations`_ — What SIERRA is not designed for
 - `Citing`_ — How to cite SIERRA in your research
 - `Troubleshooting`_ — Common issues and how to get help
 - `Contributing`_ — How to contribute to SIERRA
@@ -57,149 +55,168 @@ Quick Links
 What is SIERRA?
 ===============
 
+Running large-scale computational experiments is mostly engineering: writing
+scripts, managing configuration files, wrangling outputs, and rebuilding the
+same pipeline for every new project.
+
+SIERRA automates this entire workflow.
+
+SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation) is a
+command-line tool and plugin framework that automates the full experimental
+workflow — generating experiment inputs, executing experiments across
+heterogeneous computing environments, processing results, and producing analysis
+artifacts such as plots, videos, and comparative summaries.
+
 .. figure:: https://raw.githubusercontent.com/jharwell/sierra/master/docs/figures/architecture.png
 
-   SIERRA architecture, organized by pipeline stage, left to right. High-level
-   inputs/outputs and active plugins are shown for each stage. "..." indicates
-   areas of further extensibility and customization via new plugins. "Host
-   machine" indicates the machine SIERRA was invoked on. The active plugins in
-   each stage and what they cumulatively enable are highlighted in red. See
-   `pipeline documentation
-   <https://sierra.readthedocs.io/en/master/src/pipeline.html>`_ for a
-   detailed walkthrough of each stage.
+   SIERRA architecture, organized by pipeline stage (left to right).
 
-SIERRA is a command line tool and plugin framework for:
+Pipeline Stages
+---------------
 
-- **Automating R&D**, providing facilities for seamless experiment
-  generation, execution, and results processing.
+SIERRA organizes experiments into a fixed pipeline:
 
-- **Accelerating R&D cycles** by allowing researchers and developers to focus
-  on the "science"—developing new ideas and designing experiments to test
-  them—rather than the engineering (writing scripts, configuring environments,
-  etc.).
+1. **Input generation** --- Create experiment configurations from templates
+2. **Execution** --- Run experiments locally, on clusters, etc.
+3. **Postprocessing** --- Parse raw outputs into structured datasets
+4. **Product generation** --- Generate plots, summaries, and derived artifacts
 
-- **Improving reproducibility** of scientific research, particularly in AI and
-  autonomous systems.
+SIERRA is built around three design goals:
 
-In practice, this means you can run a 50-condition parameter sweep across
-multiple simulators, generate comparative plots overlaid with model predictions,
-and archive fully reproducible results—all with a single SIERRA command.
+- **Reproducibility** — every result is fully described by its path on disk,
+  which encodes the project, controller, scenario, and batch criteria used to
+  produce it. Re-running the same invocation always produces the same layout.
+
+- **Automation** — experiment generation, execution, post-processing, and
+  product generation are handled by the pipeline; no scripting required.
+
+- **Reusability** — the plugin architecture means a project written for one
+  simulator or execution environment requires minimal changes to run on another.
 
 
 Features at a Glance
 ====================
 
-+-------------------------------+--------------------------------------------------+
-| Feature                       | Details                                          |
-+===============================+==================================================+
-| Supported simulators          | ARGoS, ROS1+Gazebo, ROS1+Robot,custom via plugins|                 |
-+-------------------------------+--------------------------------------------------+
-| Execution environments        | Local machine, HPC clusters (SLURM, PBS), custom |
-+-------------------------------+--------------------------------------------------+
-| Parameter sweeps              | Numeric, categorical, or mixed combinations      |
-+-------------------------------+--------------------------------------------------+
-| Output formats                | CSV, GraphML, graphs/plots, video, custom via plugins     |
-+-------------------------------+--------------------------------------------------+
-| Model framework               | Overlay analytical models on empirical results   |
-+-------------------------------+--------------------------------------------------+
-| Reproducibility               | Fully archived, citable experiment configurations|
-+-------------------------------+--------------------------------------------------+
-| Python version                | 3.9+                                             |
-+-------------------------------+--------------------------------------------------+
-| OS support                    | Linux (Ubuntu 20.04+), macOS 13+                 |
-+-------------------------------+--------------------------------------------------+
+All categories below are extensible via plugins.
+
++-------------------------------+------------------------------------------------------+
+| Feature                       | Details                                              |
++===============================+======================================================+
+| Supported simulators          | ARGoS, ROS1+Gazebo, ROS1+Robot                       |
++-------------------------------+------------------------------------------------------+
+| Execution environments        | Local machine, HPC clusters (SLURM, PBS), AWS Batch, |
+|                               | Prefect server                                       |
++-------------------------------+------------------------------------------------------+
+| Parameter sweeps              | Numeric, categorical, or mixed combinations          |
++-------------------------------+------------------------------------------------------+
+| Output formats                | CSV, Arrow, GraphML, graphs (PNG, HTML), video (mp4) |
++-------------------------------+------------------------------------------------------+
+| Model framework               | Overlay analytical models on empirical results       |
++-------------------------------+------------------------------------------------------+
+| Reproducibility               | Fully archived, citable experiment configurations    |
++-------------------------------+------------------------------------------------------+
+| Python version                | 3.9+                                                 |
++-------------------------------+------------------------------------------------------+
 
 
 Quick Start
 ===========
 
-**Install** (requires Python 3.9+):
+**Install**:
 
 .. code-block:: shell
 
    pip3 install sierra-research
 
-**Run your first experiment:**
+Minimal Example
+---------------
+
+Run a small parameter sweep locally using the built-in `sample project`_.
 
 .. code-block:: shell
 
-   sierra-cli \
-     --template-input-file=my-experiment.xml \
-     --n-runs=4 \
-     --time-setup=time_setup.T10000 \
-     --scenario=RN.10x10 \
-     --batch-criteria population_size.Log8
+   sierra \
+     --sierra-root=$HOME/exp \
+     --project=sierra_sample_project \
+     --platform=platform.argos \
+     --exec-env=hpc.local \
+     --template-input-file=exp/argos/template.argos \
+     --scenario=LowBlockCount.10x10x1 \
+     --batch-criteria population_size.Log8 \
+     --n-runs=2 \
+     --pipeline 1 2 3 4
 
-This single command generates all experiment inputs, runs them (locally or on a
-cluster), and processes results into graphs—no scripting required. See `getting
-started <https://sierra.readthedocs.io/en/master/src/getting_started.html>`_ for
-a full walkthrough.
-
+This generates all experiment inputs, runs them locally, and processes results
+into graphs. See the `getting started guide`_ for a full walkthrough including
+expected output.
 
 Why SIERRA?
 ===========
 
-SIERRA changes the paradigm of the engineering tasks researchers must perform
-from manual and procedural to **declarative and automated**. That is, from:
+SIERRA changes the paradigm of running experiments from manual and procedural
+to **declarative and automated**. Instead of:
 
 .. code-block:: text
 
-   "I need to perform these steps to run the experiment, process the data and
-   generate the graphs I want."
+   "I need to write a script to run the experiment, another script to
+   process the data and a 3rd script to generate the graphs I want."
 
-to:
+you describe:
 
 .. code-block:: text
 
-   "Here is the environment and simulator/platform(s) I want to use, the
-   deliverables I want to generate, and the data I want to appear on them for
-   my research query—GO!"
+   "Here is the environment and/or simulator I want to use, the deliverables
+   I want to generate, and the data I want on them — GO."
 
-Essentially, SIERRA handles the "engineering" parts of research as a backend
-compiler of sorts: turning research queries into executable objects, running the
-compiled experiments, and processing results into visualizations or other
-deliverables.
+SIERRA acts as a backend compiler for research: turning a description of what
+you want into a fully executed experiment with processed results.
 
 **Key advantages:**
 
 - **Deep parameter sweep support** — numeric, categorical, or any combination
-  thereof, with no boilerplate.
+  thereof, with no boilerplate. A sweep that would require ~200 lines of
+  brittle, non-reusable bash takes one SIERRA invocation.
 
-- **Broad platform coverage via plugins** — supports a wide range of execution
-  engines and experiment I/O formats. Mix and match simulators (ARGoS, ROS2),
+- **Broad platform coverage** — mix and match simulators (ARGoS, ROS1+Gazebo),
   execution environments (local, SLURM, PBS), and output formats with little to
-  no configuration changes.
+  no code changes between them.
 
-- **Maximum reusability** — designed so that *no* copy-pasting is ever needed,
-  improving code quality with no additional effort.
+- **Maximum reusability** — designed so that no copy-pasting is ever needed
+  across projects or platforms.
 
-- **Rich model framework** — run arbitrary analytical models, generate synthetic
-  data, and overlay it on empirical results automatically on the same figure.
+- **Rich model framework** — run analytical models, generate synthetic data,
+  and overlay it on empirical results automatically on the same figure.
 
-- **Research-domain focus** — built specifically for the scientific research
-  workflow, with native concepts for experiments, runs, batch criteria, and
-  replication.
+- **Research-domain focus** — built for the scientific workflow, with native
+  concepts for experiments, runs, batch criteria, and replication.
 
 **Why SIERRA over Prefect, Dagster, or Airflow?**
 
 General-purpose workflow tools like `Prefect <https://www.prefect.io>`_,
-`Dagster <https://www.dagster.io>`_, and `Airflow
-<https://airflow.apache.org>`_ require you to build your own research pipelines
-from scratch. SIERRA provides a battle-tested pipeline with first-class support
-for the patterns that matter most in R&D: parameter sweeps, simulator
-integration, reproducible archiving, and model-vs-empirical plotting.
+`Dagster <https://www.dagster.io>`_, and `Airflow <https://airflow.apache.org>`_
+require you to build your own research pipeline from scratch. SIERRA provides a
+battle-tested pipeline with first-class support for the patterns that matter
+most in R&D: parameter sweeps, simulator integration, reproducible archiving,
+and model-vs-empirical comparison.
 
 The trade-off: SIERRA is more opinionated and less feature-complete than those
 frameworks for general data engineering workloads. For most research use cases,
-that gap doesn't matter—and the domain-specific abstractions save significant
-time and effort.
+that gap doesn't matter.
 
-Not sure if SIERRA makes sense for your work? Check out some of the `use cases
-<https://sierra.readthedocs.io/en/master/src/use-cases.html>`_ for which SIERRA
-was designed. If aspects of any sound familiar, there is a strong chance SIERRA
-could help. See the `SIERRA docs <https://sierra.readthedocs.io/en/master/>`_
-to get started.
+Limitations
+===========
 
+SIERRA is purpose-built for the scientific experiment workflow. It is not the
+right tool if:
+
+- You need a **general-purpose DAG runner** for arbitrary data engineering
+  tasks — use Prefect, Dagster, or Airflow instead.
+- Your experiments are highly irregular and cannot be expressed as systematic
+  variations on a template.
+- You need **ROS2**---ROS1 is supported; ROS2 support is planned.
+
+If you are unsure whether SIERRA fits your use case, check the `use cases`_ page
+or open a `discussion thread<https://github.com/jharwell/sierra/discussions>`_.
 
 Citing
 ======
@@ -218,8 +235,8 @@ If you use SIERRA and have found it helpful, please cite the following paper:
   pages = {1905–1907}
   }
 
-You can also cite the specific version of SIERRA used with the DOI badge at the
-top of this page, to help facilitate reproducibility.
+To cite a specific version of SIERRA (recommended for reproducibility), use
+the DOI badge in the Miscellaneous row of the badge table above.
 
 
 Troubleshooting
@@ -235,8 +252,21 @@ possible.
 Contributing
 ============
 
-Contributions of all sizes are welcome—bug fixes, documentation improvements,
-new plugins, or larger features. If you have an idea to discuss before diving
-in, feel free to open a discussion thread at any point. See the `contributing
-guide <https://sierra.readthedocs.io/en/master/src/contributing.html>`_ for the
-general procedure.
+Contributions of all sizes are welcome — bug fixes, documentation improvements,
+new plugins, or larger features.
+
+A good first contribution is adding a storage plugin or a simple processor
+plugin — both are typically under 100 lines and have clear contracts defined
+in the `plugin developer guide`_.
+
+If you have an idea to discuss before diving in, open a discussion thread at
+any point. See the `contributing guide`_ for the
+full procedure.
+
+.. _`getting started guide`: https://sierra.readthedocs.io/en/master/src/getting-started/trial.html
+.. _`pipeline documentation`: https://sierra.readthedocs.io/en/master/src/concepts/pipeline.html
+.. _`environment variables`: https://sierra.readthedocs.io/en/master/src/reference/environment.html
+.. _`use cases`: https://sierra.readthedocs.io/en/master/src/getting-started/why-sierra.html
+.. _`plugin developer guide`: https://sierra.readthedocs.io/en/master/src/tutorials/plugins/devguide.html
+.. _`contributing guide`: https://sierra.readthedocs.io/en/master/src/reference/contributing.html
+.. _`sample project`: https://github.com/jharwell/sierra-sample-project.git

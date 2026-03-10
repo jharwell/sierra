@@ -100,10 +100,11 @@ Man pages are also installed and can be browsed offline via ``man sierra``,
 sierra-glossary``. See :ref:`reference/cli` for the full CLI reference in these
 docs.
 
+.. _packages/rosbridge:
+
 .. dropdown:: ROS users: additional setup required
    :icon: info
 
-   .. _packages/rosbridge:
 
    When using a :term:`ROS1`-based :term:`Engine`, SIERRA requires a companion
    ROS package that provides run-time simulation management and project support.

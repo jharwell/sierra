@@ -95,4 +95,4 @@ different robots.
    realrobot/turtlebot3.rst
 
 Additional execution environments can be supported via
-:ref:`tutorials/plugin/execenv`.
+:ref:`tutorials/plugins/execenv`.
