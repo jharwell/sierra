@@ -7,8 +7,7 @@ Within this file, you must define the following classes, which must be named
         import implements
         from sierra.core.experiment import definition
 
-        @implements.implements(definition.BaseExpDef)
-        class ExpDef():
+        class ExpDef(definition.BaseExpDef):
 
 Within this file, you must define the following functions, which must be named
 **EXACTLY** as specified, otherwise SIERRA will not detect them.

@@ -13,7 +13,6 @@ import pathlib
 import itertools
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables import base_variable
@@ -24,7 +23,7 @@ from sierra.core import types, config
 from sierra.core.graphs import bcbridge
 
 
-class IQueryableBatchCriteria(implements.Interface):
+class IQueryableBatchCriteria:
     """Mixin interface for criteria which can be queried during stage {1,2}.
 
     Used to extract additional information needed for configuring some
@@ -39,8 +38,7 @@ class IQueryableBatchCriteria(implements.Interface):
         raise NotImplementedError
 
 
-@implements.implements(base_variable.IBaseVariable)
-class BaseBatchCriteria:
+class BaseBatchCriteria(base_variable.IBaseVariable):
     """Defines experiments via  lists of sets of changes to make to an expdef.
 
     Attributes:
@@ -109,13 +107,13 @@ class BaseBatchCriteria:
     def n_exp(self) -> int:
         from sierra.core.experiment import spec  # noqa: PLC0415
 
-        scaffold_spec = spec.scaffold_spec_factory(self)
+        scaffold_spec = spec.scaffold_spec_factory(tp.cast(XVarBatchCriteria, self))
         return scaffold_spec.n_exps
 
     def pickle_exp_defs(self, cmdopts: types.Cmdopts) -> None:
         from sierra.core.experiment import spec  # noqa: PLC0415
 
-        scaffold_spec = spec.scaffold_spec_factory(self)
+        scaffold_spec = spec.scaffold_spec_factory(tp.cast(XVarBatchCriteria, self))
 
         for exp in range(0, scaffold_spec.n_exps):
             exp_dirname = self.gen_exp_names()[exp]
@@ -147,7 +145,9 @@ class BaseBatchCriteria:
         """
         from sierra.core.experiment import spec  # noqa: PLC0415
 
-        scaffold_spec = spec.scaffold_spec_factory(self, log=True)
+        scaffold_spec = spec.scaffold_spec_factory(
+            tp.cast(XVarBatchCriteria, self), log=True
+        )
 
         for i in range(0, scaffold_spec.n_exps):
             modsi = scaffold_spec.mods[i]
@@ -285,9 +285,9 @@ class UnivarBatchCriteria(BaseBatchCriteria):
         return sizes
 
 
-@implements.implements(bcbridge.IGraphable)
-@implements.implements(IQueryableBatchCriteria)
-class XVarBatchCriteria(BaseBatchCriteria):
+class XVarBatchCriteria(
+    BaseBatchCriteria, bcbridge.IGraphable, IQueryableBatchCriteria
+):
     """
     N-dimensional multiple :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria`.
 
@@ -594,7 +594,7 @@ def factory(
     batch_input_root: pathlib.Path,
     args: argparse.Namespace,
     scenario: tp.Optional[str] = None,
-) -> BaseBatchCriteria:
+) -> XVarBatchCriteria:
     """
     Construct a multivariate batch criteria object from cmdline input.
     """

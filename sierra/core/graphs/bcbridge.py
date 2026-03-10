@@ -13,7 +13,6 @@ import typing as tp
 import dataclasses
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
@@ -57,7 +56,7 @@ class GraphInfo:
     ylabel: str = ""
 
 
-class IGraphable(implements.Interface):
+class IGraphable:
     """
     Interface for batch criteria for usage with :ref:`plugins/prod/graphs`.
     """

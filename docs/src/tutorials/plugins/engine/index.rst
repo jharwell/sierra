@@ -306,8 +306,7 @@ In ``generators/engine.py``, you may define the following functions:
             from sierra.core.experiment import bindings
             from sierra.core import types, utils
 
-            @implements.implements(bindings.IBatchRunShellCmdsGenerator)
-            class BatchShellCmdsGenerator():
+            class BatchShellCmdsGenerator(bindings.IBatchRunShellCmdsGenerator):
                 def __init__(self,
                              cmdopts: types.Cmdopts,
                              exp_num: int) -> None:
@@ -350,8 +349,7 @@ In ``generators/engine.py``, you may define the following functions:
             from sierra.core.experiment import bindings
             from sierra.core import types, utils
 
-            @implements.implements(bindings.IExpRunShellCmdsGenerator)
-            class ExpShellCmdsGenerator():
+            class ExpShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
                 def __init__(self,
                              cmdopts: types.Cmdopts,
                              exp_num: int) -> None:
@@ -395,8 +393,7 @@ In ``generators/engine.py``, you may define the following functions:
             from sierra.core.variables import batch_criteria as bc
             from sierra.core import types, utils
 
-            @implements.implements(bindings.IExpRunShellCmdsGenerator)
-            class ExpRunShellCmdsGenerator():
+            class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
                 def __init__(self,
                      cmdopts: types.Cmdopts,
                      criteria: bc.BatchCriteria,

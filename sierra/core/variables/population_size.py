@@ -24,7 +24,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
     """
 
     def __init__(self, *args, **kwargs) -> None:
-        bc.UnivarBatchCriteria.__init__(self, *args, *kwargs)
+        bc.UnivarBatchCriteria.__init__(self, *args, **kwargs)
 
     def graph_xticks(
         self,

@@ -133,3 +133,112 @@ in a single file. The reasons are:
 - **Memory footprint.** If a user is generating a 2D heatmap, any standard
   deviation columns in the source file are irrelevant and would waste memory
   unnecessarily if co-located with the data.
+
+Logo Design Rationale
+=====================
+
+The logo is actually well-thought out/not something random which "looked cool".
+
+**Core Concept: "Research Compiler"**
+
+SIERRA turns research queries into executable experiments and reproducible
+outputs.  The logo represents a structured system that transforms research
+inputs into deterministic results. It encodes the transformation pipeline::
+
+   Research Inputs -> SIERRA Compiler   -> Structured Experiments
+        (nodes)      (segmented system)      (grid)
+
+Or more simply::
+
+   Research Intent -> Automated Experiments -> Reproducible Results
+
+
+And communicates (hopefully):
+
+- serious research tooling
+- automation infrastructure
+- deterministic pipelines
+- modular architecture
+- reproducibility
+
+**Circular Frame -> Execution Environment**
+
+The outer segmented circle represents the controlled framework environment.
+
+Meaning:
+
+- Encapsulation of the research pipeline
+- Deterministic system boundaries
+- Reproducible execution
+
+The segmentation hints at:
+
+- pipeline stages
+- modular plugin architecture
+- execution phases
+
+It suggests ordered computation happening inside a system.
+
+
+**Arc Segments -> Pipeline Stages**
+
+The curved arcs represent progressive transformation through the pipeline
+stages. The arcs imply motion and flow, but within a controlled system rather
+than a loose pipeline. This reinforces:
+
+- deterministic automation
+- reproducible research workflows
+
+**Grid of Squares -> Structured Outputs**
+
+The central grid represents compiled experimental artifacts.  Interpretations
+include:
+
+- parameter sweep results
+- experiment matrices
+- structured datasets
+- reproducible experiment outputs
+
+The squares are uniform, aligned, and deterministic. They contrast with
+incoming nodes (inputs). Visually this communicates::
+
+   unstructured ideas -> structured results
+
+**Node Dots -> Research Inputs**
+
+The dots on the left represent incoming research queries or parameters.  They
+symbolize:
+
+- experiment parameters
+- datasets
+- configuration inputs
+- plugin modules
+
+Different sizes suggest different input types and expanding parameter sweeps.
+The dots converge toward the structured grid.
+
+
+**Directional Flow -> Compilation**
+
+The overall layout subtly moves left to right::
+
+   inputs -> compilation -> results
+
+Nodes appear on the left and structured outputs appear on the right.
+
+This visually encodes the concept::
+
+   Research idea -> SIERRA compilation -> Reproducible experiments
+
+**Blue Color Palette -> Engineering and Research**
+
+The color scheme reinforces the technical positioning.
+
+Blue suggests:
+
+- scientific rigor
+- trust
+- infrastructure software
+- engineering systems
+
+Gradients subtly suggest transformation and computation.

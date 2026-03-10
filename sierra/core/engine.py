@@ -17,7 +17,6 @@ import logging
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 import sierra.core.plugin as pm
@@ -79,8 +78,7 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
         )
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator:
+class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
     """Dispatcher for shell cmd generation for an :term:`Experimental Run`.
 
     Dispatches generation to the selected engine.
@@ -140,8 +138,7 @@ class ExpRunShellCmdsGenerator:
         return cmds
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     """Dispatcher for shell cmd generation for an :term:`Experiment`.
 
     Dispatches generation to the selected engine.  Called during stage 2 to
@@ -192,8 +189,7 @@ class ExpShellCmdsGenerator:
         return cmds
 
 
-@implements.implements(bindings.IBatchShellCmdsGenerator)
-class BatchShellCmdsGenerator:
+class BatchShellCmdsGenerator(bindings.IBatchShellCmdsGenerator):
     """Dispatcher for shell cmd generation for a :term:`Batch Experiment`.
 
     Dispatches generation to the selected engine.  Called during stage 2 to run

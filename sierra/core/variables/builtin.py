@@ -16,7 +16,6 @@ import pathlib
 import numpy as np
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core import types
@@ -25,8 +24,7 @@ from sierra.core.variables import batch_criteria as bc
 from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bcbridge.IGraphable)
-class MonteCarlo(bc.UnivarBatchCriteria):
+class MonteCarlo(bc.UnivarBatchCriteria, bcbridge.IGraphable):
     """
     Criteria which does nothing put provide a set of experiments via cardinality.
 

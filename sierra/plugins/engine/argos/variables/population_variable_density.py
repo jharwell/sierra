@@ -15,7 +15,6 @@ import logging
 import pathlib
 
 # 3rd party packages
-import implements
 
 # Project packages
 from sierra.core.variables import variable_density as vd
@@ -25,8 +24,7 @@ from sierra.core import types, utils
 from sierra.core.graphs import bcbridge
 
 
-@implements.implements(bcbridge.IGraphable)
-class PopulationVariableDensity(vd.VariableDensity):
+class PopulationVariableDensity(vd.VariableDensity, bcbridge.IGraphable):
     """Defines XML changes for variable population density within a single arena.
 
     This class is a base class which should (almost) never be used on its

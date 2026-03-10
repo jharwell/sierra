@@ -123,19 +123,18 @@ jobs:
         run: |
           # 3.10 is known to work with the current configuration to generate
           # docs.
-          uv sync -p 3.10 --group dev
+          uv sync -p 3.12 --group dev
 
           # Hatch will only pickup manpages with shared-data if they are INSIDE
           # a package directory. Since we don't want to commit this to source
-          # control, we copy in in CI here.
+          # control, we copy it in CI here.
           mkdir -p sierra/data/man
 
-          # 3.10 is known to work with the current configuration to generate
+          # 3.12 is known to work with the current configuration to generate
           # docs.
-          cd docs && uv run -p 3.10 sphinx-build -b man . _build/man
+          cd docs && uv run -p 3.12 sphinx-build -b man . _build/man
           cd ..
           cp docs/_build/man/*.1 sierra/data/man/
-          cp docs/_build/man/*.7 sierra/data/man/
 
           # Build the package and verify manpages were included
           uv build && python3 -m zipfile -l dist/sierra_research-*.whl |grep man

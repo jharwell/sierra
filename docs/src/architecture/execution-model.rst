@@ -154,7 +154,7 @@ For real-robot engines, the execution topology during a single run is:
   passed to each hook.
 
 - **Inter-run pause** — after all subprocesses for a run complete, SIERRA waits
-  :ref:`--exec-inter-run-pause<src/plugins/engine/ros1robot:sierra---exec-inter-run-pause>`
+  :ref:`--exec-inter-run-pause<src/plugins/engine/ros1robot/index:sierra---exec-inter-run-pause>`
   seconds before starting the next run, giving time to physically reset robot
   positions and the environment.
 

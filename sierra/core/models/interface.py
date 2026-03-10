@@ -12,14 +12,13 @@ Models can be run during stage 3 and added to any configured graph during stage
 
 # 3rd party packages
 import polars as pl
-import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core import types, exproot, batchroot
 
 
-class IIntraExpModel1D(implements.Interface):
+class IIntraExpModel1D:
     """Interface for one-dimensional models.
 
     1D models are those that generate a single time series from zero or more
@@ -72,7 +71,7 @@ class IIntraExpModel1D(implements.Interface):
         raise NotImplementedError
 
 
-class IInterExpModel1D(implements.Interface):
+class IInterExpModel1D:
     """Interface for one-dimensional models.
 
     1D models are those that generate a single time series from any number of

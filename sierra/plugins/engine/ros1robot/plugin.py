@@ -12,7 +12,6 @@ import pwd
 import pathlib
 
 # 3rd party packages
-import implements
 import yaml
 
 # Project packages
@@ -24,8 +23,7 @@ import sierra.core.variables.batch_criteria as bc
 _logger = logging.getLogger("engine.ros1robot")
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator:
+class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
     """Generate the commands to run a single :term:`Experimental Run`."""
 
     def __init__(
@@ -174,8 +172,7 @@ class ExpRunShellCmdsGenerator:
         ]
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     """Generate the commands to run the :term:`Experiment` in stage 2."""
 
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
@@ -221,8 +218,7 @@ class ExpShellCmdsGenerator:
         ]
 
 
-@implements.implements(bindings.IExpConfigurer)
-class ExpConfigurer:
+class ExpConfigurer(bindings.IExpConfigurer):
     """High level experiment configuration for the engine.
 
     - Relaxing some ssh checks.

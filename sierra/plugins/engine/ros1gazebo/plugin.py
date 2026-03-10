@@ -16,7 +16,6 @@ import psutil
 
 # 3rd party packages
 import packaging.version
-import implements
 
 # Project packages
 from sierra.core import config, ros1, types, batchroot, execenv
@@ -26,8 +25,7 @@ import sierra.core.variables.batch_criteria as bc
 _logger = logging.getLogger("ros1gazebo.plugin")
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator:
+class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
     def __init__(
         self,
         cmdopts: types.Cmdopts,
@@ -132,8 +130,7 @@ class ExpRunShellCmdsGenerator:
         return []
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
-class ExpShellCmdsGenerator:
+class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
@@ -190,8 +187,7 @@ class ExpShellCmdsGenerator:
         ]
 
 
-@implements.implements(bindings.IExpConfigurer)
-class ExpConfigurer:
+class ExpConfigurer(bindings.IExpConfigurer):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 

@@ -90,25 +90,25 @@ and archive fully reproducible results—all with a single SIERRA command.
 Features at a Glance
 ====================
 
-+-------------------------------+--------------------------------------------------+
-| Feature                       | Details                                          |
-+===============================+==================================================+
-| Supported simulators          | ARGoS, ROS1+Gazebo, ROS1+Robot,custom via plugins|                 |
-+-------------------------------+--------------------------------------------------+
-| Execution environments        | Local machine, HPC clusters (SLURM, PBS), custom |
-+-------------------------------+--------------------------------------------------+
-| Parameter sweeps              | Numeric, categorical, or mixed combinations      |
-+-------------------------------+--------------------------------------------------+
-| Output formats                | CSV, GraphML, graphs/plots, video, custom via plugins     |
-+-------------------------------+--------------------------------------------------+
-| Model framework               | Overlay analytical models on empirical results   |
-+-------------------------------+--------------------------------------------------+
-| Reproducibility               | Fully archived, citable experiment configurations|
-+-------------------------------+--------------------------------------------------+
-| Python version                | 3.9+                                             |
-+-------------------------------+--------------------------------------------------+
-| OS support                    | Linux (Ubuntu 20.04+), macOS 13+                 |
-+-------------------------------+--------------------------------------------------+
++-------------------------------+------------------------------------------------------+
+| Feature                       | Details                                              |
++===============================+======================================================+
+| Supported simulators          | ARGoS, ROS1+Gazebo, ROS1+Robot,custom via plugins    |
++-------------------------------+------------------------------------------------------+
+| Execution environments        | Local machine, HPC clusters (SLURM, PBS), custom     |
++-------------------------------+------------------------------------------------------+
+| Parameter sweeps              | Numeric, categorical, or mixed combinations          |
++-------------------------------+------------------------------------------------------+
+| Output formats                | CSV, GraphML, graphs/plots, video, custom via plugins|
++-------------------------------+------------------------------------------------------+
+| Model framework               | Overlay analytical models on empirical results       |
++-------------------------------+------------------------------------------------------+
+| Reproducibility               | Fully archived, citable experiment configurations    |
++-------------------------------+------------------------------------------------------+
+| Python version                | 3.9+                                                 |
++-------------------------------+------------------------------------------------------+
+| OS support                    | Linux (Ubuntu 20.04+), macOS 13+                     |
++-------------------------------+------------------------------------------------------+
 
 
 Quick Start
