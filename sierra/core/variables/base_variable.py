@@ -3,7 +3,6 @@
 #  SPDX-License-Identifier: MIT
 
 # Core packages
-import typing as tp
 
 # 3rd party packages
 

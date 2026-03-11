@@ -9,9 +9,6 @@
 Intra-Experiment Data Collation
 ===============================
 
-Motivation
-==========
-
 When generating products, it is often necessary to perform some sort of
 non-statistical mathematical analysis on the results. These calculations
 *cannot* be done on the intra-experiment :term:`Processed Output Data` files,

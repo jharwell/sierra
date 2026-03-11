@@ -34,24 +34,24 @@ controller you selected via ``--controller`` specified in the
 ``controllers.yaml`` configuration file by SIERRA. You should have something
 like this in your template input file:
 
-   .. code-block:: XML
+.. code-block:: XML
 
-      <argos-configuration>
+   <argos-configuration>
+      ...
+      <controllers>
          ...
-         <controllers>
-            ...
-            <__CONTROLLER__>
-               <param_set1>
-                  ...
-               </param_set1>
+         <__CONTROLLER__>
+            <param_set1>
                ...
-            <__CONTROLLER__/>
+            </param_set1>
             ...
-         </controllers>
+         <__CONTROLLER__/>
          ...
-      </argos-configuration>
+      </controllers>
+      ...
+   </argos-configuration>
 
-   See also :ref:`tutorials/project/config`.
+See also :ref:`tutorials/project/config`.
 
 #. :ref:`--project<src/reference/cli:sierra---project>` matches the name of
    the C++ library for the project (i.e. ``--project.so``), unless
@@ -93,10 +93,8 @@ Usage
 Batch Criteria
 --------------
 
-See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
-short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.  The following batch criteria are defined which can be used with any
-:term:`Project`.
+The following batch criteria are defined which can be used with any
+ARGoS-based :term:`Project`.
 
 .. toctree::
    :maxdepth: 1
@@ -125,7 +123,14 @@ Execution Environments
 The # threads per :term:`experimental run <Experimental Run>` is defined with
 :ref:`--physics-n-engines<src/plugins/engine/argos/index:sierra---physics-n-engines>`,
 and that option is required for the ``--execenv=hpc.local`` environment during
-stage 1.
+stage 1. This engine supports:
+
+- :ref:`plugins/execenv/hpc/local`
+- :ref:`plugins/execenv/hpc/adhoc`
+- :ref:`plugins/execenv/hpc/slurm`
+- :ref:`plugins/execenv/hpc/pbs`
+
+Others may work but are untested.
 
 Random Seeding For Reproducibility
 ==================================
@@ -145,6 +150,14 @@ buffer using :program:`Xvfb`, and output captured frames as PNG images during
 stage 2, which can then be rendered into per-run videos during stage 4 (see
 :ref:`plugins/prod/render` for more details).
 
+.. IMPORTANT:: During stage 1
+               :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>` causes
+               the ARGoS Qt/OpenGL ``<visualization>`` subtree to be added to
+               the
+               :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>`
+               when generating experimental inputs; it is removed otherwise. If
+               ``<visualization>`` already exists, it is removed and re-created.
+
 To use:
 
 - Install :program:`Xvfb` so that it can installed/can be found by the shell
@@ -162,8 +175,3 @@ To use:
   :ref:`--render-cmd-opts<src/plugins/prod/render:sierra---render-cmd-opts>`),
   and output under ``<batch_root>/videos/<exp>``.
 
-.. NOTE:: During stage 1 :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>` causes the
-          ARGoS Qt/OpenGL ``<visualization>`` subtree to be added to the
-          :ref:`--expdef-template<src/reference/cli:sierra---expdef-template>` when generating
-          experimental inputs; it is removed otherwise. If ``<visualization>``
-          already exists, it is removed and re-created.

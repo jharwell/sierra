@@ -93,25 +93,22 @@ ci = [
 ]
 
 docs = [
-    "sphinx",
+    "psutil",
+    "graphviz",
+    "toml",
     "docutils",
+    "sphinx",
     "sphinx-rtd-theme",
     "pydata-sphinx-theme",
     "sphinx-argparse-cli",
     "sphinx-copybutton",
     "sphinxcontrib-napoleon",
     "sphinxcontrib-video",
-    "psutil",
-    "sphinx-last-updated-by-git",
-    "graphviz",
-
-    # 2025-11-21 [JRH]: Pinning to avoid errors with sphinx-autoapi.
-    "sphinx-autoapi==3.1.0",
-    "toml",
     "sphinx-autobuild",
     "sphinxcontrib-plantuml",
-    "sphinx-design"
-
+    "sphinx-design",
+    "sphinx-last-updated-by-git",
+    "sphinx-autoapi"
 ]
 dev = [
     {include-group ="docs"},
@@ -202,7 +199,6 @@ ignore = [
     "F401",      # unused-import
     "PLR0904",   # too-many-public-methods (more lenient in modern code)
     "PLR2004",   # Magic numbers
-    "PD901",     # Naming dataframes 'df',
     "PERF203",   # Using try-catch inside a loop
     "COM812",    # trailing-comma (conflicts with formatter)
     "ISC001",    # implicit-str-concat (conflicts with formatter),

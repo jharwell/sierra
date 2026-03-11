@@ -38,7 +38,7 @@ in the archive in addition to raw outputs.
 Usage
 =====
 
-This plugin can be selected by adding ``proc.decompress`` to the list passed to
+This plugin can be selected by adding ``proc.compress`` to the list passed to
 ``--proc``.
 
 Cmdline Interface

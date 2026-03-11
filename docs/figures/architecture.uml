@@ -21,8 +21,6 @@ skinparam titleFontColor #black
 skinparam titleBorderColor #white
    skinparam defaultTextAlignment center
 
-title SIERRA Overview and Architecture
-
 ' Pipeline
 state "Pipeline" as pipeline
 

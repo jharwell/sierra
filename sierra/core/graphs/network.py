@@ -96,10 +96,7 @@ def generate(  # noqa: PLR0913
         node_size_attr = "size"
 
     # Build plot and configure
-    plot, positions = _build_plot(
-        G,
-        layout,
-    )
+    plot, _ = _build_plot(G, layout)
 
     plot.opts(
         node_size=node_size_attr,

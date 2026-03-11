@@ -34,3 +34,8 @@ Usage
 
 This plugin can be selected by adding ``proc.decompress`` to the list passed to
 ``--proc``.
+
+Cmdline Interface
+-----------------
+
+No additional cmdline options.

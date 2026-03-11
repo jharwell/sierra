@@ -129,6 +129,12 @@ pygments_style = "sphinx"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
+# 2026-03-11 [JRH]: Zenode blocks 403 to automated clients like linkcheck, but
+# serves the image just fine to browsers.
+linkcheck_ignore = [
+    r"https://zenodo\.org/badge/.*",
+    r"https://doi\.org/10\.5281/zenodo\..*",
+]
 nitpicky = True
 math_number_all = True
 math_eqref_format = "Eq. {number}"
@@ -158,16 +164,15 @@ nitpick_ignore = [
 
 autoapi_dirs = ["../sierra"]
 autoapi_ignore = ["*flycheck*"]
-autoapi_keep_files = True
+# autoapi_keep_files = True
 autoapi_generate_api_docs = True
 autoapi_options = [
     "members",
     # 'private-members',
     "inherited-members",
-    # 2025-04-16 [JRH]: This causes an error with the latest sphinx and
-    # sphinx-autoapi {8.0.0,3.6.0}. Hopefully will be fixed in the future and
-    # this can be included.
-    # 'show-inheritance-diagram',
+    # 2025-03-11 [JRH]: This causes a bunch of failed cross-ref resolutions, but
+    # ONLY for clickable inheritance diagram links (afaict), so not a big deal.
+    "show-inheritance-diagram",
     "show-module-summary",
     # 'imported-members',
 ]

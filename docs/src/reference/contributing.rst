@@ -344,3 +344,48 @@ Avoid the following problems:
 
 - Narrative content in reference pages: reference pages should contain only
   **precise lookup material**.
+
+
+Plugin Documentation Sections Ordering
+======================================
+
+Here as a general guide for consistency.
+
+For engines:
+
+.. code-block:: text
+
+   <Engine Name>          ← H1
+   Requirements           ← prerequisites before you can use this engine
+   OS Packages            ← install commands
+   Usage                  ← how to invoke
+     Batch Criteria       ← what BC are available
+     Cmdline Interface    ← sphinx_argparse_cli
+   Environment Variables  ← what vars the engine reads/sets
+   Execution Environments ← parallelism/threading notes per execenv
+   Random Seeding         ← reproducibility notes
+   Visual Capture         ← only for engines that support it
+
+For execenvs:
+
+.. code-block:: text
+
+   <Plugin Name>           ← H1 (include version badge if added recently)
+   <intro paragraph>       ← what it does, how to select it (--execenv=X)
+   Requirements            ← only if non-trivial (awsbatch has these)
+   Environment Variables   ← 3-column table: var | context | cmdline override
+   Cmdline Interface       ← sphinx_argparse_cli or "No additional options."
+
+
+For processing and product plugins:
+
+.. code-block:: text
+
+   <Plugin Name>            ← H1
+   <description paragraph>  ← what it does
+   Requirements             ← only if non-trivial (imagize has these)
+   Ordering Considerations  ← all proc plugins have this
+   Usage                    ← how to select, what it produces, output tree
+     Cmdline Interface        ← sphinx_argparse_cli or "No additional options."
+     Configuration            ← YAML config docs if applicable
+   Examples                 ← if applicable

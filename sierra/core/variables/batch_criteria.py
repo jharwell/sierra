@@ -61,7 +61,7 @@ class BaseBatchCriteria(base_variable.IBaseVariable):
         self.main_config = main_config
         self.batch_input_root = batch_input_root
 
-        self.cat_str = cli_arg.split(".")[0]
+        self.cat_str = cli_arg.split(".", maxsplit=1)[0]
         self.def_str = ".".join(cli_arg.split(".")[1:])
         self.logger = logging.getLogger(__name__)
 
@@ -571,7 +571,7 @@ def univar_factory(
     """
     Construct a univariate batch criteria object from a single cmdline argument.
     """
-    category = cli_arg.split(".")[0]
+    category = cli_arg.split(".", maxsplit=1)[0]
     path = f"variables.{category}"
 
     module = pm.bc_load(cmdopts, category)
@@ -620,6 +620,7 @@ def factory(
 
 __all__ = [
     "BaseBatchCriteria",
+    "IQueryableBatchCriteria",
     "UnivarBatchCriteria",
     "XVarBatchCriteria",
 ]

@@ -19,6 +19,8 @@ between engines.
 
 Additional engines can be supported via :ref:`tutorials/plugins/engine`.
 
+.. _plugins/engine/ros1:
+
 ROS1-based Engines
 ==================
 
@@ -88,6 +90,8 @@ Requirements
    inserted into all ``.launch`` files. All ROS projects must depend on this
    `ROS bridge <https://github.com/jharwell/sierra_rosbridge>`_
    package so the necessary nodes can be found by ROS at runtime.
+
+#. :envvar:`ROS_PACKAGE_PATH` must be set up properly prior to invoking SIERRA.
 
 Cmdline Interface
 -----------------

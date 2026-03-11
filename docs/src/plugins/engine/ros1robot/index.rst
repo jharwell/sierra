@@ -1,12 +1,11 @@
 .. _plugins/engine/ros1robot:
 
-===================
+=================
 ROS1+Robot Engine
-===================
+=================
 
-
-Using ROS1 with a real robot engine of your choice. ROS1 Noetic or
-later is required.
+Using ROS1 with a real robot engine of your choice. ROS1 Noetic or later is
+required.
 
 This engine can be selected via ``--engine=engine.ros1robot``.
 
@@ -66,17 +65,18 @@ Requirements
                     robots, those messages need to be processed/averaged/etc and
                     then sent to a dedicated topic to be recorded.
 
-#. :envvar:`ROS_PACKAGE_PATH` is set up properly prior to invoking SIERRA on the
-   local machine AND all robots are setup such that it is populated on login
-   (e.g., an appropriate ``setup.bash`` is sourced in ``.bashrc``).
+#. :envvar:`ROS_PACKAGE_PATH` is populated on login (e.g., an appropriate
+   ``setup.bash`` is sourced in ``.bashrc``).
 
 #. All robots have :envvar:`ROS_IP` or :envvar:`ROS_HOSTNAME` populated, or
    otherwise can correctly report their address to the ROS master. You can
    verify this by trying to launch a ROS master on each robot: if it launches
    without errors, then these values are setup properly.
 
+See :ref:`plugins/engine/ros1` for additional requirements.
+
 Real Robot Considerations
-=========================
+--------------------------
 
 SIERRA makes the following assumptions about the robots it is allocated each
 invocation:
@@ -99,6 +99,7 @@ invocation:
   SIERRA inserts its own timekeeper node into each robot which will exit after X
   seconds and take the roslaunch process with it on each robot and/or the master
   node.
+
 
 .. _plugins/engine/ros1robot/packages:
 
@@ -129,10 +130,8 @@ Usage
 Batch Criteria
 --------------
 
-See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
-short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.  The following batch criteria are defined which can be used with any
-:term:`Project`.
+The following batch criteria are defined which can be used with any
+ROS1+Robot-based :term:`Project`.
 
 .. toctree::
    :maxdepth: 1
@@ -153,21 +152,22 @@ Environment Variables
 This engine ignores :envvar:`SIERRA_ARCH`. This engine uses
 :envvar:`SIERRA_NODEFILE`.
 
+Execution Environments
+======================
+
+This engine supports:
+
+- :ref:`plugins/execenv/realrobot/turtlebot3`.
+
+Other similar robots should work with an appropriate execution environment
+plugin.
+
 Random Seeding For Reproducibility
 ==================================
 
 ROS do not provide a random number generator manager, but SIERRA provides random
 seeds to each :term:`Experimental Run` which :term:`Project` code should use to
-manage random number generation, if needed, to maximize reproducability.
-
-See:
-
-- :ref:`plugins/expdef`
-
-- :ref:`plugins/engine/ros1gazebo`
-
-for details on the format of the provided seed.
-
-By default SIERRA does not overwrite its generated random seeds for each
-experiment once generated; you can override with
+manage random number generation, if needed, to maximize reproducability. By
+default SIERRA does not overwrite its generated random seeds for each experiment
+once generated; you can override with
 :ref:`--no-preserve-seeds<src/reference/cli:sierra---preserve-seeds>`.

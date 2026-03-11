@@ -69,7 +69,7 @@ that flag runs statistics twice.
 Usage
 =====
 
-This plugin can be selected by adding ``proc.collate`` to the list passed to
+This plugin can be selected by adding ``proc.imagize`` to the list passed to
 ``--proc``.
 
 This plugin creates ``<batchroot>/imagize`` when active. All images generated

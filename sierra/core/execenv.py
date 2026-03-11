@@ -170,8 +170,8 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
 
     cores_re = r"^[0-9]+/"
     if res := re.search(cores_re, line):
-        cores = int(line.split("/")[0])
-        ssh = line.split("/")[1]
+        cores, ssh = line.split("/")
+        cores = int(cores)
     else:
         cores = 1
         ssh = line
@@ -216,7 +216,7 @@ def check_connectivity(
     """
     Check if passwordless connection to the specified host+login works.
     """
-    hostname = hostname.split(":")[0]
+    hostname = hostname.split(":", maxsplit=1)[0]
     _logger.info("Checking connectivity to %s", hostname)
     ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
     nc_diag = f"{host_type},port={port} via {hostname}"

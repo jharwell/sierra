@@ -184,8 +184,7 @@ def exp_range_calc(
     exp_all = [root_dir / d for d in dirnames]
 
     if exp_range is not None:
-        min_exp = int(exp_range.split(":")[0])
-        max_exp = int(exp_range.split(":")[1])
+        min_exp, max_exp = (int(x) for x in exp_range.split(":"))
         assert (
             min_exp <= max_exp
         ), f"Min batch exp >= max batch exp({min_exp} vs. {max_exp})"

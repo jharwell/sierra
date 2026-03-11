@@ -26,7 +26,7 @@ which SIERRA will choose from randomly for each robot.
 Requirements
 ============
 
-:envvar:`ROS_PACKAGE_PATH` must be set up properly prior to invoking SIERRA.
+See :ref:`plugins/engine/ros1`.
 
 .. _plugins/engine/ros1gazebo/packages:
 
@@ -43,10 +43,8 @@ Usage
 Batch Criteria
 --------------
 
-See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
-short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.  The following batch criteria are defined which can be used with any
-:term:`Project`.
+The following batch criteria are defined which can be used with any
+ROS1+Gazebo-based :term:`Project`.
 
 .. toctree::
    :maxdepth: 1
@@ -69,6 +67,19 @@ This engine ignores :envvar:`SIERRA_ARCH`.
 
 This engine sets :envvar:`PYTHONPATH` so that ``roscore`` can run properly in
 HPC environments.
+
+Execution Environments
+======================
+
+This engine supports:
+
+- :ref:`plugins/execenv/hpc/local`
+- :ref:`plugins/execenv/hpc/adhoc`
+- :ref:`plugins/execenv/hpc/slurm`
+- :ref:`plugins/execenv/hpc/pbs`
+
+Others may work but are untested.
+
 
 Random Seeding For Reproducibility
 ==================================

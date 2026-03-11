@@ -137,6 +137,11 @@ maximum flexibility in many different use cases:
    execution based on current :term:`Batch Criteria`, so projects can define and
    leave models enabled which are only valid for certain types of experiments.
 
+Cmdline Interface
+-----------------
+
+None for the moment.
+
 Configuration
 -------------
 
@@ -201,11 +206,6 @@ performed via a callback function in the model interface rather than
 declaratively here.
 
 See also YAML configuration :ref:`plugins/proc/collate`.
-
-Cmdline Interface
------------------
-
-None for the moment.
 
 Creating A New Model
 ====================

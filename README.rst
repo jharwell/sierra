@@ -16,6 +16,7 @@
 
 .. |license| image:: https://img.shields.io/github/license/jharwell/sierra
    :alt: GitHub License
+   :target: https://github.com/jharwell/sierra/blob/master/LICENSE
 
 .. |doi| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6834758.svg
          :target: https://doi.org/10.5281/zenodo.6834758
@@ -216,7 +217,7 @@ right tool if:
 - You need **ROS2**---ROS1 is supported; ROS2 support is planned.
 
 If you are unsure whether SIERRA fits your use case, check the `use cases`_ page
-or open a `discussion thread<https://github.com/jharwell/sierra/discussions>`_.
+or open a `discussion thread <https://github.com/jharwell/sierra/discussions>`_.
 
 Citing
 ======

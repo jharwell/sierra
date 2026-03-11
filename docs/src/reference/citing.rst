@@ -31,7 +31,7 @@ If you use SIERRA and find it helpful, please cite:
 
 To cite a specific version of SIERRA for reproducibility:
 
-.. |doi| image:: https://zenodo.org/badge/125774567.svg
-         :target: https://zenodo.org/badge/latestdoi/125774567
+.. |doi| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6834758.svg
+         :target: https://doi.org/10.5281/zenodo.6834758
 
 |doi|
