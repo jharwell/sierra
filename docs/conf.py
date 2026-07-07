@@ -64,7 +64,6 @@ extensions = [
     "sphinx_argparse_cli",
     "xref",
     "sphinx_last_updated_by_git",
-    "sphinx_rtd_theme",
     "pydata_sphinx_theme",
     "sphinx.ext.napoleon",
     "sphinxcontrib.plantuml",

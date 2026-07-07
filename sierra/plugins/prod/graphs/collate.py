@@ -168,6 +168,23 @@ class GraphCollator:
             stat.some_srcs_exist = True
 
             data_df = storage.df_read(csv_ipath, "storage.csv")
+
+            # An empty source file is a real outcome: the experiment ran but
+            # produced no data for this source. Record it as a missing/null
+            # datapoint rather than fabricating a value or attempting to read a
+            # row out of an empty frame (which would raise). We deliberately do
+            # NOT synthesize a 0/-1 sentinel: a null propagates to the collated
+            # CSV as an empty field, which is distinguishable downstream from a
+            # genuine measurement of zero.
+            if data_df.is_empty():
+                self.logger.warning(
+                    "%s is empty; recording missing datapoint for '%s'",
+                    csv_ipath,
+                    exp_dir,
+                )
+                self._collate_exp_empty(exp_dir, stat)
+                continue
+
             # 2025-07-08 [JRH]: This is the ONE place in all the graph
             # generation code which is a procedural switch on graph type.
             if target["type"] == "summary_line":
@@ -176,6 +193,41 @@ class GraphCollator:
                 self._collate_exp_stacked_line(target, exp_dir, stat, data_df)
             elif target["type"] == "heatmap":
                 self._collate_exp_heatmap(target, exp_dir, stat, data_df)
+
+    def _collate_exp_empty(self, exp_dir: str, stat: GraphCollationInfo) -> None:
+        """Record a missing datapoint for ``exp_dir`` when its source is empty.
+
+        Each graph type represents "no data for this experiment" differently.
+        In all cases the gap is recorded as null/absent -- never as a synthesized
+        0 or -1 -- so downstream consumers can distinguish "no data" from a real
+        measurement.
+        """
+        if stat.graph_type == "summary_line":
+            # __init__ seeds summary_col with None for every experiment, so an
+            # experiment we never fill in already reads as null. Nothing to do.
+            pass
+        elif stat.graph_type == "stacked_line":
+            # A stacked_line column *is* an experiment's time series. We cannot
+            # contribute a correctly-sized column of nulls (its length is
+            # defined by the other experiments' series, which we may not have
+            # seen yet). Mark the source set incomplete so this routes into the
+            # "not all experiments produced ..." warning rather than being
+            # silently zero/null filled.
+            stat.all_srcs_exist = False
+        elif stat.graph_type == "heatmap":
+            # Keep the (x, y) cell present with a null z, so the experiment
+            # space stays complete and the gap is visible rather than dropped.
+            res = re.match(r"c1-exp(\d+)\+c2-exp(\d+)", exp_dir)
+            if res:
+                row = pl.DataFrame(
+                    {
+                        "x": [int(res.group(1))],
+                        "y": [int(res.group(2))],
+                        "z": [None],
+                    },
+                    schema={"x": pl.Int64, "y": pl.Int64, "z": pl.Float64},
+                )
+                stat.df = pl.concat([stat.df, row], how="vertical")
 
     def _collate_exp_summary_line(
         self,
@@ -189,18 +241,44 @@ class GraphCollator:
         if "col" not in target:
             raise ValueError("'col' key is required")
 
-        # Get datapoint from data_df at specified index and column In
-        # polars, we need to add row index first if accessing by
-        # positio.n
-        data_df_indexed = data_df.with_row_index("__row_idx")
-        datapoint = data_df_indexed.filter(
-            pl.col("__row_idx") == (idx if idx >= 0 else len(data_df) + idx)
-        )[target["col"]][0]
-
+        # Validate the column spec BEFORE using it to index the frame.
         if type(target["col"]) is list:
             raise RuntimeError(
                 "Selected column {} must be a scalar, not list".format(target["col"])
             )
+
+        col = target["col"]
+
+        # The source is non-empty but may still lack the requested column or
+        # have too few rows for the requested index. Treat either as a missing
+        # datapoint (null) rather than raising an opaque index error.
+        if col not in data_df.columns:
+            self.logger.warning(
+                "Column '%s' absent in source for '%s'; recording missing datapoint",
+                col,
+                exp_dir,
+            )
+            self._collate_exp_empty(exp_dir, stat)
+            return
+
+        n = data_df.height
+        resolved = idx if idx >= 0 else n + idx
+        if not 0 <= resolved < n:
+            self.logger.warning(
+                "Index %d out of range (height %d) for '%s'; recording missing "
+                "datapoint",
+                idx,
+                n,
+                exp_dir,
+            )
+            self._collate_exp_empty(exp_dir, stat)
+            return
+
+        # Get datapoint from data_df at the resolved (positive) row index. In
+        # polars we add an explicit row index first to access by position.
+        data_df_indexed = data_df.with_row_index("__row_idx")
+
+        datapoint = data_df_indexed.filter(pl.col("__row_idx") == resolved)[col][0]
 
         # Update the row where Experiment ID matches exp_dir
         stat.df = stat.df.with_columns(
@@ -252,11 +330,27 @@ class GraphCollator:
             res and len(res.groups()) == 2
         ), f"Unexpected directory name '{exp_dir}': does not match regex {regex}"
 
-        # Get z value from data_df at specified index and column
+        col = target["col"]
+
+        # Non-empty source may still lack the column or the requested index.
+        # Record the (x, y) cell with a null z rather than raising.
+        if col not in data_df.columns or not 0 <= (
+            idx if idx >= 0 else data_df.height + idx
+        ) < data_df.height:
+            self.logger.warning(
+                "Column '%s' or index %d unavailable for '%s'; recording null z",
+                col,
+                idx,
+                exp_dir,
+            )
+            self._collate_exp_empty(exp_dir, stat)
+            return
+
+        resolved = idx if idx >= 0 else data_df.height + idx
+
+        # Get z value from data_df at the resolved (positive) row index.
         data_df_indexed = data_df.with_row_index("__row_idx")
-        z_value = data_df_indexed.filter(
-            pl.col("__row_idx") == (idx if idx >= 0 else len(data_df) + idx)
-        )[target["col"]][0]
+        z_value = data_df_indexed.filter(pl.col("__row_idx") == resolved)[col][0]
 
         # Create new row as DataFrame
         row = pl.DataFrame(
@@ -264,7 +358,8 @@ class GraphCollator:
                 "x": [int(res.group(1))],
                 "y": [int(res.group(2))],
                 "z": [z_value],
-            }
+            },
+            schema={"x": pl.Int64, "y": pl.Int64, "z": pl.Float64},
         )
 
         # Concatenate vertically

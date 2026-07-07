@@ -372,7 +372,7 @@ def main():
 def main_deprecated():
 
     warnings.warn(
-        "sierra is deprecated and will be removed in a future release. "
+        "sierra-cli is deprecated and will be removed in a future release. "
         "Use 'sierra' instead.",
         FutureWarning,
         stacklevel=2,

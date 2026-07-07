@@ -1071,3 +1071,53 @@ class TestBoundaryConditions:
         """Test handling paths with single dot."""
         expdef = xml.ExpDef(nested_xml_file)
         assert expdef.has_element(".") is True
+
+
+################################################################################
+# Non-Scalar Attribute Rejection Tests
+################################################################################
+
+
+class TestNonScalarAttributeRejection:
+    """XML attributes cannot hold arrays/objects.
+
+    Unlike the YAML and JSON plugins (whose formats have real array types),
+    XML attribute values are always strings. Assigning a list or dict must be
+    rejected explicitly rather than silently stringified into the output
+    (e.g. ``name="[80, 443]"``).
+    """
+
+    def test_change_list_rejected(self, simple_xml_file):
+        """attr_change with a list value returns False and does not modify."""
+        expdef = xml.ExpDef(simple_xml_file)
+        result = expdef.attr_change("config/parameter", "name", [80, 443])
+        assert result is False
+        # original value is untouched
+        assert expdef.attr_get("config/parameter", "name") == "value1"
+
+    def test_change_dict_rejected(self, simple_xml_file):
+        """attr_change with a dict value returns False."""
+        expdef = xml.ExpDef(simple_xml_file)
+        result = expdef.attr_change("config/parameter", "name", {"a": 1})
+        assert result is False
+
+    def test_add_list_rejected(self, simple_xml_file):
+        """attr_add with a list value returns False and adds nothing."""
+        expdef = xml.ExpDef(simple_xml_file)
+        result = expdef.attr_add("config/parameter", "ports", [80, 443])
+        assert result is False
+        assert expdef.has_attr("config/parameter", "ports") is False
+
+    def test_add_dict_rejected(self, simple_xml_file):
+        """attr_add with a dict value returns False."""
+        expdef = xml.ExpDef(simple_xml_file)
+        result = expdef.attr_add("config/parameter", "opts", {"a": 1})
+        assert result is False
+
+    def test_scalar_still_works(self, simple_xml_file):
+        """Scalar assignment is unaffected by the non-scalar guard."""
+        expdef = xml.ExpDef(simple_xml_file)
+        assert expdef.attr_change("config/parameter", "name", "renamed") is True
+        assert expdef.attr_get("config/parameter", "name") == "renamed"
+        assert expdef.attr_add("config/parameter", "extra", "42") is True
+        assert expdef.attr_get("config/parameter", "extra") == "42"

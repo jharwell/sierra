@@ -18,7 +18,7 @@ For the purposes of illustration we will use
          </__CONTROLLER__>
       </controllers>
       ...
-  <argos-configuration>
+  </argos-configuration>
 
 
 See :ref:`tutorials/plugins/expdef/tokens` for usage/description of the ``__CONTROLLER__`` tag in XML

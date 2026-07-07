@@ -176,6 +176,7 @@ class BaseGatherer:
                 if nonumeric := [
                     col for col in df.columns if not df[col].dtype.is_numeric()
                 ]:
+
                     self.logger.warning(
                         "Non-numeric columns only support mean aggregation via mode(): %s from %s",
                         nonumeric,

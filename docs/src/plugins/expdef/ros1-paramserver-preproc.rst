@@ -23,4 +23,4 @@ For the purposes of illustration we will use
           <param name="motion/random_walk" value="0.1"/>
           ...
        </robot>
-   <ros-configuration>
+   </ros-configuration>

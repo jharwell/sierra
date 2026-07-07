@@ -222,7 +222,42 @@ class ExpDef(definition.BaseExpDef):
             for item in blob:
                 self._flatten_apply2(item, f)
 
-    def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
+    @staticmethod
+    def _is_attr_value(value: tp.Any) -> bool:
+        """Determine if a value qualifies as an attribute value.
+
+        A value is an *attribute* if it is a scalar (str, int, float, bool,
+        None), or a *non-empty flat* list whose members are all scalars (e.g.
+        ``[80, 443]``).  A dict, or a list containing any dict/list member
+        (e.g. a list of sub-elements), is *not* an attribute -- it is an
+        element.
+
+        An empty list or dict is treated as an *element* (an unpopulated
+        container), not an attribute, matching the behavior of
+        :meth:`has_element` for empty sections.
+
+        The list rule is deliberately non-recursive: a nested list such as
+        ``[[1, 2], [3, 4]]`` is treated as an element, not an attribute.
+
+        This mirrors the identically-named helper in the YAML plugin so the two
+        formats classify attribute/element values consistently.
+        """
+        if isinstance(value, dict):
+            return False
+        if isinstance(value, list):
+            if len(value) == 0:
+                return False
+            return all(not isinstance(m, (list, dict)) for m in value)
+        return True
+
+    @classmethod
+    def _is_element_value(cls, value: tp.Any) -> bool:
+        """Inverse of :meth:`_is_attr_value`; a value is an element or not."""
+        return not cls._is_attr_value(value)
+
+    def attr_get(
+        self, path: str, attr: str
+    ) -> tp.Optional[tp.Union[str, int, float, list]]:
         expr = jpparse(path)
         matches = expr.find(self.tree)
 
@@ -237,7 +272,7 @@ class ExpDef(definition.BaseExpDef):
             match = [match]
 
         for m in match:
-            if attr in m and not isinstance(m[attr], (list, dict)):
+            if attr in m and self._is_attr_value(m[attr]):
                 return m[attr]
 
         return None
@@ -246,7 +281,7 @@ class ExpDef(definition.BaseExpDef):
         self,
         path: str,
         attr: str,
-        value: tp.Union[str, int, float],
+        value: tp.Union[str, int, float, list],
         noprint: bool = False,
     ) -> bool:
 
@@ -258,16 +293,34 @@ class ExpDef(definition.BaseExpDef):
                 self.logger.warning("Parent element '%s' not found", path)
             return False
 
+        # Validate every match BEFORE mutating any, so a failure partway through
+        # cannot leave the tree modified while the change goes unrecorded (which
+        # would desync the tree from self.attr_chgs). This preserves the
+        # all-or-nothing contract of this method.
         for m in matches:
             match = m.value
-            if attr not in match or isinstance(match[attr], (list, dict)):
+            if attr not in match:
                 if not noprint:
                     self.logger.warning(
                         "Attribute '%s' not found in path '%s'", attr, m.full_path
                     )
                 return False
 
-            match[attr] = value
+            # The existing value must itself be an attribute. Refuse to clobber
+            # an element (dict, or list-of-elements) with an attribute value;
+            # SIERRA keeps the attribute/element distinction even though JSON
+            # does not.
+            if not self._is_attr_value(match[attr]):
+                if not noprint:
+                    self.logger.warning(
+                        "'%s' in '%s' maps to an element, not an attribute",
+                        attr,
+                        m.full_path,
+                    )
+                return False
+
+        for m in matches:
+            m.value[attr] = value
             self.logger.trace("Modify attr: '%s/%s' = '%s'", m.full_path, attr, value)
 
         self.attr_chgs.add(definition.AttrChange(path, attr, value))
@@ -277,7 +330,7 @@ class ExpDef(definition.BaseExpDef):
         self,
         path: str,
         attr: str,
-        value: tp.Union[str, int, float],
+        value: tp.Union[str, int, float, list],
         noprint: bool = False,
     ) -> bool:
         expr = jpparse(path)
@@ -316,9 +369,10 @@ class ExpDef(definition.BaseExpDef):
         )
 
         if el:
-            # If path maps to a literal, then we are pointing to an attribute,
-            # which is obviously not an element.
-            return isinstance(el[0].value, (list, dict))
+            # If path maps to an attribute value (a scalar, or a flat list of
+            # scalars), then we are pointing to an attribute, not an element.
+            # Elements are dicts, lists-of-elements, and empty containers.
+            return self._is_element_value(el[0].value)
 
         return False
 
@@ -338,13 +392,16 @@ class ExpDef(definition.BaseExpDef):
             match = [match]
 
         for m in match:
+            if not isinstance(m, dict):
+                continue
+
             for k in m:
                 # While python/JSON doesn't distinguish between a key which maps
                 # to a literal {bool, int, ...}, and one which maps to a
                 # sub-element, SIERRA does, because it treats one key as
                 # referring to an attribute mapping, and one referring to a
                 # sub-element.
-                if k == attr and not isinstance(m[k], (list, dict)):
+                if k == attr and self._is_attr_value(m[k]):
                     assert (
                         not found
                     ), f"Specified attr '{attr}' is not unique in '{path}'"
@@ -372,7 +429,9 @@ class ExpDef(definition.BaseExpDef):
         parent = parents[0].value
         victims = jpparse(tag).find(parent)
 
-        if len(victims) == 0 or not isinstance(victims[0].value, (list, dict)):
+        # A scalar-valued key is an attribute, not an element, and is not
+        # removable via element_remove (use attr-oriented methods instead).
+        if len(victims) == 0 or not self._is_element_value(victims[0].value):
             if not noprint:
                 self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
             return False
@@ -381,28 +440,11 @@ class ExpDef(definition.BaseExpDef):
         return True
 
     def element_remove_all(self, path: str, tag: str, noprint: bool = False) -> bool:
-
-        expr = jpparse(path)
-        parents = expr.find(self.tree)
-
-        if len(parents) == 0:
-            if not noprint:
-                self.logger.warning("Parent element '%s' not found", path)
-            return False
-
-        parent = parents[0].value
-
-        victims = jpparse(tag).find(parent)
-
-        if len(victims) == 0:
-            if not noprint:
-                self.logger.warning(
-                    "No victims matching '%s' found in parent '%s'", tag, path
-                )
-            return False
-
-        del parent[tag]
-        return True
+        # JSON objects have unique keys, so a tag can match at most one child of
+        # a given parent -- "remove all matching" collapses to a single removal.
+        # (The multi-match case only exists in XML, where a parent may have
+        # several children with the same tag.) Delegate to element_remove.
+        return self.element_remove(path, tag, noprint=noprint)
 
     def element_add(
         self,
@@ -448,10 +490,15 @@ class ExpDef(definition.BaseExpDef):
             child = jpparse(tag).find(parent)
 
             # Child element exists, so update it to be a list of sub-elements
-            # rather than a single sub-elements.
+            # rather than a single sub-element. If it is already a list, append
+            # to it (do not nest); otherwise wrap the existing value and the new
+            # one into a fresh list.
             if len(child):
-                d = [parent[tag], attr]
-                jpparse(tag).update(parent, d)
+                existing = parent[tag]
+                if isinstance(existing, list):
+                    existing.append(attr)
+                else:
+                    parent[tag] = [existing, attr]
             else:
                 # Child doesn't exist--just assign to single sub-element.
                 parent[tag] = attr

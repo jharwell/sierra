@@ -19,6 +19,6 @@ look like this when populated within :ref:`concepts/run-time-tree`:
          </MyController>
       </controllers>
       ...
-   <argos-configuration>
+   </argos-configuration>
 
 No tags are inserted by SIERRA, and the file is not further split by SIERRA.
