@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.9"
+version = "1.5.10"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -12,7 +12,12 @@ authors = [
 ]
 dependencies = [
     "holoviews",
-    "matplotlib",
+    # 2026-07-07 [JRH]: matplotlib 3.11.0 is incompatible with holoviews 1.23
+    # and later. Presumably holoviews will fix its mpl 3.11 support
+    # eventually. Right now, downgrading is the only fix. And, since SIERRA
+    # still supports python 3.9, we can't just pin to <3.11.0, because that is
+    # python3.10+ only. So the fix is in two stages, only one of which I control.
+    "matplotlib >=3.9.0, <3.10.0",
     "hvplot",
     "hatchling",
     "coloredlogs",
@@ -98,7 +103,6 @@ docs = [
     "toml",
     "docutils",
     "sphinx",
-    "sphinx-rtd-theme",
     "pydata-sphinx-theme",
     "sphinx-argparse-cli",
     "sphinx-copybutton",

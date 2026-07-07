@@ -82,8 +82,8 @@ Steps
 #. Create the directory which will hold your :term:`Project`. The directory
    *containing* your project (i.e., it's parent directoly) must be on
    :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to find your
-   project. For example, if your project is ``fizzbuzz.awesome``, and that
-   directory is in ``projects`` as ``/path/to/projects/fizzbuzz.awesome``, then
+   project. For example, if your project is ``fizzbuzz_awesome``, and that
+   directory is in ``projects`` as ``/path/to/projects/fizzbuzz_awesome``, then
    some subpath of ``/path/to/projects`` needs to be on
    :envvar:`SIERRA_PLUGIN_PATH`.
 
@@ -106,8 +106,8 @@ Steps
         .. tab-item:: ``controllers.yaml``
 
            Configuration for controllers (input file/graph generation). This
-           file is required for all pipeline stages. See
-           :ref:`tutorials/project/config` for documentation.
+           file is optional. See :ref:`tutorials/project/config` for
+           documentation.
 
         .. tab-item:: ``graphs.yaml``
 

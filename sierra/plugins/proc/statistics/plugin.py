@@ -65,7 +65,7 @@ class DataGatherer(gather.BaseGatherer):
         self, run_output_root: pathlib.Path, exp_name: str
     ) -> list[gather.GatherSpec]:
         to_gather = []
-        proj_output_root = run_output_root / str(self.run_metrics_leaf)
+        proj_output_root = run_output_root / str(self.run_output_leaf)
         plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
 
         if not plugin.supports_output(pl.DataFrame):

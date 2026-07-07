@@ -118,10 +118,13 @@ class BaseExpDef:
         """
         raise NotImplementedError
 
-    def attr_get(self, path: str, attr: str) -> tp.Union[str, int, float, None]:
+    def attr_get(self, path: str, attr: str) -> tp.Union[str, int, float, list, None]:
         """Retrieve the specified attribute of the element at the specified path.
 
         If it does not exist, None is returned.
+
+        Depending on the backend, the return value could be a flat list of
+        scalars (e.g., JSON), or always a single scalar (XML).
 
         """
         raise NotImplementedError

@@ -79,7 +79,7 @@ How the Concepts Relate
 The batch criteria is the active ingredient. It takes your experiment template
 and applies a range of modifications to it — one per experiment — producing a
 :term:`Batch Experiment`. A single criterion produces a 1-D sweep; two combined
-criteria produce a 2-D Cartesian product.
+criteria produce a 2-D Cartesian product, and so on.
 
 **The pipeline** then takes over. It has five ordered stages, each consuming
 what the previous stage produced:

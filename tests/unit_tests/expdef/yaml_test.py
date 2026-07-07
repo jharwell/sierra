@@ -147,6 +147,40 @@ populated:
     return fpath
 
 
+@pytest.fixture
+def yaml_scalar_arrays(tmp_path):
+    """YAML file with scalar arrays (array-valued attributes)."""
+    content = """
+net:
+  host: localhost
+  ports:
+    - 80
+    - 443
+  aliases:
+    - web
+    - www
+
+matrix:
+  rows:
+    - - 1
+      - 2
+    - - 3
+      - 4
+
+services:
+  - name: svc1
+    tags:
+      - a
+      - b
+  - name: svc2
+    tags:
+      - c
+"""
+    fpath = tmp_path / "scalar_arrays.yaml"
+    fpath.write_text(content)
+    return fpath
+
+
 ################################################################################
 # Initialization Tests
 ################################################################################
@@ -926,3 +960,168 @@ class TestPerformance:
         path = "/" + "/".join([f"level{i}" for i in range(20)])
 
         assert expdef.has_attr(path, "value") is True
+
+
+################################################################################
+# Array-Valued Attribute Tests
+################################################################################
+
+
+class TestScalarArrayAttributes:
+    """Test that scalar arrays are treated as attributes.
+
+    A list whose members are all scalars (e.g. ``[80, 443]``) is an
+    *attribute*; a list containing dicts/lists, or an empty list, is an
+    *element*.
+    """
+
+    def test_get_scalar_array(self, yaml_scalar_arrays):
+        """A flat scalar list is returned by attr_get."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        value = expdef.attr_get("net", "ports")
+        assert list(value) == [80, 443]
+
+    def test_get_scalar_string_array(self, yaml_scalar_arrays):
+        """A flat list of strings is returned by attr_get."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        value = expdef.attr_get("net", "aliases")
+        assert list(value) == ["web", "www"]
+
+    def test_has_attr_scalar_array(self, yaml_scalar_arrays):
+        """A scalar array is detected as an attribute."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        assert expdef.has_attr("net", "ports") is True
+
+    def test_scalar_array_not_element(self, yaml_scalar_arrays):
+        """A scalar array is NOT an element (partition is exclusive)."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        assert expdef.has_element("/net/ports") is False
+
+    def test_change_scalar_array(self, yaml_scalar_arrays):
+        """A scalar array attribute can be replaced with another list."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        result = expdef.attr_change("net", "ports", [8080, 8443])
+        assert result is True
+        assert list(expdef.attr_get("net", "ports")) == [8080, 8443]
+
+    def test_change_scalar_to_array(self, yaml_scalar_arrays):
+        """A scalar attribute can be changed into a list."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        result = expdef.attr_change("net", "host", ["a", "b"])
+        assert result is True
+        assert list(expdef.attr_get("net", "host")) == ["a", "b"]
+
+    def test_change_array_to_scalar(self, yaml_scalar_arrays):
+        """An array attribute can be changed back into a scalar."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        result = expdef.attr_change("net", "ports", 8080)
+        assert result is True
+        assert expdef.attr_get("net", "ports") == 8080
+
+    def test_add_scalar_array_attr(self, yaml_scalar_arrays):
+        """A new scalar-array attribute can be added."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        result = expdef.attr_add("net", "backends", ["x", "y", "z"])
+        assert result is True
+        assert list(expdef.attr_get("net", "backends")) == ["x", "y", "z"]
+
+    def test_scalar_array_in_list_element(self, yaml_scalar_arrays):
+        """A scalar array nested inside a list-of-dicts element is an attr."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        assert expdef.has_attr('/services[name=="svc1"]', "tags") is True
+        value = expdef.attr_get('/services[name=="svc1"]', "tags")
+        assert list(value) == ["a", "b"]
+
+    def test_nested_array_is_element(self, yaml_scalar_arrays):
+        """A list containing lists is an element, not an attribute."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        # matrix/rows is a list of lists -> element
+        assert expdef.has_element("/matrix/rows") is True
+        assert expdef.has_attr("matrix", "rows") is False
+
+    def test_change_refuses_element_clobber(self, yaml_scalar_arrays):
+        """attr_change refuses to overwrite an element with an attribute."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        # 'rows' maps to a list-of-lists (element); changing it as an attr fails
+        result = expdef.attr_change("matrix", "rows", [1, 2, 3])
+        assert result is False
+
+    def test_scalar_array_tracked(self, yaml_scalar_arrays):
+        """Changing a scalar array is tracked as a modification."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        expdef.attr_change("net", "ports", [8080])
+        _, changes = expdef.n_mods()
+        assert changes == 1
+
+
+class TestScalarArrayWriteRoundtrip:
+    """Test that scalar-array attributes survive a write/reload cycle."""
+
+    def test_write_reload_scalar_array(self, yaml_scalar_arrays, tmp_path):
+        """A modified scalar array is written and reloads correctly."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        expdef.attr_change("net", "ports", [8080, 8443, 9000])
+
+        write_config = definition.WriterConfig(
+            [{"src_parent": None, "src_tag": "net"}]
+        )
+        expdef.write_config_set(write_config)
+
+        output = tmp_path / "out.yaml"
+        expdef.write(output)
+
+        with open(output) as f:
+            data = yaml.safe_load(f)
+        assert data["ports"] == [8080, 8443, 9000]
+
+    def test_write_indentation(self, yaml_scalar_arrays, tmp_path):
+        """Written sequences are indented under their parent key."""
+        expdef = ExpDef(input_fpath=yaml_scalar_arrays)
+        expdef.attr_change("net", "ports", [8080, 8443])
+
+        write_config = definition.WriterConfig(
+            [{"src_parent": None, "src_tag": "net"}]
+        )
+        expdef.write_config_set(write_config)
+
+        output = tmp_path / "out.yaml"
+        expdef.write(output)
+
+        text = output.read_text()
+        # 'ports:' is dumped at column 0 (as the extracted subtree root), so
+        # its sequence items sit at offset=2 -> dash indented two spaces under
+        # the key, not flush with it. The point is that the members are NOT
+        # dedented to column 0.
+        assert "ports:\n  - 8080\n" in text
+        assert "\n- 8080" not in text  # members must not be flush-left
+
+
+################################################################################
+# Logic-Error Regression Tests
+################################################################################
+
+
+class TestLogicErrorRegressions:
+    """Regression tests for previously-uncovered logic errors (Y1)."""
+
+    def test_element_remove_list_parent_no_match(self, yaml_with_lists):
+        """Y1: removing a non-matching list-member selector from a LIST parent
+        must return False, not raise.
+
+        The original list branch called next(iter(get_nodes(...))) with no
+        empty-check, so a selector matching nothing raised StopIteration
+        instead of returning False.
+        """
+        expdef = ExpDef(input_fpath=yaml_with_lists)
+        # 'colors' is a list; select a member that does not exist.
+        result = expdef.element_remove("/colors", "[color=purple]", noprint=True)
+        assert result is False
+
+    def test_element_remove_list_parent_match(self, yaml_with_lists):
+        """Companion to the above: a matching selector removes the member and
+        returns True (guards against a fix that just swallows everything)."""
+        expdef = ExpDef(input_fpath=yaml_with_lists)
+        result = expdef.element_remove("/colors", "[color=red]", noprint=True)
+        assert result is True
+        remaining = [c.get("color") for c in expdef.tree["colors"]]
+        assert "red" not in remaining

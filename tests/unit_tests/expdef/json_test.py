@@ -77,6 +77,28 @@ def json_with_arrays(tmp_path):
 
 
 @pytest.fixture
+def json_scalar_arrays(tmp_path):
+    """JSON file with scalar arrays (array-valued attributes)."""
+    content = {
+        "net": {
+            "host": "localhost",
+            "ports": [80, 443],
+            "aliases": ["web", "www"],
+        },
+        "matrix": {
+            "rows": [[1, 2], [3, 4]],
+        },
+        "services": [
+            {"name": "svc1", "tags": ["a", "b"]},
+            {"name": "svc2", "tags": ["c"]},
+        ],
+    }
+    fpath = tmp_path / "scalar_arrays.json"
+    fpath.write_text(json.dumps(content, indent=2))
+    return fpath
+
+
+@pytest.fixture
 def json_mixed_types(tmp_path):
     """JSON file with mixed data types."""
     content = {
@@ -1058,3 +1080,139 @@ class TestPerformance:
         expdef = ExpDef(input_fpath=fpath)
         assert expdef.has_attr("$.root", "key0") is True
         assert expdef.has_attr("$.root", "key499") is True
+
+
+################################################################################
+# Array-Valued Attribute Tests
+################################################################################
+
+
+class TestScalarArrayAttributes:
+    """Test that scalar arrays are treated as attributes.
+
+    Mirrors the YAML plugin's behavior: a list whose members are all scalars
+    (e.g. ``[80, 443]``) is an *attribute*; a list containing dicts/lists, or
+    an empty list, is an *element*.
+    """
+
+    def test_get_scalar_array(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        assert expdef.attr_get("$.net", "ports") == [80, 443]
+
+    def test_get_scalar_string_array(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        assert expdef.attr_get("$.net", "aliases") == ["web", "www"]
+
+    def test_has_attr_scalar_array(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        assert expdef.has_attr("$.net", "ports") is True
+
+    def test_scalar_array_not_element(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        assert expdef.has_element("$.net.ports") is False
+
+    def test_change_scalar_array(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        result = expdef.attr_change("$.net", "ports", [8080, 8443])
+        assert result is True
+        assert expdef.attr_get("$.net", "ports") == [8080, 8443]
+
+    def test_change_scalar_to_array(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        result = expdef.attr_change("$.net", "host", ["a", "b"])
+        assert result is True
+        assert expdef.attr_get("$.net", "host") == ["a", "b"]
+
+    def test_change_array_to_scalar(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        result = expdef.attr_change("$.net", "ports", 8080)
+        assert result is True
+        assert expdef.attr_get("$.net", "ports") == 8080
+
+    def test_add_scalar_array_attr(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        result = expdef.attr_add("$.net", "backends", ["x", "y", "z"])
+        assert result is True
+        assert expdef.attr_get("$.net", "backends") == ["x", "y", "z"]
+
+    def test_nested_array_is_element(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        # matrix.rows is a list of lists -> element
+        assert expdef.has_element("$.matrix.rows") is True
+        assert expdef.has_attr("$.matrix", "rows") is False
+
+    def test_change_refuses_element_clobber(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        # 'rows' maps to a list-of-lists (element); changing it as an attr fails
+        result = expdef.attr_change("$.matrix", "rows", [1, 2, 3])
+        assert result is False
+
+    def test_scalar_array_tracked(self, json_scalar_arrays):
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        expdef.attr_change("$.net", "ports", [8080])
+        _, changes = expdef.n_mods()
+        assert changes == 1
+
+
+################################################################################
+# Logic-Error Regression Tests
+#
+# These target specific bugs that the original plugin had but the pre-existing
+# test suite did not exercise. Each fails against the original (buggy) code.
+################################################################################
+
+
+class TestLogicErrorRegressions:
+    """Regression tests for previously-uncovered logic errors (J1, J2, J3)."""
+
+    def test_element_add_duplicate_stays_flat(self, json_basic):
+        """J1: adding the same tag 3x with allow_dup must yield a FLAT list.
+
+        The original code did `d = [parent[tag], attr]` each time, so the third
+        add nested the existing list: [[a, b], c] instead of [a, b, c].
+        """
+        expdef = ExpDef(input_fpath=json_basic)
+        expdef.element_add("$.app", "item", {"n": 1}, allow_dup=True)
+        expdef.element_add("$.app", "item", {"n": 2}, allow_dup=True)
+        expdef.element_add("$.app", "item", {"n": 3}, allow_dup=True)
+
+        value = expdef.attr_get("$.app", "item")
+        # attr_get won't return an element list; read straight from the tree.
+        items = expdef.tree["app"]["item"]
+        assert isinstance(items, list)
+        assert len(items) == 3, f"expected flat 3-element list, got {items!r}"
+        # every member is a leaf dict, none is itself a list (no nesting)
+        assert all(not isinstance(m, list) for m in items)
+        assert [m["n"] for m in items] == [1, 2, 3]
+
+    def test_has_attr_on_scalar_array_parent(self, json_scalar_arrays):
+        """J2: has_attr on a path whose value is a scalar list must return
+        False without raising (original crashed with TypeError: 'int' object
+        is not iterable, because it iterated list members as if dicts)."""
+        expdef = ExpDef(input_fpath=json_scalar_arrays)
+        # $.net.ports resolves to [80, 443]; asking for an attr on it is False.
+        assert expdef.has_attr("$.net.ports", "anything") is False
+
+    def test_attr_change_multi_match_no_partial_mutation(self, tmp_path):
+        """J3: when several matches exist and a later one lacks the attr,
+        attr_change must not have mutated the earlier matches, and must not
+        record a change. The original mutated match #1 then bailed on match #2,
+        leaving the tree changed but self.attr_chgs empty (a desync)."""
+        content = {
+            "items": [
+                {"speed": 1, "id": "a"},
+                {"id": "b"},  # missing 'speed'
+            ]
+        }
+        fpath = tmp_path / "multi.json"
+        fpath.write_text(json.dumps(content, indent=2))
+
+        expdef = ExpDef(input_fpath=fpath)
+        result = expdef.attr_change("$.items[*]", "speed", 99, noprint=True)
+
+        assert result is False
+        # first item must be untouched (still 1, not 99)
+        assert expdef.tree["items"][0]["speed"] == 1
+        # and nothing should have been recorded
+        _, changes = expdef.n_mods()
+        assert changes == 0

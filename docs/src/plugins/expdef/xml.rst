@@ -13,14 +13,17 @@ plugin does not currently support flattening/nested configuration files.
                first one is modified. This may be changed in a future version of
                the plugin.
 
-Requirements
-============
+.. versionchanged:: 1.5.10
+   Assigning a non-scalar (array/object) value to an XML attribute is now
+   explicitly rejected instead of being silently stringified on write.
 
-- ``__CONTROLLER__`` - Tag used when as a placeholder for selecting which
-  controller present in an input file (if there are multiple) a user wants to
-  use for a specific :term:`Experiment`. Can appear in XML attributes. This
-  makes auto-population of the controller name based on the
-  ``--controller`` argument and the contents of
+Reserved Tokens
+===============
+
+- ``__CONTROLLER__`` - Placeholder used to select which controller present in an
+  input file (if there are multiple) a user wants to use for a specific
+  :term:`Experiment`. Can appear in XML attributes. This makes auto-population of
+  the controller name based on the ``--controller`` argument and the contents of
   ``controllers.yaml`` (see :ref:`tutorials/project/config` for details) in
   template input files possible.
 

@@ -59,10 +59,9 @@ File and Directory Reference
    projects. See :ref:`tutorials/plugins/devguide/cmdline`.
 
 ``config/main.yaml``
-   Core SIERRA configuration: the ``run_metrics_leaf`` key (the subdirectory
+   Core SIERRA configuration: the ``output_leaf`` key (the subdirectory
    within each run's working directory where output files appear), optional
-   library name for ARGoS, and the path to a performance configuration file.
-   Required. See :ref:`tutorials/project/config`.
+   library name for project code. Required. See :ref:`tutorials/project/config`.
 
 ``config/controllers.yaml``
    Declares which controllers the project defines, what template changes each

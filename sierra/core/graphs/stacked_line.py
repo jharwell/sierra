@@ -301,7 +301,6 @@ def _read_stats(
     setting: tp.Optional[str], stats_root: pathlib.Path, input_stem: str, medium: str
 ) -> dict[str, pl.DataFrame]:
     dfs = {}  # type: tp.Dict[str, pl.DataFrame]
-    settings = []
 
     if setting == "none":
         return dfs

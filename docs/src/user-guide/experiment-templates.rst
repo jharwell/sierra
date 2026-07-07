@@ -60,7 +60,7 @@ template named ``template.argos`` produces per-run input files named
 ``template_run0``, ``template_run1``, etc. Choose a descriptive stem---it
 appears throughout the batch input tree and in log output. Where SIERRA looks
 for run outputs is configured separately in ``main.yaml`` via
-``run_metrics_leaf``; see :ref:`tutorials/project/config`.
+``output_leaf``; see :ref:`tutorials/project/config`.
 
 
 .. _user-guide/experiment-templates/format-notes:

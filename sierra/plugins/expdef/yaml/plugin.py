@@ -35,6 +35,7 @@ class Writer:
         self.yaml_spec.width = 80
         self.yaml_spec.preserve_quotes = True
         self.yaml_spec.default_flow_style = False
+        self.yaml_spec.indent(mapping=2, sequence=4, offset=2)
 
         # Create processor with proper logger
         args = argparse.Namespace(verbose=False, quiet=True, debug=False)
@@ -145,7 +146,39 @@ class ExpDef(definition.BaseExpDef):
         """Flatten the YAML structure."""
         raise NotImplementedError
 
-    def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
+    @staticmethod
+    def _is_attr_value(value: tp.Any) -> bool:
+        """Determine if a value qualifies as an attribute value.
+
+        A value is an *attribute* if it is a scalar (str, int, float, bool,
+        None), or a *non-empty flat* list whose members are all scalars (e.g.
+        ``[80, 443]``).  A dict, or a list containing any dict/list member
+        (e.g. a list of sub-elements), is *not* an attribute -- it is an
+        element.
+
+        An empty list or dict is treated as an *element* (an unpopulated
+        container), not an attribute, matching the historical behavior of
+        :meth:`has_element` for empty sections.
+
+        The list rule is deliberately non-recursive: a nested list such as
+        ``[[1, 2], [3, 4]]`` is treated as an element, not an attribute.
+        """
+        if isinstance(value, dict):
+            return False
+        if isinstance(value, list):
+            if len(value) == 0:
+                return False
+            return all(not isinstance(m, (list, dict)) for m in value)
+        return True
+
+    @classmethod
+    def _is_element_value(cls, value: tp.Any) -> bool:
+        """Inverse of :meth:`_is_attr_value`; a value is an element or not."""
+        return not cls._is_attr_value(value)
+
+    def attr_get(
+        self, path: str, attr: str
+    ) -> tp.Optional[tp.Union[str, int, float, list]]:
         """Get an attribute value at the specified path."""
         spec = yamlpath.YAMLPath(path)
         matches = list(self.processor.get_nodes(spec))
@@ -163,11 +196,7 @@ class ExpDef(definition.BaseExpDef):
             the_match = [the_match]
 
         for m in the_match:
-            if (
-                isinstance(m, dict)
-                and attr in m
-                and not isinstance(m[attr], (list, dict))
-            ):
+            if isinstance(m, dict) and attr in m and self._is_attr_value(m[attr]):
                 return m[attr]
 
         return None
@@ -176,7 +205,7 @@ class ExpDef(definition.BaseExpDef):
         self,
         path: str,
         attr: str,
-        value: tp.Union[str, int, float],
+        value: tp.Union[str, int, float, list],
         noprint: bool = False,
     ) -> bool:
         """Change an attribute value at the specified path.
@@ -185,23 +214,40 @@ class ExpDef(definition.BaseExpDef):
         """
         spec = yamlpath.YAMLPath(path)
         matches = list(self.processor.get_nodes(spec))
-
         if len(matches) == 0:
             if not noprint:
                 self.logger.warning("Parent element '%s' not found", path)
             return False
 
         mod = False
+
         for node_coord in matches:
             the_match = node_coord.node  # type: dict
-
             # If parent maps to a dict or list, that isn't an attribute.
             if not isinstance(the_match, (list, dict)):
                 continue
 
             # If the child doesn't exist in the parent, or if child maps to
             # anything other than a scalar, that isn't an attribute.
-            if attr not in the_match or isinstance(the_match[attr], (list, dict)):
+            if attr not in the_match:
+                self.logger.warning(
+                    "'%s' not in '%s' attributes or does not map to a scalar",
+                    attr,
+                    path,
+                )
+                continue
+
+            # The existing value must itself be an attribute. Refuse to clobber
+            # an element (dict, or list-of-elements) with an attribute value;
+            # SIERRA keeps the attribute/element distinction even though YAML
+            # does not.
+            if not self._is_attr_value(the_match[attr]):
+                if not noprint:
+                    self.logger.warning(
+                        "'%s' in '%s' maps to an element, not an attribute",
+                        attr,
+                        path,
+                    )
                 continue
 
             the_match[attr] = value
@@ -220,7 +266,7 @@ class ExpDef(definition.BaseExpDef):
         self,
         path: str,
         attr: str,
-        value: tp.Union[str, int, float],
+        value: tp.Union[str, int, float, list],
         noprint: bool = False,
     ) -> bool:
         """Add a new attribute at the specified path. At most 1 attribute is added."""
@@ -276,9 +322,10 @@ class ExpDef(definition.BaseExpDef):
         # Get the value from NodeCoords
         value = matches[0].node
 
-        # If path maps to a literal (string, int, bool, etc.), then we are
-        # pointing to an attribute, not an element.  Elements are dict or list.
-        return isinstance(value, (list, dict))
+        # If path maps to an attribute value (a scalar, or a flat list of
+        # scalars), then we are pointing to an attribute, not an element.
+        # Elements are dicts, lists-of-elements, and empty containers.
+        return self._is_element_value(value)
 
     def has_attr(self, path: str, attr: str) -> bool:
         """Check if an attribute exists at the specified path."""
@@ -311,7 +358,7 @@ class ExpDef(definition.BaseExpDef):
                 # sub-element, SIERRA does, because it treats one key as
                 # referring to an attribute mapping, and one referring to a
                 # sub-element.
-                if k == attr and not isinstance(m[k], (list, dict)):
+                if k == attr and self._is_attr_value(m[k]):
                     if found:
                         raise ValueError(
                             f"Specified attr '{attr}' is not unique in '{path}'"
@@ -357,6 +404,47 @@ class ExpDef(definition.BaseExpDef):
         self.logger.trace("Modified tag: '%s/%s' = '%s'", path, tag, value)
         return True
 
+    def _element_remove_dict(
+        self, path: str, tag: str, parent, noprint: bool = False
+    ) -> bool:
+        if tag not in parent:
+            if not noprint:
+                self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
+            return False
+
+        # A scalar-valued key is an attribute, not an element, and is not
+        # removable via element_remove (use attr-oriented methods instead).
+        if not self._is_element_value(parent[tag]):
+            if not noprint:
+                self.logger.warning(
+                    "'%s' in '%s' is an attribute, not an element", tag, path
+                )
+            return False
+
+        del parent[tag]
+        return True
+
+    def _element_remove_list(
+        self, path: str, tag: str, parent, noprint: bool = False
+    ) -> bool:
+        subprocessor = yamlpath.Processor(self.log, parent)
+        subpath = yamlpath.YAMLPath(tag)
+
+        victims = list(subprocessor.get_nodes(subpath))
+        if not victims:
+            if not noprint:
+                self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
+            return False
+
+        victim = victims[0].node
+        if victim not in parent:
+            if not noprint:
+                self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
+            return False
+
+        parent.remove(victim)
+        return True
+
     def element_remove(self, path: str, tag: str, noprint: bool = False) -> bool:
         """Remove an element at the specified path."""
         spec = yamlpath.YAMLPath(path)
@@ -374,68 +462,30 @@ class ExpDef(definition.BaseExpDef):
             return False
 
         parent = matches[0].node
+        ret = False
         if isinstance(parent, dict):
-            if tag not in parent:
-                if not noprint:
-                    self.logger.warning(
-                        "No victim '%s' found in parent '%s'", tag, path
-                    )
-                return False
-
-            del parent[tag]
-
+            ret = self._element_remove_dict(path, tag, parent, noprint)
         elif isinstance(parent, list):
-            subprocessor = yamlpath.Processor(self.log, parent)
-            subpath = yamlpath.YAMLPath(tag)
+            ret = self._element_remove_list(path, tag, parent, noprint)
 
-            victim = subprocessor.get_nodes(subpath)
+        if ret:
+            self.logger.trace("Removed element '%s' from '%s'", tag, path)
 
-            victim = next(iter(subprocessor.get_nodes(subpath))).node
-            if victim not in parent:
-                if not noprint:
-                    self.logger.warning(
-                        "No victim '%s' found in parent '%s'", tag, path
-                    )
-                return False
-
-            parent.remove(victim)
-
-        self.logger.trace("Removed element '%s' from '%s'", tag, path)
-        return True
+        return ret
 
     def element_remove_all(self, path: str, tag: str, noprint: bool = False) -> bool:
-        """Remove all matching elements at the specified path."""
-        spec = yamlpath.YAMLPath(path)
-        matches = list(self.processor.get_nodes(spec))
+        """Remove the matching element at the specified path.
 
-        if len(matches) == 0:
-            if not noprint:
-                self.logger.warning("Parent element '%s' not found", path)
-            return False
+        YAML mappings have unique keys, so a tag matches at most one child of a
+        given parent -- "remove all matching" collapses to a single removal.
+        (The genuine multi-match case only exists in XML, where a parent may
+        have several children with the same tag.) Delegates to element_remove.
 
-        removed_count = 0
-        for node_coord in matches:
-            if hasattr(node_coord, "node") and node_coord.node is not None:
-                parent = node_coord.node
-            else:
-                continue
-
-            if not isinstance(parent, dict):
-                continue
-
-            if tag in parent:
-                del parent[tag]
-                removed_count += 1
-                self.logger.trace("Removed element '%s' from '%s'", tag, path)
-
-        if removed_count == 0:
-            if not noprint:
-                self.logger.warning(
-                    "No victims matching '%s' found in parent '%s'", tag, path
-                )
-            return False
-
-        return True
+        Note: this does NOT iterate over multiple parents matching ``path``; a
+        non-unique parent path raises via element_remove, matching the other
+        plugins' contract.
+        """
+        return self.element_remove(path, tag, noprint=noprint)
 
     def element_add(  # noqa: C901
         self,

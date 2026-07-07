@@ -1,8 +1,8 @@
 .. _tutorials/plugins/expdef:
 
-======================================
-Experiment Definition Files (--expdef)
-======================================
+================================================
+New Experiment Definition File Plugin (--expdef)
+================================================
 
 This page covers the contract that experiment definition template files must
 satisfy, independent of format, and then walks through how to create a new
@@ -22,18 +22,19 @@ reads it once per batch and applies modifications from batch criteria and
 requirements apply regardless of format:
 
 #. **Single file.** The template must be a single file. Any configuration not
-   reachable within it cannot be varied by SIERRA. If your simulator normally
-   uses multiple config files, provide an ``expdef_flatten()`` hook in your
-   engine plugin to collapse them at stage 1 startup--see
-   :ref:`tutorials/plugins/engine`.
+   reachable within it cannot be varied by SIERRA.
 
    If your simulator normally expects multiple configuration files (a common
-   pattern in ROS launch setups), you have two options:
+   pattern in, e.g., ROS launch setups), you have two options:
 
-   #. Flatten the configuration into a single file before passing it to
-      SIERRA. The :term:`Engine` plugin can provide an ``expdef_flatten()`` hook
-      that SIERRA calls at the start of stage 1 to perform this transformation
-      automatically. See :ref:`plugins/engine` for how to implement this hook.
+   #. Flatten the configuration into a single file. Each expdef plugin may
+      implement a ``flatten(keys)`` method (see
+      :ref:`tutorials/plugins/expdef`) that inlines external-file references
+      identified by ``keys``. An :term:`Engine` plugin invokes this at the
+      start of stage 1, backend-agnostically, by resolving the expdef module
+      from ``--expdef`` and calling ``flatten()`` on it. Not every backend
+      implements flattening (e.g., the XML plugin does not). See
+      :ref:`tutorials/plugins/engine` for how the engine drives this.
 
    #. Factor out only the parameters SIERRA needs to vary into the template and
       load the remaining files from fixed paths within your project.  This is

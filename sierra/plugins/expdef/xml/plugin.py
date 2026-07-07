@@ -56,7 +56,9 @@ class Writer:
             k in config and config[k] is not None
             for k in ["new_children_parent", "new_children"]
         ):
-            self._add_new_children(config, tree)
+            # May return a new root element (as_root_elt spec), which replaces
+            # `tree` for the graft step and the final write below.
+            tree = self._add_new_children(config, tree)
 
         # Grafts are not required
         if all(
@@ -74,32 +76,49 @@ class Writer:
     def _add_grafts(self, config: dict, tree: ET.Element) -> None:
 
         graft_parent = tree.find(config["child_grafts_parent"])
-        assert graft_parent is not None, f"Bad parent '{graft_parent}' for grafting"
+        assert (
+            graft_parent is not None
+        ), f"Bad parent '{config['child_grafts_parent']}' for grafting"
 
         for g in config["child_grafts"]:
             self.logger.trace("Graft tree@'%s' as child under '%s'", g, graft_parent)
             elt = self.root.find(g)
+            assert elt is not None, f"Could not find graft source '{g}'"
             graft_parent.append(elt)
 
-    def _add_new_children(self, config: dict, tree: ET.ElementTree) -> None:
+    def _add_new_children(
+        self, config: dict, tree: ET.Element
+    ) -> ET.Element:
         """Given the experiment definition, add new children as configured.
 
         We operate on the whole definition in-situ, rather than creating a new
         subtree with all the children because that is less error prone in terms
         of grafting the new subtree back into the experiment definition.
+
+        Returns the root element to operate on going forward. This is normally
+        the ``tree`` passed in, but if a spec is flagged ``as_root_elt`` it is a
+        freshly-created root element which *replaces* ``tree`` (used to build an
+        output file from scratch and then graft real content underneath it).
         """
+        # Handle an as-root spec first: it establishes a brand-new root element
+        # that replaces the incoming tree. Subsequent normal children (and later
+        # grafts) are resolved against this new root.
+        for spec in config["new_children"]:
+            if spec.as_root_elt:
+                # 'tag' is the new root's name; 'path' is empty for as_root
+                # specs (see ElementAdd.as_root), so it must NOT be used here.
+                tree = ET.Element(spec.tag, spec.attr if spec.attr else {})
+                self.logger.trace("Create new root element '%s'", spec.tag)
 
         parent = tree.find(config["new_children_parent"])
 
-        assert (
-            parent is not None
-        ), f"Could not find parent '{0}' of new children".format(
-            config["new_children_parent"]
+        assert parent is not None, (
+            f"Could not find parent '{config['new_children_parent']}' of new "
+            "children"
         )
         for spec in config["new_children"]:
             if spec.as_root_elt:
-                # Special case: Adding children to an empty tree
-                tree = ET.Element(spec.path, spec.attr)
+                # Already handled above.
                 continue
 
             elt = parent.find(spec.path)
@@ -116,6 +135,8 @@ class Writer:
                 spec.tag,
                 spec.path,
             )
+
+        return tree
 
     def _prepare_tree(
         self, base_opath: pathlib.Path, config: dict
@@ -190,6 +211,24 @@ class ExpDef(definition.BaseExpDef):
     def flatten(self, keys: list[str]) -> None:
         raise NotImplementedError("The XML expdef plugin does not support flattening")
 
+    @staticmethod
+    def _is_attr_value(value: tp.Any) -> bool:
+        """Determine if a value qualifies as an attribute value.
+
+        Unlike the YAML and JSON plugins, XML has no array/object types: an
+        attribute value is always serialized as a string. A list or dict
+        therefore cannot be represented as an XML attribute -- assigning one
+        would be silently stringified by ElementTree into a Python-repr string
+        (e.g. ``ports="[80, 443]"``), corrupting the output.
+
+        This helper exists so the XML plugin shares the same vocabulary as the
+        other formats, but here it only ever returns True for genuine scalars.
+        SIERRA's notion of an "array attribute" (a flat list of scalars) is not
+        expressible in XML and is rejected by :meth:`attr_change` /
+        :meth:`attr_add` rather than classified here.
+        """
+        return not isinstance(value, (list, dict))
+
     def attr_get(self, path: str, attr: str) -> tp.Optional[tp.Union[str, int, float]]:
         el = self.root.find(path)
         if el is not None and attr in el.attrib:
@@ -214,6 +253,18 @@ class ExpDef(definition.BaseExpDef):
                 self.logger.warning("Attribute '%s' not found in path '%s'", attr, path)
             return False
 
+        # XML attribute values are strings; a list/dict cannot be represented
+        # and would be silently corrupted on write. Reject it explicitly.
+        if not self._is_attr_value(value):
+            if not noprint:
+                self.logger.warning(
+                    "Cannot assign non-scalar value to XML attribute '%s' in '%s'; "
+                    "XML attributes cannot hold arrays or objects",
+                    attr,
+                    path,
+                )
+            return False
+
         el.attrib[attr] = value
         self.logger.trace("Modify attr: '%s/%s' = '%s'", path, attr, value)
 
@@ -236,6 +287,18 @@ class ExpDef(definition.BaseExpDef):
         if attr in el.attrib:
             if not noprint:
                 self.logger.warning("Attribute '%s' already in path '%s'", attr, path)
+            return False
+
+        # XML attribute values are strings; a list/dict cannot be represented
+        # and would be silently corrupted on write. Reject it explicitly.
+        if not self._is_attr_value(value):
+            if not noprint:
+                self.logger.warning(
+                    "Cannot assign non-scalar value to XML attribute '%s' in '%s'; "
+                    "XML attributes cannot hold arrays or objects",
+                    attr,
+                    path,
+                )
             return False
 
         el.set(attr, value)

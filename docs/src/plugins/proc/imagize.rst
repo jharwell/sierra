@@ -20,24 +20,24 @@ Requirements
 ============
 
 If :term:`Projects <Project>` or :term:`Engines <Engine>` generate files within
-the ``main.run_metrics_leaf`` (see :ref:`tutorials/project/config`) directory
+the ``main.run.output_leaf`` (see :ref:`tutorials/project/config`) directory
 for each experimental run which meet the following criteria, then SIERRA can
 turn them into images and render them:
 
-- The files reside in a  subdirectory of ``main.run_metrics_leaf``.
+- The files reside in a  subdirectory of ``main.run.output_leaf``.
 
 - The files have a common stem with a unique numeric ID.
 
-- The stem of all files in the subdir of ``main.run_metrics_leaf`` is the same
+- The stem of all files in the subdir of ``main.run.output_leaf`` is the same
   as the subdir name. For example, if the directory name was
-  ``foobar/swarm-distribution`` under ``main.run_metrics_leaf`` then all files
+  ``foobar/swarm-distribution`` under ``main.run.output_leaf`` then all files
   within that directory must be named according to
   ``foobar/swarm-distribution/swarm-distributionXXXXX.<ext>``, where ``XXXXX``
   is any length numeric prefix (possibly preceded by an underscore or dash).
   ``<ext>`` is any extension supported by the currently selected :ref:`storage
   plugin <plugins/storage>`.
 
-- The name of the subdir of ``main.run_metrics_leaf`` has a corresponding entry
+- The name of the subdir of ``main.run.output_leaf`` has a corresponding entry
   in ``graphs.yaml``. This is to enable selective imagizing of graphs, so that
   you don't get bogged down if you want to capture imagizing data en masse, but
   only render some of it to videos later. See :ref:`plugins/prod/graphs`

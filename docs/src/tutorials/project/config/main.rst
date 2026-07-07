@@ -22,22 +22,14 @@ config/main.yaml
              # anything; this is the interface link between where the
              # project code outputs things and where SIERRA looks for
              # outputs.
-             run_metrics_leaf: 'metrics'
+             output_leaf: 'metrics'
 
              # The name of the shared library where project code can be
              # found, sans file extension. Must include
-             # 'lib'. Optional. If not present, then SIERRA will use
-             # ``--project`` as the name of the library to tell ARGoS to
-             # use.
+             # 'lib'. Optional. If not present, then SIERRA can use
+             # ``--project`` as the name of the a shared library to load
+             # for project code if needed.
              library_name: 'libawesome'
-
-           # Configuration for performance measures. This key is mandatory
-           # for all experiments. The value is the location of the .yaml
-           # configuration file for performance measures. It is a separate
-           # config file so that multiple scenarios within a single
-           # project which define performance measures in different ways
-           # can be easily accommodated without copy-pasting.
-           perf: 'perf-config.yaml'
 
    .. tab-item:: ROS1+Gazebo
 
@@ -57,16 +49,7 @@ config/main.yaml
              # anything; this is the interface link between where the
              # project code outputs things and where SIERRA looks for
              # outputs.
-             run_metrics_leaf: 'metrics'
-
-
-           # Configuration for performance measures. This key is mandatory
-           # for all experiments. The value is the location of the .yaml
-           # configuration file for performance measures. It is a separate
-           # config file so that multiple scenarios within a single
-           # project which define performance measures in different ways
-           # can be easily accommodated without copy-pasting.
-           perf: 'perf-config.yaml'
+             output_leaf: 'metrics'
 
         # Configuration specific to the ROS engines. This
         # dictionary is required if that engine is selected, and
@@ -126,15 +109,7 @@ config/main.yaml
              # anything; this is the interface link between where the
              # project code outputs things and where SIERRA looks for
              # outputs.
-             run_metrics_leaf: 'metrics'
-
-           # Configuration for performance measures. This key is mandatory
-           # for all experiments. The value is the location of the .yaml
-           # configuration file for performance measures. It is a separate
-           # config file so that multiple scenarios within a single
-           # project which define performance measures in different ways
-           # can be easily accommodated without copy-pasting.
-           perf: 'perf-config.yaml'
+             output_leaf: 'metrics'
 
         # Configuration specific to the ROS engines. This
         # dictionary is required if that engine is selected, and

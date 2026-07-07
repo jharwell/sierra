@@ -160,8 +160,7 @@ stage 2, which can then be rendered into per-run videos during stage 4 (see
 
 To use:
 
-- Install :program:`Xvfb` so that it can installed/can be found by the shell
-  during stage 2.
+- Install :program:`Xvfb` so that it can be found by the shell during stage 2.
 
 - Pass :ref:`--engine-vc<src/reference/cli:sierra---engine-vc>` during
   stage 2. This will slow ARGoS down a LOT, so if you use it,
