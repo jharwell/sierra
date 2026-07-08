@@ -43,7 +43,7 @@ def proc_batch_exp(
     parallelism = cmdopts["processing_parallelism"]
 
     tasks = []
-    run_metrics_leaf = main_config["sierra"]["run"]["run_metrics_leaf"]
+    run_output_leaf = main_config["sierra"]["run"]["output_leaf"]
 
     for exp in exp_to_proc:
         tasks.extend(
@@ -51,7 +51,7 @@ def proc_batch_exp(
                 (
                     run_output_root,
                     pathset.stat_root / exp.name,
-                    run_metrics_leaf,
+                    run_output_leaf,
                     cmdopts["storage"],
                     cmdopts["dataop"],
                 )
@@ -69,7 +69,7 @@ def proc_batch_exp(
 def _worker(
     run_output_root: pathlib.Path,
     exp_stat_root: pathlib.Path,
-    run_metrics_leaf: str,
+    run_output_leaf: str,
     storage: str,
     dataop: str,
 ) -> None:
@@ -80,12 +80,12 @@ def _worker(
 
         exp_stat_root: Path to the statistics root for the :term:`Experiment`.
 
-        run_metrics_leaf: Relative prefix in the run output root for data.
+        run_output_leaf: Relative prefix in the run output root for data.
 
         storage: Storage medium.
     """
     plugin = pm.pipeline.get_plugin_module(storage)
-    for item in (run_output_root / run_metrics_leaf).rglob("*"):
+    for item in (run_output_root / run_output_leaf).rglob("*"):
         if (
             item.is_dir()
             or item.stat().st_size == 0

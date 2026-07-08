@@ -94,7 +94,8 @@ class BaseGatherer:
         # full absolute path).
         self.template_input_fname = self.gather_opts["template_input_leaf"]
         self.main_config = main_config
-        self.run_metrics_leaf = main_config["sierra"]["run"]["run_metrics_leaf"]
+
+        self.run_output_leaf = main_config["sierra"]["run"]["output_leaf"]
 
         self.logger = logging.getLogger(__name__)
 
@@ -166,7 +167,7 @@ class BaseGatherer:
         to_process = ProcessSpec(gather=spec)
 
         for _, run in enumerate(runs):
-            path = run / self.run_metrics_leaf / spec.item_stem_path
+            path = run / self.run_output_leaf / spec.item_stem_path
             if path.exists() and path.stat().st_size > 0:
                 df = storage.df_read(
                     path,
@@ -226,10 +227,10 @@ class BaseGatherer:
         start = time.time()
 
         for exp1 in experiments:
-            csv_root1 = exp1 / str(self.run_metrics_leaf)
+            csv_root1 = exp1 / str(self.run_output_leaf)
 
             for exp2 in experiments:
-                csv_root2 = exp2 / self.run_metrics_leaf
+                csv_root2 = exp2 / self.run_output_leaf
 
                 if not csv_root2.is_dir():
                     continue

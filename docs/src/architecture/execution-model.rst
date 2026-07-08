@@ -11,10 +11,13 @@ Execution Model
 
 During stage 2, SIERRA translates an abstract batch experiment into one or more
 *cmdfiles* — plain text files where each line is a complete shell command for a
-single :term:`Experimental Run`. GNU parallel reads these files and executes the
-lines in them, up to the concurrency limit set by the execution environment.
-The structure of those cmdfiles, and therefore the shape of parallelism, is
-determined by the *parallelism paradigm* declared by the engine plugin.
+single :term:`Experimental Run`. GNU parallel (or whatever underlying execution
+engine is used by the selected
+:ref:`--execenv<src/reference/cli:sierra---execenv>`) reads these files and
+executes the lines in them, up to the concurrency limit set by the execution
+environment, if any.  The structure of those cmdfiles, and therefore the shape
+of parallelism, is determined by the *parallelism paradigm* declared by the
+engine plugin.
 
 Hook Structure
 ==============
@@ -33,7 +36,8 @@ corresponding to the three interfaces in
    * - ``pre_*_cmds()``
      - Setup commands run before execution begins at the given scope. Used for
        launching background processes or daemons that should be running before
-       any experimental run starts (e.g., ``roscore``, a visualisation daemon).
+       any experimental run starts (e.g., ``roscore``, a visualisation daemon,
+       etc.).
 
    * - ``exec_*_cmds()``
      - The command(s) that actually execute the work at the given scope. For a
@@ -165,12 +169,13 @@ The paradigm determines the *structure* of cmdfiles; the execution environment
 determines *how many lines* from those cmdfiles execute simultaneously. The
 relevant controls are:
 
-- :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra---exec-jobs-per-node>` — explicit
-  override of concurrent jobs per node.  This is the most direct control if you
-  know how many things you want running at once.
+-
+  :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra---exec-jobs-per-node>`
+  — explicit override of concurrent jobs per node.  This is the most direct
+  control if you know how many things you want running at once.
 
 - HPC scheduler parameters — for SLURM and PBS environments, SIERRA reads
-  :envvar`SLURM_TASKS_PER_NODE` or :envvar:`PBS_NUM_PPN` to set concurrency
+  :envvar:`SLURM_TASKS_PER_NODE` or :envvar:`PBS_NUM_PPN` to set concurrency
   automatically from the resources the scheduler has allocated. See
   :ref:`plugins/execenv` for the full variable list each environment reads.
 

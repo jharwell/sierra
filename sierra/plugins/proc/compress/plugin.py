@@ -43,13 +43,13 @@ def proc_batch_exp(
     parallelism = cmdopts["processing_parallelism"]
 
     tasks = []
-    run_metrics_leaf = main_config["sierra"]["run"]["run_metrics_leaf"]
+    run_output_leaf = main_config["sierra"]["run"]["output_leaf"]
 
     for exp in exp_to_proc:
         tasks.extend(
             _build_tasklist_for_exp(
                 pathset.output_root / exp.name,
-                run_metrics_leaf,
+                run_output_leaf,
                 cmdopts["compress_remove_after"],
             )
         )
@@ -70,7 +70,7 @@ def proc_batch_exp(
 
 def _build_tasklist_for_exp(
     exp_output_root: pathlib.Path,
-    run_metrics_leaf: pathlib.Path,
+    run_output_leaf: pathlib.Path,
     remove_after: bool,
 ) -> list[tuple[pathlib.Path, pathlib.Path, bool]]:
     """Add root dir each experimental run to queue for processing.
@@ -82,7 +82,7 @@ def _build_tasklist_for_exp(
     return [
         (
             exp_output_root,
-            exp.relative_to(exp_output_root) / run_metrics_leaf,
+            exp.relative_to(exp_output_root) / run_output_leaf,
             remove_after,
         )
         for exp in exp_output_root.iterdir()

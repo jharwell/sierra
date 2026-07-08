@@ -31,7 +31,7 @@ engine vendor, and they are interchangeable in the sense that you can swap one
 for another without touching your research code.
 
 The :ref:`--project<src/reference/cli:sierra---project>` plugin is different. It is your code:
-batch criteria, controller..  and scenario definitions, graph configuration, and
+batch criteria, controller,  and scenario definitions, graph configuration, and
 any processing hooks specific to your output data. Everything that makes your
 experiments distinct lives there.
 
@@ -45,9 +45,10 @@ Why Your Available Flags Depend on Which Plugins You Select
 
 SIERRA does not have a fixed set of command line options. Before parsing any
 experiment arguments, SIERRA loads the plugins you have selected and each one
-contributes its own argument groups to the parser. This is why ``sierra
---help`` output changes depending on what :ref:`--engine<src/reference/cli:sierra---engine>`
-and :ref:`--execenv<src/reference/cli:sierra---execenv>` you pass.
+contributes its own argument groups to the parser. This is why ``sierra --help``
+output changes depending on what e.g.,
+:ref:`--engine<src/reference/cli:sierra---engine>` and
+:ref:`--execenv<src/reference/cli:sierra---execenv>` you pass.
 
 At ``--log-level=DEBUG`` you can watch this happen::
 
@@ -58,8 +59,8 @@ At ``--log-level=DEBUG`` you can watch this happen::
   2025-08-16 17:19:40 DEBUG sierra.main - Loaded --prod=prod.graphs cmdline
 
 Once all plugins are loaded, the full cmdline is parsed and each plugin's
-``to_cmdopts()`` function contributes to a shared ``cmdopts`` dictionary that
-is passed through the pipeline::
+``to_cmdopts()`` function contributes to a shared ``cmdopts`` dictionary that is
+passed through the pipeline::
 
   2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --engine=starfleet.enterprise
   2025-08-16 17:19:40 DEBUG sierra.core.pipeline.pipeline - Updating cmdopts from --execenv=hpc.local

@@ -205,12 +205,12 @@ sample project to ``$HOME/research``; adjust if needed.
       .. NOTE::
 
          :ref:`--with-robot-rab<src/plugins/engine/argos/index:sierra---with-robot-rab>`
-         :ref:and
+         and
          :ref:`--with-robot-leds<src/plugins/engine/argos/index:sierra---with-robot-leds>`
-         :ref:are required here because the sample project's controllers use
-         :ref:those sensor/actuator types. SIERRA strips unused sensor and
-         :ref:actuator XML tags by default to reduce ARGoS's memory footprint;
-         :ref:these flags restore them.
+         are required here because the sample project's controllers use those
+         sensor/actuator types. SIERRA strips unused sensor and actuator XML
+         tags by default to reduce ARGoS's memory footprint; these flags restore
+         them.
 
    .. tab-item:: ROS1+Gazebo
 
