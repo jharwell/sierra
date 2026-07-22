@@ -56,7 +56,7 @@ the purposes of explanation, I will use the following partial SIERRA option sets
 to explain the additions to the experiment tree for stage 5::
 
   --pipeline 5 \
-  --controller-comparison \
+  --across=controllers \
   --batch-criteria population_size.Log8 \
   --controllers-list d0.CRW,d0.DPO \
   --sierra-root=$HOME/exp"
@@ -79,7 +79,28 @@ project). ``d0.CRW+d0.DPO-cc-csvs/`` are the files used to create the graphs.
 Graph YAML Config
 -----------------
 
-Unless stated otherwise, all keys are required.
+Comparison graphs live under the ``inter-controller`` key in
+``<project>/config/graphs.yaml``. Unlike the ``intra-exp``/``inter-exp``
+sections used by the :ref:`prod.graphs <plugins/prod/graphs>` plugin, this
+section is a **flat list** of graphs with no category level, because the things
+being compared are named directly on the cmdline rather than being
+enabled/disabled via controller YAML.
+
+``src_stem``, ``dest_stem`` and ``type`` are required; everything else is
+optional and defaults as noted below.
+
+.. IMPORTANT:: Comparison graphs use ``type: comparison_line``, which is
+               **not** the same as the ``summary_line`` type used by
+               ``prod.graphs``, despite both rendering as lines. A
+               ``summary_line`` plots one point per :term:`Experiment` within a
+               single batch; a ``comparison_line`` plots one line per
+               controller (or scenario) *across* batches. The two accept nearly
+               disjoint key sets, and are validated by different schemas.
+
+               .. versionchanged:: 1.5.12
+                  Renamed from ``summary_line``, which collided with the
+                  ``prod.graphs`` type of the same name. Existing configs must
+                  be updated.
 
 .. literalinclude:: cc_and_sc.yaml
 
@@ -124,6 +145,8 @@ Graph YAML Config
 -----------------
 
 Same syntax and meaning as the configuration for inter-controller comparison
-graphs.
+graphs, but under the ``inter-scenario`` key rather than ``inter-controller``.
+The example below shows the inter-controller form; substitute the section name
+for inter-scenario comparison.
 
 .. literalinclude:: cc_and_sc.yaml

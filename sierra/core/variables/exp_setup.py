@@ -30,8 +30,9 @@ def parse(arg: str, dflts: types.SimpleDict) -> types.CLIArgSpec:
     sections = sections[1:]
 
     # Get pretty name for logging
-    ret["pretty_name"] = ".".join(sections)
-    res = re.match(regex, ret["pretty_name"])
+    pretty_name = ".".join(sections)
+    ret["pretty_name"] = pretty_name
+    res = re.match(regex, pretty_name)
 
     assert (
         res is not None and len(res.groups()) >= 1 and len(res.groups()) <= 3

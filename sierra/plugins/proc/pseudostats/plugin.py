@@ -43,7 +43,7 @@ def proc_batch_exp(
     parallelism = cmdopts["processing_parallelism"]
 
     tasks = []
-    run_output_leaf = main_config["sierra"]["run"]["output_leaf"]
+    run_output_leaf = types.MainConfig.from_yaml(main_config).sierra.run.output_leaf
 
     for exp in exp_to_proc:
         tasks.extend(

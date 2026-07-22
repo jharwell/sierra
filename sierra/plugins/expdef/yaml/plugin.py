@@ -222,9 +222,10 @@ class ExpDef(definition.BaseExpDef):
         mod = False
 
         for node_coord in matches:
-            the_match = node_coord.node  # type: dict
-            # If parent maps to a dict or list, that isn't an attribute.
-            if not isinstance(the_match, (list, dict)):
+            the_match = node_coord.node  # type: tp.Any
+            # A parent that maps to a list (or a scalar) isn't an attribute
+            # container; only a dict can hold named attributes.
+            if not isinstance(the_match, dict):
                 continue
 
             # If the child doesn't exist in the parent, or if child maps to
@@ -256,7 +257,7 @@ class ExpDef(definition.BaseExpDef):
             self.logger.trace("Modify attr: '%s' = '%s'", full_path, value)
 
         if mod:
-            self.attr_chgs.add(definition.AttrChange(path, attr, value))
+            self.attr_chgs.add(definition.AttrChange(path, attr, tp.cast("tp.Union[str, int, float]", value)))
         else:
             self.logger.warning("Attribute '%s' not found in parent '%s'", attr, path)
 
@@ -302,7 +303,7 @@ class ExpDef(definition.BaseExpDef):
             full_path = f"{path}.{attr}" if path else attr
             self.logger.trace("Add new attribute: '%s' = '%s'", full_path, value)
 
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, tp.cast("tp.Union[str, int, float]", value)))
         return True
 
     def has_element(self, path: str) -> bool:
@@ -569,28 +570,18 @@ class ExpDef(definition.BaseExpDef):
                 str(attr),
             )
 
-        self.element_adds.append(definition.ElementAdd(path, tag, attr, allow_dup))
+        self.element_adds.append(definition.ElementAdd(path, tag, attr if attr else {}, allow_dup))
         return True
 
 
-def unpickle(
-    fpath: pathlib.Path,
-) -> tp.Optional[tp.Union[definition.AttrChangeSet, definition.ElementAddList]]:
+def unpickle(fpath: pathlib.Path) -> definition.ExpDefPickle:
     """Unpickle all YAML modifications from the pickle file at the path.
 
-    You don't know how many there are, so go until you get an exception.
+    Returns every modification kind (attribute changes, element additions,
+    and element removals) present in the pickle, so engines that set up
+    experiments with any combination of them round-trip completely.
     """
-    try:
-        return definition.AttrChangeSet.unpickle(fpath)
-    except EOFError:
-        pass
-
-    try:
-        return definition.ElementAddList.unpickle(fpath)
-    except EOFError:
-        pass
-
-    raise NotImplementedError
+    return definition.unpickle(fpath)
 
 
 __all__ = ["ExpDef", "unpickle"]

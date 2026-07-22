@@ -103,6 +103,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
         run: |
+          git config --global --add safe.directory ${{ github.workspace}}
           uv run -p 3.9 coveralls
 
   create-release:

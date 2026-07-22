@@ -125,13 +125,14 @@ class BaseBatchCriteria(base_variable.IBaseVariable):
             # DELETE the pickle file for each experiment here to make stage 1
             # idempotent.
             pkl_path = self.batch_input_root / exp_dirname / config.PICKLE_LEAF
-            exp_defi = scaffold_spec.mods[exp]
 
             if not scaffold_spec.is_compound:
+                exp_defi = scaffold_spec.mods[exp]
                 exp_defi.pickle(pkl_path, delete=True)
             else:
-                exp_defi[0].pickle(pkl_path, delete=True)
-                exp_defi[1].pickle(pkl_path, delete=False)
+                exp_defc = scaffold_spec.mods[exp]
+                exp_defc[0].pickle(pkl_path, delete=True)
+                exp_defc[1].pickle(pkl_path, delete=False)
 
     def scaffold_exps(
         self, batch_def: definition.BaseExpDef, cmdopts: types.Cmdopts
@@ -329,6 +330,8 @@ class XVarBatchCriteria(
             # Add all changes from each AttrChangeSet in the combination
             for change_set in combination:
                 for change in change_set:
+                    if isinstance(change, definition.NullMod):
+                        continue
                     combined.add(change)
 
             result.append(combined)
@@ -493,15 +496,17 @@ class XVarBatchCriteria(
             len(self.criterias) <= 2
         ), "Only {univar,bivar} batch criteria graph generation currently supported"
 
-        exp_names = self.gen_exp_names()
         if self.cardinality() == 1:
             info1 = self.criterias[0].graph_info(
-                cmdopts, exp_names=exp_names, batch_output_root=batch_output_root
+                cmdopts,
+                exp_names=None,
+                batch_output_root=batch_output_root,
             )
 
             info.xticks = info1.xticks
             info.xlabel = info1.xlabel
             info.xticklabels = info1.xticklabels
+            info.exp_names = info1.exp_names
 
         elif self.cardinality() == 2:
             c1_xnames = [f"c1-exp{i}" for i in range(0, self.criterias[0].n_exp())]

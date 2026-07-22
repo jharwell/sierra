@@ -14,10 +14,11 @@ import logging
 
 # Project packages
 from sierra.core import types, utils, batchroot, config
+from sierra.core.graphs import gconfig
 from sierra.plugins.prod.graphs import targets
 from sierra.core import plugin as pm
 from sierra.core.variables import batch_criteria as bc
-from . import line, heatmap
+from . import line, heatmap, histogram
 
 _logger = logging.getLogger(__name__)
 
@@ -43,31 +44,28 @@ def proc_batch_exp(
     """
     utils.dir_create_checked(pathset.graph_interexp_root, exist_ok=True)
 
-    loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
+    graphs_config = gconfig.load(cmdopts)
+    inter_config = gconfig.section(graphs_config, "inter-exp")
 
-    graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
-
-    if "inter-exp" not in graphs_config:
-        _logger.warning(
-            "Cannot generate graphs: 'inter-exp' key not found in YAML config"
-        )
+    if inter_config is None:
         return
 
+    loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
     controller_config = loader.load_config(cmdopts, config.PROJECT_YAML.controllers)
 
     info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
+    graph_targets = targets.inter_exp_calc(inter_config, controller_config, cmdopts)
 
     if criteria.cardinality() == 1:
         if not cmdopts["project_no_LN"]:
-            graph_targets = targets.inter_exp_calc(
-                graphs_config["inter-exp"], controller_config, cmdopts
-            )
             line.generate(cmdopts, pathset, graph_targets, info)
+        if not cmdopts["project_no_HG"]:
+            histogram.generate(cmdopts, pathset, graph_targets, info)
+    elif criteria.cardinality() == 2:
+        if not cmdopts["project_no_HM"]:
+            heatmap.generate(cmdopts, pathset, graph_targets, info)
     else:
-        graph_targets = targets.inter_exp_calc(
-            graphs_config["inter-exp"], controller_config, cmdopts
-        )
-        heatmap.generate(cmdopts, pathset, graph_targets, info)
+        raise RuntimeError("Batch criteria with cardinality > 2 not supported")
 
 
 __all__ = [

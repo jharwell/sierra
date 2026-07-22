@@ -92,7 +92,7 @@ def _execute_for_batch(
 
     gathered = [
         pool.apply_async(_gather_worker, (gatherq, processq, main_config, worker_opts))
-        for _ in range(0, pool_opts["parallelism"])
+        for _ in range(0, int(pool_opts["parallelism"]))
     ]
     _logger.debug("Waiting for gathering to finish")
     for g in gathered:
@@ -108,7 +108,7 @@ def _execute_for_batch(
             _process_worker,
             (processq, main_config, pathset.stat_interexp_root, worker_opts),
         )
-        for _ in range(0, pool_opts["parallelism"])
+        for _ in range(0, int(pool_opts["parallelism"]))
     ]
 
     # To capture the otherwise silent crashes when something goes wrong in
@@ -123,8 +123,8 @@ def _execute_for_batch(
 
 
 def _gather_worker(
-    gatherq: mp.Queue,
-    processq: mp.Queue,
+    gatherq: queue.Queue,
+    processq: queue.Queue,
     main_config: types.YAMLDict,
     gather_opts: types.SimpleDict,
 ) -> None:
@@ -141,7 +141,7 @@ def _gather_worker(
 
 
 def _process_worker(
-    processq: mp.Queue,
+    processq: queue.Queue,
     main_config: types.YAMLDict,
     batch_stat_interexp_root: pathlib.Path,
     process_opts: types.SimpleDict,
@@ -180,7 +180,7 @@ class ExpDataGatherer(gather.BaseGatherer):
         self, run_output_root: pathlib.Path, exp_name: str
     ) -> list[gather.GatherSpec]:
         proj_output_root = run_output_root / str(self.run_output_leaf)
-        plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
+        plugin = pm.pipeline.get_plugin_module(str(self.gather_opts["storage"]))
 
         if not plugin.supports_output(pl.DataFrame):
             raise RuntimeError(
@@ -188,7 +188,7 @@ class ExpDataGatherer(gather.BaseGatherer):
             )
 
         config_path = pathlib.Path(
-            self.gather_opts["project_config_root"], config.PROJECT_YAML.collate
+            str(self.gather_opts["project_config_root"]), config.PROJECT_YAML.collate
         )
 
         try:
@@ -268,7 +268,7 @@ def _proc_single_exp(
 
     for k, v in collated.items():
         file_path, col = k
-        df = utils.df_fill(v, process_opts["df_homogenize"])
+        df = utils.df_fill(v, str(process_opts["df_homogenize"]))
         parent = batch_stat_collate_root / spec.gather.exp_name / file_path.parent
         utils.dir_create_checked(parent, exist_ok=True)
 

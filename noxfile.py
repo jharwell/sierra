@@ -73,60 +73,8 @@ def analyze_pytype(session):
 def analyze_mypy(session):
     session.install(".")  # same as 'pip3 install .'
     session.install(".[devel]")  # same as 'pip3 install .[devel]'
-
-    session.run(
-        "mypyrun",
-        "--select",
-        # No syntax errors
-        "syntax",
-        # All names, attributes, should be defined, and no redefinitions
-        "name-defined",
-        "no-redef",
-        # 'attr-defined',
-        # 'union-attr',
-        "var-annotated",
-        # All functions annotated with a non-None return type should
-        # return something; don't check return value if the function is
-        # marked as returning None. Also check return type
-        # compatability.
-        "return",
-        "func-returns-value",
-        "return-value",
-        # Types for what is compared in assert()s must match.
-        "assert-type",
-        # No instantiation of abstract classes
-        "abstract",
-        # All types are known and valid
-        "has-type",
-        "valid-type",
-        "type-var",
-        "name-match",
-        "no-untype-def",
-        "redundant-cast",
-        "disallow-untyped-calls",
-        "check-untyped-defs",
-        "disallow-untyped-defs",
-        "disallow-incomplete-defs"
-        # List types
-        "list-item",
-        # Dict types
-        "typeddict-item",
-        # Check override compatability
-        "override",
-        "call-overload",
-        # Function calls
-        "call-arg",
-        # 'arg-type',
-        "no-untyped-call",
-        "no-any-return",
-        # Misc.
-        "misc",
-        "unreachable",
-        "redundant-expr",
-        "truthy-bool",
-        "--",
-        "sierra",
-    )
+    session.run("mypy", "--install-types", "--non-interactive", external=False)
+    session.run("mypy", "--install-types")
 
 
 @nox.session(python=utils.versions)

@@ -23,7 +23,7 @@ class EngineCmdline(cmdline.ROSCmdline):
 
     def __init__(
         self,
-        parents: tp.Optional[list[argparse.ArgumentParser]],
+        parents: list[argparse.ArgumentParser],
         stages: list[int],
     ) -> None:
         super().__init__(parents, stages)

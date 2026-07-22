@@ -9,6 +9,7 @@ Classes for gathering :term:`Raw Output Data`  files in a batch.
 # Core packages
 import re
 import multiprocessing as mp
+import queue
 import typing as tp
 import time
 import datetime
@@ -85,7 +86,7 @@ class BaseGatherer:
         self,
         main_config: types.YAMLDict,
         gather_opts: types.SimpleDict,
-        processq: mp.Queue,
+        processq: queue.Queue,
     ) -> None:
         self.processq = processq
         self.gather_opts = gather_opts
@@ -95,7 +96,9 @@ class BaseGatherer:
         self.template_input_fname = self.gather_opts["template_input_leaf"]
         self.main_config = main_config
 
-        self.run_output_leaf = main_config["sierra"]["run"]["output_leaf"]
+        self.run_output_leaf = types.MainConfig.from_yaml(
+            main_config
+        ).sierra.run.output_leaf
 
         self.logger = logging.getLogger(__name__)
 
@@ -171,7 +174,7 @@ class BaseGatherer:
             if path.exists() and path.stat().st_size > 0:
                 df = storage.df_read(
                     path,
-                    self.gather_opts["storage"],
+                    str(self.gather_opts["storage"]),
                     run_output_root=run,
                 )
                 if nonumeric := [
@@ -197,7 +200,7 @@ class BaseGatherer:
             mem = psutil.virtual_memory()
             avail = mem.available / mem.total
             free_percent = avail * 100
-            free_limit = 100 - self.gather_opts["processing_mem_limit"]
+            free_limit = 100 - int(self.gather_opts["processing_mem_limit"])
 
             if free_percent >= free_limit:
                 return
@@ -300,8 +303,8 @@ class BaseGatherer:
 
             # Verify both dataframes have same # columns, and that
             # column sets are identical
-            df1 = storage.df_read(path1, self.gather_opts["storage"])
-            df2 = storage.df_read(path2, self.gather_opts["storage"])
+            df1 = storage.df_read(path1, str(self.gather_opts["storage"]))
+            df2 = storage.df_read(path2, str(self.gather_opts["storage"]))
 
             assert len(df1.columns) == len(
                 df2.columns

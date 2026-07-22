@@ -45,7 +45,7 @@ class ExpSetup:
         self.barrier_start = barrier_start
         self.robots_need_timekeeper = robots_need_timekeeper
 
-        self.element_adds = None
+        self.element_adds: tp.Optional[definition.ElementAddList] = None
 
     def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         return []
@@ -157,6 +157,7 @@ class ExpSetup:
                 )
             self.element_adds = adds
 
+        assert self.element_adds is not None
         return [self.element_adds]
 
     def gen_files(self) -> None:

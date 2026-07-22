@@ -1,31 +1,168 @@
-# Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
-#  SPDX-License-Identifier: MIT
+# Copyright 2026 John Harwell, All rights reserved.
+#
+# SPDX-License-Identifier: MIT
 #
 """
 Generate graphs within a single :term:`Experiment`.
 """
 
 # Core packages
-import os
 import copy
 import typing as tp
 import logging
-import pathlib
+import json
 
 # 3rd party packages
-import yaml
-import json
 import numpy as np
 
 # Project packages
-
 import sierra.core.plugin as pm
 from sierra.core import types, utils, batchroot, exproot, config, graphs
 from sierra.core.variables import batch_criteria as bc
+from sierra.core.graphs import gconfig
 
 
 _logger = logging.getLogger(__name__)
+
+
+class _GraphKind(tp.NamedTuple):
+    """How to turn one validated graph definition into a rendered graph.
+
+    Attributes:
+        cli_flag: The ``cmdopts`` key of the ``--project-no-XX`` flag which
+                  suppresses this kind of graph.
+
+        label: Human-readable plural name, used in progress logging.
+
+        func: The :mod:`sierra.core.graphs` entry point which renders it.
+
+        medium: The storage medium the graph reads from.
+
+        kwargs_fn: Maps a validated graph definition (plus cmdopts and the
+                per-experiment pathset) onto the keyword arguments for `func`.
+
+        wants_model_root: Whether this graph type can overlay model
+                          predictions. Only linegraphs currently can.
+    """
+
+    cli_flag: str
+    label: str
+    func: tp.Callable[..., bool]
+    medium: str
+    kwargs_fn: tp.Callable[..., dict[str, tp.Any]]
+    wants_model_root: bool = False
+
+
+def _heatmap_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "xlabel": loaded["xlabel"],
+        "ylabel": loaded["ylabel"],
+        "zlabel": loaded["zlabel"],
+        "colnames": (loaded["x"], loaded["y"], loaded["z"]),
+    }
+
+
+def _stacked_line_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "xlabel": loaded["xlabel"],
+        "ylabel": loaded["ylabel"],
+        "cols": loaded.get("cols", None),
+        "legend": loaded.get("legend", loaded.get("cols", None)),
+        "points": loaded["points"],
+        "logyscale": loaded.get("logy", cmdopts["plot_log_yscale"]),
+        "stats": cmdopts.get("dist_stats", "none"),
+        "xticks": _xticks(cmdopts, pathset),
+    }
+
+
+def _confusion_matrix_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "truth_col": loaded["truth_col"],
+        "predicted_col": loaded["predicted_col"],
+        "xlabels_rotate": loaded["xlabels_rotate"],
+    }
+
+
+def _histogram_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "xlabel": loaded["xlabel"],
+        "ylabel": loaded["ylabel"],
+        "cols": loaded["cols"],
+        "bins": loaded.get("bins", None),
+        "kind": loaded["kind"],
+        "legend": loaded.get("legend", loaded["cols"]),
+    }
+
+
+def _network_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "layout": loaded["layout"],
+        "node_color_attr": loaded.get("node_color_attr", None),
+        "node_size_attr": loaded.get("node_size_attr", None),
+        "edge_color_attr": loaded.get("edge_color_attr", None),
+        "edge_weight_attr": loaded.get("edge_weight_attr", None),
+        "edge_label_attr": loaded.get("edge_label_attr", None),
+    }
+
+
+#: Maps the ``type`` of a graph onto everything needed to render it. Adding a
+#: graph type is a single entry here plus a schema in
+#: :mod:`sierra.core.graphs.schema`; there is no separate ``_generate_*()``
+#: function to write and no new branch in :meth:`_ExpGraphGenerator.__call__`.
+KINDS = {
+    "stacked_line": _GraphKind(
+        cli_flag="project_no_LN",
+        label="Linegraphs",
+        func=graphs.stacked_line,
+        medium="storage.csv",
+        kwargs_fn=_stacked_line_kwargs,
+        wants_model_root=True,
+    ),
+    "heatmap": _GraphKind(
+        cli_flag="project_no_HM",
+        label="Heatmaps",
+        func=graphs.heatmap,
+        medium="storage.csv",
+        kwargs_fn=_heatmap_kwargs,
+    ),
+    "confusion_matrix": _GraphKind(
+        cli_flag="project_no_CM",
+        label="Confusion matrices",
+        func=graphs.confusion_matrix,
+        medium="storage.csv",
+        kwargs_fn=_confusion_matrix_kwargs,
+    ),
+    "histogram": _GraphKind(
+        cli_flag="project_no_HG",
+        label="Histograms",
+        func=graphs.histogram,
+        medium="storage.csv",
+        kwargs_fn=_histogram_kwargs,
+    ),
+    "network": _GraphKind(
+        cli_flag="project_no_NW",
+        label="Networks",
+        func=graphs.network,
+        medium="storage.grapml",
+        kwargs_fn=_network_kwargs,
+    ),
+}
 
 
 def proc_batch_exp(
@@ -45,6 +182,7 @@ def proc_batch_exp(
                    experiment.
     """
     info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
+    assert info.exp_names is not None
     exp_to_gen = utils.exp_range_calc(
         cmdopts["exp_range"], pathset.output_root, info.exp_names
     )
@@ -52,27 +190,17 @@ def proc_batch_exp(
     if not exp_to_gen:
         return
 
-    loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
+    graphs_config = gconfig.load(cmdopts)
+    intra_config = gconfig.section(graphs_config, "intra-exp")
 
-    graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
-
-    if "intra-exp" not in graphs_config:
-        _logger.warning(
-            "Cannot generate graphs: 'intra-exp' key not found in YAML config"
-        )
+    if intra_config is None:
         return
 
-    project_config_root = pathlib.Path(cmdopts["project_config_root"])
-    controllers_yaml = project_config_root / config.PROJECT_YAML.controllers
-
-    if controllers_yaml.exists():
-        with utils.utf8open(controllers_yaml) as f:
-            controller_config = yaml.load(f, yaml.FullLoader)
-    else:
-        controller_config = None
+    loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
+    controller_config = loader.load_config(cmdopts, config.PROJECT_YAML.controllers)
 
     generator = _ExpGraphGenerator(
-        main_config, controller_config, graphs_config["intra-exp"], cmdopts
+        main_config, controller_config, intra_config, cmdopts
     )
     for exp in exp_to_gen:
         exproots = exproot.PathSet(pathset, exp.name)
@@ -101,8 +229,8 @@ class _ExpGraphGenerator:
         controller_config: Parsed dictionary of controller YAML
                            configuration.
 
-        graphs_config: Parsed dictionary of intra-experiment graph
-                       configuration.
+        graphs_config: Parsed and validated dictionary of intra-experiment
+                       graph configuration.
 
         logger: The handle to the logger for this class. If you extend this
                class, you should save/restore this variable in tandem with
@@ -128,53 +256,54 @@ class _ExpGraphGenerator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, pathset: exproot.PathSet) -> None:
-        """
-        Generate all intra-experiment graphs for a single experiment.
+        """Generate all enabled intra-experiment graphs for one experiment.
 
-        Performs the following steps:
-
-            #. Generates linegraphs for each experiment in the batch.
-
-            #. Generates heatmaps for each experiment in the batch.
-
-            #. Generates confusion matrices for each experiment in the batch.
+        Each graph type in :data:`KINDS` is generated in turn, unless
+        suppressed by its ``--project-no-XX`` cmdline flag.
         """
         utils.dir_create_checked(pathset.graph_root, exist_ok=True)
 
-        LN_targets, HM_targets, CM_targets = self._calc_targets()
+        targets = self._calc_targets()
 
-        if not self.cmdopts["project_no_LN"]:
-            _generate_linegraphs(self.cmdopts, pathset, LN_targets)
+        for gtype, kind in KINDS.items():
+            if self.cmdopts[kind.cli_flag]:
+                continue
 
-        if not self.cmdopts["project_no_HM"]:
-            _generate_heatmaps(self.cmdopts, pathset, HM_targets)
+            _generate(self.cmdopts, pathset, targets, gtype, kind)
 
-        if not self.cmdopts["project_no_CM"]:
-            _generate_confusion_matrices(self.cmdopts, pathset, CM_targets)
-
-    def _calc_targets(
-        self,
-    ) -> tuple[list[types.YAMLDict], list[types.YAMLDict], list[types.YAMLDict]]:
+    def _calc_targets(self) -> list[list[types.YAMLDict]]:
         """Calculate what intra-experiment graphs should be generated.
 
         Uses YAML configuration for controller and intra-experiment graphs.
-        Returns a tuple of dictionaries defining what graphs to generate.  The
-        enabled graphs exist in their respective YAML configuration *and* are
-        enabled by the YAML configuration for the selected controller.
+        Returns a list of graph categories to generate.  The enabled graphs
+        exist in their respective YAML configuration *and* are enabled by the
+        YAML configuration for the selected controller.
+
+        Filtering by graph *type* happens in :func:`_generate`, so a single
+        list serves all graph types.
         """
-        keys = []
+        keys: list[str] = []
         if self.controller_config:
             for category in list(self.controller_config.keys()):
                 if category not in self.cmdopts["controller"]:
                     continue
-                for controller in self.controller_config[category]["controllers"]:
+                category_cfg = tp.cast(
+                    types.YAMLDict, self.controller_config[category]
+                )
+                controllers = tp.cast(
+                    list[types.YAMLDict], category_cfg["controllers"]
+                )
+                for controller in controllers:
                     if controller["name"] not in self.cmdopts["controller"]:
                         continue
 
                     # valid to specify no graphs, and only to inherit graphs
-                    keys = controller.get("graphs", [])
+                    keys = tp.cast(list[str], controller.get("graphs", []))
                     if "graphs_inherit" in controller:
-                        for inherit in controller["graphs_inherit"]:
+                        inherits = tp.cast(
+                            list[list[str]], controller["graphs_inherit"]
+                        )
+                        for inherit in inherits:
                             keys.extend(inherit)  # optional
 
         else:
@@ -185,190 +314,37 @@ class _ExpGraphGenerator:
                 keys,
             )
 
-        # Get keys for enabled graphs
-        LN_keys = [k for k in self.graphs_config if k in keys]
-        self.logger.debug("Enabled linegraph categories: %s", LN_keys)
+        # Get keys for enabled graphs, and strip out all configured graphs
+        # which are not enabled.
+        enabled = [k for k in self.graphs_config if k in keys]
+        self.logger.debug("Enabled graph categories: %s", enabled)
 
-        HM_keys = [k for k in self.graphs_config if k in keys]
-        self.logger.debug("Enabled heatmap categories: %s", HM_keys)
-
-        CM_keys = [k for k in self.graphs_config if k in keys]
-        self.logger.debug("Enabled confusion matrix categories: %s", CM_keys)
-
-        # Strip out all configured graphs which are not enabled
-        LN_targets = [self.graphs_config[k] for k in LN_keys]
-        HM_targets = [self.graphs_config[k] for k in HM_keys]
-        CM_targets = [self.graphs_config[k] for k in CM_keys]
-
-        return LN_targets, HM_targets, CM_targets
+        return [
+            tp.cast(list[types.YAMLDict], self.graphs_config[k]) for k in enabled
+        ]
 
 
-def _generate_heatmaps(
+def _generate(
     cmdopts: types.Cmdopts,
     pathset: exproot.PathSet,
-    targets: list[types.YAMLDict],
+    targets: list[list[types.YAMLDict]],
+    gtype: str,
+    kind: _GraphKind,
 ) -> None:
-    """
-    Generate heatmaps from: term:`Processed Output Data` files.
-    """
-    large_text = cmdopts["plot_large_text"]
+    """Render every graph of one type from :term:`Processed Output Data` files.
 
+    Config has already been validated by :mod:`gconfig`, so the definitions
+    reaching here are known-conformant and can be indexed directly.
+    """
     _logger.info(
-        "Heatmaps from <batch_root>/%s", pathset.stat_root.relative_to(pathset.parent)
-    )
-
-    # For each category of heatmaps we are generating
-    for category in targets:
-
-        # For each graph in each category
-        for graph in category:
-            # Only try to create heatmaps (duh)
-            if graph["type"] != "heatmap":
-                continue
-
-            _logger.trace("\n" + json.dumps(graph, indent=4))
-
-            graph_pathset = graphs.PathSet(
-                input_root=pathset.stat_root,
-                output_root=pathset.graph_root,
-                batchroot=pathset.parent.parent,
-                model_root=None,
-            )
-            # 2025-06-05 [JRH]: We always write stage {3,4} output data files as
-            # .csv because that is currently SIERRA's 'native' format; this may
-            # change in the future.
-            graphs.heatmap(
-                pathset=graph_pathset,
-                input_stem=graph["src_stem"],
-                output_stem=graph["dest_stem"],
-                medium="storage.csv",
-                title=graph.get("title", None),
-                xlabel=graph.get("xlabel", None),
-                ylabel=graph.get("ylabel", None),
-                zlabel=graph.get("zlabel", None),
-                backend=graph.get("backend", cmdopts["graphs_backend"]),
-                colnames=(
-                    graph.get("x", "x"),
-                    graph.get("y", "y"),
-                    graph.get("z", "z"),
-                ),
-                large_text=large_text,
-            )
-
-
-def _generate_linegraphs(
-    cmdopts: types.Cmdopts, pathset: exproot.PathSet, targets: list[types.YAMLDict]
-) -> None:
-    """
-    Generate linegraphs from: term:`Processed Output Data` files.
-    """
-
-    _logger.info(
-        "Linegraphs from <batch_root>/%s", pathset.stat_root.relative_to(pathset.parent)
-    )
-
-    # For each category of linegraphs we are generating
-    for category in targets:
-        # For each graph in each category
-        for graph in category:
-
-            # Only try to create linegraphs (duh)
-            if graph["type"] != "stacked_line":
-                continue
-
-            _logger.trace("\n" + json.dumps(graph, indent=4))
-
-            paths = graphs.PathSet(
-                input_root=pathset.stat_root,
-                output_root=pathset.graph_root,
-                batchroot=pathset.parent.parent,
-                model_root=pathset.model_root,
-            )
-
-            try:
-                # 2025-06-05 [JRH]: We always write stage {3,4} output data
-                # files as .csv because that is currently SIERRA's 'native'
-                # format; this may change in the future.
-                module = pm.pipeline.get_plugin_module(cmdopts["engine"])
-                if hasattr(module, "expsetup_from_def"):
-                    module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
-                    pkl_def = module2.unpickle(pathset.input_root / config.PICKLE_LEAF)
-
-                    info = module.expsetup_from_def(pkl_def)
-                    xticks = np.linspace(
-                        0,
-                        info["duration"],
-                        int(
-                            info["duration"]
-                            * info["n_ticks_per_sec"]
-                            * cmdopts["exp_n_datapoints_factor"]
-                        ),
-                    )
-                else:
-                    xticks = None
-
-                graphs.stacked_line(
-                    paths=paths,
-                    input_stem=graph["src_stem"],
-                    output_stem=graph["dest_stem"],
-                    medium="storage.csv",
-                    backend=graph.get("backend", cmdopts["graphs_backend"]),
-                    xticks=xticks,
-                    stats=cmdopts.get("dist_stats", "none"),
-                    cols=graph.get("cols", None),
-                    title=graph.get("title", ""),
-                    legend=graph.get("legend", graph.get("cols", None)),
-                    xlabel=graph.get("xlabel", ""),
-                    ylabel=graph.get("ylabel", ""),
-                    points=graph.get("points", False),
-                    logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),
-                    large_text=cmdopts["plot_large_text"],
-                )
-            except KeyError:
-                _logger.fatal(
-                    "Could not generate linegraph. Possible reasons include: "
-                )
-
-                _logger.fatal(
-                    "1. The YAML configuration entry is missing required fields"
-                )
-                missing_cols = graph.get("cols", "MISSING_KEY")
-                missing_stem = graph.get("src_stem", "MISSING_KEY")
-                _logger.fatal(
-                    (
-                        "2. 'cols' is present in YAML "
-                        "configuration but some of %s are "
-                        "missing from %s"
-                    ),
-                    missing_cols,
-                    missing_stem,
-                )
-
-                raise
-
-
-def _generate_confusion_matrices(
-    cmdopts: types.Cmdopts,
-    pathset: exproot.PathSet,
-    targets: list[types.YAMLDict],
-) -> None:
-    """
-    Generate confusion matrices from: term:`Processed Output Data` files.
-    """
-    large_text = cmdopts["plot_large_text"]
-
-    _logger.info(
-        "Confusion matrices from <batch_root>/%s",
+        "%s from <batch_root>/%s",
+        kind.label,
         pathset.stat_root.relative_to(pathset.parent),
     )
 
-    # For each category of heatmaps we are generating
     for category in targets:
-
-        # For each graph in each category
         for graph in category:
-            # Only try to create confusion matrices (duh)
-            if graph["type"] != "confusion_matrix":
+            if graph["type"] != gtype:
                 continue
 
             _logger.trace("\n" + json.dumps(graph, indent=4))
@@ -377,23 +353,51 @@ def _generate_confusion_matrices(
                 input_root=pathset.stat_root,
                 output_root=pathset.graph_root,
                 batchroot=pathset.parent.parent,
-                model_root=None,
+                model_root=pathset.model_root if kind.wants_model_root else None,
             )
-            graphs.confusion_matrix(
+
+            kind.func(
                 pathset=graph_pathset,
-                input_stem=graph["src_stem"],
-                output_stem=graph["dest_stem"],
-                medium="storage.csv",
-                title=graph.get("title", None),
-                backend=graph.get("backend", cmdopts["graphs_backend"]),
-                truth_col=graph.get("truth_col", "truth"),
-                predicted_col=graph.get("predicted_col", "predicted"),
-                xlabels_rotate=graph.get("xlabels_rotate", False),
-                large_text=large_text,
+                input_stem=str(graph["src_stem"]),
+                output_stem=str(graph.get("dest_stem", graph["src_stem"])),
+                medium=kind.medium,
+                backend=str(graph.get("backend", cmdopts["graphs_backend"])),
+                large_text=cmdopts["plot_large_text"],
+                **kind.kwargs_fn(graph, cmdopts, pathset),
             )
+
+
+def _xticks(
+    cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> tp.Optional[np.ndarray]:
+    """Compute X tick values for intra-experiment linegraphs.
+
+    Engines which can report their experiment setup give us a real time axis;
+    those which can't fall back to row indices (signalled by ``None``).
+    """
+    module = pm.pipeline.get_plugin_module(cmdopts["engine"])
+
+    if not hasattr(module, "expsetup_from_def"):
+        return None
+
+    module2 = pm.pipeline.get_plugin_module(cmdopts["expdef"])
+    pkl_def = module2.unpickle(pathset.input_root / config.PICKLE_LEAF)
+
+    info = module.expsetup_from_def(pkl_def)
+
+    return np.linspace(
+        0,
+        info["duration"],
+        int(
+            info["duration"]
+            * info["n_ticks_per_sec"]
+            * cmdopts["exp_n_datapoints_factor"]
+        ),
+    )
 
 
 __all__ = [
+    "KINDS",
     "_ExpGraphGenerator",
     "proc_batch_exp",
 ]

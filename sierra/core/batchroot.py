@@ -40,9 +40,6 @@ class ExpRootLeaf:
         template_stem, bc_str = leaf.split("-")
         bc = bc_str.split("+")
 
-        if not isinstance(bc, list):  # Univariate batch criteria
-            bc = [bc]
-
         return ExpRootLeaf(bc, template_stem)
 
     @staticmethod

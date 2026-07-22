@@ -27,6 +27,22 @@ from sierra.core.models import interface
 _logger = logging.getLogger(__name__)
 
 
+class IntraModelBlob(tp.TypedDict):
+    """Data needed to run one intra-experiment model and write its output."""
+
+    model: interface.IIntraExpModel1D
+    targets: list[str]
+    legend: list[str]
+
+
+class InterModelBlob(tp.TypedDict):
+    """Data needed to run one inter-experiment model and write its output."""
+
+    model: interface.IInterExpModel1D
+    targets: list[str]
+    legend: list[str]
+
+
 def proc_batch_exp(
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
@@ -36,34 +52,50 @@ def proc_batch_exp(
     """
     Run all intra- and inter-exp models.
     """
-    models = _load_models(main_config, cmdopts, "intra")
+    intra_models = _load_models(main_config, cmdopts, "intra")
 
-    _logger.info("Running %d intra-experiment models...", len(models))
+    _logger.info("Running %d intra-experiment models...", len(intra_models))
     start = time.time()
-    _run_intra_exp(cmdopts, pathset, models, criteria)
+    _run_intra_exp(cmdopts, pathset, intra_models, criteria)
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
     _logger.info("Intra-experiment models finished in %s", str(sec))
 
-    models = _load_models(main_config, cmdopts, "inter")
+    inter_models = _load_models(main_config, cmdopts, "inter")
 
-    _logger.info("Running %d inter-experiment models...", len(models))
+    _logger.info("Running %d inter-experiment models...", len(inter_models))
     start = time.time()
 
-    _run_inter_exp(cmdopts, pathset, models, criteria)
+    _run_inter_exp(cmdopts, pathset, inter_models, criteria)
 
     elapsed = int(time.time() - start)
     sec = datetime.timedelta(seconds=elapsed)
     _logger.info("Inter-experiment models finished in %s", str(sec))
 
 
+@tp.overload
+def _load_models(
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    model_type: tp.Literal["intra"],
+) -> dict[str, IntraModelBlob]: ...
+
+
+@tp.overload
+def _load_models(
+    main_config: types.YAMLDict,
+    cmdopts: types.Cmdopts,
+    model_type: tp.Literal["inter"],
+) -> dict[str, InterModelBlob]: ...
+
+
 def _load_models(
     main_config: types.YAMLDict, cmdopts: types.Cmdopts, model_type: str
-) -> dict[str, tp.Union[dict[str, tp.Any]]]:
+) -> tp.Union[dict[str, IntraModelBlob], dict[str, InterModelBlob]]:
     project_models = (
         pathlib.Path(cmdopts["project_config_root"]) / config.PROJECT_YAML.models
     )
-    loaded = {}
+    loaded = {}  # type: dict[str, tp.Any]
 
     _logger.info("Loading %s-exp models for project %s", model_type, cmdopts["project"])
 
@@ -142,7 +174,7 @@ def _load_models(
 def _run_intra_exp(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    to_run: dict[str, dict[str, tp.Any]],
+    to_run: dict[str, IntraModelBlob],
     criteria: bc.XVarBatchCriteria,
 ) -> None:
     """
@@ -168,7 +200,7 @@ def _run_intra_single_in_exp(
     cmdopts: types.Cmdopts,
     pathset: exproot.PathSet,
     exp_index: int,
-    blob: dict[str, tp.Union[interface.IIntraExpModel1D, list[str]]],
+    blob: IntraModelBlob,
 ) -> None:
     model = blob["model"]
     targets = blob["targets"]
@@ -210,7 +242,7 @@ def _run_intra_single_in_exp(
 def _run_inter_exp(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    to_run: dict[str, tp.Any],
+    to_run: dict[str, InterModelBlob],
     criteria: bc.XVarBatchCriteria,
 ) -> None:
     utils.dir_create_checked(pathset.model_interexp_root, exist_ok=True)

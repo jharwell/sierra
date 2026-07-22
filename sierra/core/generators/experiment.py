@@ -272,7 +272,7 @@ class ExpCreator:
         # If random seeds where previously generated, use them if configured
         self.seeds_fpath = self.pathset.input_root / config.RANDOM_SEEDS_LEAF
         self.preserve_seeds = self.cmdopts["preserve_seeds"]
-        self.random_seeds = None
+        self.random_seeds: tp.Optional[list[int]] = None
 
         if self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
@@ -371,6 +371,7 @@ class ExpCreator:
         stem_path = self._get_launch_file_stempath(run_num)
 
         # Generate per-run exp changes.
+        assert self.random_seeds is not None
         per_run.for_single_exp_run(
             run_exp_def,
             run_num,

@@ -17,11 +17,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import holoviews as hv
 import bokeh
-import numpy as np
-import matplotlib as mpl
 
 # Project packages
-from sierra.core import utils, config
+from sierra.core import utils, config, storage
 from . import pathset as _pathset
 
 _logger = logging.getLogger(__name__)
@@ -60,7 +58,7 @@ def generate(  # noqa: PLR0913
 
     ofile_ext = _ofile_ext(backend)
     input_fpath = pathset.input_root / (input_stem + ".graphml")
-    output_fpath = pathset.output_root / f"N-{output_stem}.{ofile_ext}"
+    output_fpath = pathset.output_root / f"NW-{output_stem}.{ofile_ext}"
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
@@ -78,18 +76,18 @@ def generate(  # noqa: PLR0913
     )
 
     # Read GraphML
-    G = nx.read_graphml(input_fpath)
+    G = storage.graph_read(input_fpath, medium)
 
     # 2025-11-24 [JRH]: Sizing nodes according to their degree seems to give
     # good results/highlight interesting areas of graphs, and is a good default
     # when no size attribute is provided. The min/max are
     # empirically determined.
     if not node_size_attr:
-        degrees = [G.degree(i) for i in G.nodes()]
+        degrees = [G.degree[i] for i in G.nodes()]
         min_size, max_size = 10, 25
         min_degree, max_degree = min(degrees), max(degrees)
         for node in G.nodes():
-            G.nodes[node]["size"] = min_size + (G.degree(node) - min_degree) / (
+            G.nodes[node]["size"] = min_size + (G.degree[node] - min_degree) / (
                 max(max_degree - min_degree, 1)
             ) * (max_size - min_size)
 
@@ -132,7 +130,10 @@ def generate(  # noqa: PLR0913
 
 
 def _build_plot(G: nx.Graph, layout: str) -> tuple:
-    # Create graph
+    # Create graph. The various networkx layout functions all return a mapping
+    # of node -> position, but with differently-typed position values (ndarray
+    # vs. plain tuple), so the common variable is annotated broadly.
+    nxlayout: dict[tp.Any, tp.Any]
     if layout == "spring":
         nxlayout = nx.spring_layout(G, k=3.0, iterations=100, seed=42, scale=5.0)
     elif layout == "spectral":
@@ -197,6 +198,8 @@ def _find_root_node(G: nx.Graph):
 
 
 def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
+    output_fpath.parent.mkdir(parents=True, exist_ok=True)
+
     if backend == "matplotlib":
         hv.save(
             plot.opts(fig_inches=config.GRAPHS["base_size"]),

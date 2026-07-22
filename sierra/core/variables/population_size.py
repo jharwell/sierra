@@ -29,7 +29,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def graph_xticks(
         self,
         cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
+        batch_output_root: tp.Optional[pathlib.Path],
         exp_names: list[str],
     ) -> list[float]:
 
@@ -46,8 +46,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def graph_xticklabels(
         self,
         cmdopts: types.Cmdopts,
-        batch_output_root: pathlib.Path,
-        exp_names: list[str],
+        batch_output_root: tp.Optional[pathlib.Path],
+        exp_names: tp.Optional[list[str]] = None,
     ) -> list[str]:
 
         if exp_names is None:
@@ -77,6 +77,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         )
 
         info.xlabel = self.graph_xlabel(info.cmdopts)
+        assert info.exp_names is not None
         info.xticklabels = self.graph_xticklabels(
             info.cmdopts, info.batch_output_root, info.exp_names
         )
@@ -88,12 +89,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
 def parse(arg: str) -> list[int]:
     """Generate the system sizes for each experiment in a batch."""
-    spec = {
-        "max_size": 0,
-        "model": "",
-        "cardinality": None,
-    }  # type: tp.Dict[str, tp.Union[str, tp.Optional[int]]]
-
     sections = arg.split(".")
 
     # remove batch criteria variable name, leaving only the spec
@@ -108,35 +103,35 @@ def parse(arg: str) -> list[int]:
     assert (
         res is not None
     ), f"Bad size increment spec in criteria section '{sections[0]}'"
-    spec["model"] = res.group(0)
+    model = res.group(0)
 
     # Parse max size
     res = re.search("[0-9]+", sections[0])
     assert res is not None, "Bad population max in criteria section '{sections[0]}'"
     max_size = int(res.group(0))
-    spec["max_size"] = max_size
 
     # Parse cardinality for linear models
-    if spec["model"] == "Linear":
+    cardinality: int
+    if model == "Linear":
         if len(sections) == 2:
             res = re.search("C[0-9]+", sections[1])
             assert (
                 res is not None
             ), "Bad cardinality in criteria section '{sections[1]}'"
-            spec["cardinality"] = int(res.group(0)[1:])
+            cardinality = int(res.group(0)[1:])
         else:
-            spec["cardinality"] = int(spec["max_size"] / 10.0)
-    elif spec["model"] == "Log":
-        spec["cardinality"] = len(range(0, int(math.log2(max_size)) + 1))
+            cardinality = int(max_size / 10.0)
+    elif model == "Log":
+        cardinality = len(range(0, int(math.log2(max_size)) + 1))
 
-    if spec["model"] == "Linear":
-        increment = int(spec["max_size"] / spec["cardinality"])
-        return [increment * x for x in range(1, spec["cardinality"] + 1)]
+    if model == "Linear":
+        increment = int(max_size / cardinality)
+        return [increment * x for x in range(1, cardinality + 1)]
 
-    if spec["model"] == "Log":
-        return [int(2**x) for x in range(0, spec["cardinality"])]
+    if model == "Log":
+        return [int(2**x) for x in range(0, cardinality)]
 
-    raise ValueError("Bad value for model: {}".format(spec["model"]))
+    raise ValueError("Bad value for model: {}".format(model))
 
 
 __all__ = [

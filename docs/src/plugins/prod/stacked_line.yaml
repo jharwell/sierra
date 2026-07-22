@@ -1,12 +1,11 @@
 mycategory:
-  # The filepath of the source data file relative to the output directory for an
-  # experimental run to look for the column(s) to plot, sans the extension.
   - src_stem: 'somesubdir/foo'
-
-    # The filepath of the graph to be generated (extension/image type is
-    # determined elsewhere). This allows for multiple graphs to be generated
-    # from the same data file by plotting different combinations of columns.
     dest_stem: 'bar'
+    backend: "matplotlib"
+    title: 'My Title'
+
+    # The type of graph. Must be  'stacked_line'.
+    type: 'stacked_line'
 
     # List of names of columns within the source file that should be included on
     # the plot. Must match EXACTLY (i.e. no fuzzy matching). Defaults to all
@@ -18,12 +17,6 @@ mycategory:
       - 'col3'
       - '...'
 
-    # The title the graph should have. LaTeX syntax is supported (uses
-    # matplotlib after all). Optional. Defaults to '' if omitted.
-    title: 'My Title'
-
-    # The type of graph. Must be  'stacked_line'.
-    type: 'stacked_line'
 
     # List of names of the plotted lines within the graph. Matched pairwise with
     # the selected columns. Defaults to name of each plotted column if omitted.
@@ -46,7 +39,3 @@ mycategory:
     # omitted (i.e., this option can be overriden on a per-graph basis if
     # desired).
     logy: false
-
-    # Specify the backend to use to generate the graph. Defaults to
-    # --graphs-backend if omitted.
-    backend: "matplotlib"

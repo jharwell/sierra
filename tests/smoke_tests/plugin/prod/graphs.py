@@ -23,6 +23,7 @@ def graphs_backend(session):
     crash for all supported graph types."""
 
     _graphs_backend_jsonsim(session)
+    _graphs_backend_yamlsim(session)
 
 
 def _graphs_backend_jsonsim(session):
@@ -99,7 +100,7 @@ def _graphs_backend_jsonsim(session):
             assert file_path.is_file(), f"File {file_path} does not exist"
 
 
-def graphs_backend_yamlsim(session):
+def _graphs_backend_yamlsim(session):
     bc = ["noise_floor.1.9.C5"]
     template_stem = "template"
     scenario = "scenario1"
@@ -149,8 +150,10 @@ def graphs_backend_yamlsim(session):
         exp_files = [
             "SLN-random-noise.png",
             "CM-confusion-matrix.png",
+            "HG-random-noise.png",
             "SLN-random-noise.html",
             "CM-confusion-matrix.html",
+            "HG-random-noise.html",
         ]
 
         for file_name in exp_files:
@@ -160,6 +163,7 @@ def graphs_backend_yamlsim(session):
     # Check interexp files
     interexp_files = [
         "SLN-random-noise-col1.png",
+        "HG-random-noise-col1.png",
     ]
 
     for file_name in interexp_files:

@@ -11,11 +11,11 @@ import time
 import datetime
 
 # 3rd party packages
-import yaml
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types, config, utils, batchroot
+from sierra.core.graphs import gconfig
 
 from sierra.plugins.prod.graphs import inter, intra, collate
 
@@ -48,16 +48,19 @@ def proc_batch_exp(
     graphs_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(
         config.PROJECT_YAML.graphs
     )
-    if utils.path_exists(graphs_path):
-        _logger.info("Loading graphs config for project=%s", cmdopts["project"])
-        graphs_config = yaml.load(utils.utf8open(graphs_path), yaml.FullLoader)
-    else:
+    if not utils.path_exists(graphs_path):
         _logger.warning("%s does not exist--cannot generate graphs", graphs_path)
         return
 
+    # 2026-07-24 [JRH]: Load once here purely to decide which stages have any
+    # work to do; intra/collate/inter each call gconfig.load() themselves. This
+    # is also the earliest point at which a malformed graphs.yaml can be
+    # reported, i.e. before any graph has been written to disk.
+    _logger.info("Loading graphs config for project=%s", cmdopts["project"])
+    graphs_config = gconfig.load(cmdopts)
+
     if (
-        (cmdopts["exp_graphs"] == "all" or cmdopts["exp_graphs"] == "intra")
-        and graphs_config is not None
+        cmdopts["exp_graphs"] in ("all", "intra")
         and "intra-exp" in graphs_config
     ):
         _logger.info("Generating intra-experiment graphs...")
@@ -76,8 +79,7 @@ def proc_batch_exp(
     # .csv files to be collated have been generated/modified according to
     # parameters.
     if (
-        (cmdopts["exp_graphs"] == "all" or cmdopts["exp_graphs"] == "inter")
-        and graphs_config is not None
+        cmdopts["exp_graphs"] in ("all", "inter")
         and "inter-exp" in graphs_config
     ):
         _logger.info("Collating inter-experiment files...")

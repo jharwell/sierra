@@ -10,13 +10,12 @@ Stage5 plugin to compare graphs across {controllers, scenarios, criterias}.
 # Core packages
 import logging
 import argparse
-import pathlib
 
 # 3rd party packages
-import yaml
 
 # Project packages
-from sierra.core import types, utils, config
+from sierra.core import types, utils
+from sierra.core.graphs import gconfig
 from sierra.plugins.compare.graphs import outputroot
 from sierra.plugins.compare.graphs import inter_controller as intercc
 from sierra.plugins.compare.graphs import inter_scenario as intersc
@@ -46,9 +45,7 @@ def proc_exps(
         cmdopts["bc_cardinality"] <= 2
     ), "This plugin only supports batch criteria with cardinality <=2"
 
-    path = pathlib.Path(cmdopts["project_config_root"], config.PROJECT_YAML.graphs)
-    with utils.utf8open(path) as f:
-        graphs_config = yaml.load(f, yaml.FullLoader)
+    graphs_config = gconfig.load(cmdopts)
 
     if cmdopts["across"] == "controllers":
         _run_cc(main_config, cmdopts, cli_args, stage5_roots, graphs_config)
@@ -56,6 +53,13 @@ def proc_exps(
         _run_sc(main_config, cmdopts, cli_args, stage5_roots, graphs_config)
     elif cmdopts["across"] == "criterias":
         raise RuntimeError("Inter-criteria comparison not implemented yet!")
+
+
+def _targets(graphs_config: types.YAMLDict, name: str) -> list[types.YAMLDict]:
+    """Fetch one comparison section, treating absence as "nothing to do"."""
+    section = gconfig.section(graphs_config, name)
+
+    return list(section) if section is not None else []
 
 
 def _run_cc(
@@ -84,7 +88,7 @@ def _run_cc(
             main_config,
         )
         univar(
-            target_graphs=list(graphs_config["inter-controller"]),
+            target_graphs=_targets(graphs_config, "inter-controller"),
             legend=list(legend),
         )
     elif cmdopts["bc_cardinality"] == 2:
@@ -96,7 +100,7 @@ def _run_cc(
             main_config,
         )
         bivar(
-            target_graphs=list(graphs_config["inter-controller"]),
+            target_graphs=_targets(graphs_config, "inter-controller"),
             legend=list(legend),
         )
 
@@ -136,7 +140,7 @@ def _run_sc(
     )
 
     comparator(
-        target_graphs=list(graphs_config["inter-scenario"]),
+        target_graphs=_targets(graphs_config, "inter-scenario"),
         legend=list(legend),
     )
 

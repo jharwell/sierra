@@ -69,10 +69,12 @@ class PopulationSize(
     def gen_element_addlist(self) -> list[definition.ElementAddList]:
         """Generate XML modifications to set system sizes."""
         if not self.element_adds:
-            robot_config = self.main_config["ros"]["robots"][self.robot]
-            prefix = robot_config["prefix"]
-            model_base = robot_config["model"]
-            model_variant = robot_config.get("model_variant", "")
+            ros = tp.cast(types.YAMLDict, self.main_config["ros"])
+            robots = tp.cast(types.YAMLDict, ros["robots"])
+            robot_config = tp.cast(types.YAMLDict, robots[self.robot])
+            prefix = str(robot_config["prefix"])
+            model_base = str(robot_config["model"])
+            model_variant = str(robot_config.get("model_variant", ""))
 
             model = (
                 f"{model_base}_{model_variant}" if model_variant != "" else model_base

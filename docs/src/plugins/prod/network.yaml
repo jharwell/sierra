@@ -1,16 +1,8 @@
 mygraph:
-  # The filepath of the source data file relative to the output directory for an
-  # experimental run to look for the GraphML file to plot, sans the extension.
   - src_stem: 'somesubdir/foo'
-
-    # The filepath of the graph to be generated (extension/image type is
-    # determined elsewhere). This allows for multiple graphs to be generated
-    # from the same data file by plotting different combinations of columns.
     dest_stem: 'bar'
-
-    # The title the graph should have. LaTeX syntax is supported (uses
-    # matplotlib after all). Optional. Defaults to '' if omitted.
     title: 'My Title'
+    backend: "matplotlib"
 
     # The type of graph. Must be 'network'.
     type: 'network'
@@ -49,6 +41,5 @@ mygraph:
     # omitted, all nodes will be the same thickness.
     edge_weight_attr: 'weight'
 
-    # Specify the backend to use to generate the graph. Defaults to
-    # --graphs-backend if omitted.
-    backend: "matplotlib"
+    # The name of the GraphML edge label to use. Optional.
+    edge_label_attr: 'label'

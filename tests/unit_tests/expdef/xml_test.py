@@ -236,7 +236,7 @@ class TestExpDefAttributeOperations:
         expdef = xml.ExpDef(simple_xml_file)
         result = expdef.attr_change("config/parameter", "type", 42)
         assert result is True
-        assert expdef.attr_get("config/parameter", "type") == 42
+        assert expdef.attr_get("config/parameter", "type") == "42"
 
     def test_attr_change_float_value(self, simple_xml_file):
         """Test changing attribute to float value."""
@@ -551,8 +551,7 @@ class TestWriter:
     def test_writer_init(self, simple_xml_file):
         """Test Writer initialization."""
         tree = ET.parse(simple_xml_file)
-        writer = xml.Writer(tree)
-        assert writer.tree == tree
+        writer = xml.Writer(tree.getroot())
         assert writer.root == tree.getroot()
 
     def test_writer_call_basic(self, simple_xml_file, temp_dir):

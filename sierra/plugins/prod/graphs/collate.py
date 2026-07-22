@@ -8,6 +8,7 @@ import logging
 import pathlib
 import json
 import re
+import typing as tp
 
 # 3rd party packages
 import polars as pl
@@ -17,6 +18,7 @@ from sierra.core import utils, config, types, storage, batchroot
 import sierra.core.variables.batch_criteria as bc
 from sierra.plugins.prod.graphs import targets
 from sierra.core import plugin as pm
+from sierra.core.graphs import gconfig
 
 _logger = logging.getLogger(__name__)
 
@@ -62,6 +64,9 @@ class GraphCollationInfo:
             self.df = pl.DataFrame(
                 schema={"x": pl.Int64, "y": pl.Int64, "z": pl.Float64}
             )
+        elif graph_type == "histogram":
+            # Create empty DataFrame with experiment names as column names
+            self.df = pl.DataFrame(schema=dict.fromkeys(exp_names))
 
         self.graph_type = graph_type
         self.summary_col = summary_col
@@ -122,7 +127,7 @@ class GraphCollator:
                 summary_col="{}+{}".format(
                     self.cmdopts["controller"], self.cmdopts["scenario"]
                 ),
-                graph_type=target["type"],
+                graph_type=str(target["type"]),
             )
             for suffix in stat_config.values()
         ]
@@ -135,11 +140,11 @@ class GraphCollator:
                 storage.df_write(
                     stat.df,
                     self.pathset.stat_interexp_root
-                    / (target["dest_stem"] + stat.df_ext),
+                    / (str(target["dest_stem"]) + stat.df_ext),
                     "storage.csv",
                 )
 
-            elif not stat.all_srcs_exist and stat.some_srcs_exist:
+            elif stat.some_srcs_exist:
                 self.logger.warning(
                     "Not all experiments in '%s' produced '%s%s'",
                     self.pathset.output_root,
@@ -185,14 +190,12 @@ class GraphCollator:
                 self._collate_exp_empty(exp_dir, stat)
                 continue
 
-            # 2025-07-08 [JRH]: This is the ONE place in all the graph
-            # generation code which is a procedural switch on graph type.
-            if target["type"] == "summary_line":
-                self._collate_exp_summary_line(target, exp_dir, stat, data_df)
-            elif target["type"] == "stacked_line":
-                self._collate_exp_stacked_line(target, exp_dir, stat, data_df)
-            elif target["type"] == "heatmap":
-                self._collate_exp_heatmap(target, exp_dir, stat, data_df)
+            # Graph types with no inter-exp collation step (e.g. network,
+            # confusion_matrix) simply have no entry here and are skipped.
+            collator = self._COLLATORS.get(target["type"])
+
+            if collator is not None:
+                collator(self, target, exp_dir, stat, data_df)
 
     def _collate_exp_empty(self, exp_dir: str, stat: GraphCollationInfo) -> None:
         """Record a missing datapoint for ``exp_dir`` when its source is empty.
@@ -236,17 +239,9 @@ class GraphCollator:
         stat: GraphCollationInfo,
         data_df: pl.DataFrame,
     ) -> None:
-        idx = target.get("index", -1)
-
-        if "col" not in target:
-            raise ValueError("'col' key is required")
-
-        # Validate the column spec BEFORE using it to index the frame.
-        if type(target["col"]) is list:
-            raise RuntimeError(
-                "Selected column {} must be a scalar, not list".format(target["col"])
-            )
-
+        # 'index' and 'col' are guaranteed present and well-typed by
+        # schema.summary_line, validated up-front in gconfig.
+        idx = target["index"]
         col = target["col"]
 
         # The source is non-empty but may still lack the requested column or
@@ -295,11 +290,18 @@ class GraphCollator:
         stat: GraphCollationInfo,
         data_df: pl.DataFrame,
     ) -> None:
+        # 2026-07-22 [JRH]: schema.stacked_line marks 'cols' Optional because
+        # it genuinely is for intra-exp. For inter-exp it is required, and must
+        # name exactly one column: that column is extracted from every
+        # experiment and becomes one column *per experiment* in the collated
+        # frame. strictyaml cannot express "required in this section only", so
+        # the rule is enforced here.
         if "cols" not in target:
-            raise ValueError("'cols' key is required")
-        if len(target["cols"]) > 1:
+            raise ValueError("'cols' is required for inter-exp stacked_line graphs")
+        if len(target["cols"]) != 1:
             raise ValueError(
-                "Exactly 1 column is required for inter-exp" "stacked_line graphs"
+                "Exactly 1 column is required for inter-exp stacked_line graphs, "
+                "got {}".format(target["cols"])
             )
 
         # Get the column data - target["cols"] is a list with one element
@@ -312,6 +314,14 @@ class GraphCollator:
             stat.df = pl.DataFrame({exp_dir: col_data})
         else:
             # Add this as a new column to existing stat.df
+            n = stat.df.height
+            if col_data.len() < n:
+                self.logger.warning(
+                    "Not all columns for %s have the same length--extending shorter col from %s",
+                    target,
+                    exp_dir,
+                )
+                col_data = col_data.extend_constant(None, n - col_data.len())
             stat.df = stat.df.with_columns(col_data.alias(exp_dir))
 
     def _collate_exp_heatmap(
@@ -321,7 +331,7 @@ class GraphCollator:
         stat: GraphCollationInfo,
         data_df: pl.DataFrame,
     ) -> None:
-        idx = target.get("index", -1)
+        idx = target["index"]
 
         regex = r"c1-exp(\d+)\+c2-exp(\d+)"
         res = re.match(regex, exp_dir)
@@ -330,13 +340,14 @@ class GraphCollator:
             res and len(res.groups()) == 2
         ), f"Unexpected directory name '{exp_dir}': does not match regex {regex}"
 
-        col = target["col"]
+        col = target["z"]
 
         # Non-empty source may still lack the column or the requested index.
         # Record the (x, y) cell with a null z rather than raising.
-        if col not in data_df.columns or not 0 <= (
-            idx if idx >= 0 else data_df.height + idx
-        ) < data_df.height:
+        if (
+            col not in data_df.columns
+            or not 0 <= (idx if idx >= 0 else data_df.height + idx) < data_df.height
+        ):
             self.logger.warning(
                 "Column '%s' or index %d unavailable for '%s'; recording null z",
                 col,
@@ -365,6 +376,52 @@ class GraphCollator:
         # Concatenate vertically
         stat.df = pl.concat([stat.df, row], how="vertical")
 
+    def _collate_exp_histogram(
+        self,
+        target: dict,
+        exp_dir: str,
+        stat: GraphCollationInfo,
+        data_df: pl.DataFrame,
+    ) -> None:
+        # 2026-07-22 [JRH]: 'cols' is required by schema.histogram, but the
+        # "exactly one" rule is specific to inter-exp collation and cannot be
+        # expressed there (the same schema serves intra-exp, where any number
+        # of columns is valid). The named column is extracted from every
+        # experiment, giving one column *per experiment* in the collated frame;
+        # all of those are then plotted.
+        if len(target["cols"]) != 1:
+            raise ValueError(
+                "Exactly 1 column is required for inter-exp histograms, "
+                "got {}".format(target["cols"])
+            )
+
+        # Get the column data - target["cols"] is a list with one element
+        col_data = data_df[target["cols"][0]]
+
+        # If this is the first column being added, we need to handle the
+        # empty DataFrame.
+        if stat.df.height == 0:
+            # Create DataFrame from the first column
+            stat.df = pl.DataFrame({exp_dir: col_data})
+        else:
+            # Add this as a new column to existing stat.df. Columns of different
+            # lengths are not really a problem for histograms, so we don't warn.
+            n = stat.df.height
+            if col_data.len() < n:
+                col_data = col_data.extend_constant(None, n - col_data.len())
+            stat.df = stat.df.with_columns(col_data.alias(exp_dir))
+
+    #: Maps graph type onto the method which extracts that type's contribution
+    #: from a single experiment. Types absent from this table have no inter-exp
+    #: collation step. Defined after the methods it references so the names
+    #: resolve.
+    _COLLATORS: tp.ClassVar[dict[str, tp.Callable[..., None]]] = {
+        "summary_line": _collate_exp_summary_line,
+        "stacked_line": _collate_exp_stacked_line,
+        "heatmap": _collate_exp_heatmap,
+        "histogram": _collate_exp_histogram,
+    }
+
 
 def proc_batch_exp(
     main_config: types.YAMLDict,
@@ -378,16 +435,13 @@ def proc_batch_exp(
     """
     utils.dir_create_checked(pathset.stat_interexp_root, exist_ok=True)
 
-    loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
+    graphs_config = gconfig.load(cmdopts)
+    inter_config = gconfig.section(graphs_config, "inter-exp")
 
-    graphs_config = loader.load_config(cmdopts, config.PROJECT_YAML.graphs)
-
-    if "inter-exp" not in graphs_config:
-        _logger.warning(
-            "Cannot collate data: 'inter-exp' key not found in graphs YAML config"
-        )
+    if inter_config is None:
         return
 
+    loader = pm.module_load_tiered(project=cmdopts["project"], path="pipeline.yaml")
     controller_config = loader.load_config(cmdopts, config.PROJECT_YAML.controllers)
 
     # 2026-01-05 [JRH]: Collect all graphs to process. This USED to be done in a
@@ -395,9 +449,7 @@ def proc_batch_exp(
     # hangs because (presumably) some lock being held by the main thread from
     # processing intra-experiment graphs which causes hangs when generated
     # graphs in sub-processes here.
-    for category in targets.inter_exp_calc(
-        graphs_config["inter-exp"], controller_config, cmdopts
-    ):
+    for category in targets.inter_exp_calc(inter_config, controller_config, cmdopts):
         for graph in category:
             _proc_single_graph(main_config, cmdopts, pathset, criteria, graph)
 

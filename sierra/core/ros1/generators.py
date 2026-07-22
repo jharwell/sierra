@@ -168,7 +168,7 @@ def _generate_single_exp_run_paramfile(
     """Generate XML changes for the parameter file for an experimental run."""
     _logger.trace("Generating parameter file changes for run%s", run_num)
 
-    param_file = launch_stem_path.with_suffix(config.ROS["param_file_ext"])
+    param_file = launch_stem_path.with_suffix(str(config.ROS["param_file_ext"]))
 
     # Master node gets a copy of the parameter file
     exp_def.element_add(

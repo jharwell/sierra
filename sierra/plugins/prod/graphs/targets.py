@@ -20,7 +20,7 @@ def inter_exp_calc(
     loaded_graphs: types.YAMLDict,
     controller_config: tp.Optional[types.YAMLDict],
     cmdopts: types.Cmdopts,
-) -> list[types.YAMLDict]:
+) -> list[list[types.YAMLDict]]:
     """Calculate what inter-experiment graphs to generate.
 
     This also defines what CSV files need to be collated, as one graph is
@@ -28,20 +28,27 @@ def inter_exp_calc(
     controllers and inter-experiment graphs.
 
     """
-    keys = []
+    keys: list[str] = []
 
     if controller_config:
         for category in list(dict(controller_config).keys()):
             if category not in cmdopts["controller"]:
                 continue
-            for controller in controller_config[category]["controllers"]:
-                if dict(controller)["name"] not in cmdopts["controller"]:
+            category_cfg = tp.cast(types.YAMLDict, controller_config[category])
+            controllers = tp.cast(
+                list[types.YAMLDict], category_cfg["controllers"]
+            )
+            for controller in controllers:
+                if controller["name"] not in cmdopts["controller"]:
                     continue
 
                 # valid to specify no graphs, and only to inherit graphs
-                keys = controller.get("graphs", [])
+                keys = tp.cast(list[str], controller.get("graphs", []))
                 if "graphs_inherit" in controller:
-                    for inherit in dict(controller)["graphs_inherit"]:
+                    inherits = tp.cast(
+                        list[list[str]], controller["graphs_inherit"]
+                    )
+                    for inherit in inherits:
                         keys.extend(inherit)  # optional
         _logger.debug("Loaded %s inter-experiment categories: %s", len(keys), keys)
     else:
@@ -53,7 +60,9 @@ def inter_exp_calc(
         )
 
     filtered_keys = [k for k in loaded_graphs if k in keys]
-    targets = [loaded_graphs[k] for k in filtered_keys]
+    targets = [
+        tp.cast(list[types.YAMLDict], loaded_graphs[k]) for k in filtered_keys
+    ]
 
     _logger.debug(
         "Enabled %s inter-experiment categories: %s",

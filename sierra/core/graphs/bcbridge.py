@@ -20,8 +20,7 @@ from sierra.core import types
 
 @dataclasses.dataclass
 class GraphInfo:
-    """
-    Container of info for generating graphs from batch criteria.
+    """Container of info for generating graphs from batch criteria.
 
     Attributes:
         cmdopts: Dictionary of parsed command line options. Most batch
@@ -32,8 +31,8 @@ class GraphInfo:
                            batch. Needed in calculating graphs for batch
                            criteria when ``--exp-range`` is used.
 
-        exp_names: The names of experiment directories to instantiate on the
-                   filesystem.
+        exp_names: The names of experiments as they should appear on graph
+                   legends.
 
         xticklabels: Labels for the xticks.
 

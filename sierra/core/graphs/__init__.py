@@ -9,6 +9,7 @@
 
 # Project packages
 from .stacked_line import generate as stacked_line
+from .histogram import generate as histogram
 from .summary_line import generate as summary_line
 from .heatmap import generate_confusion as confusion_matrix
 from .heatmap import generate_numeric as heatmap
@@ -21,6 +22,7 @@ __all__ = [
     "confusion_matrix",
     "dual_heatmap",
     "heatmap",
+    "histogram",
     "network",
     "stacked_line",
     "summary_line",

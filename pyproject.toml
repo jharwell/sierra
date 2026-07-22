@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.10"
+version = "1.5.11"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -79,8 +79,9 @@ analysis = [
     'xenon',
     'flake8',
     'ruff',
-    'mypy-runner',
     'mypy',
+    'types-psutil',
+    'types-networkx',
 ]
 
 ci = [
@@ -271,3 +272,56 @@ docstring-code-line-length = 80
 # otherwise. This is terrible because it can hide some true positives,
 # but I cannot get the typeshed/stub stuff to work for pytype.
 disable= ["module-attr", "attribute-error"]
+
+[tool.mypy]
+files = ["sierra/plugins"]
+
+# --- Strictness flags ---
+# Untyped call sites and defs are errors; incomplete signatures too.
+# disallow_untyped_calls = true
+# disallow_untyped_defs = true
+# disallow_incomplete_defs = true
+# Type-check bodies of functions that lack annotations.
+check_untyped_defs = true
+
+# Returning Any from a function declared to return something concrete.
+# warn_return_any = true
+# Flag code mypy proves is unreachable.
+warn_unreachable = true
+# Flag casts that don't change the type.
+warn_redundant_casts = true
+# Flag '# type: ignore' comments that no longer suppress anything.
+warn_unused_ignores = true
+
+# --- Error codes off by default, enabled here ---
+enable_error_code = [
+    # Comparisons/conditions whose result is statically known.
+    "redundant-expr",
+    # 'if some_bool_returning_func:' — the function, not its call.
+    "truthy-bool",
+]
+
+# --- Error codes deliberately disabled --- Attribute and argument checking is
+# too noisy against the current codebase; drop entries from this list as the
+# annotations get cleaned up.
+disable_error_code = [
+    "attr-defined",
+]
+
+# --- Third-party libraries without stubs ---
+[[tool.mypy.overrides]]
+module = [
+    "holoviews.*",
+    "polars.*",
+    "matplotlib.*",
+    "strictyaml.*",
+    "coloredlogs.*",
+    "haggis.*",
+    # 2026-07-26 [JRH]: This can be removed once I move up to a more recent
+    # version of python; installing types-PyYAML doesn't work when the min
+    # python version is 3.9.
+    "yaml.*",
+    "yamlpath.*",
+    "jsonpath_ng.*",
+    "retry.*"]
+ignore_missing_imports = true

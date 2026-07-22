@@ -61,8 +61,10 @@ class PopulationSize(
         Generate XML modifications to set system sizes.
         """
         if not self.element_adds:
-            robot_config = self.main_config["ros"]["robots"][self.robot]
-            prefix = robot_config["prefix"]
+            ros = tp.cast(types.YAMLDict, self.main_config["ros"])
+            robots = tp.cast(types.YAMLDict, ros["robots"])
+            robot_config = tp.cast(types.YAMLDict, robots[self.robot])
+            prefix = str(robot_config["prefix"])
 
             for s in self.sizes:
                 per_robot = definition.ElementAddList()

@@ -114,6 +114,7 @@ def yamlsim_imagize(session):
         f"--prod prod.render "
         f"--imagize-no-stats "
         f"--project-rendering "
+        f"--storage=storage.graphml "
     )
 
     # Run the command

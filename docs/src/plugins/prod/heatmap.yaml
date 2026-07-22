@@ -1,16 +1,8 @@
 mygraph:
-  # The filepath of the source data file relative to the output directory for an
-  # experimental run to look for the column(s) to plot, sans the extension.
   - src_stem: 'somesubdir/foo'
-
-    # The filepath of the graph to be generated (extension/image type is
-    # determined elsewhere). This allows for multiple graphs to be generated
-    # from the same data file by plotting different combinations of columns.
     dest_stem: 'bar'
-
-    # The title the graph should have. LaTeX syntax is supported (uses
-    # matplotlib after all). Optional. Defaults to '' if omitted.
     title: 'My Title'
+    backend: "matplotlib"
 
     # The type of graph. Must be 'heatmap'.
     type: 'heatmap'
@@ -39,7 +31,3 @@ mygraph:
     # The name of the column containing the Z axis values. Defaults to z if
     # omitted.
     z: 'z'
-
-    # Specify the backend to use to generate the graph. Defaults to
-    # --graphs-backend if omitted.
-    backend: "matplotlib"

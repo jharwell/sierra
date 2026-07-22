@@ -16,6 +16,7 @@ import logging
 import pathlib
 
 # 3rd party packages
+import polars as pl
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
@@ -96,15 +97,15 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         legend: list[str],
     ) -> None:
         graph_spec = {
-            "index": graph.get("index", -1),
+            "index": graph["index"],
             "src_stem": graph["src_stem"],
             "dest_stem": graph["dest_stem"],
-            "title": graph.get("title", ""),
-            "label": graph.get("label", ""),
-            "inc_exps": graph.get("include_exp", None),
+            "title": graph["title"],
+            "label": graph["label"],
+            "inc_exps": graph["include_exp"],
             "legend": legend,
-            "primary_axis": graph.get("primary_axis", 0),
-            "backend": graph.get("backend", cmdopts["graphs_backend"]),
+            "primary_axis": graph["primary_axis"],
+            "backend": graph["backend"],
         }
 
         for scenario in self.things:
@@ -180,15 +181,15 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         opath_leaf = namecalc.for_sc(batch_leaf, self.things, spec["dest_stem"], None)
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
-        xticklabels = info.xticklabels
-        xticks = info.xticks
-        if spec["inc_exps"] is not None:
-            xticklabels = utils.exp_include_filter(
-                spec["inc_exps"], info.xticklabels, criteria.n_exp()
-            )
-            xticks = utils.exp_include_filter(
-                spec["inc_exps"], info.xticks, criteria.n_exp()
-            )
+        # 2026-07-24 [JRH]: No "was it specified?" guard needed: 'include_exp'
+        # defaults to ':' (the whole range), which exp_include_filter() treats
+        # as a no-op. This matches how every other call site here uses it.
+        xticklabels = utils.exp_include_filter(
+            spec["inc_exps"], info.xticklabels, criteria.n_exp()
+        )
+        xticks = utils.exp_include_filter(
+            spec["inc_exps"], info.xticks, criteria.n_exp()
+        )
 
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
@@ -200,7 +201,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         )
 
         graphs.summary_line(
-            paths=paths,
+            pathset=paths,
             input_stem=opath_leaf,
             stats=cmdopts.get("dist_stats", "none"),
             medium=cmdopts["storage"],
@@ -271,9 +272,9 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         )
 
         # Collect performance results models and legends. Append to existing
-        # dataframes if they exist, otherwise start new ones.
-        # Can't use with_suffix() for opath, because that path contains the
-        # controller, which already has a '.' in it.
+        # dataframes if they exist, otherwise start new ones.  Can't use
+        # with_suffix() for opath, because that path contains the controller,
+        # which already has a '.' in it.
         model_ostem = self.stage5_roots.model_root / (
             spec["dest_stem"] + "-" + self.controller
         )
@@ -281,10 +282,30 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         model_opath = model_ostem.with_name(
             model_ostem.name + config.MODELS_EXT["model"]
         )
-        model_df = None
         legend_opath = model_ostem.with_name(
             model_ostem.name + config.MODELS_EXT["legend"]
         )
+
+        # Per-scenario model prediction, produced by stage 4 inter-experiment
+        # model running. Only present if models were run for this performance
+        # measure; if absent, there is simply nothing to collate here.
+        model_ipath = (pathset.model_interexp_root / spec["src_stem"]).with_suffix(
+            config.MODELS_EXT["model"]
+        )
+
+        model_df = None
+        if utils.path_exists(model_ipath):
+            if utils.path_exists(model_opath):
+                cum_df = storage.df_read(model_opath, "storage.csv")
+            else:
+                cum_df = pl.DataFrame(
+                    {"Experiment ID": criteria.gen_exp_names()}
+                )
+
+            src_df = storage.df_read(model_ipath, "storage.csv")
+            idx = spec["index"]
+            row_data = src_df.row(idx if idx >= 0 else len(src_df) + idx)
+            model_df = cum_df.with_columns(pl.Series(root.scenario, row_data))
 
         if model_df is not None:
             storage.df_write(model_df, model_opath, "storage.csv")

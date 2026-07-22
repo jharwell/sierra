@@ -16,10 +16,11 @@ import logging
 import pathlib
 
 # 3rd party packages
+import polars as pl
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types, utils, config, batchroot, graphs
+from sierra.core import types, utils, config, storage, batchroot, graphs
 from sierra.plugins.compare.graphs import namecalc, preprocess, outputroot, comparator
 
 
@@ -105,13 +106,13 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
 
         graph_spec = {
             "src_stem": graph["src_stem"],
-            "index": graph.get("index", -1),
+            "index": graph["index"],
             "dest_stem": graph["dest_stem"],
-            "title": graph.get("title", ""),
-            "label": graph.get("label", ""),
-            "inc_exps": graph.get("include_exp", None),
+            "title": graph["title"],
+            "label": graph["label"],
+            "inc_exps": graph["include_exp"],
             "legend": legend,
-            "backend": graph.get("backend", cmdopts["graphs_backend"]),
+            "backend": graph["backend"],
         }
 
         for controller in self.things:
@@ -166,6 +167,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
                 criteria=criteria,
                 pathset=pathset,
                 controller=controller,
+                scenario=root.scenario,
                 spec=graph_spec,
             )
 
@@ -187,7 +189,8 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         controller: str,
-        spec: types.SimpleDict,
+        scenario: str,
+        spec: dict[str, tp.Any],
     ) -> None:
         """Accumulate info in a CSV file for inter-controller comparison."""
         self.logger.debug(
@@ -220,6 +223,45 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             inc_exps=spec["inc_exps"],
         )
 
+        # Collect performance results models and legends. Append to existing
+        # dataframes if they exist, otherwise start new ones. Can't use
+        # with_suffix() for opath, because that path contains the scenario,
+        # which already has a '.' in it.
+        model_ostem = self.stage5_roots.model_root / (
+            spec["dest_stem"] + "-" + scenario
+        )
+        model_opath = model_ostem.with_name(
+            model_ostem.name + config.MODELS_EXT["model"]
+        )
+        legend_opath = model_ostem.with_name(
+            model_ostem.name + config.MODELS_EXT["legend"]
+        )
+
+        # Per-controller model prediction, produced by stage 4 inter-experiment
+        # model running. Only present if models were run for this performance
+        # measure; if absent, there is simply nothing to collate here.
+        model_ipath = (pathset.model_interexp_root / spec["src_stem"]).with_suffix(
+            config.MODELS_EXT["model"]
+        )
+
+        model_df = None
+        if utils.path_exists(model_ipath):
+            if utils.path_exists(model_opath):
+                cum_df = storage.df_read(model_opath, "storage.csv")
+            else:
+                cum_df = pl.DataFrame({"Experiment ID": criteria.gen_exp_names()})
+
+            src_df = storage.df_read(model_ipath, "storage.csv")
+            idx = spec["index"]
+            row_data = src_df.row(idx if idx >= 0 else len(src_df) + idx)
+            model_df = cum_df.with_columns(pl.Series(controller, row_data))
+
+        if model_df is not None:
+            storage.df_write(model_df, model_opath, "storage.csv")
+
+            with utils.utf8open(legend_opath, "a") as f:
+                f.write("{} Model Prediction\n".format(controller))
+
     def _gen_graph(
         self,
         batch_leaf: batchroot.ExpRootLeaf,
@@ -250,7 +292,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         )
 
         graphs.summary_line(
-            paths=paths,
+            pathset=paths,
             input_stem=opath_leaf,
             output_stem=opath_leaf,
             stats=cmdopts.get("dist_stats", "none"),
@@ -310,14 +352,15 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
     ) -> None:
 
         graph_spec = {
-            "index": graph.get("index", -1),
+            "index": graph["index"],
             "src_stem": graph["src_stem"],
             "dest_stem": graph["dest_stem"],
-            "title": graph.get("title", ""),
-            "label": graph.get("label", ""),
-            "inc_exps": graph.get("include_exp", None),
+            "title": graph["title"],
+            "label": graph["label"],
+            "inc_exps": graph["include_exp"],
             "legend": legend,
-            "primary_axis": graph.get("primary_axis", 0),
+            "primary_axis": graph["primary_axis"],
+            "backend": graph["backend"],
         }
         for controller in self.things:
             valid_configurations = sum(r.controller == controller for r in roots)
@@ -391,7 +434,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         criteria: bc.XVarBatchCriteria,
         batch_leaf: batchroot.ExpRootLeaf,
         controller: str,
-        spec: types.SimpleDict,
+        spec: dict[str, tp.Any],
     ) -> None:
         """Generate a set of CSV files for use in intra-scenario graph generation.
 
@@ -451,7 +494,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             exp_dirs = criteria.gen_exp_names()
             xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
             xlabels = utils.exp_include_filter(
-                spec["inc_exps"], xlabels, criteria.criteria1.n_exp()
+                spec["inc_exps"], xlabels, criteria.criterias[0].n_exp()
             )
 
             for col in ylabels:
@@ -472,13 +515,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         cmdopts: types.Cmdopts,
         spec: dict,
     ) -> None:
-        oleaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], None)
-        csv_stem_root = self.stage5_roots.csv_root / oleaf
-        pattern = "*" + config.STATS["mean"].exts["mean"]
-        paths = [f for f in csv_stem_root.glob(pattern) if re.search("_[0-9]+", str(f))]
-
         opath_leaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], [spec["index"]])
-
         info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
         if spec["primary_axis"] == 0:
             n_exp = criteria.criterias[0].n_exp()
@@ -512,7 +549,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         )
 
         graphs.summary_line(
-            paths=paths,
+            pathset=paths,
             input_stem=opath_leaf,
             output_stem=opath_leaf,
             medium="storage.csv",

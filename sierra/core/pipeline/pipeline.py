@@ -76,6 +76,9 @@ class Pipeline:
             bc = pm.module_load_tiered(
                 project=self.cmdopts["project"], path="variables.batch_criteria"
             )
+            assert (
+                self.pathset is not None
+            ), "A run-time path set is required for pipeline stages 1-4"
             self.batch_criteria = bc.factory(
                 self.main_config, self.cmdopts, self.pathset.input_root, self.args
             )
@@ -86,24 +89,38 @@ class Pipeline:
         """
         Run pipeline stages 1-5 as configured.
         """
+        # Stages 1-4 all operate on the run-time path set; only stage 5
+        # (comparison across batch experiments) can run without it. Each stage
+        # asserts its presence below so the contract is explicit per stage.
+        pathset = self.pathset
+
         if 1 in self.args.pipeline:
+            assert (
+                pathset is not None
+            ), "A run-time path set is required for pipeline stages 1-4"
+            assert (
+                self.controller is not None
+            ), "A controller is required for pipeline stage 1"
             PipelineStage1(
                 self.cmdopts,
-                self.pathset,
+                pathset,
                 self.controller,
                 self.batch_criteria,
             ).run()
 
         if 2 in self.args.pipeline:
-            PipelineStage2(self.cmdopts, self.pathset).run(self.batch_criteria)
+            assert pathset is not None
+            PipelineStage2(self.cmdopts, pathset).run(self.batch_criteria)
 
         if 3 in self.args.pipeline:
-            PipelineStage3(self.main_config, self.cmdopts, self.pathset).run(
+            assert pathset is not None
+            PipelineStage3(self.main_config, self.cmdopts, pathset).run(
                 self.batch_criteria
             )
 
         if 4 in self.args.pipeline:
-            PipelineStage4(self.main_config, self.cmdopts, self.pathset).run(
+            assert pathset is not None
+            PipelineStage4(self.main_config, self.cmdopts, pathset).run(
                 self.batch_criteria
             )
 

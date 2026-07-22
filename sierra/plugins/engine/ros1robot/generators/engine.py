@@ -8,6 +8,7 @@ ROS with a real robot execution environment.
 
 """
 # Core packages
+import typing as tp
 import logging
 import pathlib
 
@@ -34,11 +35,12 @@ def for_all_exp(
     )
 
     _logger.debug("Writing separate <master> launch file")
+    assert exp_def.write_config is not None
     exp_def.write_config.add(
         {
             "src_parent": ".",
             "src_tag": "master",
-            "opath_leaf": "_master" + config.ROS["launch_file_ext"],
+            "opath_leaf": "_master" + str(config.ROS["launch_file_ext"]),
             "new_children": None,
             "rename_to": "launch",
             "new_children_parent": None,
@@ -75,14 +77,19 @@ def for_single_exp_run(
     n_agents = utils.get_n_agents(
         main_config, cmdopts, launch_stem_path.parent, exp_def
     )
+    assert n_agents is not None, "n_agents required to generate per-robot launch files"
 
+    assert exp_def.write_config is not None
     for i in range(0, n_agents):
-        prefix = main_config["ros"]["robots"][cmdopts["robot"]]["prefix"]
+        ros = tp.cast(types.YAMLDict, main_config["ros"])
+        robots = tp.cast(types.YAMLDict, ros["robots"])
+        robot_cfg = tp.cast(types.YAMLDict, robots[cmdopts["robot"]])
+        prefix = str(robot_cfg["prefix"])
         exp_def.write_config.add(
             {
                 "src_parent": "./robot",
                 "src_tag": f"group/[@ns='{prefix}{i}']",
-                "opath_leaf": f"_robot{i}" + config.ROS["launch_file_ext"],
+                "opath_leaf": f"_robot{i}" + str(config.ROS["launch_file_ext"]),
                 "new_children": [definition.ElementAdd.as_root("launch", {})],
                 "new_children_parent": ".",
                 "rename_to": None,

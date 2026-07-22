@@ -8,6 +8,7 @@ the engine.
 
 """
 # Core packages
+import typing as tp
 import logging
 import pathlib
 
@@ -32,11 +33,12 @@ def for_all_exp(
         spec, controller, cmdopts, expdef_template_fpath
     )
 
+    assert exp_def.write_config is not None
     exp_def.write_config.add(
         {
             "src_parent": ".",
             "src_tag": "master",
-            "opath_leaf": "_master" + config.ROS["launch_file_ext"],
+            "opath_leaf": "_master" + str(config.ROS["launch_file_ext"]),
             "new_children": None,
             "new_children_parent": None,
             "rename_to": "launch",
@@ -47,7 +49,7 @@ def for_all_exp(
         {
             "src_parent": ".",
             "src_tag": "robot",
-            "opath_leaf": "_robots" + config.ROS["launch_file_ext"],
+            "opath_leaf": "_robots" + str(config.ROS["launch_file_ext"]),
             "new_children": None,
             "new_children_parent": None,
             "rename_to": "launch",

@@ -210,6 +210,8 @@ def _generate_all_exp_n_agents(
         [cmdopts["n_agents"]]
     )
     for a in chgs[0]:
+        if isinstance(a, definition.NullMod):
+            continue
         exp_def.attr_change(a.path, a.attr, a.value, True)
 
     # Write # robots info to file for later retrieval
@@ -331,8 +333,9 @@ def _generate_all_exp_library(
     """
     _logger.trace("Generating changes for library (all runs)")
 
-    run_config = spec.criteria.main_config["sierra"]["run"]
-    lib_name = run_config.get("library_name", "lib" + cmdopts["project"])
+    sierra_cfg = tp.cast(types.YAMLDict, spec.criteria.main_config["sierra"])
+    run_config = tp.cast(types.YAMLDict, sierra_cfg["run"])
+    lib_name = str(run_config.get("library_name", "lib" + cmdopts["project"]))
     exp_def.attr_change(".//loop_functions", "library", lib_name)
     exp_def.attr_change(".//__CONTROLLER__", "library", lib_name)
 
@@ -361,6 +364,7 @@ def _generate_all_exp_visualization(
         render = rendering.factory(cmdopts)
         utils.apply_to_expdef(render, exp_def)
 
+        assert spec.arena_dim is not None
         cams = cameras.factory(cmdopts, [spec.arena_dim])
         utils.apply_to_expdef(cams, exp_def)
 

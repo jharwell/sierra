@@ -112,6 +112,19 @@ presentations and interactive graphs for inclusion in webpages easy.
        labels.
      - The data is contains {truth, predicted} columns.
 
+   * - Histogram
+     -
+
+       - You want to see the *distribution* of one or more measures, rather
+         than their evolution over time.
+
+       - The columns you want to compare are commensurate enough to share a
+         set of bins (they are binned over a shared range so that the
+         distributions line up).
+
+     - The data is contained in one or more columns in a single file. Each
+       column contains numerical data.
+
    * - Network
      - The data you want to graph is a network (graph) of some kind.
      - The data is contained in a single GraphML file.
@@ -131,13 +144,13 @@ statistics. E.g.::
           |-- c1-exp3
           |-- collated
 
-``inter-exp/`` contains graphs which are generated across experiments in the
+``collated/`` contains graphs which are generated across experiments in the
 batch from :term:`Batch Summary Data` files.
 
 This plugin requires one of the following stage 3 plugins to have been run:
 
-- :ref:`plugins/proc/statistics` (linegraphs). Without this, no statistics can
-  be included.
+- :ref:`plugins/proc/statistics` (linegraphs, histograms). Without this, no
+  statistics can be included.
 
 - :ref:`plugins/proc/pseudostats`
 
@@ -169,10 +182,11 @@ config root. The file is structured as follows:
          - ...
 
 
-.. IMPORTANT:: Because SIERRA tells uv -> matplotlib to use LaTeX internally to
-               generate graph labels, titles, etc., the standard LaTeX character
-               restrictions within strings apply to all fields (e.g., '#' is
-               illegal but '\#' is OK).
+.. IMPORTANT:: When using the ``matplotlib`` backend, SIERRA tells matplotlib to
+               use LaTeX internally to generate graph labels, titles, etc., so
+               the standard LaTeX character restrictions within strings apply to
+               all fields (e.g., '#' is illegal but '\\#' is OK). This does not
+               apply to the ``bokeh`` backend, which does not use LaTeX.
 
 Intra-experiment graphs and inter-experiment graphs are configured in their
 corresponding sections as shown. Within each intra-/inter- experiment graph
@@ -187,6 +201,54 @@ serve two purposes:
   case that you don't want to generate *all* graphs for *all* controllers, or
   that some graphs will crash because of missing data if you try to generate
   them with a specific controller.
+
+Common Keys
+-----------
+
+The following keys are accepted by *every* graph type, and docs are not repeated
+in the per-type configuration below.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 15 70
+   :align: left
+
+   * - Key
+     - Required?
+     - Meaning
+
+   * - ``src_stem``
+     - Yes
+     - The filepath of the source data file relative to the output directory
+       for an :term:`Experimental Run`, sans the extension.
+
+   * - ``dest_stem``
+     - No
+     - The filepath of the graph to be generated; the extension/image type is
+       determined by the backend. This allows multiple graphs to be generated
+       from the same data file by plotting different combinations of columns. If
+       omitted, defaults to ``src_stem``.
+
+   * - ``type``
+     - Yes
+     - Which kind of graph to generate. Must be one of ``stacked_line``,
+       ``summary_line``, ``heatmap``, ``confusion_matrix``, ``histogram``, or
+       ``network``, and selects which of the per-type key sets below applies.
+
+   * - ``title``
+     - No
+     - The title the graph should have. Defaults to ``''``.
+
+   * - ``backend``
+     - No
+     - The backend used to render this particular graph. Defaults to
+       :ref:`--graphs-backend<src/plugins/prod/graphs:sierra---graphs-backend>`,
+       so individual graphs can opt out of the global choice.
+
+.. NOTE:: Configuration is validated against these key sets when it is loaded,
+          before any graph is generated. An error anywhere in ``graphs.yaml``
+          is therefore reported up front, and all problems found are reported
+          together rather than one run at a time.
 
 Intra-Experiment Graphs
 -----------------------
@@ -209,9 +271,10 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
    .. tab-item:: Network
 
-      .. NOTE:: This graph is only available when :ref:`imagizing
-                <plugins/proc/imagize>`. This may change in a future version of
-                SIERRA.
+      .. NOTE:: Network graphs read a ``.graphml`` file (``<src_stem>.graphml``
+                in the experiment's statistics directory) rather than a ``.csv``
+                like every other graph type, so the file must have been produced
+                by an earlier stage.
 
       .. literalinclude:: network.yaml
 
@@ -219,6 +282,10 @@ this plugin is below. Unless stated otherwise, all keys are required.
    .. tab-item:: Confusion Matrix
 
       .. literalinclude:: confusion_matrix.yaml
+
+   .. tab-item:: Histogram
+
+      .. literalinclude:: histogram.yaml
 
 
 Inter-Experiment Graphs
@@ -260,10 +327,27 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: heatmap.yaml
 
+   .. tab-item:: Histogram
+
+      A set of histograms with various rendering options. Can render numerical
+      or categorical data.
+
+      .. IMPORTANT:: For inter-experiment histograms ``cols`` must name
+                     *exactly one* column. That column is extracted from every
+                     experiment in the batch during :term:`Data Collation`, so
+                     the collated file has one column *per experiment*; all of
+                     those columns are then plotted together. Naming more than
+                     one column is an error.
+
+                     For intra-experiment histograms ``cols`` may name any
+                     number of columns, all of which are plotted.
+
+      .. literalinclude:: histogram.yaml
+
 
 .. NOTE:: If the batch criteria has dimension > 1, inter-experiment linegraphs
-          are disabled/ignored currently. This will hopefully be fixed in a
-          future version of SIERRA. (SIERRA#357).
+          and histograms are disabled/ignored currently. This will hopefully be
+          fixed in a future version of SIERRA. (SIERRA#357).
 
 
 Linegraph Examples
@@ -300,42 +384,43 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
       .. code-block:: YAML
 
          intra-exp:
-           - src_stem: collected-data
-             dest_stem: robot-counts
-             cols:
-               - walking
-               - resting
-             title: 'Robot Counts'
-             legend:
-               - 'Walking'
-               - 'Resting'
+           LN_default:
+             - src_stem: collected-data
+               dest_stem: robot-counts
+               cols:
+                 - walking
+                 - resting
+               title: 'Robot Counts'
+               legend:
+                 - 'Walking'
+                 - 'Resting'
 
-             xlabel: 'Time'
-             ylabel: '\# Robots'
-             type: 'stacked_line'
+               xlabel: 'Time'
+               ylabel: '\# Robots'
+               type: 'stacked_line'
 
-           - src_stem: collected-data
-             dest_stem: food-counts
-             cols:
-               - collected_food
-             title: 'Collected Food Counts'
-             legend:
-               - ''
+             - src_stem: collected-data
+               dest_stem: food-counts
+               cols:
+                 - collected_food
+               title: 'Collected Food Counts'
+               legend:
+                 - ''
 
-             xlabel: 'Time'
-             ylabel: '\# Items'
-             type: 'stacked_line'
+               xlabel: 'Time'
+               ylabel: '\# Items'
+               type: 'stacked_line'
 
-           - src_stem: collected-data
-             dest_stem: swarm-energy
-             cols:
-               - energy
-             title: 'Swarm Energy Over Time'
-             legend:
-               - ''
+             - src_stem: collected-data
+               dest_stem: swarm-energy
+               cols:
+                 - energy
+               title: 'Swarm Energy Over Time'
+               legend:
+                 - ''
 
-             xlabel: 'Time'
-             type: 'stacked_line'
+               xlabel: 'Time'
+               type: 'stacked_line'
 
 Intra-Experiment
 ----------------
@@ -532,3 +617,103 @@ interactive widgets with ``--graphs-backend=bokeh``:
 
       .. raw:: html
          :file: figures/graphs-intra-CM-confusion-matrix.html
+
+Histogram Examples
+==================
+
+For these examples, we will use the following SIERRA cmd and YAML configuration
+from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
+
+.. tab-set::
+
+   .. tab-item:: SIERRA cmd
+
+      ::
+
+         sierra \
+            --sierra-root=~/test \
+            --controller=default.default \
+            --engine=plugins.yamlsim \
+            --project=projects.sample_yamlsim \
+            --n-runs=4 \
+            --expdef-template=~/git/sierra-sample-project/exp/yamlsim/template.yaml \
+            --scenario=scenario1 \
+            --expdef=expdef.yaml \
+            --yamlsim-path=~/git/sierra-sample-project/plugins/yamlsim/yamlsim.py \
+            --proc proc.statistics proc.collate \
+            --controller=default.default \
+            --batch-criteria noise_floor.1.9.C5 \
+            --pipeline 1 2 3 4
+
+   .. tab-item:: YAML config
+
+      .. code-block:: YAML
+
+         intra-exp:
+           HG_default:
+             - src_stem: entropy-data
+               dest_stem: entropy-data
+               type: "histogram"
+               kind: "overlay"
+               title: "Entropy comparison"
+               cols:
+                 - entropy0
+                 - entropy1
+                 - entropy2
+               bins: 50
+
+Intra-Experiment
+----------------
+
+Using the above command and ``.yaml`` configuration capabilities we can generate
+graphs easily with ``--graphs-backend=matplotlib``, OR interactive widgets with
+``--graphs-backend=bokeh``. Different kinds of histograms can be generated with
+the ``kind`` option.
+
+.. tab-set::
+
+   .. tab-item:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-intra-HG-noise-overlay.png
+
+
+   .. tab-item:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-intra-HG-noise-overlay.html
+
+Inter-Experiment
+----------------
+
+After stage 3, some data is in :term:`Processed Output Data` files. In stage 4,
+we can run :term:`Data Collation` on either of these types of files in order to
+further refine their contents but at the level of a experiments within a batch
+rather than experimental runs within an experiment.  After collation,
+inter-experiment products can be generated directly.
+
+.. tab-set::
+
+   .. tab-item:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-inter-HG-noise-overlay.png
+
+           - .. figure:: figures/graphs-inter-HG-noise-steps.png
+
+           - .. figure:: figures/graphs-inter-HG-noise-facet.png
+
+   .. tab-item:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-inter-HG-noise-overlay.html
+
+      .. raw:: html
+         :file: figures/graphs-inter-HG-noise-steps.html
+
+      .. raw:: html
+         :file: figures/graphs-inter-HG-noise-facet.html

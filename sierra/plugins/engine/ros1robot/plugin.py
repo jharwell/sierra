@@ -43,7 +43,7 @@ class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
     ) -> list[types.ShellCmdSpec]:
 
         master_ip = engine.get_local_ip()
-        port = config.ROS["port_base"] + self.exp_num
+        port = int(config.ROS["port_base"]) + self.exp_num
         master_uri = f"http://{master_ip}:{port}"
 
         ros_master = types.ShellCmdSpec(
@@ -129,6 +129,7 @@ class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
 
         nodes = execenv.parse_nodefile(self.cmdopts["nodefile"])
 
+        assert self.n_agents is not None, "n_agents required to generate exec cmds"
         if len(nodes) < self.n_agents:
             _logger.critical(
                 (
@@ -181,7 +182,7 @@ class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
 
     def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
         local_ip = engine.get_local_ip()
-        port = config.ROS["port_base"] + self.exp_num
+        port = int(config.ROS["port_base"]) + self.exp_num
         master_uri = f"http://{local_ip}:{port}"
 
         _logger.info("Using ROS_MASTER_URI=%s", master_uri)
@@ -373,11 +374,11 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
 
 
 def population_size_from_pickle(
-    adds_def: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    exp_def: definition.ExpDefPickle,
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
 ) -> int:
-    return ros1.callbacks.population_size_from_pickle(adds_def, main_config, cmdopts)
+    return ros1.callbacks.population_size_from_pickle(exp_def, main_config, cmdopts)
 
 
 def population_size_from_def(

@@ -1,5 +1,13 @@
 # Inter-controller comparison: For a set of controllers which have all been
 # run in the same scenario.
+#
+# Inter-scenario comparison uses an identical key set; only the section name
+# differs (use 'inter-scenario' instead of 'inter-controller').
+#
+# Note that unlike the intra-exp/inter-exp sections used by the prod.graphs
+# plugin, comparison graphs are a FLAT LIST: there is no category level, since
+# the things being compared are named directly on the cmdline rather than
+# enabled/disabled via controller YAML.
 inter-controller:
   # The filename (no path, extension) of the .csv within the collated .csv
   # output directory for each batch experiment which contains the information
@@ -28,6 +36,15 @@ inter-controller:
     # from the collated graphs in stage 4.
     dest_stem: cc-PM-ss-raw
 
+    # The type of graph. Must be 'comparison_line'.
+    #
+    # NOTE: this is NOT the same as the 'summary_line' type used by the
+    # prod.graphs plugin, despite both rendering as lines. A summary_line
+    # plots one point per EXPERIMENT within a single batch; a comparison_line
+    # plots one line per CONTROLLER (or scenario) across batches. The two
+    # accept nearly disjoint key sets.
+    type: 'comparison_line'
+
     # The title the graph should have. This cannot be computed from the batch
     # criteria in general in stage 5, because you can comparison results
     # across scenarios which use different batch criteria. Defaults to '' if
@@ -35,7 +52,7 @@ inter-controller:
     title: ''
 
     # The Y or Z label of the graph (depending on the type of comparison
-    # graph selected on the cmdline). This key is optional.
+    # graph selected on the cmdline). Optional; defaults to '' if omitted.
     label: 'Avg. Object Collection Rate'
 
     # For bivariate batch criteria, select which criteria should be on the X
@@ -45,12 +62,19 @@ inter-controller:
     # defaults to 0 if omitted.
     primary_axis: 0
 
-   # The experiments from each batch experiment which should be included on
-   # the comparison graph. This is useful to exclude exp0 (for example), if
-   # you are interested in behavior under non-ideal conditions and exp0
-   # contains behavior under ideal conditions as the "base case" in the
-   # batch. Syntax is parsed as a python slice, so as ``X:Y`` as you would
-   # expect. This key is optional, and defaults to ``:`` if omitted.
+    # Which point in the time series from each batch experiment to use as the
+    # representative value for that experiment. Negative values index from the
+    # end, as in python. Optional; defaults to -1 (the final point, i.e.
+    # steady-state behavior) if omitted.
+    index: -1
+
+    # The experiments from each batch experiment which should be included on
+    # the comparison graph. This is useful to exclude exp0 (for example), if
+    # you are interested in behavior under non-ideal conditions and exp0
+    # contains behavior under ideal conditions as the "base case" in the
+    # batch. Syntax is parsed as a python slice, so ``X:Y``, ``X:`` and ``:Y``
+    # all work as you would expect. This key is optional, and defaults to ``:``
+    # (all experiments) if omitted.
     include_exp: '2:'
 
     # Specify the backend to use to generate the graph. Defaults to

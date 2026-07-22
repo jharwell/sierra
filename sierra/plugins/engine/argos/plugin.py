@@ -264,7 +264,8 @@ def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
 
     if args.exec_jobs_per_node is None:
         # Every physics engine gets at least 1 core
-        parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
+        n_cpus = psutil.cpu_count() or 1
+        parallel_jobs = int(n_cpus / float(ppn_per_run_req))
         if parallel_jobs == 0:
             _logger.warning(
                 (
@@ -316,13 +317,15 @@ def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def population_size_from_pickle(
-    chgs: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    exp_def: definition.ExpDefPickle,
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
 ) -> int:
-    for path, attr, value in chgs:
-        if path == ".//arena/distribute/entity" and attr == "quantity":
-            return int(value)
+    for chg in exp_def.attr_chgs:
+        if isinstance(chg, definition.NullMod):
+            continue
+        if chg.path == ".//arena/distribute/entity" and chg.attr == "quantity":
+            return int(chg.value)
 
     return -1
 
@@ -333,8 +336,10 @@ def arena_dims_from_criteria(
     dims = []
     for exp in criteria.gen_attr_changelist():
         for c in exp:
+            if isinstance(c, definition.NullMod):
+                continue
             if c.path == ".//arena" and c.attr == "size":
-                d = utils.Vector3D.from_str(c.value)
+                d = utils.Vector3D.from_str(str(c.value))
                 dims.append(utils.ArenaExtent(d))
 
     assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
@@ -358,7 +363,10 @@ def robot_type_from_def(exp_def: definition.BaseExpDef) -> tp.Optional[str]:
 def population_size_from_def(
     exp_def: definition.BaseExpDef, main_config: types.YAMLDict, cmdopts: types.Cmdopts
 ) -> int:
-    return population_size_from_pickle(exp_def.attr_chgs, main_config, cmdopts)
+    bundle = definition.ExpDefPickle(
+        attr_chgs=exp_def.attr_chgs, element_adds=exp_def.element_adds
+    )
+    return population_size_from_pickle(bundle, main_config, cmdopts)
 
 
 def pre_exp_diagnostics(
@@ -374,10 +382,13 @@ def pre_exp_diagnostics(
     )
 
 
-def expsetup_from_def(exp_def: definition.BaseExpDef) -> types.SimpleDict:
+def expsetup_from_def(exp_def: definition.ExpDefPickle) -> types.SimpleDict:
     ret = {}  # type: types.SimpleDict
 
-    for path, attr, value in exp_def:
+    for chg in exp_def.attr_chgs:
+        if isinstance(chg, definition.NullMod):
+            continue
+        path, attr, value = chg.path, chg.attr, chg.value
         if "experiment" in path:
             if "length" in attr:
                 ret["duration"] = int(value)

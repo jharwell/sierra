@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 #
 """
-Intra-experiment line graph generation classes for stage{4,5}.
+Intra-experiment line graph generation for stage{4,5}.
 """
 
 # Core packages
@@ -35,7 +35,7 @@ def _ofile_ext(backend: str) -> tp.Optional[str]:
 
 
 def generate(  # noqa: PLR0913
-    paths: pathset.PathSet,
+    pathset: pathset.PathSet,
     input_stem: str,
     output_stem: str,
     title: str,
@@ -45,7 +45,7 @@ def generate(  # noqa: PLR0913
     stats: tp.Optional[str] = None,
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
-    points: tp.Optional[bool] = False,
+    points: bool = False,
     large_text: bool = False,
     legend: tp.Optional[list[str]] = None,
     xticklabels: tp.Optional[list[str]] = None,
@@ -62,14 +62,11 @@ def generate(  # noqa: PLR0913
 
     If the .model file that goes with the .mean does not exist, then no model
     predictions are plotted.
-
-    Ideally, model predictions/stddev calculations would be in derived classes,
-    but I can't figure out a good way to easily pull that stuff out of here.
     """
     hv.extension(backend, inline=False, logo=False)
 
-    input_fpath = paths.input_root / (input_stem + ext)
-    output_fpath = paths.output_root / "SLN-{}.{}".format(
+    input_fpath = pathset.input_root / (input_stem + ext)
+    output_fpath = pathset.output_root / "SLN-{}.{}".format(
         output_stem, _ofile_ext(backend)
     )
 
@@ -82,8 +79,8 @@ def generate(  # noqa: PLR0913
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
-            output_fpath.relative_to(paths.batchroot),
-            input_fpath.relative_to(paths.batchroot),
+            output_fpath.relative_to(pathset.batchroot),
+            input_fpath.relative_to(pathset.batchroot),
         )
         return False
 
@@ -115,8 +112,8 @@ def generate(  # noqa: PLR0913
         len(df["xticks"]), len(df)
     )
 
-    model = _read_models(paths.model_root, input_stem, medium)
-    stat_dfs = _read_stats(stats, paths.input_root, input_stem, medium)
+    model = _read_models(pathset.model_root, input_stem, medium)
+    stat_dfs = _read_stats(stats, pathset.input_root, input_stem, medium)
 
     # Plot stats if they have been computed FIRST, so they appear behind the
     # actual data.
@@ -174,12 +171,13 @@ def generate(  # noqa: PLR0913
     _save(plot, output_fpath, backend)
     _logger.debug(
         "Graph written to <batchroot>/%s",
-        output_fpath.relative_to(paths.batchroot),
+        output_fpath.relative_to(pathset.batchroot),
     )
     return True
 
 
 def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
+    output_fpath.parent.mkdir(parents=True, exist_ok=True)
     if backend == "matplotlib":
         hv.save(
             plot.opts(fig_inches=config.GRAPHS["base_size"]),
@@ -204,7 +202,7 @@ def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
 def _plot_selected_cols(
     dataset: hv.Dataset,
     model_info: models.ModelInfo,
-    legend: list[str],
+    legend: tp.Optional[list[str]],
     show_points: bool,
     backend: str,
 ) -> hv.NdOverlay:
@@ -235,7 +233,7 @@ def _plot_selected_cols(
     )
 
     if backend == "matplotlib":
-        opts = {
+        opts: dict[str, tp.Any] = {
             "linestyle": "--",
         }
     elif backend == "bokeh":
@@ -302,7 +300,7 @@ def _read_stats(
 ) -> dict[str, pl.DataFrame]:
     dfs = {}  # type: tp.Dict[str, pl.DataFrame]
 
-    if setting == "none":
+    if setting is None or setting == "none":
         return dfs
 
     settings = ["conf95", "bw"] if setting == "all" else [setting]

@@ -91,12 +91,27 @@ class WriterConfig:
 
 
 class BaseExpDef:
-    """Base class for experiment definitions."""
+    """Base class for experiment definitions.
+
+    Attributes:
+
+        attr_chgs: The set of attribute changes accumulated against the
+                   definition. Every concrete backend maintains this as it
+                   applies changes; consumers read/iterate it.
+
+        element_adds: The list of element additions accumulated against the
+                      definition.
+
+        write_config: Configuration controlling how the definition is written
+                      out, if any.
+    """
 
     def __init__(
         self, input_fpath: pathlib.Path, write_config: tp.Optional[WriterConfig] = None
     ) -> None:
-        pass
+        self.attr_chgs: AttrChangeSet = AttrChangeSet()
+        self.element_adds: ElementAddList = ElementAddList()
+        self.write_config: tp.Optional[WriterConfig] = write_config
 
     def write(self, base_opath: pathlib.Path) -> None:
         """Write the definition stored in the object to the filesystem."""
@@ -431,6 +446,23 @@ class ElementRmList:
     def __init__(self, *args: ElementRm) -> None:
         self.rms = list(args)
 
+    @staticmethod
+    def unpickle(fpath: pathlib.Path) -> "ElementRmList":
+        """Unpickle element removals.
+
+        You don't know how many there are, so go until you get an exception.
+
+        """
+        exp_def = ElementRmList()
+
+        try:
+            with fpath.open("rb") as f:
+                while True:
+                    exp_def.extend(ElementRmList(*pickle.load(f)))
+        except EOFError:
+            pass
+        return exp_def
+
     def __len__(self) -> int:
         return len(self.rms)
 
@@ -513,6 +545,97 @@ class ElementAddList:
             utils.pickle_dump(self.adds, f)
 
 
+class ExpDefPickle:
+    """The set of modifications deserialized from an experiment definition pickle.
+
+    A pickled experiment definition may contain any combination of attribute
+    changes, element additions, and element removals (an engine that sets up
+    experiments purely via, say, element additions will have empty
+    ``attr_chgs``). This container holds all three kinds so consumers can pick
+    out whichever they care about, and is iterable over the union of all
+    contained modifications for consumers that just want to scan everything.
+
+    Attributes:
+
+        attr_chgs: All deserialized attribute changes.
+
+        element_adds: All deserialized element additions.
+
+        element_rms: All deserialized element removals.
+    """
+
+    def __init__(
+        self,
+        attr_chgs: tp.Optional[AttrChangeSet] = None,
+        element_adds: tp.Optional[ElementAddList] = None,
+        element_rms: tp.Optional[ElementRmList] = None,
+    ) -> None:
+        self.attr_chgs = attr_chgs if attr_chgs is not None else AttrChangeSet()
+        self.element_adds = (
+            element_adds if element_adds is not None else ElementAddList()
+        )
+        self.element_rms = (
+            element_rms if element_rms is not None else ElementRmList()
+        )
+
+    def __iter__(
+        self,
+    ) -> tp.Iterator[tp.Union[AttrChange, NullMod, ElementAdd, ElementRm]]:
+        yield from self.attr_chgs
+        yield from self.element_adds
+        yield from self.element_rms
+
+    def __len__(self) -> int:
+        return len(self.attr_chgs) + len(self.element_adds) + len(self.element_rms)
+
+    def __repr__(self) -> str:
+        return "ExpDefPickle(attr_chgs={}, element_adds={}, element_rms={})".format(
+            self.attr_chgs, self.element_adds, self.element_rms
+        )
+
+
+def unpickle(fpath: pathlib.Path) -> ExpDefPickle:
+    """Deserialize every modification kind from an experiment definition pickle.
+
+    The pickle file is an append-stream of records, one per ``.pickle()`` call
+    that targeted it. Each record is a ``set`` of :class:`AttrChange`/
+    :class:`NullMod` (attribute changes) or a ``list`` of :class:`ElementAdd` /
+    :class:`ElementRm` (element additions/removals). Records are routed to the
+    right bucket by inspecting the type of the elements they contain, so a file
+    holding a mix of modification kinds round-trips completely rather than
+    silently dropping all but the first kind.
+    """
+    result = ExpDefPickle()
+
+    try:
+        with fpath.open("rb") as f:
+            while True:
+                record = pickle.load(f)
+
+                # Empty record carries no type information; nothing to route.
+                items = list(record)
+                if not items:
+                    continue
+
+                sample = items[0]
+                if isinstance(sample, (AttrChange, NullMod)):
+                    result.attr_chgs |= AttrChangeSet(*items)
+                elif isinstance(sample, ElementAdd):
+                    for add in items:
+                        result.element_adds.append(add)
+                elif isinstance(sample, ElementRm):
+                    for rm in items:
+                        result.element_rms.append(rm)
+                else:
+                    raise TypeError(
+                        "Unknown pickled modification type: {}".format(type(sample))
+                    )
+    except EOFError:
+        pass
+
+    return result
+
+
 __all__ = [
     "AttrChange",
     "AttrChangeSet",
@@ -521,6 +644,8 @@ __all__ = [
     "ElementAddList",
     "ElementRm",
     "ElementRmList",
+    "ExpDefPickle",
     "NullMod",
     "WriterConfig",
+    "unpickle",
 ]

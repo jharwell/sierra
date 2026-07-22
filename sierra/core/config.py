@@ -80,8 +80,12 @@ def hv_ssl_init() -> None:
     with contextlib.suppress(BaseException):
         ssl.create_default_context()
 
-    # Override default context creator
-    ssl._create_default_https_context = ssl._create_unverified_context
+    # Override default context creator.
+    #
+    # This intentionally swaps in the unverified-context factory on a private
+    # CPython attribute; the two factories have slightly different signatures,
+    # which mypy flags, but the assignment is deliberate.
+    ssl._create_default_https_context = ssl._create_unverified_context  # type: ignore[assignment]
 
     # Pre-import tornado to initialize its SSL before fork
     with contextlib.suppress(BaseException):
@@ -103,7 +107,7 @@ PICKLE_EXT = ".pkl"
 PICKLE_LEAF = "exp_def" + PICKLE_EXT
 RANDOM_SEEDS_LEAF = "seeds" + PICKLE_EXT
 
-GRAPHS = {
+GRAPHS: types.GraphsConfig = {
     "static_type": "png",
     "interactive_type": "html",
     "dpi": 100,

@@ -45,11 +45,11 @@ class DataGatherer(gather.BaseGatherer):
         self,
         main_config: types.YAMLDict,
         gather_opts: types.SimpleDict,
-        processq: mp.Queue,
+        processq: queue.Queue,
     ) -> None:
         super().__init__(main_config, gather_opts, processq)
         self.logger = logging.getLogger(__name__)
-        config_path = pathlib.Path(gather_opts["project_config_root"]) / pathlib.Path(
+        config_path = pathlib.Path(str(gather_opts["project_config_root"])) / pathlib.Path(
             config.PROJECT_YAML.graphs
         )
         if utils.path_exists(config_path):
@@ -66,7 +66,7 @@ class DataGatherer(gather.BaseGatherer):
     ) -> list[gather.GatherSpec]:
         to_gather = []
         proj_output_root = run_output_root / str(self.run_output_leaf)
-        plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
+        plugin = pm.pipeline.get_plugin_module(str(self.gather_opts["storage"]))
 
         if not plugin.supports_output(pl.DataFrame):
             raise RuntimeError(
@@ -187,7 +187,7 @@ def proc_batch_exp(
         "df_homogenize": cmdopts["df_homogenize"],
     }
 
-    pool_opts = {}
+    pool_opts = {}  # type: types.SimpleDict
     parallelism = cmdopts["processing_parallelism"]
 
     # Aways need to have at least one of each! If SIERRA is invoked on a machine
@@ -197,7 +197,7 @@ def proc_batch_exp(
     pool_opts["n_processors"] = max(1, int(parallelism * 0.75))
 
     with mp.Pool(
-        processes=pool_opts["n_gatherers"] + pool_opts["n_processors"]
+        processes=int(pool_opts["n_gatherers"]) + int(pool_opts["n_processors"])
     ) as pool:
         _execute_for_batch(
             main_config, pathset, exp_to_proc, stat_opts, pool_opts, gatherer_type, pool
@@ -242,7 +242,7 @@ def _execute_for_batch(
             _gather_worker,
             (gatherer_type, gatherq, processq, main_config, stat_opts),
         )
-        for i in range(0, pool_opts["n_gatherers"])
+        for i in range(0, int(pool_opts["n_gatherers"]))
     ]
 
     _logger.debug(
@@ -253,7 +253,7 @@ def _execute_for_batch(
 
     processed = [
         pool.apply_async(_process_worker, (processq, main_config, pathset, stat_opts))
-        for i in range(0, pool_opts["n_processors"])
+        for i in range(0, int(pool_opts["n_processors"]))
     ]
 
     _logger.debug("Waiting for workers to finish")
@@ -280,8 +280,8 @@ def _execute_for_batch(
 
 def _gather_worker(
     gatherer_type,
-    gatherq: mp.Queue,
-    processq: mp.Queue,
+    gatherq: queue.Queue,
+    processq: queue.Queue,
     main_config: types.YAMLDict,
     stat_opts: dict[str, str],
 ) -> None:
@@ -313,7 +313,7 @@ def _gather_worker(
 
 
 def _process_worker(
-    processq: mp.Queue,
+    processq: queue.Queue,
     main_config: types.YAMLDict,
     pathset: batchroot.PathSet,
     stat_opts: dict[str, str],

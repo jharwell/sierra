@@ -13,8 +13,6 @@ import pathlib
 import argparse
 
 # 3rd party packages
-import strictyaml
-import yaml
 
 # Project packages
 from sierra.core import types, batchroot
@@ -102,21 +100,23 @@ class BaseComparator:
         )
 
         # For each comparison graph we are interested in, generate it using data
-        # from all matching batch roots
+        # from all matching batch roots.
+        #
+        # 2026-07-24 [JRH]: Config arrives already validated by
+        # sierra.core.graphs.gconfig, so there is nothing to check here. The
+        # inter-controller and inter-scenario sections use the same schema --
+        # they differ in *what* is compared, not in how a comparison graph is
+        # configured -- so there is no per-'across' branch either.
+        #
+        # schema.resolve() fills in the keys whose default is a cmdline value
+        # rather than a constant. After it, every key the schema declares is
+        # present, so subclasses can index rather than .get().
         for graph in target_graphs:
-            try:
-                if self.cmdopts["across"] == "controllers":
-                    loaded = strictyaml.load(yaml.dump(graph), schema.cc).data
-                elif self.cmdopts["across"] == "scenarios":
-                    loaded = strictyaml.load(yaml.dump(graph), schema.sc).data
-                elif self.cmdopts["across"] == "criterias":
-                    raise NotImplementedError
-            except strictyaml.YAMLError as e:
-                self.logger.critical("Non-conformant comparison YAML: %s", e)
-                raise
-
             self.compare(
-                cmdopts=self.cmdopts, graph=loaded, roots=selected, legend=legend
+                cmdopts=self.cmdopts,
+                graph=schema.resolve(graph, self.cmdopts),
+                roots=selected,
+                legend=legend,
             )
 
     def _check_comparability(self) -> None:

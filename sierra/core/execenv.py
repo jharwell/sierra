@@ -170,8 +170,8 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
 
     cores_re = r"^[0-9]+/"
     if res := re.search(cores_re, line):
-        cores, ssh = line.split("/")
-        cores = int(cores)
+        cores_str, ssh = line.split("/")
+        cores = int(cores_str)
     else:
         cores = 1
         ssh = line

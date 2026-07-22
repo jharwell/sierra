@@ -39,7 +39,7 @@ class ControllerGenerator:
     ) -> None:
         controllers_yaml = config_root / config.PROJECT_YAML.controllers
         self.logger = logging.getLogger(__name__)
-        self.name = controller
+        self.name: tp.Optional[str] = controller
 
         try:
             with utils.utf8open(controllers_yaml) as f:
@@ -55,6 +55,7 @@ class ControllerGenerator:
         # Only check this if controllers.yaml exists. If it doesn't, then user's
         # can use whatever they want as the controller name (i.e., doesn't need
         # to conform to the below schema).
+        self.category: tp.Optional[str] = None
         if self.controller_config:
             n_components = len(controller.split("."))
             if n_components != 2:
@@ -65,9 +66,6 @@ class ControllerGenerator:
                     "components separated by a '.')."
                 )
             self.category, self.name = controller.split(".")
-        else:
-            self.category = None
-            self.name = None
 
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)

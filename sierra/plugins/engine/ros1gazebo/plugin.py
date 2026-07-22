@@ -47,7 +47,7 @@ class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
         # that multiple ROS instances corresponding to multiple Gazebo
         # instances with the same topic names are considered distinct/not
         # accessible between instances of Gazebo.
-        self.roscore_port = config.ROS["port_base"] + run_num * 2
+        self.roscore_port = int(config.ROS["port_base"]) + run_num * 2
 
         # roscore will run on each slave node used during stage 2, so we have to
         # use 'localhost' for binding.
@@ -78,7 +78,7 @@ class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
         # Second, the command to give Gazebo a unique port on the host during
         # stage 2. We need to be on a unique port so that multiple Gazebo
         # instances can be run in parallel.
-        self.gazebo_port = config.ROS["port_base"] + run_num * 2 + 1
+        self.gazebo_port = int(config.ROS["port_base"]) + run_num * 2 + 1
 
         # 2021/12/13: You can't use HTTPS for some reason or gazebo won't
         # start...
@@ -111,8 +111,8 @@ class ExpRunShellCmdsGenerator(bindings.IExpRunShellCmdsGenerator):
         # 2022/02/28: I don't use the -u argument here to set ROS_MASTER_URI,
         # because ROS works well enough when only running on the localhost, in
         # terms of respecting whatever the envvar is set to.
-        master = str(input_fpath) + "_master" + config.ROS["launch_file_ext"]
-        robots = str(input_fpath) + "_robots" + config.ROS["launch_file_ext"]
+        master = str(input_fpath) + "_master" + str(config.ROS["launch_file_ext"])
+        robots = str(input_fpath) + "_robots" + str(config.ROS["launch_file_ext"])
 
         cmd = "{} --wait {} {} ".format(config.ROS["launch_cmd"], master, robots)
 
@@ -294,7 +294,8 @@ def _configure_hpc_local(args: argparse.Namespace) -> argparse.Namespace:
     ppn_per_run_req = 1
 
     if args.exec_jobs_per_node is None:
-        parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
+        n_cpus = psutil.cpu_count() or 1
+        parallel_jobs = int(n_cpus / float(ppn_per_run_req))
 
     if parallel_jobs == 0:
         _logger.warning(
@@ -349,20 +350,20 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
     ), "Wrong ROS version: this plugin is for ROS1"
 
     # Check we can find Gazebo
-    version = execenv.check_for_simulator(
-        cmdopts["engine"], cmdopts["execenv"], config.GAZEBO["launch_cmd"]
+    proc = execenv.check_for_simulator(
+        cmdopts["engine"], cmdopts["execenv"], str(config.GAZEBO["launch_cmd"])
     )
 
     # Check Gazebo version
-    stdout = version.stdout.decode("utf-8")
-    stderr = version.stderr.decode("utf-8")
+    stdout = proc.stdout.decode("utf-8")
+    stderr = proc.stderr.decode("utf-8")
     res = re.search(r"[0-9]+.[0-9]+.[0-9]+", stdout)
     assert (
         res is not None
     ), f"Gazebo version not in std: have stdout='{stdout}',stderr='{stderr}'"
 
     version = packaging.version.parse(res.group(0))
-    min_version = packaging.version.parse(config.GAZEBO["min_version"])
+    min_version = packaging.version.parse(str(config.GAZEBO["min_version"]))
 
     assert (
         version >= min_version
@@ -370,11 +371,11 @@ def execenv_check(cmdopts: types.Cmdopts) -> None:
 
 
 def population_size_from_pickle(
-    adds_def: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    exp_def: definition.ExpDefPickle,
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
 ) -> int:
-    return ros1.callbacks.population_size_from_pickle(adds_def, main_config, cmdopts)
+    return ros1.callbacks.population_size_from_pickle(exp_def, main_config, cmdopts)
 
 
 def population_size_from_def(

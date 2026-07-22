@@ -30,8 +30,12 @@ class SimpleBatchScaffoldSpec:
         self.logger = logging.getLogger(__name__)
         self.n_exps = 0
 
-        self.mods = []
-        self.is_compound = False
+        self.mods: tp.Union[
+            list[definition.AttrChangeSet],
+            list[definition.ElementAddList],
+            list[definition.ElementRmList],
+        ] = []
+        self.is_compound: tp.Literal[False] = False
 
         if (
             (self.chgs and self.adds)
@@ -102,7 +106,7 @@ class CompoundBatchScaffoldSpec:
 
         self.n_exps = 0
 
-        self.is_compound = True
+        self.is_compound: tp.Literal[True] = True
         self.mods = (
             []
         )  # type: tp.List[tp.Union[tuple[definition.ElementAddList,definition.AttrChangeSet],tuple[definition.ElementRmList,definition.AttrChangeSet],tuple[definition.ElementRmList,definition.ElementAddList]]]
@@ -213,6 +217,7 @@ class ExperimentSpec:
 
         # Need to get per-experiment arena dimensions from batch criteria, as
         # they might be different for each experiment
+        self.arena_dim: tp.Optional[ArenaExtent] = None
         if self.criteria.computable_exp_scenario_name():
             self.arena_dim = self.criteria.arena_dims(cmdopts)[exp_num]
             self.scenario_name = self.criteria.exp_scenario_name(exp_num)

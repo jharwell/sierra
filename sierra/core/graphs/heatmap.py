@@ -408,6 +408,7 @@ def _ofile_ext(backend: str) -> tp.Optional[str]:
 
 
 def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
+    output_fpath.parent.mkdir(parents=True, exist_ok=True)
     if backend == "matplotlib":
         hv.save(
             plot.opts(fig_inches=config.GRAPHS["base_size"]),

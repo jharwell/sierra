@@ -24,7 +24,7 @@ class Vector3D:
     def d2norm(lhs: "Vector3D", rhs: "Vector3D") -> float:
         return math.sqrt((lhs.x - rhs.x) ** 2 + (lhs.y - rhs.y) ** 2)
 
-    def __init__(self, x=0, y=0, z=0):
+    def __init__(self, x: float = 0, y: float = 0, z: float = 0):
         self.x = x
         self.y = y
         self.z = z
@@ -103,7 +103,7 @@ class Vector3D:
             self.x * rhs.y - self.y * rhs.x,
         )
 
-    def dot(self, rhs: "Vector3D") -> "Vector3D":
+    def dot(self, rhs: "Vector3D") -> float:
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 
     def normalize(self) -> "Vector3D":

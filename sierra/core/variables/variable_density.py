@@ -64,7 +64,7 @@ def parse(arg: str) -> list[float]:
 
     spec["cardinality"] = int(res.group(0)[1:])
 
-    return list(np.linspace(spec["min"], spec["max"], num=spec["cardinality"]))
+    return list(np.linspace(spec["min"], spec["max"], num=int(spec["cardinality"])))
 
 
 def _parse_density(chunk: str, which: str) -> float:

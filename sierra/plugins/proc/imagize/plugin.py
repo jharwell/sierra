@@ -10,6 +10,7 @@ See :ref:`plugins/proc/imagize` for usage documentation.
 
 # Core packages
 import multiprocessing as mp
+import queue
 import typing as tp
 import logging
 import pathlib
@@ -20,11 +21,17 @@ import yaml
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types, utils, batchroot, graphs, config
+from sierra.core.graphs import gconfig
 from sierra.core.pipeline.stage3 import gather
 from sierra.plugins.proc.statistics import plugin as statistics
 import sierra.core.plugin as pm
 
 _logger = logging.getLogger(__name__)
+
+
+def _opt_str(value: tp.Any) -> tp.Optional[str]:
+    """Coerce an optional YAML value to ``Optional[str]``."""
+    return None if value is None else str(value)
 
 
 def proc_batch_exp(
@@ -40,16 +47,10 @@ def proc_batch_exp(
     to serial if memory on the SIERRA host machine is limited via
     ``--processing-parallelism``.
     """
-    config_path = pathlib.Path(cmdopts["project_config_root"]) / pathlib.Path(
-        config.PROJECT_YAML.graphs
-    )
-    if utils.path_exists(config_path):
-        _logger.info("Loading imagizing config for project=%s", cmdopts["project"])
-        imagize_config = yaml.load(utils.utf8open(config_path), yaml.FullLoader)[
-            "imagize"
-        ]
-    else:
-        _logger.warning("%s does not exist--cannot imagize", config_path)
+    _logger.info("Loading imagizing config for project=%s", cmdopts["project"])
+    imagize_config = gconfig.section(gconfig.load(cmdopts), "imagize")
+
+    if imagize_config is None:
         return
 
     if not cmdopts["imagize_no_stats"]:
@@ -98,9 +99,9 @@ def _build_tasklist_for_exp(
     exp_stat_root: pathlib.Path,
     exp_imagize_root: pathlib.Path,
     exp_output_root: pathlib.Path,
-    imagize_config: types.YAMLDict,
+    imagize_config: list[types.YAMLDict],
     storage: str,
-) -> list[tuple[types.YAMLDict, dict]]:
+) -> list[tuple[list[types.YAMLDict], dict]]:
     """Add all files from experiment to multiprocessing queue for processing.
 
     Enqueueing for processing is done at the file-level rather than
@@ -116,14 +117,14 @@ def _build_tasklist_for_exp(
     # - Network graphs, built from per-run data. We COULD average GraphML files,
     #   but doing so in a general way is tricky at best, and brittle at worst.
     for graph in imagize_config:
-        if dict(graph)["type"] == "heatmap":
+        if graph["type"] == "heatmap":
             res.extend(
                 _build_task_for_heatmap(
                     graph, imagize_config, storage, exp_stat_root, exp_imagize_root
                 )
             )
 
-        elif dict(graph)["type"] == "network":
+        elif graph["type"] == "network":
             res.extend(
                 _build_task_for_network(
                     graph,
@@ -134,6 +135,9 @@ def _build_tasklist_for_exp(
                 )
             )
         else:
+            # Unreachable for validated config: the 'imagize' section's type
+            # table admits only heatmap/network. Kept as a guard for direct
+            # callers.
             raise ValueError("Only {heatmap,network} output graphs supported.")
 
     return res
@@ -141,13 +145,13 @@ def _build_tasklist_for_exp(
 
 def _build_task_for_heatmap(
     graph: types.YAMLDict,
-    imagize_config: types.YAMLDict,
+    imagize_config: list[types.YAMLDict],
     storage: str,
     exp_stat_root: pathlib.Path,
     exp_imagize_root: pathlib.Path,
-) -> list[tuple[types.YAMLDict, dict]]:
-    candidate = exp_stat_root / dict(graph)["src_stem"]
-    res = []  # type: list[tuple[types.YAMLDict, dict]]
+) -> list[tuple[list[types.YAMLDict], dict]]:
+    candidate = exp_stat_root / str(graph["src_stem"])
+    res = []  # type: list[tuple[list[types.YAMLDict], dict]]
 
     if not candidate.is_dir():
         _logger.debug(
@@ -181,15 +185,15 @@ def _build_task_for_heatmap(
 
 def _build_task_for_network(
     graph: types.YAMLDict,
-    imagize_config: types.YAMLDict,
+    imagize_config: list[types.YAMLDict],
     storage: str,
     exp_output_root: pathlib.Path,
     exp_imagize_root: pathlib.Path,
-) -> list[tuple[types.YAMLDict, dict]]:
+) -> list[tuple[list[types.YAMLDict], dict]]:
 
     res = []
     for run_output_root in exp_output_root.iterdir():
-        candidate = run_output_root / dict(graph)["src_stem"]
+        candidate = run_output_root / str(graph["src_stem"])
         if not candidate.is_dir():
             _logger.debug(
                 "Configured imagize source <output root>/%s does not exist",
@@ -208,7 +212,8 @@ def _build_task_for_network(
                     imagize_config,
                     {
                         "input_path": fpath,
-                        "graph_stem": dict(graph)["src_stem"],
+                        "graph_stem": str(graph["src_stem"]),
+                        "dest_stem": str(graph.get("dest_stem", graph["src_stem"])),
                         "imagize_output_root": imagize_output_root,
                         "batch_root": exp_output_root.parent.parent,
                         "storage": storage,
@@ -218,12 +223,12 @@ def _build_task_for_network(
     return res
 
 
-def _worker(imagize_config: types.YAMLDict, imagize_opts: dict) -> None:
+def _worker(imagize_config: list[types.YAMLDict], imagize_opts: dict) -> None:
 
     _proc_single_exp(imagize_config, imagize_opts)
 
 
-def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None:
+def _proc_single_exp(imagize_config: list[types.YAMLDict], imagize_opts: dict) -> None:
     """Create images from the averaged ``.mean`` files from a single experiment.
 
     If no ``.mean`` files suitable for averaging are found, nothing is done. See
@@ -239,7 +244,7 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
 
     match = None
     for graph in imagize_config:
-        if dict(graph)["src_stem"] == str(imagize_opts["graph_stem"]):
+        if str(graph["src_stem"]) == str(imagize_opts["graph_stem"]):
             match = graph
 
     if match is not None:
@@ -251,35 +256,35 @@ def _proc_single_exp(imagize_config: types.YAMLDict, imagize_opts: dict) -> None
         )
 
         # All input paths are of the form <dir>/<dir>_<NUMBER>.{extension}
-        if dict(graph)["type"] == "heatmap":
+        if graph["type"] == "heatmap":
             graphs.heatmap(
                 pathset=graph_pathset,
                 input_stem=imagize_opts["input_path"].stem,
                 output_stem=imagize_opts["input_path"].stem,
-                title=dict(match)["title"],
+                title=str(match["title"]),
                 medium=imagize_opts["storage"],
                 xlabel="X",
                 ylabel="Y",
                 colnames=(
-                    match.get("x", "x"),
-                    match.get("y", "y"),
-                    match.get("z", "z"),
+                    str(match.get("x", "x")),
+                    str(match.get("y", "y")),
+                    str(match.get("z", "z")),
                 ),
                 backend="matplotlib",
             )
-        elif dict(graph)["type"] == "network":
+        elif graph["type"] == "network":
             graphs.network(
                 pathset=graph_pathset,
-                layout=graph.get("layout", "spring"),
+                layout=str(graph.get("layout", "spring")),
                 input_stem=imagize_opts["input_path"].stem,
                 output_stem=imagize_opts["input_path"].stem,
-                title=dict(match)["title"],
+                title=str(match["title"]),
                 medium=imagize_opts["storage"],
-                node_color_attr=graph.get("node_color_attr", None),
-                node_size_attr=graph.get("node_size_attr", None),
-                edge_color_attr=graph.get("edge_color_attr", None),
-                edge_weight_attr=graph.get("edge_weight_attr", None),
-                edge_label_attr=graph.get("edge_label_attr", None),
+                node_color_attr=_opt_str(graph.get("node_color_attr", None)),
+                node_size_attr=_opt_str(graph.get("node_size_attr", None)),
+                edge_color_attr=_opt_str(graph.get("edge_color_attr", None)),
+                edge_weight_attr=_opt_str(graph.get("edge_weight_attr", None)),
+                edge_label_attr=_opt_str(graph.get("edge_label_attr", None)),
                 backend="matplotlib",
             )
 
@@ -311,26 +316,27 @@ class ImagizeInputGatherer(gather.BaseGatherer):
         self,
         main_config: types.YAMLDict,
         gather_opts: types.SimpleDict,
-        processq: mp.Queue,
+        processq: queue.Queue,
     ) -> None:
         super().__init__(main_config, gather_opts, processq)
         self.logger = logging.getLogger(__name__)
 
+        # 2026-07-24 [JRH]: gather_opts is not a full cmdopts, so we validate
+        # the already-loaded config rather than going through gconfig.load().
         self.config_path = (
-            pathlib.Path(gather_opts["project_config_root"])
+            pathlib.Path(str(gather_opts["project_config_root"]))
             / config.PROJECT_YAML.graphs
         )
 
-        self.imagize_config = yaml.load(
-            utils.utf8open(self.config_path), yaml.FullLoader
-        )["imagize"]
+        raw = yaml.load(utils.utf8open(self.config_path), yaml.FullLoader)
+        self.imagize_config = gconfig.section(gconfig.validate(raw), "imagize") or []
 
     def calc_gather_items(
         self, run_output_root: pathlib.Path, exp_name: str
     ) -> list[gather.GatherSpec]:
         to_gather = []
         proj_output_root = run_output_root / str(self.run_output_leaf)
-        plugin = pm.pipeline.get_plugin_module(self.gather_opts["storage"])
+        plugin = pm.pipeline.get_plugin_module(str(self.gather_opts["storage"]))
 
         for item in proj_output_root.rglob("*"):
             if not item.is_dir():

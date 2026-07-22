@@ -22,9 +22,8 @@ class Writer:
     More than one file may be written, as specified.
     """
 
-    def __init__(self, tree: ET.ElementTree) -> None:
-        self.tree = tree
-        self.root = tree.getroot()
+    def __init__(self, root: ET.Element) -> None:
+        self.root = root
         self.logger = logging.getLogger(__name__)
 
     def __call__(
@@ -69,7 +68,6 @@ class Writer:
 
         to_write = ET.ElementTree(tree)
 
-        ET.indent(to_write.getroot(), space="\t", level=0)
         ET.indent(to_write, space="\t", level=0)
         to_write.write(opath, encoding="utf-8")
 
@@ -151,7 +149,7 @@ class Writer:
         else:
             src_root = "{}/{}".format(config["src_parent"], config["src_tag"])
 
-        tree_out = self.tree.getroot().find(src_root)
+        tree_out = self.root.find(src_root)
 
         # Customizing the output write path is not required
         opath = base_opath
@@ -184,7 +182,9 @@ class ExpDef(definition.BaseExpDef):
         self.write_config = write_config
         self.input_fpath = input_fpath
         self.tree = ET.parse(self.input_fpath)
-        self.root = self.tree.getroot()
+        root = self.tree.getroot()
+        assert root is not None, f"Parsed XML {self.input_fpath} has no root"
+        self.root: ET.Element = root
         self.element_adds = definition.ElementAddList()
         self.attr_chgs = definition.AttrChangeSet()
 
@@ -205,7 +205,7 @@ class ExpDef(definition.BaseExpDef):
     def write(self, base_opath: pathlib.Path) -> None:
         assert self.write_config is not None, "Can't write without write config"
 
-        writer = Writer(self.tree)
+        writer = Writer(self.root)
         writer(self.write_config, base_opath)
 
     def flatten(self, keys: list[str]) -> None:
@@ -265,7 +265,7 @@ class ExpDef(definition.BaseExpDef):
                 )
             return False
 
-        el.attrib[attr] = value
+        el.attrib[attr] = str(value)
         self.logger.trace("Modify attr: '%s/%s' = '%s'", path, attr, value)
 
         self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
@@ -301,7 +301,7 @@ class ExpDef(definition.BaseExpDef):
                 )
             return False
 
-        el.set(attr, value)
+        el.set(attr, str(value))
         self.logger.trace("Add new attribute: '%s/%s' = '%s'", path, attr, value)
         self.attr_chgs.add(definition.AttrChange(path, attr, str(value)))
         return True
@@ -411,29 +411,20 @@ class ExpDef(definition.BaseExpDef):
             parent.append(child)
             self.logger.trace("Add new element: '%s/%s' = '%s'", path, tag, str(attr))
 
-        self.element_adds.append(definition.ElementAdd(path, tag, attr, allow_dup))
+        self.element_adds.append(
+            definition.ElementAdd(path, tag, attr if attr else {}, allow_dup)
+        )
         return True
 
 
-def unpickle(
-    fpath: pathlib.Path,
-) -> tp.Optional[tp.Union[definition.AttrChangeSet, definition.ElementAddList]]:
-    """Unickle all XML modifications from the pickle file at the path.
+def unpickle(fpath: pathlib.Path) -> definition.ExpDefPickle:
+    """Unpickle all XML modifications from the pickle file at the path.
 
-    You don't know how many there are, so go until you get an exception.
-
+    Returns every modification kind (attribute changes, element additions, and
+    element removals) present in the pickle, so engines that set up experiments
+    with any combination of them round-trip completely.
     """
-    try:
-        return definition.AttrChangeSet.unpickle(fpath)
-    except (EOFError, TypeError):
-        pass
-
-    try:
-        return definition.ElementAddList.unpickle(fpath)
-    except EOFError:
-        pass
-
-    raise NotImplementedError
+    return definition.unpickle(fpath)
 
 
 __all__ = ["ExpDef", "unpickle"]

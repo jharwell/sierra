@@ -209,12 +209,11 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
     cmdline.stage4.add_argument(
         "--project-no-LN",
         help="""
-             Specify that the intra-experiment and inter-experiment linegraphs
-             defined in project YAML configuration should not be generated.
-             Useful if you are working on something which results in the
-             generation of other types of graphs, and the generation of those
-             linegraphs is not currently needed only slows down your development
-             cycle.
+             Specify that the linegraphs defined in project YAML
+             configuration should not be generated.  Useful if you are working
+             on something which results in the generation of other types of
+             graphs, and the generation of those linegraphs is not currently
+             needed only slows down your development cycle.
 
              Model linegraphs are still generated, if applicable.
              """,
@@ -224,11 +223,10 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
     cmdline.stage4.add_argument(
         "--project-no-HM",
         help="""
-             Specify that the intra-experiment heatmaps defined in project YAML
-             configuration should not be generated.  Useful if you are working
-             on something which results in the generation of other types of
-             graphs, and the generation of heatmaps only slows down your
-             development cycle.
+             Specify that the heatmaps defined in project YAML configuration
+             should not be generated.  Useful if you are working on something
+             which results in the generation of other types of graphs, and the
+             generation of heatmaps only slows down your development cycle.
 
              Model heatmaps are still generated, if applicable.
 
@@ -247,6 +245,32 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
              slows down your development cycle.
 
              .. versionadded:: 1.5.6
+             """,
+        action="store_true",
+    )
+    cmdline.stage4.add_argument(
+        "--project-no-HG",
+        help="""
+             Specify that the histograms defined in project YAML
+             configuration should not be generated.  Useful if you are working
+             on something which results in the generation of other types of
+             graphs, and the generation of histograms only slows down your
+             development cycle.
+
+             .. versionadded:: 1.5.11
+             """,
+        action="store_true",
+    )
+    cmdline.stage4.add_argument(
+        "--project-no-NW",
+        help="""
+             Specify that network graphs the defined in project YAML
+             configuration should not be generated.  Useful if you are working
+             on something which results in the generation of other types of
+             graphs, and the generation of network graphs only slows down your
+             development cycle.
+
+             .. versionadded:: 1.5.11
              """,
         action="store_true",
     )
@@ -270,6 +294,8 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
         "project_no_LN": args.project_no_LN,
         "project_no_HM": args.project_no_HM,
         "project_no_CM": args.project_no_CM,
+        "project_no_HG": args.project_no_HG,
+        "project_no_NW": args.project_no_NW,
     }
 
 

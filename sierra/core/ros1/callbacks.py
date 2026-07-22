@@ -15,14 +15,12 @@ from sierra.core.experiment import definition
 
 
 def population_size_from_pickle(
-    adds_def: tp.Union[definition.AttrChangeSet, definition.ElementAddList],
+    exp_def: definition.ExpDefPickle,
     main_config: types.YAMLDict,
     cmdopts: types.Cmdopts,
 ) -> int:
     """Extract population size from unpickled experiment definition."""
-    for add in adds_def:
-        if isinstance(add, definition.NullMod):
-            continue
+    for add in exp_def.element_adds:
         if "name" in add.attr and "n_agents" in add.attr["name"]:
             return int(add.attr["value"])
 
@@ -33,12 +31,18 @@ def population_size_from_def(
     exp_def: definition.BaseExpDef, main_config: types.YAMLDict, cmdopts: types.Cmdopts
 ) -> int:
     """Extract population size from experiment definition."""
-    return population_size_from_pickle(exp_def.element_adds, main_config, cmdopts)
+    bundle = definition.ExpDefPickle(
+        attr_chgs=exp_def.attr_chgs, element_adds=exp_def.element_adds
+    )
+    return population_size_from_pickle(bundle, main_config, cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict, cmdopts: types.Cmdopts) -> str:
     """Extract the common robot prefix based on cmdline opts + YAML config."""
-    return str(main_config["ros"]["robots"][cmdopts["robot"]]["prefix"])
+    ros_section = main_config["ros"]
+    assert isinstance(ros_section, dict), "'ros' section must be a mapping"
+    ros = types.MainROSConfig.from_yaml(ros_section)
+    return ros.robots[str(cmdopts["robot"])].prefix
 
 
 __all__ = [

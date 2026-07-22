@@ -127,8 +127,8 @@ def _from_engine(
 
         for run in exp.iterdir():
             engine = cmdopts["engine"].split(".")[1]
-            frames_leaf = config.RENDERING[engine]["frames_leaf"]
-            output_path = output_dir / (run.name + config.RENDERING["format"])
+            frames_leaf = tp.cast(types.StrDict, config.RENDERING[engine])["frames_leaf"]
+            output_path = output_dir / (run.name + str(config.RENDERING["format"]))
             opts = {
                 "exp_root": pathset.imagize_root / exp.name,
                 "output_path": output_path,
@@ -141,7 +141,7 @@ def _from_engine(
 
 
 def _from_project_imagized(
-    render_config: types.YAMLDict,
+    render_config: list[types.YAMLDict],
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
     criteria: bc.XVarBatchCriteria,
@@ -179,7 +179,7 @@ def _from_project_imagized(
 
             # Check all directories recursively
             for candidate in exp_imagize_root.rglob("*"):
-                path = pathlib.Path(dict(graph)["src_stem"])
+                path = pathlib.Path(str(graph["src_stem"]))
                 fragment = path.parent / path.name
                 if candidate.is_file():
                     continue
@@ -191,7 +191,7 @@ def _from_project_imagized(
                     pathset.video_root
                     / exp.name
                     / candidate.relative_to(exp_imagize_root)
-                ) / (candidate.name + config.RENDERING["format"])
+                ) / (candidate.name + str(config.RENDERING["format"]))
                 inputs.append(
                     {
                         "input_dir": candidate,
@@ -205,7 +205,7 @@ def _from_project_imagized(
 
 
 def _parallel(
-    render_config: types.YAMLDict,
+    render_config: tp.Union[types.YAMLDict, list[types.YAMLDict]],
     cmdopts: types.Cmdopts,
     inputs: list[types.SimpleDict],
 ) -> None:
@@ -225,7 +225,10 @@ def _parallel(
     q.join()
 
 
-def _worker(q: mp.Queue, render_config: types.YAMLDict) -> None:
+def _worker(
+    q: queue.Queue,
+    render_config: tp.Union[types.YAMLDict, list[types.YAMLDict]],
+) -> None:
     assert shutil.which("ffmpeg") is not None, "ffmpeg not found"
     while True:
         # Wait for 3 seconds after the queue is empty before bailing

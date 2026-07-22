@@ -277,7 +277,9 @@ def get_local_ip():
     addr_info = socket.getaddrinfo(hostname, None, socket.AF_INET)
 
     # Extract unique IPv4 addresses, excluding loopback
-    all_ips = {addr[4][0] for addr in addr_info if not addr[4][0].startswith("127.")}
+    all_ips = {
+        str(addr[4][0]) for addr in addr_info if not str(addr[4][0]).startswith("127.")
+    }
     non_loopback_ips = [ip for ip in all_ips if not ip.startswith("127.")]
 
     if len(non_loopback_ips) > 1:

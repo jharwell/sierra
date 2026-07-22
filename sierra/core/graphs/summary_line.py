@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 
 
 def generate(  # noqa: PLR0913
-    paths: pathset.PathSet,
+    pathset: pathset.PathSet,
     input_stem: str,
     output_stem: str,
     medium: str,
@@ -40,7 +40,7 @@ def generate(  # noqa: PLR0913
     xticklabels: tp.Optional[list[str]] = None,
     large_text: bool = False,
     logyscale: bool = False,
-    stats: tp.Optional[str] = None,
+    stats: str = "none",
 ) -> bool:
     """Generate a linegraph from a :term:`Batch Summary Data` file.
 
@@ -93,14 +93,14 @@ def generate(  # noqa: PLR0913
     else:
         raise ValueError(f"Bad value for backend: {backend}")
 
-    input_fpath = paths.input_root / (input_stem + config.STATS["mean"].exts["mean"])
-    output_fpath = paths.output_root / f"SM-{output_stem}.{ofile_ext}"
+    input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
+    output_fpath = pathset.output_root / f"SM-{output_stem}.{ofile_ext}"
 
     if not utils.path_exists(input_fpath):
         _logger.debug(
             "Not generating <batchroot>/%s: <batchroot>/%s does not exist",
-            output_fpath.relative_to(paths.batchroot),
-            input_fpath.relative_to(paths.batchroot),
+            output_fpath.relative_to(pathset.batchroot),
+            input_fpath.relative_to(pathset.batchroot),
         )
         return False
 
@@ -125,10 +125,10 @@ def generate(  # noqa: PLR0913
         len(xticks), len(df)
     )
 
-    model_info = _read_model_info(paths.model_root, input_stem, medium, xticks)
+    model_info = _read_model_info(pathset.model_root, input_stem, medium, xticks)
 
     # Add statistics according to configuration
-    stat_dfs = _read_stats(stats, medium, paths.input_root, input_stem)
+    stat_dfs = _read_stats(stats, medium, pathset.input_root, input_stem)
     plot = _plot_stats(dataset, stats, stat_dfs, backend)
 
     # Add legend
@@ -157,6 +157,17 @@ def generate(  # noqa: PLR0913
     # Add title
     plot.opts(title=title)
 
+    _save(plot, output_fpath, backend)
+
+    _logger.debug(
+        "Graph written to <batchroot>/%s", output_fpath.relative_to(pathset.batchroot)
+    )
+
+    return True
+
+
+def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
+    output_fpath.parent.mkdir(parents=True, exist_ok=True)
     if backend == "matplotlib":
         hv.save(
             plot.opts(fig_inches=config.GRAPHS["base_size"]),
@@ -176,12 +187,6 @@ def generate(  # noqa: PLR0913
         html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
         with utils.utf8open(output_fpath, "w") as f:
             f.write(html)
-
-    _logger.debug(
-        "Graph written to <batchroot>/%s", output_fpath.relative_to(paths.batchroot)
-    )
-
-    return True
 
 
 def _plot_lines(
@@ -210,7 +215,7 @@ def _plot_lines(
 
     if model_info.dataset:
         if backend == "matplotlib":
-            opts = {
+            opts: dict[str, tp.Any] = {
                 "linestyle": "--",
             }
         elif backend == "bokeh":
@@ -399,7 +404,7 @@ def _plot_ticks(
     plot: hv.NdOverlay,
     logyscale: bool,
     xticks: list[float],
-    xticklabels: list[str],
+    xticklabels: tp.Optional[list[str]],
 ) -> hv.NdOverlay:
     if logyscale:
         plot.opts(logy=True)

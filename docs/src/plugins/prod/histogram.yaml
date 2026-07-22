@@ -1,0 +1,57 @@
+mycategory:
+  - src_stem: 'somesubdir/foo'
+    backend: "matplotlib"
+    title: 'My Title'
+    dest_stem: 'bar'
+
+    # The type of graph. Must be 'histogram'.
+    type: 'histogram'
+
+    # List of names of columns within the source file that should be included on
+    # the plot. Must match EXACTLY (i.e. no fuzzy matching). Required.
+    #
+    # For intra-experiment histograms these columns are binned and plotted
+    # directly. For inter-experiment histograms these columns are what is
+    # extracted from each experiment during collation; the resulting collated
+    # file has one column per experiment, and all of them are plotted.
+    cols:
+      - 'col1'
+      - 'col2'
+      - 'col3'
+
+
+    # List of names of the plotted histograms within the graph. Matched pairwise
+    # with the selected columns. Defaults to the name of each plotted column if
+    # omitted.
+    legend:
+      - 'Column 1'
+      - 'Column 2'
+      - 'Column 3'
+
+    # The label of the X-axis of the graph. Optional. Defaults to '' if omitted.
+    xlabel: 'X'
+
+    # The label of the Y-axis of the graph. Optional. Defaults to 'Count' if
+    # omitted.
+    ylabel: 'Count'
+
+    # The number of bins to divide the data into. Optional. If omitted,
+    # holoviews chooses a bin count automatically.
+    #
+    # All plotted columns are binned over a shared range so that bins line up
+    # and the distributions are directly comparable.
+    bins: 50
+
+    # Supported ways of rendering multiple histograms onto a single plot:
+    #
+    # - overlay: translucent filled histograms drawn on top of each other. Good
+    #   for 2-3 columns; gets muddy beyond that.
+    #
+    # - steps: outline-only step curves. Scales to many columns without the
+    #   visual mud of overlay.
+    #
+    # - facet: one subplot per column. Not a single set of axes, but the right
+    #   choice when columns have very different scales.
+    #
+    # Defaults to 'overlay' if omitted.
+    kind: 'overlay'

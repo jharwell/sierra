@@ -50,13 +50,13 @@ class ArenaExtent:
     def area(self) -> float:
         return self.dims.x * self.dims.y
 
-    def xsize(self) -> int:
+    def xsize(self) -> float:
         return self.dims.x
 
-    def ysize(self) -> int:
+    def ysize(self) -> float:
         return self.dims.y
 
-    def zsize(self) -> int:
+    def zsize(self) -> float:
         return self.dims.z
 
     def origin(self) -> Vector3D:
@@ -176,7 +176,7 @@ def get_primary_axis(criteria, primary_axis_bc: list, cmdopts: types.Cmdopts) ->
 
 
 def exp_range_calc(
-    exp_range: str, root_dir: pathlib.Path, dirnames: list[str]
+    exp_range: tp.Optional[str], root_dir: pathlib.Path, dirnames: list[str]
 ) -> types.PathList:
     """
     Get the range of experiments to run/do stuff with. SUPER USEFUL.
@@ -209,10 +209,18 @@ def exp_include_filter(inc_spec: tp.Optional[str], target: list, n_exps: int):
         end = None
     else:
         r = inc_spec.split(":")
-        start = int(r[0])
+
+        # 2026-07-24 [JRH]: Empty bounds mean "from the beginning"/"to the
+        # end", as in a python slice. Previously an empty start raised
+        # ValueError from int(""), so the documented ':' and ':Y' forms were
+        # unusable and only 'X:'/'X:Y' worked.
+        start = int(r[0]) if r[0] else None
         end = len(target) if r[1] == "" else int(r[1])
 
-        if len(target) < n_exps:  # Handle perf measures which exclude exp0 by default
+        # Handle perf measures which exclude exp0 by default. Only meaningful
+        # for an explicit start; with no start we are already taking everything
+        # from the beginning.
+        if len(target) < n_exps and start is not None:
             start -= 1
 
     return target[slice(start, end, None)]

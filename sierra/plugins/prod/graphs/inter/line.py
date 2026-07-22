@@ -6,17 +6,15 @@
 """Inter-experiment linegraph generation in stage 4."""
 
 # Core packages
-import typing as tp
 import logging
+import typing as tp
 
 # 3rd party packages
 import json
-import yaml
-import strictyaml
 
 # Project packages
 from sierra.core import types, batchroot, graphs
-from sierra.core.graphs import bcbridge, schema
+from sierra.core.graphs import bcbridge
 
 _logger = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ _logger = logging.getLogger(__name__)
 def generate(
     cmdopts: types.Cmdopts,
     pathset: batchroot.PathSet,
-    targets: list[types.YAMLDict],
+    targets: list[list[types.YAMLDict]],
     info: bcbridge.GraphInfo,
 ) -> None:
     """Generate linegraphs from :term:`Collated Output Data` files.
@@ -49,19 +47,9 @@ def generate(
             _logger.trace("\n" + json.dumps(graph, indent=4))
 
             if graph["type"] == "summary_line":
-                try:
-                    loaded = strictyaml.load(yaml.dump(graph), schema.summary_line).data
-                except strictyaml.YAMLError as e:
-                    _logger.critical("Non-conformant summary_line YAML: %s", e)
-                    raise
-                _gen_summary_linegraph(loaded, pathset, cmdopts, info)
+                _gen_summary_linegraph(graph, pathset, cmdopts, info)
             elif graph["type"] == "stacked_line":
-                try:
-                    loaded = strictyaml.load(yaml.dump(graph), schema.stacked_line).data
-                except strictyaml.YAMLError as e:
-                    _logger.critical("Non-conformant stacked_line YAML: %s", e)
-                    raise
-                _gen_stacked_linegraph(loaded, pathset, cmdopts, info)
+                _gen_stacked_linegraph(graph, pathset, cmdopts, info)
 
 
 def _gen_summary_linegraph(
@@ -83,19 +71,19 @@ def _gen_summary_linegraph(
     # because that is currently SIERRA's 'native' format; this may change in the
     # future.
     graphs.summary_line(
-        paths=paths,
-        input_stem=graph["dest_stem"],
-        output_stem=graph["dest_stem"],
+        pathset=paths,
+        input_stem=str(graph["dest_stem"]),
+        output_stem=str(graph["dest_stem"]),
         medium="storage.csv",
         legend=[legend],
-        stats=cmdopts.get("dist_stats", "none"),
-        title=graph["title"],
+        stats=str(cmdopts.get("dist_stats", "none")),
+        title=str(graph["title"]),
         xlabel=info.xlabel,
-        ylabel=graph.get("ylabel", None),
-        backend=graph.get("backend", cmdopts["graphs_backend"]),
+        ylabel=str(graph["ylabel"]),
+        backend=str(graph.get("backend", cmdopts["graphs_backend"])),
         xticks=info.xticks,
         xticklabels=info.xticklabels,
-        logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),
+        logyscale=bool(graph.get("logy", cmdopts["plot_log_yscale"])),
         large_text=cmdopts["plot_large_text"],
     )
 
@@ -115,19 +103,21 @@ def _gen_stacked_linegraph(
     )
 
     graphs.stacked_line(
-        paths=paths,
-        input_stem=graph["dest_stem"],
-        output_stem=graph["dest_stem"],
-        stats=cmdopts.get("dist_stats", "none"),
+        pathset=paths,
+        input_stem=str(graph["dest_stem"]),
+        output_stem=str(graph["dest_stem"]),
+        stats=str(cmdopts.get("dist_stats", "none")),
         medium="storage.csv",
-        title=graph["title"],
-        backend=graph.get("backend", cmdopts["graphs_backend"]),
+        title=str(graph["title"]),
+        backend=str(graph.get("backend", cmdopts["graphs_backend"])),
         xticks=None,
-        xlabel=graph.get("xlabel", "Time"),
-        ylabel=graph.get("ylabel", None),
-        logyscale=graph.get("logy", cmdopts["plot_log_yscale"]),
+        xlabel=str(graph["xlabel"]),
+        ylabel=str(graph["ylabel"]),
+        logyscale=bool(graph.get("logy", cmdopts["plot_log_yscale"])),
         large_text=cmdopts["plot_large_text"],
-        legend=graph.get("legend", [f"exp{i}" for i in range(0, len(info.exp_names))]),
+        legend=tp.cast(
+            "tp.Optional[list[str]]", graph.get("legend", info.exp_names)
+        ),
     )
 
 

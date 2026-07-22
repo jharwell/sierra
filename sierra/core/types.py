@@ -27,7 +27,28 @@ else:
 Cmdopts: TypeAlias = dict[str, tp.Any]
 """Dictionary of parsed cmdline options."""
 
-YAMLDict: TypeAlias = tp.Union[None, bool, str, float, int, dict[str, "YAMLDict"]]
+
+class TextSizeConfig(tp.TypedDict):
+    """Font sizes for the various text elements of a generated graph."""
+
+    title: int
+    xyz_label: int
+    tick_label: int
+    legend_label: int
+
+
+class GraphsConfig(tp.TypedDict):
+    """Typed schema for the hard-coded ``GRAPHS`` graph-rendering config."""
+
+    static_type: str
+    interactive_type: str
+    dpi: int
+    base_size: float
+    text_size_small: TextSizeConfig
+    text_size_large: TextSizeConfig
+
+YAMLScalar = tp.Union[None, bool, str, float, int]
+YAMLDict = dict[str, tp.Union[YAMLScalar, "YAMLDict", list["YAMLDict"]]]
 """Parsed YAML dictionary."""
 
 SimpleDict: TypeAlias = dict[str, tp.Union[str, int]]
@@ -114,18 +135,96 @@ class StatisticsSpec:
     exts: StrDict
 
 
+@dataclass
+class MainRunConfig:
+    """Typed view of the ``sierra.run`` section of ``main.yaml``."""
+
+    output_leaf: str
+
+    @staticmethod
+    def from_yaml(section: YAMLDict) -> "MainRunConfig":
+        return MainRunConfig(output_leaf=str(section["output_leaf"]))
+
+
+@dataclass
+class MainSierraConfig:
+    """Typed view of the ``sierra`` section of ``main.yaml``."""
+
+    run: MainRunConfig
+
+    @staticmethod
+    def from_yaml(section: YAMLDict) -> "MainSierraConfig":
+        run = section["run"]
+        assert isinstance(run, dict), "'sierra.run' must be a mapping"
+        return MainSierraConfig(run=MainRunConfig.from_yaml(run))
+
+
+@dataclass
+class RobotConfig:
+    """Typed view of a single robot entry under ``ros.robots`` in ``main.yaml``."""
+
+    prefix: str
+
+    @staticmethod
+    def from_yaml(entry: YAMLDict) -> "RobotConfig":
+        return RobotConfig(prefix=str(entry["prefix"]))
+
+
+@dataclass
+class MainROSConfig:
+    """Typed view of the ``ros`` section of ``main.yaml``."""
+
+    robots: dict[str, RobotConfig]
+
+    @staticmethod
+    def from_yaml(section: YAMLDict) -> "MainROSConfig":
+        robots = section["robots"]
+        assert isinstance(robots, dict), "'ros.robots' must be a mapping"
+        parsed: dict[str, RobotConfig] = {}
+        for name, entry in robots.items():
+            assert isinstance(entry, dict), f"'ros.robots.{name}' must be a mapping"
+            parsed[name] = RobotConfig.from_yaml(entry)
+        return MainROSConfig(robots=parsed)
+
+
+@dataclass
+class MainConfig:
+    """Typed view over the parsed ``main.yaml`` config.
+
+    Constructed on demand from a raw :data:`YAMLDict` at the point of use via
+    :meth:`from_yaml`. This provides checked, non-``object`` attribute access to
+    the config sub-schemas that SIERRA reads, without requiring the raw config
+    to be threaded around as anything other than a :data:`YAMLDict`.
+    """
+
+    sierra: MainSierraConfig
+
+    @staticmethod
+    def from_yaml(config: YAMLDict) -> "MainConfig":
+        sierra = config["sierra"]
+        assert isinstance(sierra, dict), "'sierra' section must be a mapping"
+        return MainConfig(sierra=MainSierraConfig.from_yaml(sierra))
+
+
 __all__ = [
     "JSON",
     "CLIArgSpec",
     "Cmdopts",
+    "GraphsConfig",
     "IntDict",
+    "MainConfig",
+    "MainROSConfig",
+    "MainRunConfig",
+    "MainSierraConfig",
     "OSPackagesSpec",
     "ParsedNodefileSpec",
     "PathList",
+    "RobotConfig",
     "ShellCmdSpec",
     "SimpleDict",
     "StatisticsSpec",
     "StrDict",
+    "TextSizeConfig",
     "YAMLConfigFileSpec",
     "YAMLDict",
 ]

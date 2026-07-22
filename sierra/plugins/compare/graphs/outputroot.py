@@ -32,7 +32,10 @@ class PathSet:
     """
 
     def __init__(
-        self, cmdopts: types.Cmdopts, controllers: list[str], scenarios: list[str]
+        self,
+        cmdopts: types.Cmdopts,
+        controllers: tp.Optional[list[str]],
+        scenarios: tp.Optional[list[str]],
     ) -> None:
         assert not (controllers and scenarios)
 
@@ -53,7 +56,11 @@ class PathSet:
                 "+".join(controllers) + "-cc-csvs",
             )
 
-            self.model_root = None
+            self.model_root = pathlib.Path(
+                cmdopts["sierra_root"],
+                cmdopts["project"],
+                "+".join(controllers) + "-cc-models",
+            )
 
         if scenarios:
             # We add the scenario list to the directory path for the .csv

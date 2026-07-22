@@ -323,7 +323,7 @@ class ExpDef(definition.BaseExpDef):
             m.value[attr] = value
             self.logger.trace("Modify attr: '%s/%s' = '%s'", m.full_path, attr, value)
 
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, tp.cast("tp.Union[str, int, float]", value)))
         return True
 
     def attr_add(
@@ -356,7 +356,7 @@ class ExpDef(definition.BaseExpDef):
             self.logger.trace(
                 "Add new attribute: '%s/%s' = '%s'", m.full_path, attr, value
             )
-        self.attr_chgs.add(definition.AttrChange(path, attr, value))
+        self.attr_chgs.add(definition.AttrChange(path, attr, tp.cast("tp.Union[str, int, float]", value)))
         return True
 
     def has_element(self, path: str) -> bool:
@@ -503,29 +503,18 @@ class ExpDef(definition.BaseExpDef):
                 # Child doesn't exist--just assign to single sub-element.
                 parent[tag] = attr
 
-        self.element_adds.append(definition.ElementAdd(path, tag, attr, allow_dup))
+        self.element_adds.append(definition.ElementAdd(path, tag, attr if attr else {}, allow_dup))
         return True
 
 
-def unpickle(
-    fpath: pathlib.Path,
-) -> tp.Optional[tp.Union[definition.AttrChangeSet, definition.ElementAddList]]:
-    """Unickle all JSON modifications from the pickle file at the path.
+def unpickle(fpath: pathlib.Path) -> definition.ExpDefPickle:
+    """Unpickle all JSON modifications from the pickle file at the path.
 
-    You don't know how many there are, so go until you get an exception.
-
+    Returns every modification kind (attribute changes, element additions,
+    and element removals) present in the pickle, so engines that set up
+    experiments with any combination of them round-trip completely.
     """
-    try:
-        return definition.AttrChangeSet.unpickle(fpath)
-    except EOFError:
-        pass
-
-    try:
-        return definition.ElementAddList.unpickle(fpath)
-    except EOFError:
-        pass
-
-    raise NotImplementedError
+    return definition.unpickle(fpath)
 
 
 __all__ = ["ExpDef", "unpickle"]

@@ -96,6 +96,7 @@ def parse(arg: str) -> types.CLIArgSpec:
     regex = r"(\d+)p(\d+)\.I(\d+)\.C(\d+)"
     res = re.match(regex, spec)
 
+    assert res is not None, f"Spec must match {regex}, have {spec}"
     assert len(res.groups()) == 4, f"Spec must match {regex}, have {spec}"
 
     # groups(0) is always the full matched string; subsequent groups are the

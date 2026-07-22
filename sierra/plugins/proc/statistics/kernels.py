@@ -219,6 +219,14 @@ def _df_round(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+@tp.overload
+def _fillna(df_like: tp.Union[np.float64, float]) -> np.float64: ...
+
+
+@tp.overload
+def _fillna(df_like: pl.DataFrame) -> pl.DataFrame: ...
+
+
 def _fillna(
     df_like: tp.Union[pl.DataFrame, np.float64, float],
 ) -> tp.Union[pl.DataFrame, np.float64]:

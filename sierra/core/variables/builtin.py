@@ -41,13 +41,13 @@ class MonteCarlo(bc.UnivarBatchCriteria, bcbridge.IGraphable):
     ) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.attr_changes = []  # type: tp.List[definition.AttrChangeSet]
-        self.cardinality = cardinality  # type: int
+        self._cardinality = cardinality  # type: int
 
     def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         if not self.attr_changes:
             self.attr_changes = [
                 definition.AttrChangeSet(definition.NullMod())
-                for i in range(0, self.cardinality)
+                for i in range(0, self._cardinality)
             ]
 
         return self.attr_changes
@@ -64,6 +64,7 @@ class MonteCarlo(bc.UnivarBatchCriteria, bcbridge.IGraphable):
             exp_names if exp_names else self.gen_exp_names(),
         )
 
+        assert info.exp_names is not None
         info.xticks = list(range(0, len(info.exp_names)))
         info.xticklabels = info.exp_names
         info.xlabel = "Experiment"
@@ -89,7 +90,7 @@ def _mc_parse(arg: str) -> int:
     return int(res.group(0)[1:])
 
 
-def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> list[float]:
+def linspace_parse(arg: str, scale_factor: float = 1.0) -> list[float]:
     """
     Generate an array from a linspace spec of the form ``<min>.<max>.C<cardinality>``.
 
@@ -104,6 +105,7 @@ def linspace_parse(arg: str, scale_factor: tp.Optional[float] = 1.0) -> list[flo
     """
     regex = r"(\d+)\.(\d+)\s*\.C\s*(\d+)\s*"
     res = re.match(regex, arg)
+    assert res is not None, f"Spec must match {regex}, have {arg}"
     assert len(res.groups()) == 3, f"Spec must match {regex}, have {arg}"
 
     # groups(0) is always the full matched string; subsequent groups are the
