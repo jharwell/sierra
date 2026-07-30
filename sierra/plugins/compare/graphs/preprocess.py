@@ -21,6 +21,54 @@ from sierra.core import utils, config, storage
 from sierra.core.variables import batch_criteria as bc
 
 
+def _all_stat_exts() -> dict:
+    """Return the union of the mean/conf95/bw statistic extensions.
+
+    Built as a fresh dict; ``config.STATS[...].exts`` must not be mutated in
+    place (it is shared module-level state).
+    """
+    return {
+        **config.STATS["mean"].exts,
+        **config.STATS["conf95"].exts,
+        **config.STATS["bw"].exts,
+    }
+
+
+def collate_row(
+    cum_df: tp.Optional[pl.DataFrame],
+    src_df: pl.DataFrame,
+    index: int,
+    inc_exps: tp.Optional[str],
+    column_key: str,
+    exp_names: list,
+) -> pl.DataFrame:
+    """Collate a single row from a source df -> cum df.
+
+    Add ``column_key`` column to ``cum_df`` from the ``index`` row of
+    ``src_df``, filtering the included experiments by ``inc_exps``.
+
+    Shared by the statistic collation (:class:`IntraExpPreparer`) and the model
+    collation in the comparators so that ``include_exp`` filters data
+    identically in both, keeping the collated CSV, the model CSV, and the graph
+    ticks aligned.
+
+    """
+    if cum_df is None:
+        cum_df = pl.DataFrame({"Experiment ID": exp_names})
+
+    row_data = list(src_df.row(index if index >= 0 else len(src_df) + index))
+
+    if inc_exps is not None:
+        n_exps = len(exp_names)
+        row_data = utils.exp_include_filter(inc_exps, row_data, n_exps)
+
+        if cum_df.height != len(row_data):
+            filtered_names = utils.exp_include_filter(inc_exps, exp_names, n_exps)
+            cum_df = pl.DataFrame({"Experiment ID": filtered_names})
+
+    return cum_df.with_columns(pl.Series(column_key, row_data))
+
+
 class IntraExpPreparer:
     """
     Collate generated stats from previous stages into files(s) for comparison.
@@ -46,7 +94,7 @@ class IntraExpPreparer:
         inc_exps: tp.Optional[str],
     ) -> None:
         """
-        Take batch-level dataframes and creates a new dataframe.
+        Take batch-level dataframes and create a new dataframe.
 
         Has:
 
@@ -58,21 +106,7 @@ class IntraExpPreparer:
         - df[controller] columns as timeslices *across* columns (i.e., across
           experiments in the batch) in the source dataframe.
         """
-        exts = config.STATS["mean"].exts
-        exts.update(config.STATS["conf95"].exts)
-        exts.update(config.STATS["bw"].exts)
-
-        for k in exts:
-            stat_ipath = pathlib.Path(self.ipath_stem, self.ipath_leaf + exts[k])
-            stat_opath = pathlib.Path(self.opath_stem, opath_leaf + exts[k])
-            df = self._cc_for_stat(stat_ipath, stat_opath, index, inc_exps, controller)
-
-            if df is not None:
-                storage.df_write(
-                    df,
-                    self.opath_stem / (opath_leaf + exts[k]),
-                    "storage.csv",
-                )
+        self._collate(controller, opath_leaf, index, inc_exps)
 
     def for_sc(
         self,
@@ -82,7 +116,7 @@ class IntraExpPreparer:
         inc_exps: tp.Optional[str],
     ) -> None:
         """
-        Take batch-level dataframes and creates a new dataframe.
+        Take batch-level dataframes and create a new dataframe.
 
         Has:
 
@@ -94,14 +128,22 @@ class IntraExpPreparer:
         - df[scenario] columns as timeslices *across* columns (i.e., across
           experiments in the batch) in the source dataframe.
         """
-        exts = config.STATS["mean"].exts
-        exts.update(config.STATS["conf95"].exts)
-        exts.update(config.STATS["bw"].exts)
+        self._collate(scenario, opath_leaf, index, inc_exps)
+
+    def _collate(
+        self,
+        column_key: str,
+        opath_leaf: str,
+        index: int,
+        inc_exps: tp.Optional[str],
+    ) -> None:
+        """Collate one *thing* across all stats into comparison dataframes."""
+        exts = _all_stat_exts()
 
         for k in exts:
             stat_ipath = pathlib.Path(self.ipath_stem, self.ipath_leaf + exts[k])
             stat_opath = pathlib.Path(self.opath_stem, opath_leaf + exts[k])
-            df = self._sc_for_stat(stat_ipath, stat_opath, index, inc_exps, scenario)
+            df = self._for_stat(stat_ipath, stat_opath, index, inc_exps, column_key)
 
             if df is not None:
                 storage.df_write(
@@ -110,54 +152,30 @@ class IntraExpPreparer:
                     "storage.csv",
                 )
 
-    def _cc_for_stat(
+    def _for_stat(
         self,
         ipath: pathlib.Path,
         opath: pathlib.Path,
         index: int,
         inc_exps: tp.Optional[str],
-        controller: str,
+        column_key: str,
     ) -> tp.Optional[pl.DataFrame]:
+        if not utils.path_exists(ipath):
+            return None
 
-        if utils.path_exists(opath):
-            cum_df = storage.df_read(opath, "storage.csv")
-        else:
-            cum_df = pl.DataFrame({"Experiment ID": self.criteria.gen_exp_names()})
+        cum_df = (
+            storage.df_read(opath, "storage.csv") if utils.path_exists(opath) else None
+        )
+        src_df = storage.df_read(ipath, "storage.csv")
 
-        if utils.path_exists(ipath):
-            df = storage.df_read(ipath, "storage.csv")
-
-            # Get the row at the specified index
-            row_data = df.row(index if index >= 0 else len(df) + index)
-
-            # Add as a new column to cum_df
-            return cum_df.with_columns(pl.Series(controller, row_data))
-
-        return None
-
-    def _sc_for_stat(
-        self,
-        ipath: pathlib.Path,
-        opath: pathlib.Path,
-        index: int,
-        inc_exps: tp.Optional[str],
-        scenario: str,
-    ) -> tp.Optional[pl.DataFrame]:
-        if utils.path_exists(opath):
-            cum_df = storage.df_read(opath, "storage.csv")
-        else:
-            cum_df = pl.DataFrame({"Experiment ID": self.criteria.gen_exp_names()})
-
-        if utils.path_exists(ipath):
-            df = storage.df_read(ipath, "storage.csv")
-
-            # Get the row at the specified index
-            row_data = df.row(index if index >= 0 else len(df) + index)
-
-            # Add as a new column to cum_df
-            return cum_df.with_columns(pl.Series(scenario, row_data))
-
-        return None
+        return collate_row(
+            cum_df,
+            src_df,
+            index,
+            inc_exps,
+            column_key,
+            self.criteria.gen_exp_names(),
+        )
 
 
 __all__ = ["IntraExpPreparer"]

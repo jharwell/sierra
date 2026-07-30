@@ -53,7 +53,7 @@ def build(
              scenarios, batch criteria), as configured.
              """
         + cmdline.stage_usage_doc([5]),
-        default="intercc",
+        default="controllers",
     )
 
     cmdline.stage5.add_argument(
@@ -81,7 +81,7 @@ def build(
                        to stage3.  This limitation may be removed in a future
                        release.
 
-             For all comparison types, ``--legend`` is used if passed for
+             For all comparison types, ``--things-legend`` is used if passed for
              legend.
              """.format(
             utils.sphinx_ref(

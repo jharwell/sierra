@@ -93,7 +93,7 @@ def core_builtin_bc(session):
     # Check directory structure
     for i in range(5):
         input_dir = input_root / f"c1-exp{i}"
-        assert os.path.isdir(input_dir), f"Directory {input_dir} not found"
+        assert input_dir.is_dir(), f"Directory {input_dir} not found"
 
     # Run rest of pipeline
     session.run(*(f"{sierra_cmd} --pipeline 2 3 4").split(), silent=True)
@@ -216,82 +216,55 @@ def core_parallelism(session):
 @setup.session_setup
 @setup.session_teardown
 def core_stage5_univar(session):
-    """Test stage 5 univariate comparison."""
+    """Test that stage 5 dispatches correctly for univariate (cardinality-1)
+    batch criteria and runs end-to-end.
 
-    criteria = ["population_size.Linear3.C3"]
+    This is the *core* concern: cardinality dispatch and pipeline plumbing. The
+    detailed verification of the comparison artifacts the compare plugin
+    produces (CSV/graph/model counts, legends) lives in
+    ``tests/smoke_tests/plugin/compare/graphs.py``.
+    """
+
     controllers = ["foraging.footbot_foraging", "foraging.footbot_foraging_slow"]
-    stats = ["none", "conf95", "bw"]
 
-    # Set up stage 5 base command
-    stage5_base_cmd = (
+    # Generate stage 1-4 data for both controllers in one scenario.
+    for c in controllers:
+        sierra_cmd = (
+            f"{session.env['ARGOS_BASE_CMD']} "
+            f"--controller {c} "
+            f"--physics-n-engines=1 "
+            f"--batch-criteria population_size.Linear3.C3 "
+            f"--pipeline 1 2 3 4 --dist-stats=all "
+            f"--scenario=HighBlockCount.10x10x2"
+        )
+        session.run(*sierra_cmd.split(), silent=True)
+
+    # A single univariate comparison is enough to confirm cardinality-1
+    # dispatch works and stage 5 runs to completion.
+    stage5_cmd = (
         f"{session.env['COVERAGE_CMD']} "
         f"--sierra-root={session.env['SIERRA_ROOT']} "
         f"--project=projects.sample_argos "
         f"--pipeline 5 "
         f"--n-runs=4 "
         f"--bc-cardinality=1 "
-        f"-plog-yscale "
-        f"-plarge-text "
-        f"-pprimary-axis=1 "
         f"--log-level=TRACE "
+        f"--batch-criteria population_size.Linear3.C3 "
+        f"--compare compare.graphs "
+        f"--across=controllers "
+        f"--dist-stats=none "
+        f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
     )
+    session.run(*stage5_cmd.split(), silent=True)
 
-    # Run experiments with both controllers
-    for bc in criteria:
-        for c in controllers:
-            sierra_cmd = (
-                f"{session.env['ARGOS_BASE_CMD']} "
-                f"--controller {c} "
-                f"--physics-n-engines=1 "
-                f"--batch-criteria {bc} "
-                f"--pipeline 1 2 3 4 --dist-stats=all "
-                f"--scenario=HighBlockCount.10x10x2"
-            )
-            session.run(*sierra_cmd.split(), silent=True)
-
-    # Compare controllers within the same scenario
-    for stat in stats:
-        stage5_cmd = (
-            f"{stage5_base_cmd} "
-            f"--batch-criteria population_size.Linear3.C3 "
-            f"--compare compare.graphs "
-            f"--across=controllers "
-            f"--dist-stats={stat} "
-            f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
-        )
-        session.run(*stage5_cmd.split(), silent=True)
-
-        # Check outputs
-        utils.stage5_univar_check_cc_outputs(session, "argos")
-
-    # Run more experiments with both controllers for scenario comparison
-    for bc in criteria:
-        for c in controllers:
-            sierra_cmd = (
-                f"{session.env['ARGOS_BASE_CMD']} "
-                f"--controller {c} "
-                f"--physics-n-engines=1 "
-                f"--batch-criteria {bc} "
-                f"--pipeline 1 2 3 4 --dist-stats=all "
-                f"--scenario=LowBlockCount.10x10x2"
-            )
-            session.run(*sierra_cmd.split(), silent=True)
-
-    # Compare controller across scenarios
-    for stat in stats:
-        stage5_cmd = (
-            f"{stage5_base_cmd} "
-            f"--batch-criteria population_size.Linear3.C3 "
-            f"--compare compare.graphs "
-            f"--across=scenarios "
-            f"--controller=foraging.footbot_foraging "
-            f"--dist-stats={stat} "
-            f"--things=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
-        )
-        session.run(*stage5_cmd.split(), silent=True)
-
-        # Check outputs
-        utils.stage5_univar_check_cc_outputs(session, "argos")
+    # Minimal existence check: dispatch produced the comparison output tree.
+    cc_graph_root = (
+        session.env["SIERRA_ROOT"]
+        / "projects.sample_argos"
+        / "foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs"
+    )
+    assert cc_graph_root.is_dir(), f"{cc_graph_root} not created by stage 5"
+    assert any(cc_graph_root.iterdir()), f"{cc_graph_root} is empty"
 
 
 @nox.session(python=utils.versions, tags=["core"])
@@ -391,15 +364,17 @@ def core_stage2_bivar(session):
     # Check SIERRA directory structure
     for i in range(2):  # {0..1}
         for j in range(3):  # {0..2}
-            dir_path = f"{output_root1}/c1-exp{i}+c2-exp{j}"
-            assert os.path.isdir(dir_path), f"Directory {dir_path} does not exist"
+            dir_path = pathlib.Path(f"{output_root1}/c1-exp{i}+c2-exp{j}")
+            assert dir_path.exists(), f"Directory {dir_path} does not exist"
 
     # Check stage2 generated files
     for i in range(2):  # {0..1}
         for j in range(3):  # {0..2}
             for run in range(4):  # {0..3}
-                file_path = f"{output_root1}/c1-exp{i}+c2-exp{j}/template_run{run}_output/output/collected-data.csv"
-                assert os.path.isfile(file_path), f"File {file_path} does not exist"
+                file_path = pathlib.Path(
+                    f"{output_root1}/c1-exp{i}+c2-exp{j}/template_run{run}_output/output/collected-data.csv"
+                )
+                assert file_path.is_file(), f"File {file_path} does not exist"
 
 
 @nox.session(python=utils.versions, tags=["core"])
@@ -518,12 +493,17 @@ def core_stage4_bivar(session):
 @setup.session_setup
 @setup.session_teardown
 def core_stage5_bivar(session):
-    """Test stage 5 bivariate comparison."""
+    """Test that stage 5 dispatches correctly for bivariate (cardinality-2)
+    batch criteria, including primary-axis selection, and runs end-to-end.
 
-    # Define controllers to test
+    Cardinality-2 dispatch and ``--plot-primary-axis`` are *core* batch-criteria
+    concerns. Detailed verification of the produced comparison graphs lives in
+    ``tests/smoke_tests/plugin/compare/graphs.py``.
+    """
+
     controllers = ["foraging.footbot_foraging2", "foraging.footbot_foraging_slow2"]
 
-    # Run experiments with both controllers
+    # Generate stage 1-4 data for both controllers.
     for controller in controllers:
         sierra_cmd = (
             f"{session.env['ARGOS_BASE_CMD']} "
@@ -534,7 +514,6 @@ def core_stage5_bivar(session):
         )
         session.run(*sierra_cmd.split(), silent=True)
 
-    # Set up stage 5 base command
     stage5_base_cmd = (
         f"{session.env['COVERAGE_CMD']} "
         f"--sierra-root={session.env['SIERRA_ROOT']} "
@@ -542,57 +521,35 @@ def core_stage5_bivar(session):
         f"--pipeline 5 "
         f"--n-runs=4 "
         f"--bc-cardinality=2 "
-        f"--log-level=TRACE"
+        f"--log-level=TRACE "
+        f"--batch-criteria population_size.Linear3.C3 max_speed.1.9.C5 "
+        f"--compare compare.graphs "
+        f"--across=controllers "
+        f"--dist-stats=conf95 "
+        f"--comparison-type=LNraw "
+        f"--things=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
     )
 
-    # Define expected file counts and comparison types
-    n_files = 2  # 1 graph per controller, 2 performance variables
-    comps = ["LNraw"]
+    cc_csv_root = (
+        session.env["SIERRA_ROOT"]
+        / "projects.sample_argos"
+        / "foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-csvs"
+    )
+    cc_graph_root = (
+        session.env["SIERRA_ROOT"]
+        / "projects.sample_argos"
+        / "foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-graphs"
+    )
 
-    # Run comparisons
-    for i in range(1):  # {0..0}
-        sierra_stage5_cmd = (
-            f"{stage5_base_cmd} "
-            f"--batch-criteria population_size.Linear3.C3 max_speed.1.9.C5 "
-            f"--across=controllers "
-            f"--dist-stats=conf95 "
-            f"--comparison-type={comps[i]} "
-            f"--plot-log-yscale "
-            f"--plot-large-text "
-            f"--plot-transpose-graphs "
-            f"--things=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
-        )
-
-        # Define paths
-        cc_csv_root = (
-            session.env["SIERRA_ROOT"]
-            / "projects.sample_argos/foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-csvs"
-        )
-        cc_graph_root = (
-            session.env["SIERRA_ROOT"]
-            / "projects.sample_argos/foraging.footbot_foraging2+foraging.footbot_foraging_slow2-cc-graphs"
-        )
-
-        # Clean directories if they exist
+    # Verify both primary-axis selections dispatch and run to completion.
+    for axis in [0, 1]:
         if cc_csv_root.exists():
             shutil.rmtree(cc_csv_root)
         if cc_graph_root.exists():
             shutil.rmtree(cc_graph_root)
 
-        # Run with primary axis = 0
         session.run(
-            *(f"{sierra_stage5_cmd} --plot-primary-axis=0").split(), silent=True
+            *(f"{stage5_base_cmd} --plot-primary-axis={axis}").split(), silent=True
         )
-        utils.stage5_bivar_check_cc_outputs(cc_graph_root, n_files)
-
-        # Clean directories again
-        if cc_csv_root.exists():
-            shutil.rmtree(cc_csv_root)
-        if cc_graph_root.exists():
-            shutil.rmtree(cc_graph_root)
-
-        # Run with primary axis = 1
-        session.run(
-            *(f"{sierra_stage5_cmd} --plot-primary-axis=1").split(), silent=True
-        )
-        utils.stage5_bivar_check_cc_outputs(cc_graph_root, n_files)
+        assert cc_graph_root.is_dir(), f"{cc_graph_root} not created (axis={axis})"
+        assert any(cc_graph_root.iterdir()), f"{cc_graph_root} empty (axis={axis})"

@@ -51,15 +51,13 @@ inter-controller:
     # omitted.
     title: ''
 
-    # The Y or Z label of the graph (depending on the type of comparison
-    # graph selected on the cmdline). Optional; defaults to '' if omitted.
+    # The Y label of the graph. Optional; defaults to '' if omitted.
     label: 'Avg. Object Collection Rate'
 
     # For bivariate batch criteria, select which criteria should be on the X
-    # axis if the comparison graphs are linegraphs. 0=criteria1,
-    # 1=criteria2. Ignored for univariate batch criteria or if heatmaps are
-    # selected for as the comparison type. This key is optional, and
-    # defaults to 0 if omitted.
+    # axis of the comparison linegraphs. 0=criteria1, 1=criteria2. Ignored for
+    # univariate batch criteria. This key is optional, and defaults to 0 if
+    # omitted.
     primary_axis: 0
 
     # Which point in the time series from each batch experiment to use as the
@@ -75,6 +73,11 @@ inter-controller:
     # batch. Syntax is parsed as a python slice, so ``X:Y``, ``X:`` and ``:Y``
     # all work as you would expect. This key is optional, and defaults to ``:``
     # (all experiments) if omitted.
+    #
+    # The selection is applied consistently to the collated data, any overlaid
+    # model predictions, and the graph's X-axis ticks, so all three always
+    # cover the same set of experiments. This holds for both inter-controller
+    # and inter-scenario comparison.
     include_exp: '2:'
 
     # Specify the backend to use to generate the graph. Defaults to

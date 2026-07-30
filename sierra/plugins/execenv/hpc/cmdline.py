@@ -55,28 +55,15 @@ class HPCCmdline(PluginCmdline):
         self.stage2.add_argument(
             "--exec-devnull",
             help="""
-                 Redirect ALL output from simulations to /dev/null.  Useful for
-                 engine where you can't disable all INFO messages at compile
-                 time, and don't want to have to grep through lots of redundant
-                 stdout files to see if there were any errors.
-                 """
+         Redirect ALL output from simulations to /dev/null.  Useful for
+         engines where you can't disable all INFO messages at compile
+         time, and don't want to have to grep through lots of redundant
+         stdout files to see if there were any errors.
+         """
             + self.stage_usage_doc([1, 2]),
-            action="store_true",
+            action=argparse.BooleanOptionalAction,
             dest="exec_devnull",
-            default=True,
-        )
-
-        self.stage2.add_argument(
-            "--exec-no-devnull",
-            help="""
-                 Don't redirect ALL output from simulations to /dev/null.
-                 Useful for engines where you can't disable all INFO messages at
-                 compile time, and don't want to have to grep through lots of
-                 redundant stdout files to see if there were any errors.
-                 """
-            + self.stage_usage_doc([1, 2]),
-            action="store_false",
-            dest="exec_devnull",
+            default=False,
         )
 
         self.stage2.add_argument(

@@ -465,3 +465,62 @@ jobs:
           path: .coverage.*
           include-hidden-files: true
           if-no-files-found: error
+
+  plugin-compare:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    strategy:
+      matrix:
+        python-version:
+          - 3.12
+
+        session:
+          - compare_cc_univar
+          - compare_sc_univar
+          - compare_cc_bivar
+          - compare_models
+          - compare_things_legend
+
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          engine: argos
+      - name: Smoke tests
+        run: |
+          uv run -p ${{ matrix.python-version }} \
+          nox -p ${{ matrix.python-version }} -s ${{ matrix.session }}
+
+      - name: Upload SIERRA scratch on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sierra-scratch-${{ github.job }}
+          path: |
+            /github/home/test/**/scratch/**/parallel.log
+            /github/home/test/**/scratch/**/*/stdout
+            /github/home/test/**/scratch/**/*/stderr
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Set container name
+        id: container-name
+        run: |
+          # Replace problematic characters
+          SAFE_CONTAINER=$(echo "${{ matrix.container }}" | tr '/:' '__')
+          echo "safe_container=${SAFE_CONTAINER}" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-proc-${{ matrix.session }}-${{ steps.container-name.outputs.safe_container }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error

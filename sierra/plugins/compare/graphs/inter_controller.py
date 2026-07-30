@@ -16,7 +16,6 @@ import logging
 import pathlib
 
 # 3rd party packages
-import polars as pl
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
@@ -115,6 +114,8 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             "backend": graph["backend"],
         }
 
+        processed = []  # type: list[str]
+
         for controller in self.things:
             valid_configurations = sum(r.controller == controller for r in roots)
             if valid_configurations > 1:
@@ -167,19 +168,44 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
                 criteria=criteria,
                 pathset=pathset,
                 controller=controller,
-                scenario=root.scenario,
                 spec=graph_spec,
             )
+            processed.append(controller)
 
-        # After the CSV has been generated, we can generate the graph. We can
-        # use any controller when computing the batch leaf, since they are all
-        # the same in this comparison, by definition.
-        root = next(r for r in roots if r.controller == self.things[0])
+        # If no controller could be compared (all ambiguous/missing), there is
+        # nothing to graph.
+        if not processed:
+            self.logger.warning(
+                "No controllers could be compared for '%s'; skipping graph",
+                graph_spec["dest_stem"],
+            )
+            return
+
+        # After the CSV has been generated, we can generate the graph. Use the
+        # first successfully-processed controller's batch root as the reference
+        # (they share batch-criteria structure by definition), rather than
+        # whichever loop iteration happened to run last.
+        ref_controller = processed[0]
+        ref_root = next(r for r in roots if r.controller == ref_controller)
+        ref_pathset = batchroot.from_exp(
+            sierra_root=self.cli_args.sierra_root,
+            project=self.cli_args.project,
+            batch_leaf=ref_root.leaf,
+            controller=ref_controller,
+            scenario=ref_root.scenario,
+        )
+        ref_criteria = bc.factory(
+            self.main_config,
+            cmdopts,
+            ref_pathset.input_root,
+            self.cli_args,
+            ref_root.scenario,
+        )
         self._gen_graph(
-            batch_leaf=root.leaf,
-            criteria=criteria,
+            batch_leaf=ref_root.leaf,
+            criteria=ref_criteria,
             cmdopts=cmdopts,
-            batch_output_root=pathset.output_root,
+            batch_output_root=ref_pathset.output_root,
             spec=graph_spec,
         )
 
@@ -189,7 +215,6 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         criteria: bc.XVarBatchCriteria,
         pathset: batchroot.PathSet,
         controller: str,
-        scenario: str,
         spec: dict[str, tp.Any],
     ) -> None:
         """Accumulate info in a CSV file for inter-controller comparison."""
@@ -224,12 +249,10 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         )
 
         # Collect performance results models and legends. Append to existing
-        # dataframes if they exist, otherwise start new ones. Can't use
-        # with_suffix() for opath, because that path contains the scenario,
-        # which already has a '.' in it.
-        model_ostem = self.stage5_roots.model_root / (
-            spec["dest_stem"] + "-" + scenario
-        )
+        # dataframes if they exist, otherwise start new ones. The model file is
+        # named after the same leaf as the collated .csv so the graph generator
+        # (which reads model_root / (input_stem + .model)) finds it.
+        model_ostem = self.stage5_roots.model_root / opath_leaf
         model_opath = model_ostem.with_name(
             model_ostem.name + config.MODELS_EXT["model"]
         )
@@ -246,15 +269,20 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
 
         model_df = None
         if utils.path_exists(model_ipath):
-            if utils.path_exists(model_opath):
-                cum_df = storage.df_read(model_opath, "storage.csv")
-            else:
-                cum_df = pl.DataFrame({"Experiment ID": criteria.gen_exp_names()})
-
+            cum_df = (
+                storage.df_read(model_opath, "storage.csv")
+                if utils.path_exists(model_opath)
+                else None
+            )
             src_df = storage.df_read(model_ipath, "storage.csv")
-            idx = spec["index"]
-            row_data = src_df.row(idx if idx >= 0 else len(src_df) + idx)
-            model_df = cum_df.with_columns(pl.Series(controller, row_data))
+            model_df = preprocess.collate_row(
+                cum_df,
+                src_df,
+                spec["index"],
+                spec["inc_exps"],
+                controller,
+                criteria.gen_exp_names(),
+            )
 
         if model_df is not None:
             storage.df_write(model_df, model_opath, "storage.csv")
@@ -288,7 +316,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             batchroot=pathlib.Path(
                 self.cmdopts["sierra_root"], self.cmdopts["project"]
             ),
-            model_root=None,
+            model_root=self.stage5_roots.model_root,
         )
 
         graphs.summary_line(
@@ -362,6 +390,9 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             "primary_axis": graph["primary_axis"],
             "backend": graph["backend"],
         }
+
+        processed = []  # type: list[str]
+
         for controller in self.things:
             valid_configurations = sum(r.controller == controller for r in roots)
             if valid_configurations > 1:
@@ -416,14 +447,39 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                     batch_leaf=root.leaf,
                     spec=graph_spec,
                 )
+                processed.append(controller)
+
+        if not processed:
+            self.logger.warning(
+                "No controllers could be compared for '%s'; skipping graph",
+                graph_spec["dest_stem"],
+            )
+            return
 
         if self.cli_args.comparison_type == "LNraw":
-
+            # Use the first successfully-processed controller as the reference,
+            # rather than whichever loop iteration ran last.
+            ref_controller = processed[0]
+            ref_root = next(r for r in roots if r.controller == ref_controller)
+            ref_pathset = batchroot.from_exp(
+                sierra_root=self.cli_args.sierra_root,
+                project=self.cli_args.project,
+                batch_leaf=ref_root.leaf,
+                controller=ref_controller,
+                scenario=ref_root.scenario,
+            )
+            ref_criteria = bc.factory(
+                self.main_config,
+                cmdopts,
+                ref_pathset.input_root,
+                self.cli_args,
+                ref_root.scenario,
+            )
             self._gen_graphs_1d(
-                batch_leaf=root.leaf,
-                criteria=criteria,
+                batch_leaf=ref_root.leaf,
+                criteria=ref_criteria,
                 cmdopts=cmdopts,
-                pathset=pathset,
+                pathset=ref_pathset,
                 spec=graph_spec,
             )
 
@@ -539,6 +595,10 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             xlabel = info.xlabel
 
         # TODO: Fix no statistics support for these graphs
+        #
+        # No model overlay for the bivariate path: model collation is only done
+        # for the univariate comparators, so there is no collated .model file
+        # for these graphs to read.
         paths = graphs.PathSet(
             input_root=self.stage5_roots.csv_root,
             output_root=self.stage5_roots.graph_root,

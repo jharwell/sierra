@@ -34,12 +34,10 @@ def proc_exps(
         cmdopts["things"].split(",") if cmdopts["across"] == "scenarios" else None,
     )
 
-    if stage5_roots.model_root is not None:
-        utils.dir_create_checked(stage5_roots.model_root, True)
-
-    # Create directories for .csv files and graphs
+    # Create directories for .csv files, graphs, and collated models
     utils.dir_create_checked(stage5_roots.graph_root, True)
     utils.dir_create_checked(stage5_roots.csv_root, True)
+    utils.dir_create_checked(stage5_roots.model_root, True)
 
     assert (
         cmdopts["bc_cardinality"] <= 2

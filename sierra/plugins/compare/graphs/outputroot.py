@@ -39,6 +39,14 @@ class PathSet:
     ) -> None:
         assert not (controllers and scenarios)
 
+        # Exactly one of controllers/scenarios is populated (enforced above and
+        # by the stage-5 dispatch), so all three roots are always assigned by
+        # one of the branches below. Declared here so consumers see concrete,
+        # non-Optional paths.
+        self.graph_root: pathlib.Path
+        self.csv_root: pathlib.Path
+        self.model_root: pathlib.Path
+
         # We add the controller list to the directory path for the .csv
         # and graph directories so that multiple runs of stage5 with
         # different controller sets do not overwrite each other

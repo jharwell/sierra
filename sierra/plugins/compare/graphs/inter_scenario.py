@@ -16,7 +16,6 @@ import logging
 import pathlib
 
 # 3rd party packages
-import polars as pl
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
@@ -197,7 +196,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
             batchroot=pathlib.Path(
                 self.cmdopts["sierra_root"], self.cmdopts["project"]
             ),
-            model_root=None,
+            model_root=self.stage5_roots.model_root,
         )
 
         graphs.summary_line(
@@ -268,16 +267,14 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
             scenario=root.scenario,
             opath_leaf=opath_leaf,
             index=spec["index"],
-            inc_exps=None,
+            inc_exps=spec["inc_exps"],
         )
 
         # Collect performance results models and legends. Append to existing
-        # dataframes if they exist, otherwise start new ones.  Can't use
-        # with_suffix() for opath, because that path contains the controller,
-        # which already has a '.' in it.
-        model_ostem = self.stage5_roots.model_root / (
-            spec["dest_stem"] + "-" + self.controller
-        )
+        # dataframes if they exist, otherwise start new ones. The model file is
+        # named after the same leaf as the collated .csv so the graph generator
+        # (which reads model_root / (input_stem + .model)) finds it.
+        model_ostem = self.stage5_roots.model_root / opath_leaf
 
         model_opath = model_ostem.with_name(
             model_ostem.name + config.MODELS_EXT["model"]
@@ -295,17 +292,20 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         model_df = None
         if utils.path_exists(model_ipath):
-            if utils.path_exists(model_opath):
-                cum_df = storage.df_read(model_opath, "storage.csv")
-            else:
-                cum_df = pl.DataFrame(
-                    {"Experiment ID": criteria.gen_exp_names()}
-                )
-
+            cum_df = (
+                storage.df_read(model_opath, "storage.csv")
+                if utils.path_exists(model_opath)
+                else None
+            )
             src_df = storage.df_read(model_ipath, "storage.csv")
-            idx = spec["index"]
-            row_data = src_df.row(idx if idx >= 0 else len(src_df) + idx)
-            model_df = cum_df.with_columns(pl.Series(root.scenario, row_data))
+            model_df = preprocess.collate_row(
+                cum_df,
+                src_df,
+                spec["index"],
+                spec["inc_exps"],
+                root.scenario,
+                criteria.gen_exp_names(),
+            )
 
         if model_df is not None:
             storage.df_write(model_df, model_opath, "storage.csv")

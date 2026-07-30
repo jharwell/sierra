@@ -22,6 +22,7 @@ from tests.smoke_tests.plugin.engine import (
 from tests.regression_tests import proc
 from tests.smoke_tests.plugin.proc import modelrunner, compression, pseudostats
 from tests.smoke_tests.plugin.prod import graphs
+from tests.smoke_tests.plugin.compare import graphs as compare_graphs
 
 from tests.smoke_tests.plugin import execenv
 

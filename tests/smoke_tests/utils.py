@@ -17,6 +17,11 @@ import csv
 
 versions = ["3.9", "3.12"]
 
+# Mirror sierra.core.config.MODELS_EXT (kept as literals so the tests don't
+# depend on sierra internals).
+MODEL_EXT = ".model"
+LEGEND_EXT = ".legend"
+
 
 def stage1_univar_check_outputs(
     engine: str,
@@ -524,53 +529,85 @@ def stage4_bivar_check_outputs(
         assert False, f"Unhandled engine case {engine}"
 
 
+def _csv_dims(path: pathlib.Path) -> tp.Tuple[int, int]:
+    """Return (n_data_rows, n_cols) for a collated stage-5 CSV (excludes the
+    header row from the row count)."""
+    with open(path) as f:
+        rows = list(csv.reader(f))
+    n_rows = max(0, len(rows) - 1)  # minus header
+    n_cols = len(rows[0]) if rows else 0
+    return n_rows, n_cols
+
+
 def stage5_univar_check_cc_outputs(session, engine: str):
-    """Check controller comparison outputs."""
+    """Check controller comparison outputs.
+
+    Verifies file counts, that every collated CSV has one column per compared
+    controller (+ index), and that ``include_exp`` filtered the data rows.
+    """
     if engine == "argos":
         cc_csv_root = pathlib.Path(
-            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs"
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
+            "foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-csvs"
         )
         cc_graph_root = pathlib.Path(
-            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs"
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
+            "foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-graphs"
         )
 
-        # Check file counts
-        csvs = [d for d in cc_csv_root.iterdir()]
-        graphs = [d for d in cc_graph_root.iterdir()]
+        csvs = list(cc_csv_root.iterdir())
+        graphs = list(cc_graph_root.iterdir())
 
         assert len(csvs) == 18, f"Expected 18 CSV files, found {len(csvs)}"
         assert len(graphs) == 2, f"Expected 2 graph files, found {len(graphs)}"
 
         for path in csvs:
-            n_cols = len(next(csv.reader(open(path))))
+            n_rows, n_cols = _csv_dims(path)
             # +1 for the index column
-            assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_lines}"
+            assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_cols - 1}"
+
+            # include_exp: food-counts is full (3 exps), swarm-energy is '1:' (2).
+            if "cc-food-counts" in path.name:
+                assert n_rows == 3, f"Expected 3 rows in {path.name}, got {n_rows}"
+            elif "cc-swarm-energy" in path.name:
+                assert n_rows == 2, f"Expected 2 rows in {path.name}, got {n_rows}"
 
     else:
         assert False, f"Unhandled engine case {engine}"
 
 
 def stage5_univar_check_sc_outputs(session, engine: str):
-    """Check scenario comparison outputs."""
+    """Check scenario comparison outputs.
+
+    Same contract as the CC check: file counts, one column per compared
+    scenario (+ index), and include_exp data filtering (``sc-food-counts`` full,
+    ``sc-swarm-energy`` filtered to ``'1:'``).
+    """
     if engine == "argos":
         sc_csv_root = pathlib.Path(
-            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs"
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
+            "LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-csvs"
         )
         sc_graph_root = pathlib.Path(
-            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs"
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
+            "LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-graphs"
         )
 
-        # Check file counts
-        csvs = [d for d in sc_csv_root.iterdir()]
-        graphs = [d for d in sc_graph_root.iterdir()]
+        csvs = list(sc_csv_root.iterdir())
+        graphs = list(sc_graph_root.iterdir())
 
         assert len(csvs) == 18, f"Expected 18 CSV files, found {len(csvs)}"
         assert len(graphs) == 2, f"Expected 2 graph files, found {len(graphs)}"
 
         for path in csvs:
-            n_cols = len(next(csv.reader(open(path))))
+            n_rows, n_cols = _csv_dims(path)
             # +1 for the index column
-            assert n_cols == 3, f"Expected 2 controllers in {path}, got {n_lines}"
+            assert n_cols == 3, f"Expected 2 scenarios in {path}, got {n_cols - 1}"
+
+            if "sc-food-counts" in path.name:
+                assert n_rows == 3, f"Expected 3 rows in {path.name}, got {n_rows}"
+            elif "sc-swarm-energy" in path.name:
+                assert n_rows == 2, f"Expected 2 rows in {path.name}, got {n_rows}"
 
     else:
         assert False, f"Unhandled engine case {engine}"
@@ -585,3 +622,76 @@ def stage5_bivar_check_cc_outputs(cc_graph_root: pathlib.Path, n_files: int):
     assert (
         file_count == n_files
     ), f"Expected {n_files} files in {cc_graph_root}, found {file_count}"
+
+
+def _check_models_dir(
+    models_root: pathlib.Path, measures: "dict[str, int]"
+):
+    """Check a stage-5 ``-*-models`` directory holds the collated model
+    predictions and legends.
+
+    ``measures`` maps a ``dest_stem`` fragment expected to appear in the model
+    filename onto the number of data rows that measure's model CSV should have
+    (reflecting its ``include_exp`` filtering). Each measure must contribute
+    exactly one ``.model`` file (with a matching ``.legend``) whose row count
+    matches, and whose single prediction column lines up with the index.
+    """
+    assert models_root.is_dir(), f"Models dir {models_root} does not exist"
+
+    model_files = list(models_root.glob(f"*{MODEL_EXT}"))
+    assert len(model_files) == len(measures), (
+        f"Expected {len(measures)} '{MODEL_EXT}' files in {models_root}, "
+        f"found {len(model_files)}: {[f.name for f in model_files]}"
+    )
+
+    for stem_frag, exp_rows in measures.items():
+        matches = [f for f in model_files if stem_frag in f.name]
+        assert len(matches) == 1, (
+            f"Expected exactly 1 model file for '{stem_frag}' in {models_root}, "
+            f"found {len(matches)}"
+        )
+        mf = matches[0]
+
+        # Matching legend.
+        lf = mf.with_suffix(LEGEND_EXT)
+        assert lf.exists(), f"Model file {mf.name} has no matching legend {lf.name}"
+
+        # Row count reflects include_exp filtering; columns = index + 1
+        # prediction column.
+        n_rows, n_cols = _csv_dims(mf)
+        assert n_rows == exp_rows, (
+            f"Expected {exp_rows} rows in {mf.name}, got {n_rows}"
+        )
+        assert n_cols == 2, f"Expected index+prediction in {mf.name}, got {n_cols}"
+
+
+def stage5_univar_check_cc_models_outputs(session, engine: str):
+    """Check that inter-controller comparison produced collated model outputs.
+
+    food-counts is unfiltered (3 rows), swarm-energy is ``include_exp: '1:'``
+    (2 rows) -- so model collation honored include_exp too.
+    """
+    if engine == "argos":
+        cc_models_root = pathlib.Path(
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
+            "foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-models"
+        )
+        _check_models_dir(
+            cc_models_root, {"cc-food-counts": 3, "cc-swarm-energy": 2}
+        )
+    else:
+        assert False, f"Unhandled engine case {engine}"
+
+
+def stage5_univar_check_sc_models_outputs(session, engine: str):
+    """Check that inter-scenario comparison produced collated model outputs."""
+    if engine == "argos":
+        sc_models_root = pathlib.Path(
+            f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
+            "LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-models"
+        )
+        _check_models_dir(
+            sc_models_root, {"sc-food-counts": 3, "sc-swarm-energy": 2}
+        )
+    else:
+        assert False, f"Unhandled engine case {engine}"

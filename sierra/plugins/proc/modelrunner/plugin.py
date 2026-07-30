@@ -221,11 +221,10 @@ def _run_intra_single_in_exp(
     dfs = model.run(criteria, exp_index, cmdopts, pathset)
     legend = blob["legend"]
 
-    for df, target in zip(dfs, targets):
+    for idx, (df, target) in enumerate(zip(dfs, targets)):
         path_stem = pathset.model_root / target
 
         # Write model legend file so the generated graph can find it
-        idx = dfs.index(df)
         with utils.utf8open(
             path_stem.with_suffix(config.MODELS_EXT["legend"]), "w"
         ) as f:
@@ -261,7 +260,7 @@ def _run_inter_exp(
 
         dfs = model.run(criteria, cmdopts, pathset)
 
-        for df, csv_stem in zip(dfs, targets):
+        for idx, (df, csv_stem) in enumerate(zip(dfs, targets)):
             path_stem = pathset.model_interexp_root / csv_stem
             utils.dir_create_checked(path_stem.parent, exist_ok=True)
 
@@ -272,7 +271,6 @@ def _run_inter_exp(
                 "storage.csv",
             )
 
-            idx = dfs.index(df)
             with utils.utf8open(
                 path_stem.with_suffix(config.MODELS_EXT["legend"]), "w"
             ) as f:
