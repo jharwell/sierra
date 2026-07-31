@@ -150,7 +150,7 @@ def _build_task_for_heatmap(
     exp_stat_root: pathlib.Path,
     exp_imagize_root: pathlib.Path,
 ) -> list[tuple[list[types.YAMLDict], dict]]:
-    candidate = exp_stat_root / str(graph["src_stem"])
+    candidate = exp_stat_root / str(graph["src"])
     res = []  # type: list[tuple[list[types.YAMLDict], dict]]
 
     if not candidate.is_dir():
@@ -193,7 +193,7 @@ def _build_task_for_network(
 
     res = []
     for run_output_root in exp_output_root.iterdir():
-        candidate = run_output_root / str(graph["src_stem"])
+        candidate = run_output_root / str(graph["src"])
         if not candidate.is_dir():
             _logger.debug(
                 "Configured imagize source <output root>/%s does not exist",
@@ -212,8 +212,8 @@ def _build_task_for_network(
                     imagize_config,
                     {
                         "input_path": fpath,
-                        "graph_stem": str(graph["src_stem"]),
-                        "dest_stem": str(graph.get("dest_stem", graph["src_stem"])),
+                        "graph_stem": str(graph["src"]),
+                        "dest": str(graph.get("dest", graph["src"])),
                         "imagize_output_root": imagize_output_root,
                         "batch_root": exp_output_root.parent.parent,
                         "storage": storage,
@@ -244,7 +244,7 @@ def _proc_single_exp(imagize_config: list[types.YAMLDict], imagize_opts: dict) -
 
     match = None
     for graph in imagize_config:
-        if str(graph["src_stem"]) == str(imagize_opts["graph_stem"]):
+        if str(graph["src"]) == str(imagize_opts["graph_stem"]):
             match = graph
 
     if match is not None:
@@ -290,7 +290,7 @@ def _proc_single_exp(imagize_config: list[types.YAMLDict], imagize_opts: dict) -
 
     else:
         _logger.warning(
-            "No match for graph with src_stem='%s' found in configuration",
+            "No match for graph with src='%s' found in configuration",
             imagize_opts["graph_stem"],
         )
 
@@ -350,7 +350,7 @@ class ImagizeInputGatherer(gather.BaseGatherer):
                     continue
 
                 if not any(
-                    g["src_stem"] in str(imagizable) for g in self.imagize_config
+                    g["src"] in str(imagizable) for g in self.imagize_config
                 ):
                     continue
 
@@ -358,7 +358,13 @@ class ImagizeInputGatherer(gather.BaseGatherer):
                     to_gather.append(
                         gather.GatherSpec(
                             exp_name=exp_name,
-                            item_stem_path=imagizable.relative_to(proj_output_root),
+                            sources=[
+                                gather.GatherSource(
+                                    item_stem_path=imagizable.relative_to(
+                                        proj_output_root
+                                    ),
+                                )
+                            ],
                             collate_col=None,
                         )
                     )

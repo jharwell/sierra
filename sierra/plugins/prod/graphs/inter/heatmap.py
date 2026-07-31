@@ -56,8 +56,8 @@ def generate(
             # change in the future.
             graphs.heatmap(
                 pathset=graph_pathset,
-                input_stem=str(graph["dest_stem"]),
-                output_stem=str(graph["dest_stem"]),
+                input_stem=str(graph["dest"]),
+                output_stem=str(graph["dest"]),
                 medium="storage.csv",
                 title=str(graph["title"]),
                 xlabel=info.xlabel,

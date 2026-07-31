@@ -112,7 +112,7 @@ To use:
   stage 3, either on the same invocation or a previous one. SIERRA will take the
   imagized files previously created and generate a set of a videos in
   ``<batch_root>/videos/<exp>/<subdir>`` for each experiment in the batch which
-  was run, where ``<subdir>`` corresponds to the ``src_stem`` of a configured
+  was run, where ``<subdir>`` corresponds to the ``src`` of a configured
   imagizing directory.
 
 .. IMPORTANT::

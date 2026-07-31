@@ -21,7 +21,7 @@ calculated, and the results written out as described in the
 :ref:`concepts/run-time-tree`.
 
 This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
-supports ``pd.DataFrame`` objects.
+supports ``pl.DataFrame`` objects.
 
 When run:
 
@@ -41,7 +41,7 @@ When run:
 Ordering Considerations
 =======================
 
-::ref:`plugins/proc/decompress` should proceed this plugin in the ``--proc``
+:ref:`plugins/proc/decompress` should proceed this plugin in the ``--proc``
 chain if you previously compressed the data.
 
 Usage
@@ -84,3 +84,11 @@ graphs. If ``graphs.yaml`` is missing or doesn't contain specs for those graph
 types, then *all* output data files are gathered and processed. This can take a
 looooonnngggg time, depending on the amount of data produced and the filesystem
 speed.
+
+.. NOTE:: A graph's ``src`` is matched against output files *exactly*: the
+   value is compared against a file's path relative to the run output root (not
+   a substring of it), so a bare name resolves at the output root and a file in
+   a subdirectory must be named by its path (e.g. ``subdir/output1D``). This is
+   the same matching rule used by :ref:`plugins/proc/collate`, so a ``src``
+   like ``output1D`` gathers exactly ``output1D`` and not, say,
+   ``output1D_extended`` or a nested ``subdir/output1D``.

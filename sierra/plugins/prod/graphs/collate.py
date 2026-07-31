@@ -95,7 +95,7 @@ class GraphCollator:
         self.logger.info(
             "Files from univariate experiment in <batch_root>/%s for graph '%s'",
             self.pathset.output_root.relative_to(self.pathset.root),
-            target["src_stem"],
+            target["src"],
         )
         self.logger.trace(json.dumps(target, indent=4))
 
@@ -140,7 +140,7 @@ class GraphCollator:
                 storage.df_write(
                     stat.df,
                     self.pathset.stat_interexp_root
-                    / (str(target["dest_stem"]) + stat.df_ext),
+                    / (str(target["dest"]) + stat.df_ext),
                     "storage.csv",
                 )
 
@@ -148,14 +148,14 @@ class GraphCollator:
                 self.logger.warning(
                     "Not all experiments in '%s' produced '%s%s'",
                     self.pathset.output_root,
-                    target["src_stem"],
+                    target["src"],
                     stat.df_ext,
                 )
             else:
                 self.logger.warning(
                     "No experiments in <batchroot>/%s produced %s%s",
                     self.pathset.output_root.relative_to(self.pathset.root),
-                    target["src_stem"],
+                    target["src"],
                     stat.df_ext,
                 )
 
@@ -165,7 +165,7 @@ class GraphCollator:
         exp_stat_root = self.pathset.stat_root / exp_dir
 
         for stat in stats:
-            csv_ipath = pathlib.Path(exp_stat_root, target["src_stem"] + stat.df_ext)
+            csv_ipath = pathlib.Path(exp_stat_root, target["src"] + stat.df_ext)
             if not utils.path_exists(csv_ipath):
                 stat.all_srcs_exist = False
                 continue
@@ -315,6 +315,11 @@ class GraphCollator:
         else:
             # Add this as a new column to existing stat.df
             n = stat.df.height
+
+            # If the series for the current experiment is too short, extend it
+            # to match. This is safe, because any stats have already been
+            # computed, and will be unaffected by e.g., nulls getting filled to
+            # 0 (if that were to happen).
             if col_data.len() < n:
                 self.logger.warning(
                     "Not all columns for %s have the same length--extending shorter col from %s",
@@ -322,6 +327,22 @@ class GraphCollator:
                     exp_dir,
                 )
                 col_data = col_data.extend_constant(None, n - col_data.len())
+            # If the series for the current experiment is longer than every
+            # other column in the dataframe, pad the dataframe to match.This is
+            # safe, because any stats have already been computed, and will be
+            # unaffected by e.g., nulls getting filled to 0 (if that were to
+            # happen).
+            elif col_data.len() > n:
+                self.logger.warning(
+                    "Not all columns for %s have the same length--extending existing cols",
+                    target,
+                )
+                pad = col_data.len() - n
+                padding = pl.DataFrame(
+                    {c: [None] * pad for c in stat.df.columns},
+                    schema=stat.df.schema,
+                )
+                stat.df = pl.concat([stat.df, padding])
             stat.df = stat.df.with_columns(col_data.alias(exp_dir))
 
     def _collate_exp_heatmap(

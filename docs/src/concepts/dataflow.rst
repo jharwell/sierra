@@ -44,7 +44,7 @@ At the highest level we have the following in the context of pipeline stages
    raw --> proc
    proc --> products
 
-The :term:`Raw Output Data` files from experimental runs is processed during
+The :term:`Raw Output Data` files from experimental runs are processed during
 stage 3 into :term:`Processed Output Data` files. In stage 4 those processed
 files are turned into :term:`products <Product>` of various sorts. All stage 4
 products are sourced from a *single* data file, to encourage and enable
@@ -191,6 +191,19 @@ as SCOPE:
 
 .. figure:: /figures/data-collation.png
 
+Each collated output above is drawn from a *single* source file. A collated
+output can instead draw its columns from *several* source files, joined together
+per run before collation -- useful when the columns needed for one product live
+in different raw output files. In that case each run contributes a joined group
+of columns to the single collated output:
+
+.. figure:: /figures/data-collation-multisource.png
+
+Either way, the result is a single collated file per output, which is what
+stage 4 consumes: the multi-file joining happens here, in stage 3, so that
+stage 4 products remain sourced from a single file. See
+:ref:`plugins/proc/collate` for the configuration.
+
 An important point here is that within the SIERRA builtin stage3 processing
 plugins not all raw output files get processed in this manner, only those which
 are going to be used during stage 4 to produce something via a
@@ -200,12 +213,17 @@ user wants to generate. This list is matched against the raw output files, and
 only matching files are processed. Thus, SIERRA is very efficient in its data
 processing.
 
+.. NOTE:: This matching is *exact*: a configured source name is matched against a
+   raw output file's path relative to the run output root (not a substring of
+   it), so a bare name resolves at the output root and a nested file must be
+   named by its path. A name that matches more than one file is a hard error.
+
 .. TIP:: :term:`Processed Output Data` files can be thought of as time-series
          data at the level of :term:`Experimental Runs <Experimental Run>`.
 
 
 
-Some examples of plugins performing this reduce operation:
+Some examples of plugins performing this collation:
 
 - :ref:`plugins/proc/collate`
 
@@ -310,18 +328,22 @@ Inter-Experiment Dataflow
 -------------------------
 
 Inter-experiment processing in stage4 is :term:`Data Collation`, but this time
-at the level of :term:`Experiments <Experiment>` rather the :term:`Experimental
-Runs <Experimental Run>`:
+at the level of :term:`Experiments <Experiment>` rather than the
+:term:`Experimental Runs <Experimental Run>`:
 
-This process in stage 3 can be visualized as follows for a single
-:term:`Batch Experiment`, using :term:`Experiment` as SCOPE. Input files in this case
-are :term:`Processed Output Data`, and output files are :term:`Collated Output
-Data` at the experiment level. Each output file is a summary of a batch
-experiment along some axis of interest.
+This process in stage 4 can be visualized as follows for a single
+:term:`Batch Experiment`, using :term:`Experiment` as SCOPE. Input files in this
+case are :term:`Processed Output Data` -- one file per experiment, named by a
+single ``src`` -- and the output is a single :term:`Collated Output Data`
+file. Note the shape: unlike the stage-3 picture above (one output file *per
+column*, cells per run), here a single configured column is taken from each
+experiment and becomes one *column per experiment* in a single output file. It
+is, in effect, the transpose of the stage-3 collation.
 
-.. figure:: /figures/data-collation.png
+.. figure:: /figures/data-collation-inter-exp.png
 
-Once processed, products can be generate directly from the inter-experiment
+Each output file is a summary of a batch experiment along some axis of interest.
+Once processed, products can be generated directly from the inter-experiment
 files with a 1:1 mapping as above.
 
 .. _concepts/dataflow/stage5:
@@ -333,9 +355,13 @@ After :ref:`concepts/dataflow/stage4`, data is in :term:`Processed Output Data`
 files and/or :term:`Collated Output Data` files. In stage 5, the :term:`Collated
 Output Data` files can be taken and further collated to create
 :term:`Inter-Batch Data` files. The dataflow for this can be visualized as
-follows, with :term:`Batch Experiment` as SCOPE.
+follows, with :term:`Batch Experiment` as SCOPE -- e.g. comparing several
+controllers, or one controller across several scenarios. Each compared SCOPE
+contributes its per-experiment collated series, and these are placed
+side by side as one *column per SCOPE* (indexed by ``Experiment ID``) in a
+single output file, ready to be plotted together.
 
-.. figure:: /figures/data-collation.png
+.. figure:: /figures/data-collation-inter-batch.png
 
    Each output file is a summary of a set of batch experiments along some axis
    of interest.

@@ -12,15 +12,19 @@ import copy
 import typing as tp
 import logging
 import json
+import pathlib
+import functools
 
 # 3rd party packages
 import numpy as np
+import polars as pl
 
 # Project packages
 import sierra.core.plugin as pm
-from sierra.core import types, utils, batchroot, exproot, config, graphs
+from sierra.core import types, utils, batchroot, exproot, config, graphs, storage
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.graphs import gconfig
+from sierra.core.yaml import sources as srcspec
 
 
 _logger = logging.getLogger(__name__)
@@ -100,10 +104,10 @@ def _histogram_kwargs(
         "title": loaded["title"],
         "xlabel": loaded["xlabel"],
         "ylabel": loaded["ylabel"],
-        "cols": loaded["cols"],
+        "cols": loaded.get("cols", None),
         "bins": loaded.get("bins", None),
         "kind": loaded["kind"],
-        "legend": loaded.get("legend", loaded["cols"]),
+        "legend": loaded.get("legend", loaded.get("cols", None)),
     }
 
 
@@ -287,12 +291,8 @@ class _ExpGraphGenerator:
             for category in list(self.controller_config.keys()):
                 if category not in self.cmdopts["controller"]:
                     continue
-                category_cfg = tp.cast(
-                    types.YAMLDict, self.controller_config[category]
-                )
-                controllers = tp.cast(
-                    list[types.YAMLDict], category_cfg["controllers"]
-                )
+                category_cfg = tp.cast(types.YAMLDict, self.controller_config[category])
+                controllers = tp.cast(list[types.YAMLDict], category_cfg["controllers"])
                 for controller in controllers:
                     if controller["name"] not in self.cmdopts["controller"]:
                         continue
@@ -319,9 +319,128 @@ class _ExpGraphGenerator:
         enabled = [k for k in self.graphs_config if k in keys]
         self.logger.debug("Enabled graph categories: %s", enabled)
 
-        return [
-            tp.cast(list[types.YAMLDict], self.graphs_config[k]) for k in enabled
-        ]
+        return [tp.cast(list[types.YAMLDict], self.graphs_config[k]) for k in enabled]
+
+
+def _stat_exts(cmdopts: types.Cmdopts) -> list[str]:
+    """Get the statistic file extensions an intra-exp graph reads for one stem.
+
+    Mirrors the collation path: the mean is always present, with dispersion
+    (conf95) and/or box-and-whisker (bw) extensions added per ``--dist-stats``.
+    An intra-exp graph reads one file per extension (mean line plus error
+    bands), so a multi-source graph must join per extension.
+    """
+    exts = dict(config.STATS["mean"].exts)
+
+    dist = cmdopts.get("dist_stats", "none")
+    if dist in ("conf95", "all"):
+        exts.update(config.STATS["conf95"].exts)
+    if dist in ("bw", "all"):
+        exts.update(config.STATS["bw"].exts)
+
+    return list(exts.values())
+
+
+def _materialize_sources(
+    graph: dict,
+    input_root: "pathlib.Path",
+    medium: str,
+    cmdopts: types.Cmdopts,
+) -> str:
+    """Join a multi-source graph's inputs into one derived file *family*.
+
+    An intra-exp graph reads a *family* of statistic files per stem (``.mean``
+    plus, per ``--dist-stats``, dispersion/box-whisker extensions) to draw the
+    line and its error bands. So for each such extension, the selected+renamed
+    columns from every source are read from ``<file><ext>``, concatenated
+    horizontally on a shared row axis, and written to ``<derived_stem><ext>``.
+    The derived stem is returned for the plotter, which then reads the whole
+    family exactly as it would for a single ``src``.
+
+    Sources have already been validated by gconfig (no duplicate columns within
+    a source, no unresolved cross-source collisions).
+    """
+    # normalize once; the (file, col_map) pairs are ext-independent.
+    pairs = []  # type: list[tuple[str, srcspec.ColMap]]
+    for s in graph["sources"]:
+        result = srcspec.normalize_source(s, "sources", [])
+        # gconfig already validated these, so normalization cannot fail here.
+        assert result is not None
+        pairs.append(result)
+
+    for ext in _stat_exts(cmdopts):
+        n_rows = None  # type: tp.Optional[int]
+        frames = []  # type: list[pl.DataFrame]
+
+        for file, col_map in pairs:
+            ipath = input_root / (file + ext)
+            if not utils.path_exists(ipath):
+                # A source missing this statistic entirely: skip the whole
+                # extension rather than emit a partial join. (The mean is always
+                # written; optional dispersion stats may legitimately be
+                # absent.)
+                _logger.trace(
+                    "Skipping materializing %s stats for multi-source graph %s: %s does not exist",
+                    ext,
+                    graph["dest"],
+                    ipath,
+                )
+                frames = []
+                break
+
+            df = storage.df_read(ipath, medium)
+
+            if n_rows is None:
+                n_rows = df.height
+            elif df.height != n_rows:
+                _logger.warning(
+                    (
+                        "Skipping materializing %s stats for multi-source graph "
+                        "'%s': source '%s%s' has %s rows, "
+                        "expected %s (all sources must share a row axis)"
+                    ),
+                    ext,
+                    graph["dest"],
+                    file,
+                    ext,
+                    df.height,
+                    n_rows,
+                )
+                continue
+
+            # Select only the configured columns that this statistic file
+            # actually has. Dispersion stats (stddev/min/max) may cover a subset
+            # of the columns the mean does; this mirrors the single-'src'
+            # path, where the plotter uses whatever columns each stat file holds
+            # rather than requiring every column in every file.
+            present = [(src, out) for src, out in col_map if src in df.columns]
+            if not present:
+                _logger.trace(
+                    "Skipping materializing %s stats for multi-source graph %s: not all columns in %s does exist",
+                    ext,
+                    graph["dest"],
+                    ipath,
+                )
+                continue
+
+            frames.append(df.select([pl.col(src).alias(out) for src, out in present]))
+
+        if not frames:
+            continue
+
+        # Equal-height horizontal join. The row-axis guard above already
+        # guarantees every frame has the same height, so a plain column-wise
+        # stack is correct; hstack (unlike concat(how="horizontal"), which is
+        # deprecated for unequal heights and would null-pad) keeps that strict
+        # semantics and adds no null padding.
+        joined = functools.reduce(lambda a, b: a.hstack(b), frames)
+        storage.df_write(joined, input_root / (graph["dest"] + ext), medium)
+        _logger.trace(
+            "Materialized sources for %s to %s",
+            graph["dest"],
+            input_root / (graph["dest"] + ext),
+        )
+    return graph["dest"]
 
 
 def _generate(
@@ -356,10 +475,25 @@ def _generate(
                 model_root=pathset.model_root if kind.wants_model_root else None,
             )
 
+            # A graph names its input either with a single 'src' or with
+            # 'sources' (columns drawn from several files, joined). For the
+            # latter, materialize the joined frame into a single derived file
+            # here, so the plotter -- which reads one file by stem -- is
+            # unchanged. gconfig has already enforced exactly-one and that a
+            # multi-source graph carries an explicit dest.
+            if "sources" in graph:
+                input_stem = _materialize_sources(
+                    graph, graph_pathset.input_root, kind.medium, cmdopts
+                )
+                output_stem = str(graph["dest"])
+            else:
+                input_stem = str(graph["src"])
+                output_stem = str(graph.get("dest", graph["src"]))
+
             kind.func(
                 pathset=graph_pathset,
-                input_stem=str(graph["src_stem"]),
-                output_stem=str(graph.get("dest_stem", graph["src_stem"])),
+                input_stem=input_stem,
+                output_stem=output_stem,
                 medium=kind.medium,
                 backend=str(graph.get("backend", cmdopts["graphs_backend"])),
                 large_text=cmdopts["plot_large_text"],

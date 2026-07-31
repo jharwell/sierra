@@ -1,0 +1,21 @@
+@startuml
+
+!theme cerulean-outline
+
+skinparam DefaultFontSize 14
+skinparam defaultTextAlignment center
+skinparam TitleFontSize 24
+skinparam SequenceMessageAlignment center
+skinparam DefaultFontColor #black
+skinparam TitleFontColor #black
+skinparam ParticipantFontColor #black
+database "ZMQ endpoint" as zmq_source
+entity "Format Converter" as converter
+boundary "Multicore buffer" as stage1_out
+
+title Online Mode
+
+zmq_source -> converter : Protobuf
+converter -> stage1_out: Decode to\ninternal PDW
+
+@enduml

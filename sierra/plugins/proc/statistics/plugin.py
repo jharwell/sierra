@@ -12,6 +12,7 @@ import queue
 import logging
 import pathlib
 import os
+import typing as tp
 
 # 3rd party packages
 import polars as pl
@@ -49,9 +50,9 @@ class DataGatherer(gather.BaseGatherer):
     ) -> None:
         super().__init__(main_config, gather_opts, processq)
         self.logger = logging.getLogger(__name__)
-        config_path = pathlib.Path(str(gather_opts["project_config_root"])) / pathlib.Path(
-            config.PROJECT_YAML.graphs
-        )
+        config_path = pathlib.Path(
+            str(gather_opts["project_config_root"])
+        ) / pathlib.Path(config.PROJECT_YAML.graphs)
         if utils.path_exists(config_path):
             _logger.debug("Filtering gathered data by graph generation targets")
             self.config = yaml.load(utils.utf8open(config_path), yaml.FullLoader)
@@ -59,6 +60,20 @@ class DataGatherer(gather.BaseGatherer):
             _logger.debug(
                 "%s does not exist for project: not filtering gathered data",
                 config.PROJECT_YAML.graphs,
+            )
+
+    def inspect_materialized_df(
+        self, df: pl.DataFrame, spec: gather.GatherSpec
+    ) -> None:
+        nonnumeric = [col for col in df.columns if not df[col].dtype.is_numeric()]
+        if nonnumeric and self.gather_opts["dist_stats"] != "none":
+            self.logger.warning(
+                (
+                    "Non-numeric columns only support mean aggregation via "
+                    "mode(): %s from %s; columns will be dropped"
+                ),
+                nonnumeric,
+                spec,
             )
 
     def calc_gather_items(
@@ -81,77 +96,83 @@ class DataGatherer(gather.BaseGatherer):
             ):
                 continue
 
-            filter_by_intra = "intra-exp" in self.config
-            filter_by_inter = "inter-exp" in self.config
+            # An output file is gathered for statistics iff some graph in a
+            # present category names it. Matching is exact (relative to the
+            # output root) and shared with the collation plugin via
+            # gather.file_matches -- a graph 'src' names exactly one file,
+            # rooted, path-qualified for nesting. This replaces the former
+            # substring test, under which e.g. 'output1D' matched every path
+            # containing that string (nested copies, 'output1D_extended', ...),
+            # silently gathering files no graph actually referenced.
+            matched = self._matches_any_graph(item, proj_output_root)
+            if matched is None:
+                continue
 
-            filtered_intra = any(
-                g["src_stem"] in str(item.relative_to(proj_output_root))
-                for category in self.config["intra-exp"]
-                for g in self.config["intra-exp"][category]
+            self.logger.trace(
+                "Gathering %s: match in %s [%s]",
+                item.relative_to(proj_output_root),
+                config.PROJECT_YAML.graphs,
+                matched,
             )
-
-            filtered_inter = any(
-                g["src_stem"] in str(item.relative_to(proj_output_root))
-                for category in self.config["inter-exp"]
-                for g in self.config["inter-exp"][category]
+            to_gather.append(
+                gather.GatherSpec(
+                    exp_name=exp_name,
+                    sources=[
+                        gather.GatherSource(
+                            item_stem_path=item.relative_to(proj_output_root),
+                        )
+                    ],
+                    collate_col=None,
+                )
             )
-
-            # If both are present, we gather from it if there is a positive
-            # match in either graph type category.
-            if (
-                filter_by_intra
-                and filter_by_inter
-                and (filtered_intra or filtered_inter)
-            ):
-                self.logger.trace(
-                    "Gathering %s: match in %s [intra/inter]",
-                    item.relative_to(proj_output_root),
-                    config.PROJECT_YAML.graphs,
-                )
-                to_gather.append(
-                    gather.GatherSpec(
-                        exp_name=exp_name,
-                        item_stem_path=item.relative_to(proj_output_root),
-                        collate_col=None,
-                    )
-                )
-                continue
-
-            # If only intra-exp graphs are present, we gather from it if
-            # there is a positive match in that category.
-            if filter_by_intra and filtered_intra:
-                self.logger.trace(
-                    "Gathering %s: match in %s [intra]",
-                    item.relative_to(proj_output_root),
-                    config.PROJECT_YAML.graphs,
-                )
-                to_gather.append(
-                    gather.GatherSpec(
-                        exp_name=exp_name,
-                        item_stem_path=item.relative_to(proj_output_root),
-                        collate_col=None,
-                    )
-                )
-                continue
-
-            # If only inter-exp graphs are are present, we gather from it if
-            # there is a positive match in that category.
-            if filter_by_inter and filtered_inter:
-                self.logger.trace(
-                    "Gathering %s: match in %s [inter]",
-                    item.relative_to(proj_output_root),
-                    config.PROJECT_YAML.graphs,
-                )
-                to_gather.append(
-                    gather.GatherSpec(
-                        exp_name=exp_name,
-                        item_stem_path=item.relative_to(proj_output_root),
-                        collate_col=None,
-                    )
-                )
-                continue
 
         return to_gather
+
+    def _matches_any_graph(
+        self, item: pathlib.Path, proj_output_root: pathlib.Path
+    ) -> tp.Optional[str]:
+        """Return which graph category names ``item``, or ``None`` if none do.
+
+        A category filters only if it is present in the graph config. Within a
+        present category, a graph names the file iff its ``src`` matches
+        exactly (via :func:`gather.file_matches`). The return value ("intra",
+        "inter", "intra/inter", or ``None``) is used only for logging; the gather
+        decision is simply "matched something".
+        """
+
+        def _graph_srcs(g: dict) -> list:
+            """Get source file(s) a graph reads from.
+
+            A single-source graph names one ``src``; a multi-source graph
+            (intra-exp only) names several files inside ``sources``. Statistics
+            must be gathered for every file any graph reads, so both spellings
+            contribute their file(s) here.
+            """
+            if "sources" in g:
+                return [s["file"] for s in g["sources"]]
+            return [g["src"]]
+
+        def _cat_matches(section: str) -> bool:
+            if section not in self.config:
+                return False
+
+            return any(
+                gather.file_matches(src, item, proj_output_root)
+                for category in self.config[section]
+                for g in self.config[section][category]
+                for src in _graph_srcs(g)
+            )
+
+        intra = _cat_matches("intra-exp")
+        inter = _cat_matches("inter-exp")
+
+        if intra and inter:
+            return "intra/inter"
+        if intra:
+            return "intra"
+        if inter:
+            return "inter"
+        return None
 
 
 def proc_batch_exp(
@@ -385,7 +406,7 @@ def _proc_single_exp(
         dfs.update(kernels.bw(by_row_index, csv_concat))
 
     for ext, df in dfs.items():
-        opath = exp_stat_root / spec.gather.item_stem_path
+        opath = exp_stat_root / spec.gather.primary_stem_path
         utils.dir_create_checked(opath.parent, exist_ok=True)
         opath = opath.with_suffix(ext)
 

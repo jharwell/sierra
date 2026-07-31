@@ -4,7 +4,7 @@ name = "sierra-research"
 ################################################################################
 # The one and only place where the current SIERRA version is recorded.
 ################################################################################
-version = "1.5.11"
+version = "1.5.12"
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -224,7 +224,7 @@ unfixable = []
 # Design limits from your DESIGN section
 max-args = 7
 max-branches = 12
-max-returns = 6
+max-returns = 7
 max-statements = 50
 max-locals = 15
 # max-attributes = 10

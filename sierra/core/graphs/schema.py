@@ -20,6 +20,7 @@ cannot be expressed here.
 import strictyaml
 
 # Project packages
+from sierra.core.yaml import sources as sources_spec
 
 
 #: Ways of rendering multiple histograms onto a single plot. Referenced by
@@ -40,8 +41,12 @@ NETWORK_LAYOUTS = [
 
 heatmap = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        strictyaml.Optional("dest_stem"): strictyaml.Str(),
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. With 'sources',
+        # the x/y/z columns are drawn from the joined frame (intra-exp only).
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["heatmap"]),
         strictyaml.Optional("title", default=""): strictyaml.Str(),
         strictyaml.Optional("zlabel", default=""): strictyaml.Str(),
@@ -60,8 +65,13 @@ Schema for :func:`~sierra.core.graphs.heatmap.generate_numeric` graphs.
 
 confusion_matrix = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        strictyaml.Optional("dest_stem"): strictyaml.Str(),
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. Multi-source is
+        # a natural fit here: the truth and predicted columns often live in
+        # different files (e.g. labels vs model output), joined per experiment.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["confusion_matrix"]),
         strictyaml.Optional("title", default=""): strictyaml.Str(),
         strictyaml.Optional("truth_col", default="truth"): strictyaml.Str(),
@@ -76,11 +86,19 @@ Schema for :func:`~sierra.core.graphs.heatmap.generate_confusion` graphs.
 
 stacked_line = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        strictyaml.Optional("dest_stem"): strictyaml.Str(),
+        # src and sources are mutually exclusive spellings of the input,
+        # both optional at this level; gconfig enforces exactly-one. src is
+        # the single-file input (the common case); sources draws columns from
+        # several files, joined per experiment (intra-exp only). See
+        # :data:`~sierra.core.yaml.sources.source`.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["stacked_line"]),
         # Only optional for intra-exp, but there's not a simple way to mark it
-        # as such at this level.
+        # as such at this level. With 'sources', columns come from inside each
+        # source instead, and top-level 'cols' must be absent (enforced in
+        # gconfig).
         strictyaml.Optional("cols"): strictyaml.Seq(strictyaml.Str()),
         strictyaml.Optional("title", default=""): strictyaml.Str(),
         strictyaml.Optional("legend"): strictyaml.Seq(strictyaml.Str()),
@@ -100,13 +118,18 @@ Schema for :func:`~sierra.core.graphs.stacked_line.generate` graphs.
 
 histogram = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        strictyaml.Optional("dest_stem"): strictyaml.Str(),
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. sources (columns
+        # from several files, joined per experiment) is intra-exp only.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["histogram"]),
-        # Required for both intra- and inter-exp. Intra-exp plots these columns
-        # directly; inter-exp uses them during collation to build the collated
-        # frame which is then plotted in its entirety.
-        "cols": strictyaml.Seq(strictyaml.Str()),
+        # Required with src for both intra- and inter-exp: intra-exp plots
+        # these columns directly; inter-exp uses them during collation. With
+        # 'sources' the columns come from inside each source instead, and
+        # top-level 'cols' must be absent (enforced in gconfig).
+        strictyaml.Optional("cols"): strictyaml.Seq(strictyaml.Str()),
         strictyaml.Optional("kind", default="overlay"): strictyaml.Enum(
             HISTOGRAM_KINDS
         ),
@@ -124,8 +147,8 @@ Schema for :func:`~sierra.core.graphs.histogram.generate` graphs.
 
 summary_line = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        strictyaml.Optional("dest_stem"): strictyaml.Str(),
+        "src": strictyaml.Str(),
+        strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["summary_line"]),
         "col": strictyaml.Str(),
         strictyaml.Optional("legend"): strictyaml.Seq(strictyaml.Str()),
@@ -144,8 +167,8 @@ Schema for :func:`~sierra.core.graphs.summary_line.generate` graphs.
 
 network = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        strictyaml.Optional("dest_stem"): strictyaml.Str(),
+        "src": strictyaml.Str(),
+        strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["network"]),
         strictyaml.Optional("layout", default="spring"): strictyaml.Enum(
             NETWORK_LAYOUTS

@@ -1,0 +1,65 @@
+@startuml
+
+skinparam defaultTextAlignment center
+
+!theme cyborg
+
+' Configuration
+skinparam DefaultFontSize 44
+skinparam DefaultFontColor #black
+skinparam stateBorderThickness 8
+skinparam stateFontStyle bold
+
+state "User\nSpecification" as user #lightcoral
+
+' --- Inputs: one Processed Output Data file per EXPERIMENT (SCOPE), each named
+'     by a single src_stem. From each, ONE configured column ('col') is taken.
+'     Unlike stage 3, there is a single input file per SCOPE here (the multi-file
+'     joining already happened upstream), and a single column is extracted. ---
+
+state "SCOPE 0\n(Experiment 0)" as exp0 #skyblue {
+   state "processed file\n(src_stem)" as f0 #skyblue {
+      state "col" as c0 #darkturquoise
+      state "..." as c0x #lightgrey
+   }
+}
+state "SCOPE 1\n(Experiment 1)" as exp1 #skyblue {
+   state "processed file\n(src_stem)" as f1 #skyblue {
+      state "col" as c1 #darkturquoise
+      state "..." as c1x #lightgrey
+   }
+}
+state "..." as expx #skyblue
+state "SCOPE i\n(Experiment i)" as expi #skyblue {
+   state "processed file\n(src_stem)" as fi #skyblue {
+      state "col" as ci #darkturquoise
+      state "..." as cix #lightgrey
+   }
+}
+
+' --- Output: a SINGLE collated file. Its COLUMNS are the experiments; each
+'     column is that experiment's extracted 'col' series. This is the transpose
+'     of the stage-3 picture (there: one file per column, cells per run). ---
+
+state "Output:\none Collated Output Data file" as inter #orange {
+   state "SCOPE 0" as o0 #darkturquoise
+   state "SCOPE 1" as o1 #darkturquoise
+   state "..." as ox #darkturquoise
+   state "SCOPE i" as oi #darkturquoise
+
+   o0 -[hidden]r-> o1
+   o1 -[hidden]r-> ox
+   ox -[hidden]r-> oi
+}
+
+user --> exp0
+user --> exp1
+user --> expx
+user --> expi
+
+exp0 --> inter
+exp1 --> inter
+expx --> inter
+expi --> inter
+
+@enduml

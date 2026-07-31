@@ -104,9 +104,9 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
     ) -> None:
 
         graph_spec = {
-            "src_stem": graph["src_stem"],
+            "src": graph["src"],
             "index": graph["index"],
-            "dest_stem": graph["dest_stem"],
+            "dest": graph["dest"],
             "title": graph["title"],
             "label": graph["label"],
             "inc_exps": graph["include_exp"],
@@ -177,7 +177,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         if not processed:
             self.logger.warning(
                 "No controllers could be compared for '%s'; skipping graph",
-                graph_spec["dest_stem"],
+                graph_spec["dest"],
             )
             return
 
@@ -221,11 +221,11 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         self.logger.debug(
             "Gathering data for %s from %s -> %s",
             controller,
-            spec["src_stem"],
-            spec["dest_stem"],
+            spec["src"],
+            spec["dest"],
         )
         ipath = pathset.stat_interexp_root / (
-            spec["src_stem"] + config.STATS["mean"].exts["mean"]
+            spec["src"] + config.STATS["mean"].exts["mean"]
         )
 
         # Some experiments might not generate the necessary performance measure
@@ -236,11 +236,11 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
 
         preparer = preprocess.IntraExpPreparer(
             ipath_stem=pathset.stat_interexp_root,
-            ipath_leaf=spec["src_stem"],
+            ipath_leaf=spec["src"],
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
         )
-        opath_leaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], None)
+        opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], None)
         preparer.for_cc(
             controller=controller,
             opath_leaf=opath_leaf,
@@ -263,7 +263,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         # Per-controller model prediction, produced by stage 4 inter-experiment
         # model running. Only present if models were run for this performance
         # measure; if absent, there is simply nothing to collate here.
-        model_ipath = (pathset.model_interexp_root / spec["src_stem"]).with_suffix(
+        model_ipath = (pathset.model_interexp_root / spec["src"]).with_suffix(
             config.MODELS_EXT["model"]
         )
 
@@ -275,10 +275,9 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
                 else None
             )
             src_df = storage.df_read(model_ipath, "storage.csv")
-            model_df = preprocess.collate_row(
+            model_df = preprocess.collate_model_column(
                 cum_df,
                 src_df,
-                spec["index"],
                 spec["inc_exps"],
                 controller,
                 criteria.gen_exp_names(),
@@ -299,7 +298,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         spec: dict,
     ) -> None:
         """Generate a graph comparing the specified controllers within a scenario."""
-        opath_leaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], None)
+        opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], None)
 
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
@@ -381,8 +380,8 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
 
         graph_spec = {
             "index": graph["index"],
-            "src_stem": graph["src_stem"],
-            "dest_stem": graph["dest_stem"],
+            "src": graph["src"],
+            "dest": graph["dest"],
             "title": graph["title"],
             "label": graph["label"],
             "inc_exps": graph["include_exp"],
@@ -452,7 +451,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         if not processed:
             self.logger.warning(
                 "No controllers could be compared for '%s'; skipping graph",
-                graph_spec["dest_stem"],
+                graph_spec["dest"],
             )
             return
 
@@ -503,12 +502,12 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         self.logger.debug(
             "Gathering data for '%s' from %s -> %s",
             controller,
-            spec["src_stem"],
-            spec["dest_stem"],
+            spec["src"],
+            spec["dest"],
         )
 
         csv_ipath = pathset.stat_interexp_root / (
-            spec["src_stem"] + config.STATS["mean"].exts["mean"]
+            spec["src"] + config.STATS["mean"].exts["mean"]
         )
 
         # Some experiments might not generate the necessary performance measure
@@ -527,12 +526,12 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         if spec["primary_axis"] == 0:
             preparer = preprocess.IntraExpPreparer(
                 ipath_stem=pathset.stat_interexp_root,
-                ipath_leaf=spec["src_stem"],
+                ipath_leaf=spec["src"],
                 opath_stem=self.stage5_roots.csv_root,
                 criteria=criteria,
             )
 
-            opath_leaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], [spec["index"]])
+            opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], [spec["index"]])
             preparer.for_cc(
                 controller,
                 opath_leaf=opath_leaf,
@@ -542,7 +541,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         else:
             preparer = preprocess.IntraExpPreparer(
                 ipath_stem=pathset.stat_interexp_root,
-                ipath_leaf=spec["src_stem"],
+                ipath_leaf=spec["src"],
                 opath_stem=self.stage5_roots.csv_root,
                 criteria=criteria,
             )
@@ -555,7 +554,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
 
             for col in ylabels:
                 col_index = ylabels.index(col)
-                opath_leaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], [col_index])
+                opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], [col_index])
                 preparer.for_cc(
                     controller,
                     opath_leaf=opath_leaf,
@@ -571,7 +570,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         cmdopts: types.Cmdopts,
         spec: dict,
     ) -> None:
-        opath_leaf = namecalc.for_cc(batch_leaf, spec["dest_stem"], [spec["index"]])
+        opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], [spec["index"]])
         info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
         if spec["primary_axis"] == 0:
             n_exp = criteria.criterias[0].n_exp()

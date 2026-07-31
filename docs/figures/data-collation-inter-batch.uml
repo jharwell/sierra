@@ -1,0 +1,57 @@
+@startuml
+
+skinparam defaultTextAlignment center
+
+!theme cyborg
+
+' Configuration
+skinparam DefaultFontSize 44
+skinparam DefaultFontColor #black
+skinparam stateBorderThickness 8
+skinparam stateFontStyle bold
+
+state "User\nSpecification" as user #lightcoral
+
+' --- Inputs: one Collated Output Data file per SCOPE (a Batch Experiment,
+'     i.e. one controller or one scenario being compared). Each such file is
+'     itself indexed by experiment. From each, the value series is taken. ---
+
+state "SCOPE 0\n(e.g. controller A)" as b0 #skyblue {
+   state "collated file\n(per experiment)" as cf0 #darkturquoise
+}
+state "SCOPE 1\n(e.g. controller B)" as b1 #skyblue {
+   state "collated file\n(per experiment)" as cf1 #green
+}
+state "..." as bx #skyblue
+state "SCOPE m\n(e.g. controller M)" as bm #skyblue {
+   state "collated file\n(per experiment)" as cfm #lightseagreen
+}
+
+' --- Output: a SINGLE Inter-Batch Data file. Rows are indexed by Experiment ID;
+'     each COLUMN is one compared SCOPE (controller/scenario). So the compared
+'     things sit side by side, one column each, ready to be plotted together. ---
+
+state "Output:\none Inter-Batch Data file" as inter #orange {
+   state "Experiment ID" as eid #lightgrey
+   state "SCOPE 0" as o0 #darkturquoise
+   state "SCOPE 1" as o1 #green
+   state "..." as ox #skyblue
+   state "SCOPE m" as om #lightseagreen
+
+   eid -[hidden]r-> o0
+   o0 -[hidden]r-> o1
+   o1 -[hidden]r-> ox
+   ox -[hidden]r-> om
+}
+
+user --> b0
+user --> b1
+user --> bx
+user --> bm
+
+b0 --> inter
+b1 --> inter
+bx --> inter
+bm --> inter
+
+@enduml

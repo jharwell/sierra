@@ -10,12 +10,12 @@ Pseudo-Statistics
 =================
 
 When doing deterministic :term:`Experimental Runs <Experimental Run>`, there is
-no benefit to running :ref:`plugins/proc/statistics` over the all experimental
-run data for an :term:`Experiment`, because ``--n-runs=1``. Thus, the
-statistical analysis via e.g., confidence intervals doesn't make sense.  This
-plugin processes at the file level for each :term:`Experimental Run`. All
-:term:`Raw Output Data` files produced by each run are copied (or moved)from
-their original locations and written to the :ref:`concepts/run-time-tree` under
+no benefit to running :ref:`plugins/proc/statistics` over all experimental run
+data for an :term:`Experiment`, because ``--n-runs=1``. Thus, the statistical
+analysis via e.g., confidence intervals doesn't make sense.  This plugin
+processes at the file level for each :term:`Experimental Run`. All :term:`Raw
+Output Data` files produced by each run are copied (or moved)from their original
+locations and written to the :ref:`concepts/run-time-tree` under
 ``statistics/``. This is so it can be used with :ref:`plugins/prod/graphs`,
 which expects its outputs to be under that prefix.
 

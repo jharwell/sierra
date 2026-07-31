@@ -21,13 +21,13 @@ import sierra.plugins.proc.imagize  # noqa: F401
 
 
 def _prod(**over):
-    g = {"src_stem": "s", "dest_stem": "d", "type": "histogram", "cols": ["a"]}
+    g = {"src": "s", "dest": "d", "type": "histogram", "cols": ["a"]}
     g.update(over)
     return g
 
 
 def _cmp(**over):
-    g = {"src_stem": "s", "dest_stem": "d", "type": "comparison_line"}
+    g = {"src": "s", "dest": "d", "type": "comparison_line"}
     g.update(over)
     return g
 
@@ -86,7 +86,7 @@ class TestPerSectionTypes:
 
     def test_heatmap_accepted_in_imagize(self):
         out = gconfig.validate(
-            {"imagize": [{"src_stem": "s", "dest_stem": "d", "type": "heatmap"}]}
+            {"imagize": [{"src": "s", "dest": "d", "type": "heatmap"}]}
         )
         assert len(out["imagize"]) == 1
 
@@ -118,7 +118,7 @@ class TestShapeHandling:
 
     def test_flat_section_alone(self):
         """Previously NameError: 'category' leaked from the other branch."""
-        out = gconfig.validate({"imagize": [{"src_stem": "s", "type": "network"}]})
+        out = gconfig.validate({"imagize": [{"src": "s", "type": "network"}]})
         assert isinstance(out["imagize"], list)
 
     def test_mixed_shapes_in_one_file(self):
@@ -126,7 +126,7 @@ class TestShapeHandling:
         out = gconfig.validate(
             {
                 "intra-exp": {"c": [_prod()]},
-                "imagize": [{"src_stem": "s", "type": "network"}],
+                "imagize": [{"src": "s", "type": "network"}],
             }
         )
         assert isinstance(out["intra-exp"], dict)
@@ -142,7 +142,7 @@ class TestShapeHandling:
 
     def test_flat_section_error_location_has_no_category(self):
         with pytest.raises(gconfig.ConfigError) as e:
-            gconfig.validate({"imagize": [{"src_stem": "s", "type": "bogus"}]})
+            gconfig.validate({"imagize": [{"src": "s", "type": "bogus"}]})
 
         assert "imagize[0]" in str(e.value)
 
@@ -230,7 +230,7 @@ class TestErrorAggregation:
                 {
                     "intra-exp": {"c": [_prod(type="bogus1")]},
                     "inter-controller": [_cmp(type="bogus2")],
-                    "imagize": [{"src_stem": "s", "type": "histogram"}],
+                    "imagize": [{"src": "s", "type": "histogram"}],
                 }
             )
 

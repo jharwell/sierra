@@ -86,11 +86,13 @@ def _graphs_backend_jsonsim(session):
             "SLN-random-noise.png",
             "SLN-random-noise2.png",
             "SLN-random-noise3.png",
+            "SLN-combined-noise.png",
             "HM-output2D-1.png",
             "HM-output2D-2.png",
             "SLN-random-noise.html",
             "SLN-random-noise2.html",
             "SLN-random-noise3.html",
+            "SLN-combined-noise.html",
             "HM-output2D-1.html",
             "HM-output2D-2.html",
         ]

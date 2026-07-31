@@ -18,8 +18,8 @@ from sierra.core.graphs import gconfig
 
 def _graph(**over):
     base = {
-        "src_stem": "src",
-        "dest_stem": "dst",
+        "src": "src",
+        "dest": "dst",
         "type": "histogram",
         "cols": ["a"],
     }
@@ -160,8 +160,8 @@ class TestDispatchTables:
         without a default -- the ``loaded["title"]`` bug class.
         """
         minimal = {
-            "src_stem": "s",
-            "dest_stem": "d",
+            "src": "s",
+            "dest": "d",
             "type": gtype,
         }
         if gtype == "histogram":

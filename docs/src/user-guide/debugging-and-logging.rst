@@ -51,8 +51,8 @@ SIERRA's verbosity is controlled by :ref:`--log-level
 .. tip::
 
    For stage 4 graph problems, start with ``TRACE`` — it logs exactly
-   which output CSV stem is being matched against which graph definition
-   stem. A mismatch between the two is the most common cause of missing
+   which output CSV path is being matched against which graph definition
+   ``src``. A mismatch between the two is the most common cause of missing
    graphs.
 
 .. _user-guide/debugging-and-logging/stage-failures:
@@ -91,7 +91,7 @@ Stage Failure Patterns
    produces incorrect statistics.
 
 **"No graphs generated in stage 4"**
-   SIERRA matches the stem of each output CSV against the ``src_stem``
+   SIERRA matches the path of each output CSV against the ``src``
    field in ``graphs.yaml``. If they don't match exactly, no graph is
    produced and SIERRA does not warn about it by default. Run with
    ``--log-level TRACE`` during stage 4 to see every match attempt:
@@ -100,7 +100,7 @@ Stage Failure Patterns
 
       sierra ... --pipeline 4 --log-level TRACE
 
-   Look for lines showing which ``src_stem`` values are being searched
+   Look for lines showing which ``src`` values are being searched
    and which CSV files are present. A common cause is a trailing
    directory component in the output path that the graph definition
    doesn't account for.

@@ -97,8 +97,8 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
     ) -> None:
         graph_spec = {
             "index": graph["index"],
-            "src_stem": graph["src_stem"],
-            "dest_stem": graph["dest_stem"],
+            "src": graph["src"],
+            "dest": graph["dest"],
             "title": graph["title"],
             "label": graph["label"],
             "inc_exps": graph["include_exp"],
@@ -177,7 +177,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         spec: dict,
     ) -> None:
         """Generate graph comparing the specified controller across scenarios."""
-        opath_leaf = namecalc.for_sc(batch_leaf, self.things, spec["dest_stem"], None)
+        opath_leaf = namecalc.for_sc(batch_leaf, self.things, spec["dest"], None)
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
         # 2026-07-24 [JRH]: No "was it specified?" guard needed: 'include_exp'
@@ -244,7 +244,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         """
 
-        csv_ipath_stem = pathset.stat_interexp_root / spec["src_stem"]
+        csv_ipath_stem = pathset.stat_interexp_root / spec["src"]
 
         # Some experiments might not generate the necessary performance measure
         # CSVs for graph generation, which is OK.
@@ -257,11 +257,11 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         preparer = preprocess.IntraExpPreparer(
             ipath_stem=pathset.stat_interexp_root,
-            ipath_leaf=spec["src_stem"],
+            ipath_leaf=spec["src"],
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
         )
-        opath_leaf = namecalc.for_sc(root.leaf, self.things, spec["dest_stem"], None)
+        opath_leaf = namecalc.for_sc(root.leaf, self.things, spec["dest"], None)
 
         preparer.for_sc(
             scenario=root.scenario,
@@ -286,7 +286,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         # Per-scenario model prediction, produced by stage 4 inter-experiment
         # model running. Only present if models were run for this performance
         # measure; if absent, there is simply nothing to collate here.
-        model_ipath = (pathset.model_interexp_root / spec["src_stem"]).with_suffix(
+        model_ipath = (pathset.model_interexp_root / spec["src"]).with_suffix(
             config.MODELS_EXT["model"]
         )
 
@@ -298,10 +298,9 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
                 else None
             )
             src_df = storage.df_read(model_ipath, "storage.csv")
-            model_df = preprocess.collate_row(
+            model_df = preprocess.collate_model_column(
                 cum_df,
                 src_df,
-                spec["index"],
                 spec["inc_exps"],
                 root.scenario,
                 criteria.gen_exp_names(),

@@ -110,7 +110,7 @@ def generate(  # noqa: PLR0913
     elif kind == "steps":
         plot = _plot_steps(hists, labels)
     else:
-        plot = _plot_facet(hists, labels)
+        plot = _plot_facet(hists, labels, text_size)
 
     # Let the backend decide # of columns; can override with
     # legend_cols=N in the future if desired.
@@ -263,12 +263,22 @@ def _plot_steps(hists: dict[str, hv.Histogram], labels: dict[str, str]) -> hv.Ov
     )
 
 
-def _plot_facet(hists: dict[str, hv.Histogram], labels: dict[str, str]) -> hv.NdLayout:
+def _plot_facet(
+    hists: dict[str, hv.Histogram], labels: dict[str, str], text_size: dict
+) -> hv.NdLayout:
     """Plot each column into its own subplot."""
-    ncols = min(len(hists), 3)
+    ncols = min(len(hists), 2)
+    fontsize = {
+        "title": text_size["title"],
+        "labels": text_size["xyz_label"],
+        "ticks": text_size["tick_label"],
+        "legend": text_size["legend_label"],
+    }
 
+    # You have to set the font sizes on each sub-plot/sub-histogram, because
+    # setting it on the NdLayout and/or the overall plot has no effect.
     return hv.NdLayout(
-        {labels[c]: hists[c] for c in hists},
+        {labels[c]: hists[c].opts(fontsize=fontsize) for c in hists},
         kdims="column",
     ).cols(ncols)
 

@@ -18,6 +18,7 @@ import multiprocessing as mp
 import queue
 import logging
 import pathlib
+import typing as tp
 
 # 3rd party packages
 import polars as pl
@@ -28,8 +29,16 @@ import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin as pm
 from sierra.core import types, storage, utils, config, batchroot
 from sierra.core.pipeline.stage3 import gather
+from sierra.plugins.proc.collate import cconfig
+from sierra.plugins.proc.collate.cconfig import CollateSource, CollateTarget
 
 _logger = logging.getLogger(__name__)
+
+
+# Resolution rule shared with the statistics plugin; see
+# :func:`sierra.core.pipeline.stage3.gather.file_matches`. Kept as a
+# module-level alias so existing references (and tests) resolve locally.
+_file_matches = gather.file_matches
 
 
 def proc_batch_exp(
@@ -196,41 +205,118 @@ class ExpDataGatherer(gather.BaseGatherer):
 
         except FileNotFoundError:
             self.logger.warning("%s does not exist!", config_path)
-            collate_config = {}
+            collate_config = None
+
+        # Validate + normalize the whole file at once: every problem is reported
+        # together (via cconfig.ConfigError) before any collation runs, and the
+        # result is the list of CollateTarget objects consumed below.
+        targets = cconfig.validate(collate_config)
+
+        # Index the run's eligible output files once, then resolve each
+        # configured target against them. Target-centric (not file-centric) so
+        # that a target spanning several files becomes one spec carrying all its
+        # sources.
+        eligible = [
+            item
+            for item in proj_output_root.rglob("*")
+            if item.is_file()
+            and any(plugin.supports_input(s) for s in item.suffixes)
+            and item.stat().st_size > 0
+        ]
 
         to_gather = []
-        for item in proj_output_root.rglob("*"):
-            # Must be a file (duh)
-            if not item.is_file():
+        for target in targets:
+            # Every source of every target -- single- or multi-source -- must
+            # resolve to exactly one eligible file. A configured 'file' that
+            # matches more than one output is an ambiguous specification and is
+            # a hard error (the researcher path-qualifies to disambiguate); one
+            # that matches none means the run did not produce it, so the target
+            # simply contributes nothing here.
+            resolved = self._resolve_sources(target, eligible, proj_output_root)
+            if resolved is None:
                 continue
 
-            # Has to be a supported suffix for storage plugin
-            if (
-                not any(plugin.supports_input(s) for s in item.suffixes)
-                or item.stat().st_size == 0
-            ):
-                continue
+            output_stem = self._target_output_stem(target, resolved)
+            to_gather.extend(
+                [
+                    gather.GatherSpec(
+                        exp_name=exp_name,
+                        sources=resolved,
+                        collate_col=out_col,
+                        output_stem=output_stem,
+                    )
+                    for out_col in self._target_output_cols(target)
+                ]
+            )
 
-            # Any number of perf metrics can be configured, so look for a match.
-            files = collate_config["intra-exp"]
-            perf_confs = [f for f in files if f["file"] in item.name]
-            if not perf_confs:
-                continue
-
-            # If we get a file match, then all the columns from that file should
-            # be added to the set of things to collate.
-            for conf in perf_confs:
-                to_gather.extend(
-                    [
-                        gather.GatherSpec(
-                            exp_name=exp_name,
-                            item_stem_path=item.relative_to(proj_output_root),
-                            collate_col=col,
-                        )
-                        for col in conf["cols"]
-                    ]
-                )
         return to_gather
+
+    @staticmethod
+    def _target_output_stem(
+        target: "CollateTarget",
+        resolved: tuple[gather.GatherSource, ...],
+    ) -> str:
+        """Resolve the output filename stem for a target.
+
+        An explicitly-configured ``name`` always wins. Otherwise (single-source
+        with a defaulted name) the sole resolved file's stem is used, which keeps
+        historical single-file output filenames byte-for-byte unchanged.
+        """
+        if target.name_explicit:
+            return target.name
+        # Not explicit => single-source (multi-source always has an explicit
+        # name), so exactly one resolved source.
+        return (
+            resolved[0].item_stem_path.name[: -len(resolved[0].item_stem_path.suffix)]
+            or resolved[0].item_stem_path.name
+        )
+
+    def _resolve_sources(
+        self,
+        target: "CollateTarget",
+        eligible: list[pathlib.Path],
+        proj_output_root: pathlib.Path,
+    ) -> tp.Optional[tuple[gather.GatherSource, ...]]:
+        """Resolve every source of a target to exactly one run-relative path.
+
+        Returns ``None`` if any source matches no eligible file (the target then
+        contributes nothing for this run). Raises if any source matches more than
+        one file: an ambiguous specification is never silently resolved, since a
+        first-match choice would depend on incidental filesystem ordering/depth
+        and could silently collate the wrong data or overwrite outputs.
+        """
+        resolved = []
+        for source in target.sources:
+            matches = [
+                item
+                for item in eligible
+                if _file_matches(source.file, item, proj_output_root)
+            ]
+            if not matches:
+                return None
+            if len(matches) > 1:
+                candidates = [str(m.relative_to(proj_output_root)) for m in matches]
+                raise ValueError(
+                    f"Ambiguous collation source '{source.file}'"
+                    f"{' in target ' + repr(target.name) if target.name_explicit else ''}"
+                    f" matches multiple output files: {candidates}. A configured "
+                    "'file' must name exactly one output; path-qualify it "
+                    "(e.g. 'subdir/name') to disambiguate."
+                )
+            resolved.append(
+                gather.GatherSource(
+                    item_stem_path=matches[0].relative_to(proj_output_root),
+                    col_map=source.col_map,
+                )
+            )
+        return tuple(resolved)
+
+    @staticmethod
+    def _target_output_cols(target: "CollateTarget") -> list[str]:
+        cols = []
+        for source in target.sources:
+            cols.extend(source.output_cols)
+        return cols
 
 
 def _proc_single_exp(
@@ -247,36 +333,34 @@ def _proc_single_exp(
     """
     utils.dir_create_checked(batch_stat_collate_root, exist_ok=True)
 
-    collated = {}
-    key = (spec.gather.item_stem_path, spec.gather.collate_col)
+    col = spec.gather.collate_col
 
     # Build dictionary of columns instead of starting with empty DataFrame
     columns_dict = {}
 
     for i, df in enumerate(spec.dfs):
-        assert (
-            spec.gather.collate_col in df.columns
-        ), f"{spec.gather.collate_col} not in {df.columns}"
-
-        collate_df = df[spec.gather.collate_col]
+        assert col in df.columns, f"{col} not in {df.columns}"
 
         # Add column to dictionary
-        columns_dict[spec.exp_run_names[i]] = collate_df
+        columns_dict[spec.exp_run_names[i]] = df[col]
 
     # Create DataFrame from the dictionary of columns
-    collated[key] = pl.DataFrame(columns_dict)
+    collated = pl.DataFrame(columns_dict)
 
-    for k, v in collated.items():
-        file_path, col = k
-        df = utils.df_fill(v, str(process_opts["df_homogenize"]))
-        parent = batch_stat_collate_root / spec.gather.exp_name / file_path.parent
-        utils.dir_create_checked(parent, exist_ok=True)
+    df = utils.df_fill(collated, str(process_opts["df_homogenize"]))
 
-        # This preserves the directory structure of stuff in the per-run output
-        # run; if something is in a subdir there, it will show up in a subdir in
-        # the collated outputs too.
-        fname = f"{file_path.stem}-{col}" + config.STORAGE_EXT["csv"]
-        storage.df_write(df, parent / fname, "storage.csv")
+    # Output directory mirrors the primary source's location, so nested per-run
+    # outputs stay nested in the collated outputs. Output *stem* is the target
+    # name (which defaults to the file stem for single-source targets, so
+    # single-file output filenames are unchanged).
+    primary_parent = spec.gather.sources[0].item_stem_path.parent
+    output_stem = spec.gather.output_stem
+
+    parent = batch_stat_collate_root / spec.gather.exp_name / primary_parent
+    utils.dir_create_checked(parent, exist_ok=True)
+
+    fname = f"{output_stem}-{col}" + config.STORAGE_EXT["csv"]
+    storage.df_write(df, parent / fname, "storage.csv")
 
 
 __all__ = [

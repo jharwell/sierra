@@ -5,7 +5,6 @@
 
 # Core packages
 import typing as tp
-import math
 
 # 3rd party packages
 import polars as pl
@@ -120,25 +119,50 @@ def bw(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
     # Get the grouping column names
     group_cols = groupby.by if hasattr(groupby, "by") else []
 
-    count_result = groupby.count()
-    if hasattr(count_result, "collect"):
-        n_runs = count_result.collect().height
-    else:
-        n_runs = count_result.height
-
-    # Build aggregation expressions for non-grouping columns only
     agg_exprs = []
     for col in ungrouped.columns:
         if col not in group_cols:
+
+            # Numeric only!
+            if not ungrouped[col].dtype.is_numeric():
+                continue
             agg_exprs.extend(
                 [
                     pl.col(col).mean().alias(f"{col}_mean"),
                     pl.col(col).median().alias(f"{col}_median"),
                     pl.col(col).quantile(0.25).alias(f"{col}_q1"),
                     pl.col(col).quantile(0.75).alias(f"{col}_q3"),
+                    # Per-group, per-column sample size for the notch CI. Using
+                    # count() (not a group-level count) means (a) n is the
+                    # number of observations behind THIS median, as the
+                    # McGill/Tukey/Larsen notch formula requires, and (b) nulls
+                    # are excluded per column, so a group that is null/empty for
+                    # a series gets n=0 there rather than a misleading value.
+                    pl.col(col).count().alias(f"{col}_n"),
+                    pl.col(col)
+                    .filter(
+                        pl.col(col)
+                        >= (
+                            pl.col(col).quantile(0.25)
+                            - 1.5
+                            * (pl.col(col).quantile(0.75) - pl.col(col).quantile(0.25))
+                        )
+                    )
+                    .min()
+                    .alias(f"{col}_whislo"),
+                    pl.col(col)
+                    .filter(
+                        pl.col(col)
+                        <= (
+                            pl.col(col).quantile(0.75)
+                            + 1.5
+                            * (pl.col(col).quantile(0.75) - pl.col(col).quantile(0.25))
+                        )
+                    )
+                    .max()
+                    .alias(f"{col}_whishi"),
                 ]
             )
-
     # For grouped data, aggregate
     stats = groupby.agg(agg_exprs)
     if isinstance(stats, pl.LazyFrame):
@@ -155,6 +179,16 @@ def bw(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
     median_cols = [col for col in stats.columns if col.endswith("_median")]
     q1_cols = [col for col in stats.columns if col.endswith("_q1")]
     q3_cols = [col for col in stats.columns if col.endswith("_q3")]
+    n_cols = [col for col in stats.columns if col.endswith("_n")]
+    whislo_cols = [c for c in stats.columns if c.endswith("_whislo")]
+    whishi_cols = [c for c in stats.columns if c.endswith("_whishi")]
+
+    csv_whislo = _fillna(
+        _df_round(stats.select(whislo_cols).rename(lambda c: c.replace("_whislo", "")))
+    )
+    csv_whishi = _fillna(
+        _df_round(stats.select(whishi_cols).rename(lambda c: c.replace("_whishi", "")))
+    )
 
     csv_mean = _fillna(
         _df_round(stats.select(mean_cols).rename(lambda col: col.replace("_mean", "")))
@@ -170,26 +204,37 @@ def bw(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
     csv_q3 = _fillna(
         _df_round(stats.select(q3_cols).rename(lambda col: col.replace("_q3", "")))
     )
+    # Per-group, per-column sample size. Renamed to bare column names so its
+    # column order matches csv_median/csv_q1/csv_q3, and NOT run through
+    # _fillna (a null/empty group should read n=0, not be coerced to some
+    # rounded float). Counts are integers; keep them as-is.
+    csv_n = stats.select(n_cols).rename(lambda col: col.replace("_n", ""))
 
     # Calculate IQR and whiskers
     # Convert to numpy for element-wise operations
     q1_vals = csv_q1.to_numpy()
     q3_vals = csv_q3.to_numpy()
     median_vals = csv_median.to_numpy()
+    n_vals = csv_n.to_numpy().astype(float)  # per-group, per-column sample size
     iqr = np.abs(q3_vals - q1_vals)  # Inter-quartile range
-    whislo_vals = q1_vals - 1.50 * iqr
-    whishi_vals = q3_vals + 1.50 * iqr
 
-    # The magic 1.57 is from the original paper:
+    # Notched-box confidence interval on the MEDIAN. The 1.57 constant is from:
     #
     # (Robert McGill, John W. Tukey and Wayne A. Larsen. Variations of Box
     # Plots, The American Statistician, Vol. 32, No. 1 (Feb., 1978), pp. 12-16
-    cilo_vals = median_vals - 1.57 * iqr / math.sqrt(n_runs)
-    cihi_vals = median_vals + 1.57 * iqr / math.sqrt(n_runs)
+    #
+    # n here MUST be the number of observations behind each median (the
+    # per-group sample size), not the number of groups. It is array-valued
+    # (one n per group per column), so use np.sqrt, not math.sqrt. Groups with
+    # n==0 (null/empty for that series) have no valid CI: emit NaN there rather
+    # than dividing by zero and drawing a bogus notch.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        half = 1.57 * iqr / np.sqrt(n_vals)
+    half = np.where(n_vals > 0, half, np.nan)
+    cilo_vals = median_vals - half
+    cihi_vals = median_vals + half
 
     # Convert back to DataFrames with same column names
-    csv_whislo = pl.DataFrame(whislo_vals, schema=csv_q1.columns)
-    csv_whishi = pl.DataFrame(whishi_vals, schema=csv_q3.columns)
     csv_cilo = pl.DataFrame(cilo_vals, schema=csv_median.columns)
     csv_cihi = pl.DataFrame(cihi_vals, schema=csv_median.columns)
 

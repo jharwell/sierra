@@ -171,6 +171,12 @@ def _from_project_imagized(
     inputs = []
     # For each graph in each category
     for graph in render_config:
+        # Multi-source graphs draw columns from several files and have no single
+        # 'src' path; they are plotted line graphs, not per-timestep frame
+        # captures, so they are not a rendering target. Skip them.
+        if "sources" in graph:
+            continue
+
         # Across all experiments
         for exp in exp_to_render:
             exp_imagize_root = pathset.imagize_root / exp.name
@@ -179,7 +185,7 @@ def _from_project_imagized(
 
             # Check all directories recursively
             for candidate in exp_imagize_root.rglob("*"):
-                path = pathlib.Path(str(graph["src_stem"]))
+                path = pathlib.Path(str(graph["src"]))
                 fragment = path.parent / path.name
                 if candidate.is_file():
                     continue

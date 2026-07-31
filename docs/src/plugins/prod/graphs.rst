@@ -168,6 +168,13 @@ Configuration
 This plugin is mostly configured via a ``graphs.yaml`` in the :term:`Project`
 config root. The file is structured as follows:
 
+.. versionchanged:: 1.5.12
+               The ``src_stem`` and ``dest_stem`` keys were renamed to ``src``
+               and ``dest`` (a value may be a path into a subdirectory, so
+               "stem" was misleading). This is a breaking change: existing
+               ``graphs.yaml`` files must be updated, since unknown keys are
+               rejected at load time.
+
 .. code-block:: YAML
 
     intra-exp:
@@ -217,17 +224,23 @@ in the per-type configuration below.
      - Required?
      - Meaning
 
-   * - ``src_stem``
+   * - ``src``
      - Yes
-     - The filepath of the source data file relative to the output directory
-       for an :term:`Experimental Run`, sans the extension.
+     - The path of the source data file, relative to the output directory for an
+       :term:`Experimental Run` and without the file extension. It is a path, not
+       a bare stem: it may name a file in a subdirectory. It is matched
+       *exactly*, not as a substring: a bare name (``output1D``) resolves at the
+       output root, and a file in a subdirectory must be named by its path
+       (``subdir1/subdir2/output1D``). A value matching more than one file is an
+       error.
 
-   * - ``dest_stem``
+   * - ``dest``
      - No
-     - The filepath of the graph to be generated; the extension/image type is
-       determined by the backend. This allows multiple graphs to be generated
+     - The path of the graph to be generated (relative to the graph output
+       directory, without the extension -- the extension/image type is
+       determined by the backend). This allows multiple graphs to be generated
        from the same data file by plotting different combinations of columns. If
-       omitted, defaults to ``src_stem``.
+       omitted, defaults to ``src``.
 
    * - ``type``
      - Yes
@@ -271,7 +284,7 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
    .. tab-item:: Network
 
-      .. NOTE:: Network graphs read a ``.graphml`` file (``<src_stem>.graphml``
+      .. NOTE:: Network graphs read a ``.graphml`` file (``<src>.graphml``
                 in the experiment's statistics directory) rather than a ``.csv``
                 like every other graph type, so the file must have been produced
                 by an earlier stage.
@@ -293,6 +306,17 @@ Inter-Experiment Graphs
 
 Configuration for each type of inter-experiment graph currently supported by
 this plugin is below. Unless stated otherwise, all keys are required.
+
+.. NOTE:: Inter-experiment graphs collate a single ``src`` across
+   experiments. There is deliberately no way to draw a graph's data from
+   *multiple* source files here: by stage 4, any multi-file joining has already
+   happened upstream in stage 3 (see :ref:`plugins/proc/collate`, which supports
+   joining columns from several files into one collated output). A graph that
+   needs data originally spread across files should point ``src`` at the
+   stage-3 output that already joined them. This keeps every product sourced
+   from a single file. For how this collation reshapes the data (one column per
+   experiment in a single output file), see
+   :ref:`concepts/dataflow/stage4`.
 
 .. tab-set::
 
@@ -385,8 +409,8 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
 
          intra-exp:
            LN_default:
-             - src_stem: collected-data
-               dest_stem: robot-counts
+             - src: collected-data
+               dest: robot-counts
                cols:
                  - walking
                  - resting
@@ -399,8 +423,8 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
                ylabel: '\# Robots'
                type: 'stacked_line'
 
-             - src_stem: collected-data
-               dest_stem: food-counts
+             - src: collected-data
+               dest: food-counts
                cols:
                  - collected_food
                title: 'Collected Food Counts'
@@ -411,8 +435,8 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
                ylabel: '\# Items'
                type: 'stacked_line'
 
-             - src_stem: collected-data
-               dest_stem: swarm-energy
+             - src: collected-data
+               dest: swarm-energy
                cols:
                  - energy
                title: 'Swarm Energy Over Time'
@@ -496,16 +520,16 @@ configuration becomes:
 
 .. code-block:: YAML
 
-   - src_stem: collected-data
-     dest_stem: robot-counts
+   - src: collected-data
+     dest: robot-counts
      cols:
        - walking
      title: 'Robot Counts'
      legend:
        - 'Walking'
 
-   - src_stem: collected-data
-     dest_stem: robot-counts
+   - src: collected-data
+     dest: robot-counts
      cols:
        - resting
      title: 'Robot Counts'
@@ -586,8 +610,8 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
 
          intra-exp:
            CM_default:
-             - src_stem: confusion-matrix
-               dest_stem: confusion-matrix
+             - src: confusion-matrix
+               dest: confusion-matrix
                type: "confusion_matrix"
                title: "I'm A Little Confused"
                truth_col: Actual_Class
@@ -651,8 +675,8 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
 
          intra-exp:
            HG_default:
-             - src_stem: entropy-data
-               dest_stem: entropy-data
+             - src: entropy-data
+               dest: entropy-data
                type: "histogram"
                kind: "overlay"
                title: "Entropy comparison"

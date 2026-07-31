@@ -1,0 +1,88 @@
+@startuml
+
+skinparam defaultTextAlignment center
+
+!theme cyborg
+
+' Configuration
+skinparam DefaultFontSize 44
+skinparam DefaultFontColor #black
+skinparam stateBorderThickness 8
+skinparam stateFontStyle bold
+
+state "User\nSpecification" as user #lightcoral
+
+' --- Sources: within each SCOPE, one target draws col0 from file0 AND colA
+'     from file1. The two contributing columns are highlighted; the other
+'     columns are shown greyed to emphasise that only the named columns from
+'     each file participate. ---
+
+state "SCOPE 0" as SCOPE0 {
+   state "file0" as file00 #skyblue {
+      state "col0" as col000 #darkturquoise
+      state "col1" as col001 #lightgrey
+   }
+   state "file1" as file01 #skyblue {
+      state "colA" as col010 #green
+      state "colB" as col011 #lightgrey
+   }
+}
+state "SCOPE 1" as SCOPE1 {
+   state "file0" as file10 #skyblue {
+      state "col0" as col100 #darkturquoise
+      state "col1" as col101 #lightgrey
+   }
+   state "file1" as file11 #skyblue {
+      state "colA" as col110 #green
+      state "colB" as col111 #lightgrey
+   }
+}
+state "..." as SCOPEx #skyblue
+
+state "SCOPE j" as SCOPEj {
+   state "file0" as filej0 #skyblue {
+      state "col0" as colj00 #darkturquoise
+      state "col1" as colj01 #lightgrey
+   }
+   state "file1" as filej1 #skyblue {
+      state "colA" as colj10 #green
+      state "colB" as colj11 #lightgrey
+   }
+}
+
+' --- Output: a SINGLE collated file ("combined"), whose columns are the joined
+'     (col0-from-file0, colA-from-file1) pair from every SCOPE. Each SCOPE
+'     contributes a joined row-group, illustrating the per-run horizontal join
+'     of columns drawn from different source files. ---
+
+state "Output: 'combined'" as inter #orange {
+   state "SCOPE 0" as colp0 {
+      state "col0" as c00 #darkturquoise
+      state "colA" as c01 #green
+   }
+   state "SCOPE 1" as colp1 {
+      state "col0" as c10 #darkturquoise
+      state "colA" as c11 #green
+   }
+   state "..." as colpx
+   state "SCOPE j" as colpj {
+      state "col0" as cj0 #darkturquoise
+      state "colA" as cj1 #green
+   }
+}
+
+colp0 -[hidden]d-> colp1
+colp1 -[hidden]d-> colpx
+colpx -[hidden]d-> colpj
+
+user --> SCOPE0
+user --> SCOPE1
+user --> SCOPEx
+user --> SCOPEj
+
+SCOPE0 --> inter
+SCOPE1 --> inter
+SCOPEx --> inter
+SCOPEj --> inter
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+
+!theme cerulean-outline
+skinparam DefaultFontSize 14
+skinparam DefaultFontColor #black
+skinparam defaultTextAlignment center
+skinparam TitleFontSize 24
+skinparam TitleFontColor #black
+skinparam ParticipantFontColor #black
+skinparam SequenceMessageAlignment center
+
+title Track Fusion
+
+boundary "Threadsafe queue\n(Stage 5 in)" as stage5_in
+entity "Fusion Engine" as engine
+database "Similarity\nMatrix" as sim_matrix
+boundary "Downstream" as fused_tracks
+
+stage5_in -> engine : Scored tracks
+
+engine -> sim_matrix : Compute pairwise\nsimilarity scores
+sim_matrix -> engine : NxN similarity\nmatrix
+
+note right of engine
+  Pairs above similarity
+  threshold are fused;\nresult assigned an
+  emitter ID
+end note
+
+engine -> fused_tracks : Fused tracks\n(with emitter IDs)
+
+@enduml

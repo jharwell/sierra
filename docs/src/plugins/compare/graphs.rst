@@ -20,6 +20,12 @@ This page has the following sections:
 All configuration for this plugin is in ``<project>/config/graphs.yaml``
 file.
 
+This plugin performs stage-5 :term:`Data Collation`: it takes the per-batch
+:term:`Collated Output Data` for each compared thing (controller or scenario)
+and places them side by side -- one column per compared thing, indexed by
+experiment -- in a single :term:`Inter-Batch Data` file per measure. For a
+visualization of this reshape, see :ref:`concepts/dataflow/stage5`.
+
 .. _plugins/compare/graphs/packages:
 
 OS Packages
@@ -48,7 +54,7 @@ Model Overlay
 
 If models were run during stage 4 (i.e., the ``proc.modelrunner``
 processor was included in ``--proc``), and an inter-experiment model targets the
-same ``src_stem`` as a comparison graph, then the model's predictions are
+same ``src`` as a comparison graph, then the model's predictions are
 collated alongside the empirical data and **overlaid on the comparison graph**
 as an additional line per compared thing. This works for both inter-controller
 and inter-scenario comparison, and for univariate batch criteria.
@@ -56,7 +62,7 @@ and inter-scenario comparison, and for univariate batch criteria.
 The collated predictions and their legends are written to the ``-cc-models`` /
 ``-sc-models`` directory (see the trees below). No extra configuration is
 required beyond having run the models in stage 4: the overlay is keyed off the
-comparison graph's ``src_stem``, so a model whose target matches that stem is
+comparison graph's ``src``, so a model whose target matches that path is
 picked up automatically. If no matching model output exists, the comparison
 graph is generated normally without an overlay.
 
@@ -131,7 +137,7 @@ section is a **flat list** of graphs with no category level, because the things
 being compared are named directly on the cmdline rather than being
 enabled/disabled via controller YAML.
 
-``src_stem``, ``dest_stem`` and ``type`` are required; everything else is
+``src``, ``dest`` and ``type`` are required; everything else is
 optional and defaults as noted below.
 
 .. IMPORTANT:: Comparison graphs use ``type: comparison_line``, which is

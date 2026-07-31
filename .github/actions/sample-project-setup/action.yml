@@ -50,7 +50,7 @@ runs:
       id: system-info
 
     - name: Cache build files
-      uses: hendrikmuhs/ccache-action@v1.2
+      uses: hendrikmuhs/ccache-action@v1.2.23
       with:
         key: ${{ runner.os }}-${{ steps.system-info.outputs.release }}-build-objects
         verbose: 0

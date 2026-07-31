@@ -156,8 +156,8 @@ required unless otherwise specified.
        # directory container the __init__.py. Must be unique among all active
        # models, or data will be overwritten.
        - name: model1
-         # The file stems/names of the graphs which this model should appear
-         # on. Must match the 'src_stem' field of the corresponding stacked_line
+         # The graph paths (matching a graph's 'src'/'dest') which this model should appear
+         # on. Must match the 'src' field of the corresponding stacked_line
          # graph to trigger inclusion.
          targets:
            - mygraph1
@@ -174,8 +174,8 @@ required unless otherwise specified.
        # The name of the model, specified as a python path relative to the
        # directory container the __init__.py.
        - name: nested.model2
-         # The file stems/names of the graphs which this model should appear on.
-         # Must match the 'dest_stem' field of the corresponding summary_line
+         # The graph paths (matching a graph's 'src'/'dest') which this model should appear on.
+         # Must match the 'dest' field of the corresponding summary_line
          # graph to trigger inclusion.
          targets:
            - mygraph1

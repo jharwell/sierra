@@ -55,8 +55,8 @@ def generate(
 
             graphs.histogram(
                 pathset=paths,
-                input_stem=str(graph["dest_stem"]),
-                output_stem=str(graph["dest_stem"]),
+                input_stem=str(graph["dest"]),
+                output_stem=str(graph["dest"]),
                 medium="storage.csv",
                 title=str(graph["title"]),
                 backend=str(graph.get("backend", cmdopts["graphs_backend"])),

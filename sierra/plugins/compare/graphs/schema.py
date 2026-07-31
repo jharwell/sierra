@@ -19,8 +19,8 @@ from sierra.core import types
 
 comparison_line = strictyaml.Map(
     {
-        "src_stem": strictyaml.Str(),
-        "dest_stem": strictyaml.Str(),
+        "src": strictyaml.Str(),
+        "dest": strictyaml.Str(),
         "type": strictyaml.Enum(["comparison_line"]),
         strictyaml.Optional("title", default=""): strictyaml.Str(),
         strictyaml.Optional("label", default=""): strictyaml.Str(),

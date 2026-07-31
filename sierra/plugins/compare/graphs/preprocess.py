@@ -42,9 +42,9 @@ def collate_row(
     column_key: str,
     exp_names: list,
 ) -> pl.DataFrame:
-    """Collate a single row from a source df -> cum df.
+    """Collate a single row from ``src_df`` into ``cum_df``.
 
-    Add ``column_key`` column to ``cum_df`` from the ``index`` row of
+    Append one ``column_key`` column to ``cum_df`` from the ``index`` row of
     ``src_df``, filtering the included experiments by ``inc_exps``.
 
     Shared by the statistic collation (:class:`IntraExpPreparer`) and the model
@@ -67,6 +67,45 @@ def collate_row(
             cum_df = pl.DataFrame({"Experiment ID": filtered_names})
 
     return cum_df.with_columns(pl.Series(column_key, row_data))
+
+
+def collate_model_column(
+    cum_df: tp.Optional[pl.DataFrame],
+    model_df: pl.DataFrame,
+    inc_exps: tp.Optional[str],
+    column_key: str,
+    exp_names: list,
+) -> pl.DataFrame:
+    """Collate  a single model column (duh).
+
+    Append one ``column_key`` column to ``cum_df`` from a model's per-
+    experiment prediction column, filtering by ``inc_exps``.
+
+    Unlike :func:`collate_row` (which slices a single time-index *row* out of a
+    1-row-per-datapoint statistics file), an inter-experiment model produces one
+    prediction *per experiment*: an ``Experiment ID`` column plus a single value
+    column, one row per experiment. So here we take the value *column* as the
+    per-experiment series rather than a row. include_exp is applied identically
+    to the statistics path so the model overlay stays aligned with the data and
+    the graph ticks.
+
+    """
+    if cum_df is None:
+        cum_df = pl.DataFrame({"Experiment ID": exp_names})
+
+    # The model's value column is the last one (col 0 is "Experiment ID").
+    value_col = model_df.columns[-1]
+    col_data = model_df[value_col].to_list()
+
+    if inc_exps is not None:
+        n_exps = len(exp_names)
+        col_data = utils.exp_include_filter(inc_exps, col_data, n_exps)
+
+        if cum_df.height != len(col_data):
+            filtered_names = utils.exp_include_filter(inc_exps, exp_names, n_exps)
+            cum_df = pl.DataFrame({"Experiment ID": filtered_names})
+
+    return cum_df.with_columns(pl.Series(column_key, col_data))
 
 
 class IntraExpPreparer:

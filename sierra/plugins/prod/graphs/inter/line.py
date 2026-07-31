@@ -72,8 +72,8 @@ def _gen_summary_linegraph(
     # future.
     graphs.summary_line(
         pathset=paths,
-        input_stem=str(graph["dest_stem"]),
-        output_stem=str(graph["dest_stem"]),
+        input_stem=str(graph["dest"]),
+        output_stem=str(graph["dest"]),
         medium="storage.csv",
         legend=[legend],
         stats=str(cmdopts.get("dist_stats", "none")),
@@ -104,8 +104,8 @@ def _gen_stacked_linegraph(
 
     graphs.stacked_line(
         pathset=paths,
-        input_stem=str(graph["dest_stem"]),
-        output_stem=str(graph["dest_stem"]),
+        input_stem=str(graph["dest"]),
+        output_stem=str(graph["dest"]),
         stats=str(cmdopts.get("dist_stats", "none")),
         medium="storage.csv",
         title=str(graph["title"]),

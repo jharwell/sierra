@@ -178,39 +178,86 @@ def _stage3_univar_check_outputs_yamlsim(
             if not check_interexp:
                 return
 
-            interexp_items = [stat_root / f"inter-exp/c1-exp{i}/output1D-col1.csv"]
-
-            for item in interexp_items:
+            # Collated outputs from collate.yaml. The yamlsim engine writes only
+            # output1D.csv and confusion-matrix.csv at the run output root -- it
+            # does NOT populate subdir1/subdir2/. So although collate.yaml names
+            # subdir1/subdir2/output1D.csv, that source never exists and the
+            # target correctly contributes nothing. Only the root output1D.csv
+            # entry (col1, col2) produces collated outputs.
+            interexp_present = [
+                stat_root / f"inter-exp/c1-exp{i}/output1D-col1.csv",
+                stat_root / f"inter-exp/c1-exp{i}/output1D-col2.csv",
+            ]
+            for item in interexp_present:
                 assert item.is_file(), f"File {item} does not exist"
+
+            # Must NOT exist: the nested source file is never written by the
+            # yamlsim engine, so its collated output is not produced.
+            interexp_absent = [
+                stat_root
+                / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
+            ]
+            for item in interexp_absent:
+                assert not item.is_file(), f"Unexpected collated file {item}"
 
 
 def _stage3_univar_check_outputs_jsonsim(
     stat_root: pathlib.Path, cardinality: int, stats: list[str]
 ):
+    # Statistics are generated for exactly the raw outputs named by a graph
+    # 'src' in graphs.yaml, matched exactly (rooted, path-qualified for
+    # nesting). For jsonsim those are output1D, output2D at the root and
+    # subdir1/subdir2/output1D, subdir3/output1D, subdir3/output2D nested.
+    #
+    # subdir1/subdir2/output2D is deliberately absent: no graph names it. (Under
+    # the former substring matching it was produced incidentally, because
+    # "output2D" is a substring of that path.)
+    intraexp_stems = [
+        "output1D",
+        "output2D",
+        "subdir1/subdir2/output1D",
+        "subdir3/output1D",
+        "subdir3/output2D",
+    ]
+
     # Check stage3 generated statistics
     for i in range(0, cardinality):
         for stat in stats:
             exp_dir = stat_root / f"c1-exp{i}"
-            items = [
-                exp_dir / f"output1D.{stat}",
-                exp_dir / f"output2D.{stat}",
-                exp_dir / f"subdir1/subdir2/output1D.{stat}",
-                exp_dir / f"subdir1/subdir2/output2D.{stat}",
-                exp_dir / f"subdir3/output1D.{stat}",
-                exp_dir / f"subdir3/output2D.{stat}",
-            ]
-
-            for item in items:
+            for stem in intraexp_stems:
+                item = exp_dir / f"{stem}.{stat}"
                 assert item.is_file(), f"File {item} does not exist"
 
-            # Check interexp files
-            interexp_items = [
-                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
-                stat_root / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
-            ]
+            # Must NOT be produced: no graph names it (substring-bleed regression).
+            bled = exp_dir / f"subdir1/subdir2/output2D.{stat}"
+            assert not bled.is_file(), f"Unexpected substring-bleed file {bled}"
 
-            for item in interexp_items:
-                assert item.is_file(), f"File {item} does not exist"
+        # Collated (inter-exp) outputs from collate.yaml, which names:
+        #   file: output1D.csv                 -> col1, col2       (root)
+        #   file: subdir1/subdir2/output1D.csv -> col1             (nested)
+        #   name: combined (multi-source)      -> col1 + col1_subdir3 (root)
+        interexp_present = [
+            f"inter-exp/c1-exp{i}/output1D-col1.csv",
+            f"inter-exp/c1-exp{i}/output1D-col2.csv",
+            f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
+            f"inter-exp/c1-exp{i}/combined-col1.csv",
+            f"inter-exp/c1-exp{i}/combined-col1_subdir3.csv",
+        ]
+        for rel in interexp_present:
+            item = stat_root / rel
+            assert item.is_file(), f"File {item} does not exist"
+
+        # Must NOT exist: subdir3/output1D-* was substring bleed (no collate
+        # entry names a standalone subdir3 output), and the nested output1D had
+        # only col1 configured, not col2.
+        interexp_absent = [
+            f"inter-exp/c1-exp{i}/subdir3/output1D-col1.csv",
+            f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
+            f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col2.csv",
+        ]
+        for rel in interexp_absent:
+            item = stat_root / rel
+            assert not item.is_file(), f"Unexpected collated file {item}"
 
 
 def _stage3_univar_check_outputs_argos(
@@ -630,7 +677,7 @@ def _check_models_dir(
     """Check a stage-5 ``-*-models`` directory holds the collated model
     predictions and legends.
 
-    ``measures`` maps a ``dest_stem`` fragment expected to appear in the model
+    ``measures`` maps a ``dest`` fragment expected to appear in the model
     filename onto the number of data rows that measure's model CSV should have
     (reflecting its ``include_exp`` filtering). Each measure must contribute
     exactly one ``.model`` file (with a matching ``.legend``) whose row count
@@ -656,13 +703,19 @@ def _check_models_dir(
         lf = mf.with_suffix(LEGEND_EXT)
         assert lf.exists(), f"Model file {mf.name} has no matching legend {lf.name}"
 
-        # Row count reflects include_exp filtering; columns = index + 1
-        # prediction column.
+        # Column count: an inter-controller ('cc-') comparison collates one
+        # prediction column per compared controller, plus the index. This run
+        # compares two controllers (footbot_foraging and
+        # footbot_foraging_slow), so index + 2 controllers = 3 columns -- the
+        # same shape the sibling comparison-CSV check expects.
         n_rows, n_cols = _csv_dims(mf)
         assert n_rows == exp_rows, (
             f"Expected {exp_rows} rows in {mf.name}, got {n_rows}"
         )
-        assert n_cols == 2, f"Expected index+prediction in {mf.name}, got {n_cols}"
+        assert n_cols == 3, (
+            f"Expected index + 2 controllers in {mf.name}, got {n_cols} "
+            f"({n_cols - 1} controller column(s))"
+        )
 
 
 def stage5_univar_check_cc_models_outputs(session, engine: str):

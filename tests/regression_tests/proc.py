@@ -6,12 +6,8 @@
 
 # Core packages
 import pathlib
-import typing as tp
-import os
-import subprocess
 
 # 3rd party packages
-import csv
 import nox
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -69,75 +65,64 @@ def _stage3_univar_check_outputs_jsonsim(
     stat_root: pathlib.Path, cardinality: int, stats: str, to_check: list[str]
 ):
     current_dir = pathlib.Path.cwd()
+    ref_root = current_dir / f"tests/regression_tests/statistics-jsonsim-{stats}"
+
+    # Statistics gathers exactly the raw outputs named by a graph 'src' in
+    # graphs.yaml, matched exactly (rooted, path-qualified for nesting) -- the
+    # same rule the collation plugin uses.
+    intraexp_stems = [
+        "output1D",
+        "output2D",
+        "subdir1/subdir2/output1D",
+        "subdir3/output1D",
+        "subdir3/output2D",
+    ]
 
     # Check stage3 generated statistics
     for i in range(0, cardinality):
+        exp_dir = stat_root / f"c1-exp{i}"
         for stat in to_check:
-            exp_dir = stat_root / f"c1-exp{i}"
-            intraexp_items = [
-                {
-                    "path": exp_dir / f"output1D.{stat}",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}"
-                    / exp_dir
-                    / f"output1D.{stat}",
-                },
-                {
-                    "path": exp_dir / f"output2D.{stat}",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}"
-                    / f"c1-exp{i}/output2D.{stat}",
-                },
-                {
-                    "path": exp_dir / f"subdir1/subdir2/output1D.{stat}",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}"
-                    / f"c1-exp{i}/subdir1/subdir2/output1D.{stat}",
-                },
-                {
-                    "path": exp_dir / f"subdir1/subdir2/output2D.{stat}",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}"
-                    / f"c1-exp{i}/subdir1/subdir2/output2D.{stat}",
-                },
-                {
-                    "path": exp_dir / f"subdir3/output1D.{stat}",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}"
-                    / f"c1-exp{i}/subdir3/output1D.{stat}",
-                },
-                {
-                    "path": exp_dir / f"subdir3/output2D.{stat}",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}"
-                    / f"c1-exp{i}/subdir3/output2D.{stat}",
-                },
-            ]
-            for item in intraexp_items:
+            for stem in intraexp_stems:
+                path = exp_dir / f"{stem}.{stat}"
+                ref = ref_root / f"c1-exp{i}" / f"{stem}.{stat}"
                 assert_frame_equal(
-                    pl.read_csv(item["path"]),
-                    pl.read_csv(item["ref"]),
+                    pl.read_csv(path),
+                    pl.read_csv(ref),
                     check_column_order=False,
                 )
 
-            interexp_items = [
-                {
-                    "path": stat_root
-                    / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}/inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
-                },
-                {
-                    "path": stat_root
-                    / f"inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
-                    "ref": current_dir
-                    / f"tests/regression_tests/statistics-jsonsim-{stats}/inter-exp/c1-exp{i}/subdir3/output1D-col2.csv",
-                },
-            ]
+            # subdir1/subdir2/output2D must NOT be produced: no graph names it,
+            # so exact matching (correctly) does not gather it.
+            assert not (exp_dir / f"subdir1/subdir2/output2D.{stat}").exists(), (
+                "subdir1/subdir2/output2D was gathered but no graph names it "
+                "(substring-bleed regression)"
+            )
 
-            for item in interexp_items:
-                assert_frame_equal(
-                    pl.read_csv(item["path"]),
-                    pl.read_csv(item["ref"]),
-                    check_column_order=False,
-                )
+        # Collated (inter-exp) outputs come from collate.yaml
+        interexp_present = [
+            "output1D-col1.csv",
+            "output1D-col2.csv",
+            "subdir1/subdir2/output1D-col1.csv",
+            # Multi-source collation: one collated file per output column of the
+            # 'combined' target, assembled from columns in two different files.
+            "combined-col1.csv",
+            "combined-col1_subdir3.csv",
+        ]
+        interexp_absent = [
+            "subdir1/subdir2/output1D-col2.csv",
+            "subdir3/output1D-col1.csv",
+            "subdir3/output1D-col2.csv",
+        ]
+
+        inter_dir = stat_root / f"inter-exp/c1-exp{i}"
+        inter_ref = ref_root / f"inter-exp/c1-exp{i}"
+        for rel in interexp_present:
+            assert_frame_equal(
+                pl.read_csv(inter_dir / rel),
+                pl.read_csv(inter_ref / rel),
+                check_column_order=False,
+            )
+        for rel in interexp_absent:
+            assert not (
+                inter_dir / rel
+            ).exists(), f"{rel} was collated but no collate entry names it"

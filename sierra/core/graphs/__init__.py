@@ -16,14 +16,19 @@ from .heatmap import generate_numeric as heatmap
 from .heatmap import generate_dual_numeric as dual_heatmap
 from .network import generate as network
 from .pathset import PathSet
+from . import schema, sections, bcbridge, gconfig
 
 __all__ = [
     "PathSet",
+    "bcbridge",
     "confusion_matrix",
     "dual_heatmap",
+    "gconfig",
     "heatmap",
     "histogram",
     "network",
     "stacked_line",
     "summary_line",
+    "schema",
+    "sections",
 ]

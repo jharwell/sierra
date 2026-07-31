@@ -27,13 +27,19 @@ This process in stage 3 can be visualized as follows for a single
 Here, the user has specified that the ``col{0,1}`` in ``file0`` produced by all
 experimental runs should be combined into a single file. Thus the
 :term:`Collated Output Data` file generated from that specification will have
-:math:`j` columns, one per run. Similarly for ``col{A,B}`` in ``file1``. This is
-collation *within* in an experiment (intra-experiment). Collation *across*
+:math:`j` columns, one per run. Similarly for ``col{A,B}`` in ``file1``. Each
+collated output above draws its columns from a *single* source file; a collated
+output can also draw columns from *several* source files, joined together per
+run -- see :ref:`plugins/proc/collate/multi-source` below.
+
+This is collation *within* an experiment (intra-experiment). Collation *across*
 experiments (if enabled/configured) is done during stage 4, and is handled by a
-different plugin.
+different plugin. That stage-4 collation consumes the single, already-joined
+files produced here, so it deliberately has no multi-source spelling of its own:
+joining data from multiple files belongs upstream, in this plugin.
 
 This plugin requires that the selected :ref:`storage plugin <plugins/storage>`
-supports ``pd.DataFrame`` objects.
+supports ``pl.DataFrame`` objects.
 
 .. _plugins/proc/collate/ordering:
 
@@ -77,19 +83,133 @@ Configuration
 
 Controls *what* to collate. Collated data is usually "interesting" in some way;
 e.g., related to system performance. Configuration lives in a ``collate.yaml``
-file; all fields are required unless otherwise specified.
+file, which is a **flat list of collation targets**. There is no top-level
+section key; collation is intra-experiment only, so the list stands on its own.
+
+The whole file is validated up front, before any collation runs. If there are
+problems, **all** of them are reported together (rather than failing on the
+first), and unknown keys are rejected. Each target is one of two spellings:
+single-source (the common case) or multi-source.
+
+.. _plugins/proc/collate/single-source:
+
+Single-source targets
+^^^^^^^^^^^^^^^^^^^^^^^
+
+A single-source target names one ``file`` and the ``cols`` to lift from it:
 
 .. code-block:: YAML
 
-   # Contains a list of config items for intra-experiment collation (i.e.,
-   # collation at the level of experimental runs).
-   intra-exp:
+   # A flat list of targets -- no 'intra-exp:' wrapper.
+   - file: output1D.csv
+     cols:
+       - col1
+       - col2
 
-     # Each config item has 'file' and 'cols' fields. 'file' specifies a
-     # filepath, relative to the output directory for each experimental run,
-     # containing the data columns of interest. 'cols' specifies the columns of
-     # interest.
-     - file: foo/bar
-       cols:
-         - col1
-         - col2
+The generated :term:`Collated Output Data` file is named after the source file's
+stem (``output1D`` above), yielding ``output1D-col1`` and ``output1D-col2``, each
+with one column per run. To name the output explicitly instead, add an optional
+``name`` key.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 10 75
+
+   * - Key
+     - Required?
+     - Meaning
+
+   * - ``file``
+     - Yes
+     - The source file to collate from each run. See
+       :ref:`plugins/proc/collate/matching` for how this value is matched.
+
+   * - ``cols``
+     - Yes
+     - The columns to lift from ``file``. Each entry is either a bare column
+       name, or a ``{name: <col>, as: <output name>}`` mapping to rename the
+       column in the output (see :ref:`plugins/proc/collate/multi-source`).
+
+   * - ``name``
+     - No
+     - The output stem for this target. Defaults to the stem of ``file``.
+
+.. _plugins/proc/collate/matching:
+
+How ``file`` is matched
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``file`` is matched **exactly** against each candidate output's path *relative to
+the run output root* -- it is not a substring match. In practice:
+
+- A bare name (``output1D``) resolves at the run output root only. It does
+  **not** match a same-named file nested in a subdirectory.
+- A file in a subdirectory is named by path-qualifying the value
+  (``subdir1/subdir2/output1D``).
+- The value may be written with or without the storage extension: both
+  ``output1D`` and ``output1D.csv`` match ``output1D.csv``.
+- A value that matches **more than one** output file is an ambiguous
+  specification and is a hard error (SIERRA will not silently pick one or fan the
+  target out over all of them). Path-qualify the value to disambiguate.
+- A value that matches **no** file means that run simply did not produce it, and
+  the run contributes nothing to that target -- not an error.
+
+.. _plugins/proc/collate/multi-source:
+
+Multi-source targets
+^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes the columns for one collated output live in *different* source files.
+A multi-source target names an explicit ``name`` and a list of ``sources``,
+whose columns are joined together per run before collation:
+
+.. code-block:: YAML
+
+   - name: combined
+     sources:
+       - file: output1D.csv
+         cols:
+           - col1
+       - file: energy.csv
+         cols:
+           - name: col1
+             as: col1_energy
+
+This can be visualized as follows, using :term:`Experimental Run` as SCOPE. Here
+the ``combined`` target draws ``col0`` from ``file0`` and ``colA`` from ``file1``
+in every run; the two are joined so that each run contributes a
+``(col0, colA)`` pair to the single collated output (unused columns greyed):
+
+.. figure:: /figures/data-collation-multisource.png
+
+Each source has the same ``file`` and ``cols`` fields as a single-source target
+(``file`` is matched by the same rules above). The sources are combined **per
+run on a shared row axis**: they must have the same number of rows, and row
+:math:`i` must mean the same run-relative position in each. The per-column output
+names (after any ``as`` renaming) become the collated outputs, exactly as in the
+single-source case -- so the example above produces ``combined-col1`` and
+``combined-col1_energy``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 10 75
+
+   * - Key
+     - Required?
+     - Meaning
+
+   * - ``name``
+     - Yes
+     - The output stem shared by this target's collated outputs. Required here
+       (unlike single-source, there is no single ``file`` stem to default to).
+
+   * - ``sources``
+     - Yes
+     - A list of ``{file, cols}`` sources whose columns are joined per run.
+
+The ``{name, as}`` column form exists mainly to resolve **collisions**: if two
+sources both contribute a column called ``col1``, the joined frame cannot hold
+two columns of the same name. Rename at least one with ``as`` (e.g.
+``col1_energy`` above). An unresolved collision -- two sources exposing the same
+output column name -- is a config error, reported up front like all other
+problems.
