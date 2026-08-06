@@ -111,7 +111,7 @@ GRAPHS: types.GraphsConfig = {
     "static_type": "png",
     "interactive_type": "html",
     "dpi": 100,
-    "base_size": 10.0,  # inches,
+    "fig_size": 10.0,  # inches,
     "text_size_small": {
         "title": 24,
         "xyz_label": 18,
@@ -124,6 +124,8 @@ GRAPHS: types.GraphsConfig = {
         "tick_label": 24,
         "legend_label": 32,
     },
+    "points_size": {"bokeh": {"size": 8}, "matplotlib": {"s": 60}},
+    "curve_style": {"bokeh": {"line_dash": [6, 3]}, "matplotlib": {"linestyle": "--"}},
 }
 
 

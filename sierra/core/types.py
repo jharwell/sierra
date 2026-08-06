@@ -37,15 +37,32 @@ class TextSizeConfig(tp.TypedDict):
     legend_label: int
 
 
+class PointsSizeConfig(tp.TypedDict):
+    """Point sizes of plotted points, by backend."""
+
+    bokeh: dict[str, int]
+    matplotlib: dict[str, int]
+
+
+class CurveStyleConfig(tp.TypedDict):
+    """Curve styles, by backend."""
+
+    bokeh: dict[str, list[int]]
+    matplotlib: dict[str, str]
+
+
 class GraphsConfig(tp.TypedDict):
     """Typed schema for the hard-coded ``GRAPHS`` graph-rendering config."""
 
     static_type: str
     interactive_type: str
     dpi: int
-    base_size: float
+    fig_size: float
     text_size_small: TextSizeConfig
     text_size_large: TextSizeConfig
+    points_size: PointsSizeConfig
+    curve_style: CurveStyleConfig
+
 
 YAMLScalar = tp.Union[None, bool, str, float, int]
 YAMLDict = dict[str, tp.Union[YAMLScalar, "YAMLDict", list["YAMLDict"]]]

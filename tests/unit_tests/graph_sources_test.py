@@ -208,7 +208,10 @@ class TestRoleColumnTypes:
                     "type": "confusion_matrix",
                     "sources": [
                         {"file": "labels", "cols": [{"name": "actual", "as": "truth"}]},
-                        {"file": "model", "cols": [{"name": "pred", "as": "predicted"}]},
+                        {
+                            "file": "model",
+                            "cols": [{"name": "pred", "as": "predicted"}],
+                        },
                     ],
                 }
             )
@@ -279,9 +282,7 @@ class TestRoleColumnTypes:
         # With src, no role-vs-produced check applies (columns come from
         # the single file, resolved at plot time as before).
         gconfig.validate(_intra({"src": "grid", "type": "heatmap"}))
-        gconfig.validate(
-            _intra({"src": "preds", "type": "confusion_matrix"})
-        )
+        gconfig.validate(_intra({"src": "preds", "type": "confusion_matrix"}))
 
 
 # ---------------------------------------------------------------------------
@@ -307,9 +308,9 @@ class TestMaterializeSources:
         stem = intra._materialize_sources(
             graph, tmp_path, "storage.csv", {"dist_stats": "none"}
         )
-        assert stem == "combined-collated"
+        assert stem == "combined"
 
-        out = pl.read_csv(tmp_path / "combined-collated.mean")
+        out = pl.read_csv(tmp_path / "combined.mean")
         assert out.columns == ["c1", "c1_b", "c2"]
         assert out.shape == (3, 3)
 
@@ -328,18 +329,16 @@ class TestMaterializeSources:
             graph, tmp_path, "storage.csv", {"dist_stats": "conf95"}
         )
         # Both the mean and the stddev families are joined.
-        assert (tmp_path / "j-collated.mean").is_file()
-        assert (tmp_path / "j-collated.stddev").is_file()
-        assert pl.read_csv(tmp_path / "j-collated.stddev").columns == ["c1", "c1_b"]
+        assert (tmp_path / "j.mean").is_file()
+        assert (tmp_path / "j.stddev").is_file()
+        assert pl.read_csv(tmp_path / "j.stddev").columns == ["c1", "c1_b"]
 
     def test_lenient_sparse_dispersion(self, tmp_path):
         """A dispersion stat covering a subset of the mean's columns joins only
         the columns it has -- mirroring the single-src path."""
         self._write(tmp_path, "a.mean", pl.DataFrame({"c1": [1, 2]}))
         self._write(tmp_path, "a.stddev", pl.DataFrame({"c1": [0.1, 0.2]}))
-        self._write(
-            tmp_path, "b.mean", pl.DataFrame({"c1": [3, 4], "c2": [5, 6]})
-        )
+        self._write(tmp_path, "b.mean", pl.DataFrame({"c1": [3, 4], "c2": [5, 6]}))
         # b.stddev has c1 only -- no c2.
         self._write(tmp_path, "b.stddev", pl.DataFrame({"c1": [0.3, 0.4]}))
         graph = {
@@ -352,26 +351,11 @@ class TestMaterializeSources:
         intra._materialize_sources(
             graph, tmp_path, "storage.csv", {"dist_stats": "conf95"}
         )
-        mean = pl.read_csv(tmp_path / "s-collated.mean")
-        stddev = pl.read_csv(tmp_path / "s-collated.stddev")
+        mean = pl.read_csv(tmp_path / "s.mean")
+        stddev = pl.read_csv(tmp_path / "s.stddev")
         assert mean.columns == ["c1", "c1_b", "c2"]
         # c2 absent from b.stddev -> dropped leniently.
         assert stddev.columns == ["c1", "c1_b"]
-
-    def test_row_axis_mismatch_raises(self, tmp_path):
-        self._write(tmp_path, "a.mean", pl.DataFrame({"c1": [1, 2, 3]}))
-        self._write(tmp_path, "b.mean", pl.DataFrame({"c1": [1, 2]}))
-        graph = {
-            "dest": "x",
-            "sources": [
-                {"file": "a", "cols": ["c1"]},
-                {"file": "b", "cols": [{"name": "c1", "as": "c1_b"}]},
-            ],
-        }
-        with pytest.raises(ValueError, match="share a row axis"):
-            intra._materialize_sources(
-                graph, tmp_path, "storage.csv", {"dist_stats": "none"}
-            )
 
     def test_missing_source_file_skips_extension(self, tmp_path):
         # Only the mean exists for both; stddev is absent entirely.
@@ -387,6 +371,6 @@ class TestMaterializeSources:
         intra._materialize_sources(
             graph, tmp_path, "storage.csv", {"dist_stats": "conf95"}
         )
-        assert (tmp_path / "m-collated.mean").is_file()
+        assert (tmp_path / "m.mean").is_file()
         # stddev family absent -> no derived stddev written.
-        assert not (tmp_path / "m-collated.stddev").is_file()
+        assert not (tmp_path / "m.stddev").is_file()

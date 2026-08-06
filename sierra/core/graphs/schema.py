@@ -141,8 +141,31 @@ histogram = strictyaml.Map(
         strictyaml.Optional("backend"): strictyaml.Str(),
     }
 )
+
+scatterplot = strictyaml.Map(
+    {
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. sources (columns
+        # from several files, joined per experiment) is intra-exp only.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
+        "type": strictyaml.Enum(["scatterplot"]),
+        strictyaml.Optional("xcol", default="xcol"): strictyaml.Str(),
+        strictyaml.Optional("ycol", default="ycol"): strictyaml.Str(),
+        strictyaml.Optional("title", default=""): strictyaml.Str(),
+        strictyaml.Optional("xlabel", default=""): strictyaml.Str(),
+        strictyaml.Optional("ylabel", default=""): strictyaml.Str(),
+        strictyaml.Optional("legend"): strictyaml.Seq(strictyaml.Str()),
+        strictyaml.Optional("show_best_fit", default=False): strictyaml.Bool(),
+        strictyaml.Optional("best_fit_kind", default="linear"): strictyaml.Enum(
+            ["linear", "quadratic", "cubic", "log", "exp"]
+        ),
+        strictyaml.Optional("backend"): strictyaml.Str(),
+    }
+)
 """
-Schema for :func:`~sierra.core.graphs.histogram.generate` graphs.
+Schema for :func:`~sierra.core.graphs.scatterplot.generate` graphs.
 """
 
 summary_line = strictyaml.Map(
@@ -196,6 +219,7 @@ BY_TYPE = {
     "histogram": histogram,
     "summary_line": summary_line,
     "network": network,
+    "scatterplot": scatterplot,
 }
 
 __all__ = [
@@ -205,6 +229,7 @@ __all__ = [
     "heatmap",
     "histogram",
     "network",
+    "scatterplot",
     "stacked_line",
     "summary_line",
 ]

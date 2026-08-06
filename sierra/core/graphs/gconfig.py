@@ -255,6 +255,7 @@ def _validate_one(
 _ROLE_COLUMNS = {
     "heatmap": {"x": "x", "y": "y", "z": "z"},
     "confusion_matrix": {"truth_col": "truth", "predicted_col": "predicted"},
+    "scatterplot": {"xcol": "xcol", "ycol": "ycol"},
 }
 
 #: Graph types whose schema historically *required* ``cols``. That requiredness

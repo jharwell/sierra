@@ -20,19 +20,9 @@ import bokeh
 
 # Project packages
 from sierra.core import utils, config, storage
-from . import pathset as _pathset
+from . import pathset as _pathset, graphutils
 
 _logger = logging.getLogger(__name__)
-
-
-def _ofile_ext(backend: str) -> tp.Optional[str]:
-    if backend == "matplotlib":
-        return str(config.GRAPHS["static_type"])
-
-    if backend == "bokeh":
-        return str(config.GRAPHS["interactive_type"])
-
-    return None
 
 
 def generate(  # noqa: PLR0913
@@ -56,7 +46,7 @@ def generate(  # noqa: PLR0913
     """
     hv.extension(backend, inline=False, logo=False)
 
-    ofile_ext = _ofile_ext(backend)
+    ofile_ext = graphutils.ofile_ext(backend)
     input_fpath = pathset.input_root / (input_stem + ".graphml")
     output_fpath = pathset.output_root / f"NW-{output_stem}.{ofile_ext}"
     if not utils.path_exists(input_fpath):
@@ -118,7 +108,7 @@ def generate(  # noqa: PLR0913
 
     plot.opts(title=title)
     try:
-        _save(plot, output_fpath, backend)
+        graphutils.save_plot(plot, output_fpath, backend)
     except Exception as e:
         _logger.warning("Failed to output plot: %s", e)
 
@@ -195,31 +185,6 @@ def _find_root_node(G: nx.Graph):
     # Find center node(s) - node with minimum eccentricity
     center_nodes = nx.center(G)
     return center_nodes[0]  # Return first center node
-
-
-def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
-    output_fpath.parent.mkdir(parents=True, exist_ok=True)
-
-    if backend == "matplotlib":
-        hv.save(
-            plot.opts(fig_inches=config.GRAPHS["base_size"]),
-            output_fpath,
-            fig=config.GRAPHS["static_type"],
-            dpi=config.GRAPHS["dpi"],
-        )
-        plt.close("all")
-
-    elif backend == "bokeh":
-        fig = hv.render(plot)
-
-        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
-        # interactive plots fixed size, which makes them unsuitable for
-        # embedding into webpages.
-        fig.sizing_mode = "scale_width"
-
-        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with output_fpath.open("w") as f:
-            f.write(html)
 
 
 __all__ = ["generate"]

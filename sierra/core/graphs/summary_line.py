@@ -16,12 +16,10 @@ import logging
 # 3rd party packages
 import polars as pl
 import holoviews as hv
-import matplotlib.pyplot as plt
-import bokeh
 
 # Project packages
 from sierra.core import config, utils, storage, models
-from . import pathset
+from . import pathset, graphutils
 
 _logger = logging.getLogger(__name__)
 
@@ -86,12 +84,7 @@ def generate(  # noqa: PLR0913
     """
     hv.extension(backend, inline=False, logo=False)
 
-    if backend == "matplotlib":
-        ofile_ext = config.GRAPHS["static_type"]
-    elif backend == "bokeh":
-        ofile_ext = config.GRAPHS["interactive_type"]
-    else:
-        raise ValueError(f"Bad value for backend: {backend}")
+    ofile_ext = graphutils.ofile_ext(backend)
 
     input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
     output_fpath = pathset.output_root / f"SM-{output_stem}.{ofile_ext}"
@@ -157,36 +150,13 @@ def generate(  # noqa: PLR0913
     # Add title
     plot.opts(title=title)
 
-    _save(plot, output_fpath, backend)
+    graphutils.save_plot(plot, output_fpath, backend)
 
     _logger.debug(
         "Graph written to <batchroot>/%s", output_fpath.relative_to(pathset.batchroot)
     )
 
     return True
-
-
-def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
-    output_fpath.parent.mkdir(parents=True, exist_ok=True)
-    if backend == "matplotlib":
-        hv.save(
-            plot.opts(fig_inches=config.GRAPHS["base_size"]),
-            output_fpath,
-            fig=config.GRAPHS["static_type"],
-            dpi=config.GRAPHS["dpi"],
-        )
-        plt.close("all")
-    elif backend == "bokeh":
-        fig = hv.render(plot)
-
-        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
-        # interactive plots fixed size, which makes them unsuitable for
-        # embedding into webpages.
-        fig.sizing_mode = "scale_width"
-
-        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with utils.utf8open(output_fpath, "w") as f:
-            f.write(html)
 
 
 def _plot_lines(
@@ -214,15 +184,9 @@ def _plot_lines(
     )
 
     if model_info.dataset:
-        if backend == "matplotlib":
-            opts: dict[str, tp.Any] = {
-                "linestyle": "--",
-            }
-        elif backend == "bokeh":
-            opts = {"line_dash": [6, 3]}
-
         # TODO: This currently only works for a single model being put onto a
         # summary line graph.
+        curve_style = tp.cast(dict[str, tp.Any], config.GRAPHS["curve_style"])
         plot *= hv.Overlay(
             [
                 hv.Curve(
@@ -230,7 +194,7 @@ def _plot_lines(
                     model_info.dataset.kdims[0],
                     vdim.name,
                     label=model_info.legend[model_info.dataset.vdims.index(vdim)],
-                ).opts(**opts)
+                ).opts(**curve_style[backend])
                 for vdim in model_info.dataset.vdims
             ]
         )

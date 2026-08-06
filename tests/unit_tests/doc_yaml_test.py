@@ -33,6 +33,7 @@ DOC_ROOT = (
 DOC_FILES = {
     "prod/heatmap.yaml": schema.heatmap,
     "prod/confusion_matrix.yaml": schema.confusion_matrix,
+    "prod/scatterplot.yaml": schema.scatterplot,
     "prod/stacked_line.yaml": schema.stacked_line,
     "prod/histogram.yaml": schema.histogram,
     "prod/summary_line.yaml": schema.summary_line,
@@ -121,4 +122,6 @@ def test_doc_yaml_exercises_optional_keys() -> None:
 
         expected = {str(k) for k in sch._validator_dict}
         missing = expected - shown
-        assert not missing, f"{fname}: schema keys never shown in docs: {sorted(missing)}"
+        assert (
+            not missing
+        ), f"{fname}: schema keys never shown in docs: {sorted(missing)}"

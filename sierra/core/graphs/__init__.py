@@ -15,8 +15,10 @@ from .heatmap import generate_confusion as confusion_matrix
 from .heatmap import generate_numeric as heatmap
 from .heatmap import generate_dual_numeric as dual_heatmap
 from .network import generate as network
+from .scatterplot import generate as scatterplot
 from .pathset import PathSet
 from . import schema, sections, bcbridge, gconfig
+
 
 __all__ = [
     "PathSet",
@@ -27,8 +29,9 @@ __all__ = [
     "heatmap",
     "histogram",
     "network",
-    "stacked_line",
-    "summary_line",
+    "scatterplot",
     "schema",
     "sections",
+    "stacked_line",
+    "summary_line",
 ]

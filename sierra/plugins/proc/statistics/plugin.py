@@ -386,6 +386,15 @@ def _proc_single_exp(
     # Add row index to each DataFrame BEFORE concatenating
     indexed_dfs = [df.with_row_index("row_idx") for df in spec.dfs]
 
+    assert all(
+        df.shape[1] == spec.dfs[0].shape[1] for df in spec.dfs
+    ), "Not all dataframes have same # columns for {} in {}: exps={},shapes={}".format(
+        spec.gather.primary_stem_path,
+        spec.gather.exp_name,
+        [str(e) for e in spec.exp_run_names],
+        [str(df.shape) for df in spec.dfs],
+    )
+
     # Now concatenate - this will have multiple rows with the same row_idx
     csv_concat = pl.concat(indexed_dfs, how="vertical")
 

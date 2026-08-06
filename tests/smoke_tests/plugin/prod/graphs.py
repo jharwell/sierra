@@ -71,9 +71,11 @@ def _graphs_backend_jsonsim(session):
         "SLN-random-noise-col1.png",
         "SLN-random-noise2-col2.png",
         "SM-random-noise3-col2.png",
+        "SP-random-noise.png",
         "SLN-random-noise-col1.html",
         "SLN-random-noise2-col2.html",
         "SM-random-noise3-col2.html",
+        "SP-random-noise.html",
     ]
 
     for file_name in interexp_files:
@@ -89,12 +91,14 @@ def _graphs_backend_jsonsim(session):
             "SLN-combined-noise.png",
             "HM-output2D-1.png",
             "HM-output2D-2.png",
+            "SP-random-noise.png",
             "SLN-random-noise.html",
             "SLN-random-noise2.html",
             "SLN-random-noise3.html",
             "SLN-combined-noise.html",
             "HM-output2D-1.html",
             "HM-output2D-2.html",
+            "SP-random-noise.html",
         ]
 
         for file_name in exp_files:

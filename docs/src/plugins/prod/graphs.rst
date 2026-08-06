@@ -125,6 +125,21 @@ presentations and interactive graphs for inclusion in webpages easy.
      - The data is contained in one or more columns in a single file. Each
        column contains numerical data.
 
+   * - Scatterplot
+
+     -
+
+       - The data you want to graph is a set of (x, y) point pairs, and you want
+         to see how one measure relates to another (correlation, trend) rather
+         than either one's evolution over time.
+
+       - You optionally want a line/curve of best fit (linear, polynomial, log,
+         etc.) overlaid, with an R\ :sup:`2` goodness-of-fit value.
+
+     - The data is contained in two columns in a single file: an X column and a
+       Y column. The two columns must be the same length (each row is one
+       point). Unlike time series, the points need not be ordered.
+
    * - Network
      - The data you want to graph is a network (graph) of some kind.
      - The data is contained in a single GraphML file.
@@ -263,6 +278,56 @@ in the per-type configuration below.
           is therefore reported up front, and all problems found are reported
           together rather than one run at a time.
 
+Scatterplot Keys
+----------------
+
+In addition to the common keys, ``scatterplot`` graphs accept the following.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 15 65
+   :align: left
+
+   * - Key
+     - Required?
+     - Meaning
+
+   * - ``xcol``
+     - Yes
+     - Name of the source column to use for the X values.
+
+   * - ``ycol``
+     - Yes
+     - Name of the source column to use for the Y values.
+
+   * - ``xlabel``
+     - No
+     - X-axis label. Defaults to ``'xcol'``.
+
+   * - ``ylabel``
+     - No
+     - Y-axis label. Defaults to ``'ycol'``.
+
+   * - ``show_best_fit``
+     - No
+     - Whether to overlay a curve of best fit on the scatterplot. Defaults to
+       ``false``.
+
+   * - ``best_fit_kind``
+     - No
+     - The kind of fit to overlay when ``show_best_fit`` is ``true``. One of
+       ``linear``, ``quadratic``, ``cubic``, ``log``, or ``exp``. The fitted
+       equation and its R\ :sup:`2` value are appended to the graph title.
+       Ignored when ``show_best_fit`` is ``false``.
+
+.. NOTE:: R\ :sup:`2` is reported for every ``best_fit_kind``, but it is a
+          meaningful goodness-of-fit measure only for the polynomial kinds
+          (``linear``/``quadratic``/``cubic``). For ``log`` and ``exp`` -- which
+          are fit in a transformed space -- treat R\ :sup:`2` as a rough
+          indicator only. A very low R\ :sup:`2` on a ``linear`` fit usually
+          means the relationship is not linear, not that the data is
+          meaningless.
+
 Intra-Experiment Graphs
 -----------------------
 
@@ -300,6 +365,14 @@ this plugin is below. Unless stated otherwise, all keys are required.
 
       .. literalinclude:: histogram.yaml
 
+   .. tab-item:: Scatterplot
+
+      A scatterplot of ``ycol`` versus ``xcol``, drawn from two columns of the
+      source file. Optionally overlays a curve of best fit via ``show_best_fit``
+      and ``best_fit_kind``.
+
+      .. literalinclude:: scatterplot.yaml
+
 
 Inter-Experiment Graphs
 -----------------------
@@ -314,9 +387,59 @@ this plugin is below. Unless stated otherwise, all keys are required.
    joining columns from several files into one collated output). A graph that
    needs data originally spread across files should point ``src`` at the
    stage-3 output that already joined them. This keeps every product sourced
-   from a single file. For how this collation reshapes the data (one column per
-   experiment in a single output file), see
-   :ref:`concepts/dataflow/stage4`.
+   from a single file. For how this collation reshapes the data, see
+   :ref:`concepts/dataflow/stage4` and the data-shape note below.
+
+.. _plugins/prod/graphs/data-shapes:
+
+Collated Data Shapes
+^^^^^^^^^^^^^^^^^^^^^^
+
+During :term:`Data Collation`, SIERRA reshapes the per-experiment source data
+into one of two dataframe shapes in the collated output file. Which shape is
+used is a property of the *kind of data*, not something you configure -- but
+knowing which shape a graph type uses helps when inspecting collated CSVs or
+debugging missing data.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 25 55
+   :align: left
+
+   * - Shape
+     - Graph Types
+     - Description
+
+   * - Wide (columnar)
+     - ``stacked_line``, ``summary_line``, ``histogram``
+     - One column per experiment; the column name is the experiment name. This
+       is the natural shape for aligned time-series data that projects already
+       emit, so no reshaping of research output is required. Because every
+       column in a single file must share a height, experiments with shorter
+       series have their columns padded with *trailing nulls*.
+
+   * - Long (rowwise)
+     - ``heatmap``, ``scatterplot``
+     - One row per datapoint, carrying the experiment identity in a column
+       (``exp`` for scatterplots; ``x``/``y`` experiment-space indices for
+       heatmaps). This is the natural shape for point sets, where each
+       experiment contributes an independent number of points. No padding is
+       needed: experiments simply contribute different numbers of rows.
+
+.. IMPORTANT:: Missing data (an experiment that ran but produced an empty or
+   unusable source for a graph) is always recorded as **null/absent**, never as
+   a synthesized ``0`` or ``-1``. A null appears in the collated CSV as an empty
+   field (``,,``), which is distinguishable downstream from a genuine
+   measurement of zero. This matters because any statistic (mean, quartile,
+   etc.) computed over the collated data would be silently corrupted by a
+   fabricated zero.
+
+.. IMPORTANT:: The wide (time-series) collation path assumes that all
+   experiments in a batch share the same *starting* index/timepoint, so that
+   padding a shorter series with trailing nulls aligns it correctly against the
+   others. Series that start at different x-values would be silently misaligned
+   by this bottom-padding. This assumption holds for the currently supported
+   batch criteria.
 
 .. tab-set::
 
@@ -367,6 +490,18 @@ this plugin is below. Unless stated otherwise, all keys are required.
                      number of columns, all of which are plotted.
 
       .. literalinclude:: histogram.yaml
+
+   .. tab-item:: Scatterplot
+
+      For inter-experiment scatterplots, the ``xcol`` and ``ycol`` columns are
+      extracted from *every* experiment in the batch during :term:`Data
+      Collation` and pooled into a single long-format frame (see
+      :ref:`plugins/prod/graphs/data-shapes`). Each experiment contributes its
+      own set of (x, y) points; experiments with different numbers of points are
+      handled without padding. All pooled points are then plotted together, so a
+      single scatterplot shows the (x, y) relationship across the whole batch.
+
+      .. literalinclude:: scatterplot.yaml
 
 
 .. NOTE:: If the batch criteria has dimension > 1, inter-experiment linegraphs
@@ -741,3 +876,109 @@ inter-experiment products can be generated directly.
 
       .. raw:: html
          :file: figures/graphs-inter-HG-noise-facet.html
+
+Scatterplot Examples
+====================
+
+.. TODO:: The example figures and interactive widgets referenced in this
+          section still need to be generated from the sample project and
+          committed under ``figures/``. The ``.. figure::`` / ``.. raw:: html``
+          directives below are placeholders that reference the expected
+          filenames; they will render once the assets exist. See the
+          Linegraph/Histogram example sections above for the established
+          figure-naming and tab-set conventions.
+
+For these examples, we will use the following SIERRA cmd and YAML configuration
+from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`.
+
+.. tab-set::
+
+   .. tab-item:: SIERRA cmd
+
+      .. TODO:: Confirm the exact flags against a real sample-project run
+                (batch criteria, controller, and ``src`` stem) before
+                publishing. The block below mirrors the Histogram example's
+                invocation and is a starting point, not a verified command.
+
+      ::
+
+         sierra \
+            --sierra-root=~/test \
+            --controller=default.default \
+            --engine=plugins.yamlsim \
+            --project=projects.sample_yamlsim \
+            --n-runs=4 \
+            --expdef-template=~/git/sierra-sample-project/exp/yamlsim/template.yaml \
+            --scenario=scenario1 \
+            --expdef=expdef.yaml \
+            --yamlsim-path=~/git/sierra-sample-project/plugins/yamlsim/yamlsim.py \
+            --proc proc.statistics proc.collate \
+            --controller=default.default \
+            --batch-criteria noise_floor.1.9.C5 \
+            --pipeline 1 2 3 4
+
+   .. tab-item:: YAML config
+
+      .. code-block:: YAML
+
+         intra-exp:
+           SP_default:
+             - src: accuracy-vs-vscore
+               dest: accuracy-vs-vscore
+               type: "scatterplot"
+               title: "Batch Accuracy vs V-Score"
+               xcol: batch_accuracy_percent
+               ycol: batch_vscore
+               xlabel: "Batch Accuracy Percent"
+               ylabel: "Batch V-Score"
+               show_best_fit: true
+               best_fit_kind: "linear"
+
+Intra-Experiment
+----------------
+
+A scatterplot of two columns from a single experiment's data, optionally with a
+line of best fit. Generate static images with ``--graphs-backend=matplotlib`` or
+interactive widgets with ``--graphs-backend=bokeh``:
+
+.. tab-set::
+
+   .. tab-item:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+         :widths: 50 50
+
+         * - .. figure:: figures/graphs-intra-SP-accuracy-vs-vscore.png
+
+           - .. figure:: figures/graphs-intra-SP-accuracy-vs-vscore-fit.png
+
+   .. tab-item:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-intra-SP-accuracy-vs-vscore.html
+
+      .. raw:: html
+         :file: figures/graphs-intra-SP-accuracy-vs-vscore-fit.html
+
+Inter-Experiment
+----------------
+
+After collation, an inter-experiment scatterplot pools the ``xcol``/``ycol``
+points from every experiment in the batch into a single plot (see
+:ref:`plugins/prod/graphs/data-shapes`), letting you see the (x, y) relationship
+across the whole batch rather than within a single experiment.
+
+.. tab-set::
+
+   .. tab-item:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+
+         * - .. figure:: figures/graphs-inter-SP-accuracy-vs-vscore.png
+
+   .. tab-item:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs-inter-SP-accuracy-vs-vscore.html

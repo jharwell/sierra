@@ -59,10 +59,7 @@ def proc_batch_exp(
     _logger.info("Loading graphs config for project=%s", cmdopts["project"])
     graphs_config = gconfig.load(cmdopts)
 
-    if (
-        cmdopts["exp_graphs"] in ("all", "intra")
-        and "intra-exp" in graphs_config
-    ):
+    if cmdopts["graphs"] in ("all", "intra") and "intra-exp" in graphs_config:
         _logger.info("Generating intra-experiment graphs...")
         start = time.time()
         intra.proc_batch_exp(
@@ -78,10 +75,7 @@ def proc_batch_exp(
     # Collation must be after intra-experiment graph generation, so that all
     # .csv files to be collated have been generated/modified according to
     # parameters.
-    if (
-        cmdopts["exp_graphs"] in ("all", "inter")
-        and "inter-exp" in graphs_config
-    ):
+    if cmdopts["graphs"] in ("all", "inter") and "inter-exp" in graphs_config:
         _logger.info("Collating inter-experiment files...")
         start = time.time()
         collate.proc_batch_exp(main_config, cmdopts, pathset, criteria)

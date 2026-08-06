@@ -111,6 +111,21 @@ def _histogram_kwargs(
     }
 
 
+def _scatterplot_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "xcol": loaded["xcol"],
+        "ycol": loaded["ycol"],
+        "xlabel": loaded.get("xlabel", loaded["xcol"]),
+        "ylabel": loaded.get("ylabel", loaded["ycol"]),
+        "legend": None,
+        "show_best_fit": loaded["show_best_fit"],
+        "best_fit_kind": loaded["best_fit_kind"],
+    }
+
+
 def _network_kwargs(
     loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
 ) -> dict[str, tp.Any]:
@@ -131,7 +146,7 @@ def _network_kwargs(
 #: function to write and no new branch in :meth:`_ExpGraphGenerator.__call__`.
 KINDS = {
     "stacked_line": _GraphKind(
-        cli_flag="project_no_LN",
+        cli_flag="graphs_no_LN",
         label="Linegraphs",
         func=graphs.stacked_line,
         medium="storage.csv",
@@ -139,28 +154,35 @@ KINDS = {
         wants_model_root=True,
     ),
     "heatmap": _GraphKind(
-        cli_flag="project_no_HM",
+        cli_flag="graphs_no_HM",
         label="Heatmaps",
         func=graphs.heatmap,
         medium="storage.csv",
         kwargs_fn=_heatmap_kwargs,
     ),
     "confusion_matrix": _GraphKind(
-        cli_flag="project_no_CM",
+        cli_flag="graphs_no_CM",
         label="Confusion matrices",
         func=graphs.confusion_matrix,
         medium="storage.csv",
         kwargs_fn=_confusion_matrix_kwargs,
     ),
     "histogram": _GraphKind(
-        cli_flag="project_no_HG",
+        cli_flag="graphs_no_HG",
         label="Histograms",
         func=graphs.histogram,
         medium="storage.csv",
         kwargs_fn=_histogram_kwargs,
     ),
+    "scatterplot": _GraphKind(
+        cli_flag="graphs_no_SP",
+        label="Scatterplots",
+        func=graphs.scatterplot,
+        medium="storage.csv",
+        kwargs_fn=_scatterplot_kwargs,
+    ),
     "network": _GraphKind(
-        cli_flag="project_no_NW",
+        cli_flag="graphs_no_NW",
         label="Networks",
         func=graphs.network,
         medium="storage.grapml",
@@ -187,8 +209,11 @@ def proc_batch_exp(
     """
     info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
     assert info.exp_names is not None
+    # 2026-08-07 [JRH]: We use gen_exp_names() here, instead of info.exp_names,
+    # because the former is what is unconditionally used to generate the
+    # directory structure in stage{1,2,3}.
     exp_to_gen = utils.exp_range_calc(
-        cmdopts["exp_range"], pathset.output_root, info.exp_names
+        cmdopts["exp_range"], pathset.output_root, criteria.gen_exp_names()
     )
 
     if not exp_to_gen:

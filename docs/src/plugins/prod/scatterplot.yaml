@@ -1,0 +1,26 @@
+# Scatterplot configuration.
+#
+# Plots ycol vs xcol from a single source file. For inter-experiment graphs,
+# the xcol/ycol points are pooled across every experiment in the batch.
+#
+# Required keys (in addition to the common keys src/dest/type/title/backend):
+#   xcol           - source column for X values
+#   ycol           - source column for Y values
+#
+# Optional keys:
+#   xlabel         - X-axis label            (default: 'xcol')
+#   ylabel         - Y-axis label            (default: 'ycol')
+#   show_best_fit  - overlay a curve of fit  (default: false)
+#   best_fit_kind  - linear | quadratic | cubic | log | exp
+#                    (only used when show_best_fit is true)
+
+- src: accuracy-vs-vscore
+  dest: accuracy-vs-vscore
+  type: "scatterplot"
+  title: "Batch Accuracy vs V-Score"
+  xcol: batch_accuracy_percent
+  ycol: batch_vscore
+  xlabel: "Batch Accuracy Percent"
+  ylabel: "Batch V-Score"
+  show_best_fit: true
+  best_fit_kind: "linear"

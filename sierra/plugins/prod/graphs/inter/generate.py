@@ -18,7 +18,7 @@ from sierra.core.graphs import gconfig
 from sierra.plugins.prod.graphs import targets
 from sierra.core import plugin as pm
 from sierra.core.variables import batch_criteria as bc
-from . import line, heatmap, histogram
+from . import line, heatmap, histogram, scatterplot
 
 _logger = logging.getLogger(__name__)
 
@@ -57,12 +57,14 @@ def proc_batch_exp(
     graph_targets = targets.inter_exp_calc(inter_config, controller_config, cmdopts)
 
     if criteria.cardinality() == 1:
-        if not cmdopts["project_no_LN"]:
+        if not cmdopts["graphs_no_LN"]:
             line.generate(cmdopts, pathset, graph_targets, info)
-        if not cmdopts["project_no_HG"]:
+        if not cmdopts["graphs_no_HG"]:
             histogram.generate(cmdopts, pathset, graph_targets, info)
+        if not cmdopts["graphs_no_SP"]:
+            scatterplot.generate(cmdopts, pathset, graph_targets, info)
     elif criteria.cardinality() == 2:
-        if not cmdopts["project_no_HM"]:
+        if not cmdopts["graphs_no_HM"]:
             heatmap.generate(cmdopts, pathset, graph_targets, info)
     else:
         raise RuntimeError("Batch criteria with cardinality > 2 not supported")

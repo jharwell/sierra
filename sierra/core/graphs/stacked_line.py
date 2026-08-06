@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: MIT
 #
 """
-Intra-experiment line graph generation for stage{4,5}.
+{Intra,Inter}-experiment line graph generation for stage{4,5}.
 """
 
 # Core packages
@@ -14,25 +14,13 @@ import pathlib
 # 3rd party packages
 import polars as pl
 import holoviews as hv
-import matplotlib.pyplot as plt
-import bokeh
 import numpy as np
 
 # Project packages
-from sierra.core import config, utils, storage, models
-from . import pathset
+from sierra.core import config, utils, storage, models, types
+from . import pathset, graphutils
 
 _logger = logging.getLogger(__name__)
-
-
-def _ofile_ext(backend: str) -> tp.Optional[str]:
-    if backend == "matplotlib":
-        return str(config.GRAPHS["static_type"])
-
-    if backend == "bokeh":
-        return str(config.GRAPHS["interactive_type"])
-
-    return None
 
 
 def generate(  # noqa: PLR0913
@@ -68,7 +56,7 @@ def generate(  # noqa: PLR0913
 
     input_fpath = pathset.input_root / (input_stem + ext)
     output_fpath = pathset.output_root / "SLN-{}.{}".format(
-        output_stem, _ofile_ext(backend)
+        output_stem, graphutils.ofile_ext(backend)
     )
 
     text_size = (
@@ -128,7 +116,9 @@ def generate(  # noqa: PLR0913
     vdim_color = _build_color_map(dataset, legend)
 
     if stats and "conf95" in stats and "stddev" in stat_dfs:
-        plot = _plot_stats_stddev(dataset, stat_dfs["stddev"])
+        plot = _plot_stats_stddev(
+            dataset, stat_dfs["stddev"], backend=backend, vdim_color=vdim_color
+        )
         plot *= _plot_selected_cols(
             dataset, model, legend, points, backend, vdim_color=vdim_color
         )
@@ -184,35 +174,12 @@ def generate(  # noqa: PLR0913
             ),
         )
 
-    _save(plot, output_fpath, backend)
+    graphutils.save_plot(plot, output_fpath, backend)
     _logger.debug(
         "Graph written to <batchroot>/%s",
         output_fpath.relative_to(pathset.batchroot),
     )
     return True
-
-
-def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
-    output_fpath.parent.mkdir(parents=True, exist_ok=True)
-    if backend == "matplotlib":
-        hv.save(
-            plot.opts(fig_inches=config.GRAPHS["base_size"]),
-            output_fpath,
-            fig=config.GRAPHS["static_type"],
-            dpi=config.GRAPHS["dpi"],
-        )
-        plt.close("all")
-    elif backend == "bokeh":
-        fig = hv.render(plot)
-
-        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
-        # interactive plots fixed size, which makes them unsuitable for
-        # embedding into webpages.
-        fig.sizing_mode = "scale_width"
-
-        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with utils.utf8open(output_fpath, "w") as f:
-            f.write(html)
 
 
 def _plot_selected_cols(
@@ -254,25 +221,16 @@ def _plot_selected_cols(
             if vdim_color is not None:
                 p = p.opts(color=vdim_color[v.name])
             pts.append(p)
-    if backend == "bokeh":
-        if pts:
-            plot *= hv.Overlay(pts).opts(hv.opts.Points(show_legend=False, size=8))
-        curve_opts: dict[str, tp.Any] = {"line_dash": [6, 3]}
 
-    if backend == "matplotlib":
-        if pts:
-            plot *= hv.Overlay(pts).opts(
-                hv.opts.Points(show_legend=False, s=60),
-            )
-        curve_opts: dict[str, tp.Any] = {
-            "linestyle": "--",
-        }
+    if pts:
+        points_size = tp.cast(dict[str, tp.Any], config.GRAPHS["points_size"])
+        plot *= hv.Overlay(pts).opts(
+            hv.opts.Points(show_legend=False, **points_size[backend])
+        )
 
     # Plot models if they have been computed
     if model_info.dataset:
-        plot = _plot_model(
-            dataset, plot, model_info, show_points, curve_opts, backend, vdim_color
-        )
+        plot = _plot_model(dataset, plot, model_info, show_points, backend, vdim_color)
 
     return plot
 
@@ -282,7 +240,6 @@ def _plot_model(
     plot: hv.Overlay,
     model_info: models.ModelInfo,
     show_points: bool,
-    curve_opts: dict[str, str],
     backend: str,
     vdim_color: dict[str, str],
 ) -> hv.NdOverlay:
@@ -291,12 +248,14 @@ def _plot_model(
     """
     # Plot models if they have been computed
     model_curves = {}
+    curve_style = tp.cast(dict[str, tp.Any], config.GRAPHS["curve_style"])
+
     for i, vdim in enumerate(model_info.dataset.vdims):
         model_curves[model_info.legend[i]] = hv.Curve(
             model_info.dataset,
             model_info.dataset.kdims[0],
             vdim.name,
-        ).opts(**curve_opts)
+        ).opts(**curve_style[backend])
     plot = plot * hv.NdOverlay(model_curves, kdims="model_series")
 
     # Plot the points for each curve
@@ -316,7 +275,12 @@ def _plot_model(
     return plot
 
 
-def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pl.DataFrame) -> hv.NdOverlay:
+def _plot_stats_stddev(
+    dataset: hv.Dataset,
+    stddev_df: pl.DataFrame,
+    backend: str,
+    vdim_color: dict[str, str],
+) -> hv.NdOverlay:
     """Plot the stddev for all columns in the dataset."""
 
     # Build stddev columns dictionary
@@ -330,13 +294,12 @@ def _plot_stats_stddev(dataset: hv.Dataset, stddev_df: pl.DataFrame) -> hv.NdOve
     for col_name, col_data in stddev_cols.items():
         dataset.data[col_name] = col_data
 
+    fill_key = "facecolor" if backend == "matplotlib" else "fill_color"
     return hv.Overlay(
         [
             hv.Area(
                 dataset, vdims=[f"{vdim.name}_stddev_l", f"{vdim.name}_stddev_u"]
-            ).opts(
-                alpha=0.5,
-            )
+            ).opts(alpha=0.5, **{fill_key: vdim_color[vdim.name]})
             for vdim in dataset.vdims
         ]
     )

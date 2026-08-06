@@ -19,19 +19,9 @@ import bokeh
 
 # Project packages
 from sierra.core import config, utils, storage
-from . import pathset
+from . import pathset, graphutils
 
 _logger = logging.getLogger(__name__)
-
-
-def _ofile_ext(backend: str) -> tp.Optional[str]:
-    if backend == "matplotlib":
-        return str(config.GRAPHS["static_type"])
-
-    if backend == "bokeh":
-        return str(config.GRAPHS["interactive_type"])
-
-    return None
 
 
 def generate(  # noqa: PLR0913
@@ -61,7 +51,7 @@ def generate(  # noqa: PLR0913
 
     input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
     output_fpath = pathset.output_root / "HG-{}.{}".format(
-        output_stem, _ofile_ext(backend)
+        output_stem, graphutils.ofile_ext(backend)
     )
 
     text_size = (
@@ -150,35 +140,12 @@ def generate(  # noqa: PLR0913
         },
     )
 
-    _save(plot, output_fpath, backend)
+    graphutils.save_plot(plot, output_fpath, backend)
     _logger.debug(
         "Graph written to <batchroot>/%s",
         output_fpath.relative_to(pathset.batchroot),
     )
     return True
-
-
-def _save(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
-    output_fpath.parent.mkdir(parents=True, exist_ok=True)
-    if backend == "matplotlib":
-        hv.save(
-            plot.opts(fig_inches=config.GRAPHS["base_size"]),
-            output_fpath,
-            fig=config.GRAPHS["static_type"],
-            dpi=config.GRAPHS["dpi"],
-        )
-        plt.close("all")
-    elif backend == "bokeh":
-        fig = hv.render(plot)
-
-        # 2025-12-02 [JRH]: We don't set dimensions, because that makes the
-        # interactive plots fixed size, which makes them unsuitable for
-        # embedding into webpages.
-        fig.sizing_mode = "scale_width"
-
-        html = bokeh.embed.file_html(fig, resources=bokeh.resources.INLINE)
-        with utils.utf8open(output_fpath, "w") as f:
-            f.write(html)
 
 
 def _shared_bin_range(
