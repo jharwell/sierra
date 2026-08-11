@@ -157,9 +157,9 @@ statistics. E.g.::
           |-- c1-exp1
           |-- c1-exp2
           |-- c1-exp3
-          |-- collated
+          |-- inter-exp
 
-``collated/`` contains graphs which are generated across experiments in the
+``inter-exp/`` contains graphs which are generated across experiments in the
 batch from :term:`Batch Summary Data` files.
 
 This plugin requires one of the following stage 3 plugins to have been run:
@@ -278,56 +278,6 @@ in the per-type configuration below.
           is therefore reported up front, and all problems found are reported
           together rather than one run at a time.
 
-Scatterplot Keys
-----------------
-
-In addition to the common keys, ``scatterplot`` graphs accept the following.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 20 15 65
-   :align: left
-
-   * - Key
-     - Required?
-     - Meaning
-
-   * - ``xcol``
-     - Yes
-     - Name of the source column to use for the X values.
-
-   * - ``ycol``
-     - Yes
-     - Name of the source column to use for the Y values.
-
-   * - ``xlabel``
-     - No
-     - X-axis label. Defaults to ``'xcol'``.
-
-   * - ``ylabel``
-     - No
-     - Y-axis label. Defaults to ``'ycol'``.
-
-   * - ``show_best_fit``
-     - No
-     - Whether to overlay a curve of best fit on the scatterplot. Defaults to
-       ``false``.
-
-   * - ``best_fit_kind``
-     - No
-     - The kind of fit to overlay when ``show_best_fit`` is ``true``. One of
-       ``linear``, ``quadratic``, ``cubic``, ``log``, or ``exp``. The fitted
-       equation and its R\ :sup:`2` value are appended to the graph title.
-       Ignored when ``show_best_fit`` is ``false``.
-
-.. NOTE:: R\ :sup:`2` is reported for every ``best_fit_kind``, but it is a
-          meaningful goodness-of-fit measure only for the polynomial kinds
-          (``linear``/``quadratic``/``cubic``). For ``log`` and ``exp`` -- which
-          are fit in a transformed space -- treat R\ :sup:`2` as a rough
-          indicator only. A very low R\ :sup:`2` on a ``linear`` fit usually
-          means the relationship is not linear, not that the data is
-          meaningless.
-
 Intra-Experiment Graphs
 -----------------------
 
@@ -372,6 +322,13 @@ this plugin is below. Unless stated otherwise, all keys are required.
       and ``best_fit_kind``.
 
       .. literalinclude:: scatterplot.yaml
+
+      .. NOTE:: R\ :sup:`2` is reported for every ``best_fit_kind``, but it is a
+         meaningful goodness-of-fit measure only for the polynomial kinds
+         (``linear``\/``quadratic``\/``cubic``). For ``log`` and ``exp`` --
+         which are fit in a transformed space -- treat R\ :sup:`2` as a rough
+         indicator only. A very low R\ :sup:`2` on a ``linear`` fit usually
+         means the relationship is not linear, not that the data is meaningless.
 
 
 Inter-Experiment Graphs
@@ -597,24 +554,24 @@ and ``.yaml`` configuration capabilities we can generate graphs easily with
       .. list-table::
          :header-rows: 0
 
-         * - .. figure:: figures/graphs-intra-none-SLN-food-counts.png
+         * - .. figure:: figures/graphs/argos/intra-none/SLN-food-counts.png
 
-           - .. figure:: figures/graphs-intra-none-SLN-robot-counts.png
+           - .. figure:: figures/graphs/argos/intra-none/SLN-robot-counts.png
 
-         * - .. figure:: figures/graphs-intra-none-SLN-swarm-energy.png
+         * - .. figure:: figures/graphs/argos/intra-none/SLN-swarm-energy.png
 
            -
 
    .. tab-item:: bokeh
 
       .. raw:: html
-         :file: figures/graphs-intra-none-SLN-food-counts.html
+         :file: figures/graphs/argos/intra-none/SLN-food-counts.html
 
       .. raw:: html
-         :file: figures/graphs-intra-none-SLN-robot-counts.html
+         :file: figures/graphs/argos/intra-none/SLN-robot-counts.html
 
       .. raw:: html
-         :file: figures/graphs-intra-none-SLN-swarm-energy.html
+         :file: figures/graphs/argos/intra-none/SLN-swarm-energy.html
 
 
 
@@ -630,24 +587,24 @@ If we then want to plot 95% confidence intervals by doing
          :header-rows: 0
          :widths: 50 50
 
-         * - .. figure:: figures/graphs-intra-conf95-SLN-food-counts.png
+         * - .. figure:: figures/graphs/argos/intra-conf95/SLN-food-counts.png
 
-           - .. figure:: figures/graphs-intra-conf95-SLN-robot-counts.png
+           - .. figure:: figures/graphs/argos/intra-conf95/SLN-robot-counts.png
 
-         * - .. figure:: figures/graphs-intra-conf95-SLN-swarm-energy.png
+         * - .. figure:: figures/graphs/argos/intra-conf95/SLN-swarm-energy.png
 
            -
 
    .. tab-item:: bokeh
 
        .. raw:: html
-          :file: figures/graphs-intra-conf95-SLN-food-counts.html
+          :file: figures/graphs/argos/intra-conf95/SLN-food-counts.html
 
        .. raw:: html
-          :file: figures/graphs-intra-conf95-SLN-robot-counts.html
+          :file: figures/graphs/argos/intra-conf95/SLN-robot-counts.html
 
        .. raw:: html
-          :file: figures/graphs-intra-conf95-SLN-swarm-energy.html
+          :file: figures/graphs/argos/intra-conf95/SLN-swarm-energy.html
 
 Same idea for box-and-whisker plots via ``--dist-stats=bw`` (not shown). Now
 suppose we want the walking/resting counts to appear on separate graphs. YAML
@@ -693,18 +650,18 @@ information more clearly.
       .. list-table::
          :header-rows: 0
 
-         * - .. figure:: figures/graphs-inter-SLN-swarm-energy.png
+         * - .. figure:: figures/graphs/argos/inter/SLN-swarm-energy.png
 
 
-           - .. figure:: figures/graphs-inter-SM-swarm-energy.png
+           - .. figure:: figures/graphs/argos/inter/SM-swarm-energy-summary.png
 
    .. tab-item:: bokeh
 
       .. raw:: html
-         :file: figures/graphs-inter-SLN-swarm-energy.html
+         :file: figures/graphs/argos/inter/SLN-swarm-energy.html
 
       .. raw:: html
-         :file: figures/graphs-inter-SM-swarm-energy.html
+         :file: figures/graphs/argos/inter/SM-swarm-energy-summary.html
 
 
 For the summary graph, the X-axis labels are populated based on the :term:`Batch
@@ -769,13 +726,13 @@ interactive widgets with ``--graphs-backend=bokeh``:
       .. list-table::
          :header-rows: 0
 
-         * - .. figure:: figures/graphs-intra-CM-confusion-matrix.png
+         * - .. figure:: figures/graphs/yamlsim/intra/CM-confusion-matrix.png
 
 
    .. tab-item:: bokeh
 
       .. raw:: html
-         :file: figures/graphs-intra-CM-confusion-matrix.html
+         :file: figures/graphs/yamlsim/intra/CM-confusion-matrix.html
 
 Histogram Examples
 ==================
@@ -821,9 +778,6 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
                  - entropy2
                bins: 50
 
-Intra-Experiment
-----------------
-
 Using the above command and ``.yaml`` configuration capabilities we can generate
 graphs easily with ``--graphs-backend=matplotlib``, OR interactive widgets with
 ``--graphs-backend=bokeh``. Different kinds of histograms can be generated with
@@ -836,85 +790,60 @@ the ``kind`` option.
       .. list-table::
          :header-rows: 0
 
-         * - .. figure:: figures/graphs-intra-HG-noise-overlay.png
+         * - .. figure:: figures/graphs/yamlsim/intra/HG-random-noise-overlay.png
 
+             Histogram from one experiment.
 
-   .. tab-item:: bokeh
+         * - .. figure:: figures/graphs/yamlsim/inter/HG-random-noise-col1-overlay.png
 
-      .. raw:: html
-         :file: figures/graphs-intra-HG-noise-overlay.html
+             Overlay histogram across all experiments.
 
-Inter-Experiment
-----------------
+         * - .. figure:: figures/graphs/yamlsim/inter/HG-random-noise-col1-steps.png
 
-After stage 3, some data is in :term:`Processed Output Data` files. In stage 4,
-we can run :term:`Data Collation` on either of these types of files in order to
-further refine their contents but at the level of a experiments within a batch
-rather than experimental runs within an experiment.  After collation,
-inter-experiment products can be generated directly.
+             Step histogram across all experiments.
 
-.. tab-set::
+         * - .. figure:: figures/graphs/yamlsim/inter/HG-random-noise-col1-facet.png
 
-   .. tab-item:: matplotlib
-
-      .. list-table::
-         :header-rows: 0
-
-         * - .. figure:: figures/graphs-inter-HG-noise-overlay.png
-
-           - .. figure:: figures/graphs-inter-HG-noise-steps.png
-
-           - .. figure:: figures/graphs-inter-HG-noise-facet.png
+             Facet histogram across all experiments.
 
    .. tab-item:: bokeh
 
       .. raw:: html
-         :file: figures/graphs-inter-HG-noise-overlay.html
+         :file: figures/graphs/yamlsim/intra/HG-random-noise-overlay.html
 
       .. raw:: html
-         :file: figures/graphs-inter-HG-noise-steps.html
+         :file: figures/graphs/yamlsim/inter/HG-random-noise-col1-overlay.html
 
       .. raw:: html
-         :file: figures/graphs-inter-HG-noise-facet.html
+         :file: figures/graphs/yamlsim/inter/HG-random-noise-col1-steps.html
+
+      .. raw:: html
+         :file: figures/graphs/yamlsim/inter/HG-random-noise-col1-facet.html
 
 Scatterplot Examples
 ====================
-
-.. TODO:: The example figures and interactive widgets referenced in this
-          section still need to be generated from the sample project and
-          committed under ``figures/``. The ``.. figure::`` / ``.. raw:: html``
-          directives below are placeholders that reference the expected
-          filenames; they will render once the assets exist. See the
-          Linegraph/Histogram example sections above for the established
-          figure-naming and tab-set conventions.
-
 For these examples, we will use the following SIERRA cmd and YAML configuration
-from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`.
+from the :xref:`JSONSIM sample project <SIERRA_SAMPLE_PROJECT>`.
 
 .. tab-set::
 
    .. tab-item:: SIERRA cmd
-
-      .. TODO:: Confirm the exact flags against a real sample-project run
-                (batch criteria, controller, and ``src`` stem) before
-                publishing. The block below mirrors the Histogram example's
-                invocation and is a starting point, not a verified command.
 
       ::
 
          sierra \
             --sierra-root=~/test \
             --controller=default.default \
-            --engine=plugins.yamlsim \
-            --project=projects.sample_yamlsim \
+            --engine=plugins.jsonsim \
+            --project=projects.sample_jsonsim \
             --n-runs=4 \
-            --expdef-template=~/git/sierra-sample-project/exp/yamlsim/template.yaml \
+            --expdef-template=~/git/sierra-sample-project/exp/jsonsim/template.json \
             --scenario=scenario1 \
-            --expdef=expdef.yaml \
-            --yamlsim-path=~/git/sierra-sample-project/plugins/yamlsim/yamlsim.py \
+            --expdef=expdef.json \
+            --jsonsim-path=~/git/sierra-sample-project/plugins/jsonsim/jsonsim.py \
             --proc proc.statistics proc.collate \
             --controller=default.default \
-            --batch-criteria noise_floor.1.9.C5 \
+            --batch-criteria max_speed.1.9.C5 \
             --pipeline 1 2 3 4
 
    .. tab-item:: YAML config
@@ -923,8 +852,8 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`.
 
          intra-exp:
            SP_default:
-             - src: accuracy-vs-vscore
-               dest: accuracy-vs-vscore
+             - src: subdir3/output1D
+               dest: noise-vs-noise-fit
                type: "scatterplot"
                title: "Batch Accuracy vs V-Score"
                xcol: batch_accuracy_percent
@@ -933,9 +862,6 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`.
                ylabel: "Batch V-Score"
                show_best_fit: true
                best_fit_kind: "linear"
-
-Intra-Experiment
-----------------
 
 A scatterplot of two columns from a single experiment's data, optionally with a
 line of best fit. Generate static images with ``--graphs-backend=matplotlib`` or
@@ -949,36 +875,14 @@ interactive widgets with ``--graphs-backend=bokeh``:
          :header-rows: 0
          :widths: 50 50
 
-         * - .. figure:: figures/graphs-intra-SP-accuracy-vs-vscore.png
+         * - .. figure:: figures/graphs/jsonsim/intra/SP-noise-vs-noise.png
 
-           - .. figure:: figures/graphs-intra-SP-accuracy-vs-vscore-fit.png
-
-   .. tab-item:: bokeh
-
-      .. raw:: html
-         :file: figures/graphs-intra-SP-accuracy-vs-vscore.html
-
-      .. raw:: html
-         :file: figures/graphs-intra-SP-accuracy-vs-vscore-fit.html
-
-Inter-Experiment
-----------------
-
-After collation, an inter-experiment scatterplot pools the ``xcol``/``ycol``
-points from every experiment in the batch into a single plot (see
-:ref:`plugins/prod/graphs/data-shapes`), letting you see the (x, y) relationship
-across the whole batch rather than within a single experiment.
-
-.. tab-set::
-
-   .. tab-item:: matplotlib
-
-      .. list-table::
-         :header-rows: 0
-
-         * - .. figure:: figures/graphs-inter-SP-accuracy-vs-vscore.png
+           - .. figure:: figures/graphs/jsonsim/intra/SP-noise-vs-noise-fit.png
 
    .. tab-item:: bokeh
 
       .. raw:: html
-         :file: figures/graphs-inter-SP-accuracy-vs-vscore.html
+         :file: figures/graphs/jsonsim/intra/SP-noise-vs-noise.html
+
+      .. raw:: html
+         :file: figures/graphs/jsonsim/intra/SP-noise-vs-noise-fit.html

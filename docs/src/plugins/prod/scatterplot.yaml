@@ -1,26 +1,32 @@
-# Scatterplot configuration.
-#
-# Plots ycol vs xcol from a single source file. For inter-experiment graphs,
-# the xcol/ycol points are pooled across every experiment in the batch.
-#
-# Required keys (in addition to the common keys src/dest/type/title/backend):
-#   xcol           - source column for X values
-#   ycol           - source column for Y values
-#
-# Optional keys:
-#   xlabel         - X-axis label            (default: 'xcol')
-#   ylabel         - Y-axis label            (default: 'ycol')
-#   show_best_fit  - overlay a curve of fit  (default: false)
-#   best_fit_kind  - linear | quadratic | cubic | log | exp
-#                    (only used when show_best_fit is true)
+mycategory:
+  - src_stem: 'somesubdir/foo'
+    backend: "matplotlib"
+    title: 'My Title'
+    dest_stem: 'bar'
 
-- src: accuracy-vs-vscore
-  dest: accuracy-vs-vscore
-  type: "scatterplot"
-  title: "Batch Accuracy vs V-Score"
-  xcol: batch_accuracy_percent
-  ycol: batch_vscore
-  xlabel: "Batch Accuracy Percent"
-  ylabel: "Batch V-Score"
-  show_best_fit: true
-  best_fit_kind: "linear"
+    # The type of graph. Must be 'histogram'.
+    type: 'scatterplot'
+
+    # Name of the source column to use for the X values. Defaults to 'xcol' if
+    # omitted.
+    xcol: myxcol
+
+    # Name of the source column to use for the Y values. Defaults to 'ycol' if
+    # omitted.
+    ycol: myycol
+
+    # X-axis label. Defaults to 'xcol'.
+    xlabel: My X label
+
+    # Y-axis label. Defaults to 'ycol'.
+    ylabel: My Y label
+
+    # Whether to overlay a curve of best fit on the scatterplot. Defaults to
+    # false.
+    show_best_fit: false
+
+    # The kind of fit to overlay when ``show_best_fit`` is ``true``. One of
+    # ``linear``, ``quadratic``, ``cubic``, ``log``, or ``exp``. The fitted
+    # equation and its R\ :sup:`2` value are appended to the graph title.
+    # Ignored when ``show_best_fit`` is ``false``.
+    best_fit_kind: linear
