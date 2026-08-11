@@ -191,17 +191,23 @@ def execenv_hpc(session, env, engine):
 
     elif env == "hpc.pbs":
         os.environ["SIERRA_CMD"] = sierra_cmd
-
-        # 2025-09-19 [JRH]: I can't get OpenPBS to work and the documentation is
-        # pretty terrible, and I ESPECIALLY can't get it to work in a
-        # container. Therefore, the test for this execution environment is a
-        # (much) lower fidelity mock:
-        #
-        # - We manually set the necessary PBS environment variables.
-        #
-        # - We don't submit our script to the server via qsub, but rather just
-        #   run it directly.
         session.run(
+            "bash",
+            "./tests/smoke-tests/pbs-start.sh",
+            external=True,
+        )
+
+        # PBS refuses jobs from root, so submit as an unprivileged user.
+        # -W block=true makes qsub wait for the job to finish, so the
+        # output check below runs against completed results.
+        session.run(
+            "sudo",
+            "-u",
+            "pbstest",
+            "-E",
+            "/opt/pbs/bin/qsub",
+            "-W",
+            "block=true",
             "./tests/smoke_tests/pbs-test.sh",
             external=True,
             silent=True,

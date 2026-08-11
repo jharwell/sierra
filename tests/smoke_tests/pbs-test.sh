@@ -12,10 +12,10 @@
 ################################################################################
 set -x
 
-export PBS_NODEFILE=/tmp/pbs-nodefile
-export PBS_NUM_PPN=1
-export PBS_JOBID=12345678
-echo ":" > /tmp/pbs-nodefile
+# export PBS_NODEFILE=/tmp/pbs-nodefile
+# export PBS_NUM_PPN=1
+# export PBS_JOBID=12345678
+# echo ":" > /tmp/pbs-nodefile
 $SIERRA_CMD \
     --execenv=hpc.pbs \
     --exec-parallelism-paradigm=per-exp \
