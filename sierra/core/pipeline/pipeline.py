@@ -152,7 +152,6 @@ class Pipeline:
             # stage 3
             "proc": self.args.proc,
             "df_verify": self.args.df_verify,
-            "df_homogenize": self.args.df_homogenize,
             "processing_mem_limit": self.args.processing_mem_limit,
             "storage": self.args.storage,
             # stage 4

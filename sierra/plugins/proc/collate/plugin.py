@@ -64,7 +64,6 @@ def proc_batch_exp(
         "df_verify": cmdopts["df_verify"],
         "processing_mem_limit": cmdopts["processing_mem_limit"],
         "storage": cmdopts["storage"],
-        "df_homogenize": cmdopts["df_homogenize"],
         "project_config_root": cmdopts["project_config_root"],
     }
 
@@ -345,9 +344,7 @@ def _proc_single_exp(
         columns_dict[spec.exp_run_names[i]] = df[col]
 
     # Create DataFrame from the dictionary of columns
-    collated = pl.DataFrame(columns_dict)
-
-    df = utils.df_fill(collated, str(process_opts["df_homogenize"]))
+    df = pl.DataFrame(columns_dict)
 
     # Output directory mirrors the primary source's location, so nested per-run
     # outputs stay nested in the collated outputs. Output *stem* is the target

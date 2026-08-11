@@ -91,14 +91,14 @@ def _graphs_backend_jsonsim(session):
             "SLN-combined-noise.png",
             "HM-output2D-1.png",
             "HM-output2D-2.png",
-            "SP-random-noise.png",
+            "SP-noise-vs-noise.png",
             "SLN-random-noise.html",
             "SLN-random-noise2.html",
             "SLN-random-noise3.html",
             "SLN-combined-noise.html",
             "HM-output2D-1.html",
             "HM-output2D-2.html",
-            "SP-random-noise.html",
+            "SP-noise-vs-noise.html",
         ]
 
         for file_name in exp_files:
@@ -156,10 +156,14 @@ def _graphs_backend_yamlsim(session):
         exp_files = [
             "SLN-random-noise.png",
             "CM-confusion-matrix.png",
-            "HG-random-noise.png",
+            "HG-random-noise-overlay.png",
+            "HG-random-noise-steps.png",
+            "HG-random-noise-facet.png",
             "SLN-random-noise.html",
             "CM-confusion-matrix.html",
-            "HG-random-noise.html",
+            "HG-random-noise-overlay.html",
+            "HG-random-noise-steps.html",
+            "HG-random-noise-facet.html",
         ]
 
         for file_name in exp_files:

@@ -15,10 +15,6 @@ Synopsis
           --scenario NAME --expdef-template FILE --batch-criteria CRITERIA
           [--pipeline STAGES] [OPTIONS]
 
-----------
-sierra(1)
-----------
-
 :Date: |today|
 :Version: |release|
 :Manual section: 1
@@ -36,8 +32,42 @@ analysis artifacts such as plots, videos, and comparative summaries.
 
 Experiments are defined by an *experiment template* and a *batch criteria*
 that sweeps one or more independent variables. SIERRA instantiates the
-criteria against the template to produce a :term:`Batch Experiment`, then
-runs it through a configurable pipeline.
+criteria against the template to produce a batch experiment, then runs it
+through a configurable pipeline.
+
+Concepts
+========
+
+The following terms are used throughout this page and in SIERRA's option
+help. Fuller treatments are in the online documentation (see *See Also*).
+
+Batch experiment
+   The full set of individual experiments produced by applying a batch
+   criteria to an experiment template. Each distinct value of the swept
+   variable(s) yields one experiment; each experiment is run some number of
+   times (``--n-runs``).
+
+Experiment template
+   The input file (``--expdef-template``) describing a single experiment,
+   into which SIERRA substitutes batch-criteria values to generate concrete
+   experiment inputs.
+
+Batch criteria
+   The specification (``--batch-criteria``) of one or more independent
+   variables to sweep, and the values they take. Determines how many
+   experiments the batch contains.
+
+Engine
+   The plugin (``--engine``) that knows how to execute one experiment — for
+   example a simulator or a real-robot platform. Selected at stage 1 and
+   used at stage 2.
+
+Execution environment
+   The platform on which experiments run (local machine, HPC cluster, etc.),
+   which governs how work is parallelized and dispatched at stage 2.
+
+Run-time directory tree
+   The on-disk layout SIERRA writes under ``--sierra-root``; see *Files*.
 
 Pipeline Stages
 ===============
@@ -72,7 +102,8 @@ Option parsing follows standard conventions. If an option is given more than
 once, the last occurrence wins. If both short and long forms are given with
 different values, the short form wins.  Options may also be placed in an rcfile
 (see :envvar:`SIERRA_RCFILE`).  Required options and short-form options cannot
-be placed in the rcfile.
+be placed in the rcfile. All options below are for the SIERRA core only; see
+plugin docs pages for the options for individual plugins.
 
 Bootstrap Options
 -----------------
@@ -121,12 +152,6 @@ Stage 5: Comparing Controllers
 
 No additional options. Comparison targets are determined by the batch
 criteria and controller arguments supplied at stage 1.
-
-Plugin Options
---------------
-
-Each engine, execution environment, and project plugin may define additional
-options. See the documentation for the relevant plugin.
 
 Core Environment Variables
 ==========================
@@ -181,12 +206,16 @@ Files
 Exit Status
 ===========
 
-SIERRA will always return 0, unless it crashes with an exception or a failed
-assert, in which case the return code will be non-zero.
+SIERRA returns 0 on success. If it terminates early due to an unhandled
+exception or a failed assertion, the return code is non-zero.
 
-Errors should be reported to :xref:`SIERRA_GITHUB`.
+Report bugs at :xref:`SIERRA_GITHUB`.
 
 See Also
 ========
 
-Full documentation: :xref:`SIERRA_DOCS`
+:program:`parallel`\(1)
+
+Full documentation, tutorials, and plugin reference: :xref:`SIERRA_DOCS`
+
+Sample project referenced throughout the docs: :xref:`SIERRA_SAMPLE_PROJECT`

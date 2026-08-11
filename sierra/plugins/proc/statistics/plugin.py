@@ -205,7 +205,6 @@ def proc_batch_exp(
         "processing_mem_limit": cmdopts["processing_mem_limit"],
         "storage": cmdopts["storage"],
         "project_config_root": cmdopts["project_config_root"],
-        "df_homogenize": cmdopts["df_homogenize"],
     }
 
     pool_opts = {}  # type: types.SimpleDict
@@ -420,7 +419,7 @@ def _proc_single_exp(
         opath = opath.with_suffix(ext)
 
         storage.df_write(
-            utils.df_fill(df, stat_opts["df_homogenize"]),
+            df,
             opath,
             "storage.csv",
         )

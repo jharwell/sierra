@@ -78,17 +78,7 @@ Stage Failure Patterns
       sierra ... --pipeline 3 --df-verify
 
    If verification fails, examine which runs produced shorter outputs and
-   why. For real robot experiments where minor timing differences are expected,
-   :ref:`--df-homogenize <src/reference/cli:sierra---df-homogenize>` can pad
-   or zero-fill short columns rather than failing:
-
-   .. code-block:: bash
-
-      sierra ... --pipeline 3 --df-homogenize pad
-
-   Use ``pad`` only if the filled columns represent cumulative counts or
-   similarly stable data. For intervallic or averaged data, padding
-   produces incorrect statistics.
+   why.
 
 **"No graphs generated in stage 4"**
    SIERRA matches the path of each output CSV against the ``src``

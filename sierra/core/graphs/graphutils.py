@@ -19,6 +19,7 @@ from sierra.core import config, utils
 
 def save_plot(plot: hv.Overlay, output_fpath: pathlib.Path, backend: str) -> None:
     output_fpath.parent.mkdir(parents=True, exist_ok=True)
+
     if backend == "matplotlib":
         hv.save(
             plot.opts(fig_inches=config.GRAPHS["fig_size"]),
