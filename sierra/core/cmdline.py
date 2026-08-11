@@ -728,42 +728,6 @@ class CoreCmdline(BaseCmdline):
             default=90,
         )
 
-        self.stage3.add_argument(
-            "--df-homogenize",
-            help="""
-                 SIERRA generally assumes/relies on all dataframes with the same
-                 name having the same # of columns which are of equivalent
-                 length across: term: `Experimental Runs < Experimental Run >`
-                 (different columns within a dataframe can of course have
-                 different lengths).  This not checked unless ``--df-verify`` is
-                 passed.  If strict verification is skipped, then SIERRA
-                 provides the following options when processing dataframes
-                 during stage {3, 4} to to homogenize them:
-
-                 - ``none`` - Don't do anything.  This may or may not
-                   produce crashes during stage 4, depending on what you are
-                   doing.
-
-                 - ``pad`` - Project last valid value in columns which are
-                   too short down the column to make it match those which
-                   are longer.
-
-                 Note that this may result in invalid data/graphs if the filled
-                 columns are intervallic, interval average, or cumulative
-                 average data.  If the data is a cumulative count of something,
-                 then this policy will have no ill effects.
-
-                 - ``zero`` - Same as ``pad``, but always fill with zeroes.
-
-                 Homogenization is performed just before writing dataframes to
-                 the specified storage medium.  Useful with real robot
-                 experiments if the number of datapoints captured per-robot is
-                 slightly different, depending on when they started executing
-                 relative to when the experiment started.
-                 """,
-            default="none",
-        )
-
     def init_stage4(self) -> None:
         """
         Define cmdline arguments for stage 4.

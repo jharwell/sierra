@@ -27,6 +27,10 @@ import requests
 import ssl
 import certifi
 
+from docutils import nodes as _man_nodes
+from docutils.parsers.rst import roles as _man_roles
+import re as _man_re
+
 # 2025-11-21 [JRH]: Not needed on debian, but on fedora you need to set this
 # when running under uv because it isn't found otherwise
 os.environ["SSL_CERT_FILE"] = certifi.where()
@@ -367,3 +371,74 @@ intersphinx_mapping = {
     # Retrieved 2026-03-09, License - CC BY-SA 4.0
     "polars": ("https://docs.pola.rs/api/python/stable", None),
 }
+
+
+# =============================================================================
+# man page: resolve/neutralize doc-only cross-references
+# =============================================================================
+# The man build (see the __sphinx_build_man__ branch above: root_doc =
+# man/sierra.1, src/ excluded) contains only the man page. Every
+# :ref:/:doc:/:term: target used by the argparse help strings surfaced by
+# sphinx_argparse_cli lives under src/ and is therefore ABSENT from the man
+# build; with nitpicky=True those unresolved references are hard errors, and
+# even otherwise they render as unfollowable link text. :xref: likewise points
+# nowhere a man reader can use.
+#
+# For the MAN BUILD ONLY, the hook below:
+#   * resolves :xref: against xref_links (defined earlier in this file),
+#     emitting "caption <url>" -- or just the url when caption == url, as for the
+#     SIERRA_* entries -- consistent with man_show_urls; and
+#   * flattens :term:/:ref:/:doc: to their visible text.
+# It is gated on builtins.__sphinx_build_man__, so the html and latex builds are
+# untouched and keep their real, clickable cross-references.
+
+
+def _man_split_title(text):
+    """'Label <target>' -> ('Label', 'target'); else (text, text)."""
+    m = _man_re.match(r"^(.*?)\s*<([^<>]+)>$", text)
+    return (m.group(1), m.group(2)) if m else (text, text)
+
+
+def _man_make_xref_role(xref_links):
+    def role(name, rawtext, text, lineno, inliner, options=None, content=None):
+        label, key = _man_split_title(text)
+        entry = xref_links.get(key)
+        if entry is None:
+            return [_man_nodes.Text(label)], []  # unknown key: no fail
+        caption, url = entry
+        if caption == url or label == url:
+            out = url  # SIERRA_*: url==caption
+        elif label and label != key:
+            out = f"{label} <{url}>"  # explicit "title <key>"
+        else:
+            out = f"{caption} <{url}>"  # named link / citation
+        return [_man_nodes.Text(out)], []
+
+    return role
+
+
+def _man_plaintext_role(
+    name, rawtext, text, lineno, inliner, options=None, content=None
+):
+    label, _ = _man_split_title(text)
+    return [_man_nodes.Text(label)], []
+
+
+def _neutralize_xrefs_for_man(app):
+    if not getattr(builtins, "__sphinx_build_man__", False):
+        return
+    # Prefer the registered config value (if the xref extension declares one),
+    # else fall back to the module-level xref_links dict defined above.
+    links = getattr(app.config, "xref_links", None)
+    if not links:
+        links = globals().get("xref_links", {}) or {}
+    _man_roles.register_local_role("xref", _man_make_xref_role(links))
+    for r in ("term", "ref", "doc"):
+        _man_roles.register_local_role(r, _man_plaintext_role)
+
+
+def setup(app):
+    # config-inited runs after conf.py is read (xref_links populated) and after
+    # the man-build flag is set, and before any document is parsed.
+    app.connect("config-inited", lambda app, config: _neutralize_xrefs_for_man(app))
+    return {"parallel_read_safe": True, "parallel_write_safe": True}

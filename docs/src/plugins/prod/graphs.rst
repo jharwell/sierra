@@ -18,10 +18,6 @@ approach here enables you focus on your goal (what type of graph to generate,
 what you want on it, etc.), rather than the details of *how* that is
 implemented.
 
-.. IMPORTANT:: In order to support out-of-the-box declarative syntax, this
-               plugin requires that all the necessary data to generate a given
-               graph is present in the *same* file.
-
 .. _plugins/prod/graphs/packages:
 
 OS Packages
