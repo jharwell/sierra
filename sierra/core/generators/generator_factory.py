@@ -12,6 +12,7 @@ import typing as tp
 import logging
 import copy
 import pathlib
+import ast
 
 # 3rd party packages
 import yaml
@@ -60,7 +61,7 @@ class ControllerGenerator:
             n_components = len(controller.split("."))
             if n_components != 2:
                 raise RuntimeError(
-                    "Expected 2 controller components, got "
+                    f"Expected 2 controller components from {controller}, got "
                     f"{n_components}. Arguments to --controller "
                     "must be of the form CATEGORY.TYPE (i.e., 2 "
                     "components separated by a '.')."
@@ -77,7 +78,7 @@ class ControllerGenerator:
         Returns a new, modified expdef. Does not save to filesystem.
 
         """
-        self._generate_controller_support(exp_def)
+        self._generate_controller_category(exp_def)
         self._generate_controller(exp_def)
         return exp_def
 
@@ -125,7 +126,7 @@ class ControllerGenerator:
             pp_add = self._pp_for_element_add(to_pp)
             exp_def.element_add(pp_add.path, pp_add.tag, pp_add.attr, False)
 
-    def _generate_controller_support(
+    def _generate_controller_category(
         self,
         exp_def: definition.BaseExpDef,
     ) -> None:
@@ -134,19 +135,29 @@ class ControllerGenerator:
             mods = self.controller_config.get(self.category, {}).get(fmt, {})
             if mods is None:
                 continue
-            chgs = mods.get("attr_change", {})
-            for t in chgs:
-                exp_def.attr_change(t[0], t[1], t[2])
 
             chgs = mods.get("element_change", {})
             for t in chgs:
-                exp_def.element_change(t[0], t[1], t[2])
+                exp_def.element_change(t[0], t[1], self._coerce(t[2]))
 
             adds = mods.get("element_add", {})
             for t in adds:
                 self._do_element_add(
-                    exp_def, definition.ElementAdd(t[0], t[1], eval(t[2]), False)
+                    exp_def,
+                    definition.ElementAdd(t[0], t[1], self._coerce(eval(t[2])), False),
                 )
+            chgs = mods.get("attr_change", {})
+            for t in chgs:
+                exp_def.attr_change(t[0], t[1], self._coerce(t[2]))
+
+    @staticmethod
+    def _coerce(v):
+        if not isinstance(v, str):
+            return v
+        try:
+            return ast.literal_eval(v)
+        except (ValueError, SyntaxError):
+            return v  # keep as plain string
 
     def _generate_controller(self, exp_def: definition.BaseExpDef) -> None:
         if self.category is None:
@@ -178,19 +189,20 @@ class ControllerGenerator:
                 continue
 
             for fmt in ["xml", "json", "yaml"]:
-                chgs = controller.get(fmt, {}).get("attr_change", {})
-                for t in chgs:
-                    exp_def.attr_change(t[0], t[1], t[2])
-
                 chgs = controller.get(fmt, {}).get("element_change", {})
                 for t in chgs:
-                    exp_def.element_change(t[0], t[1], t[2])
+                    exp_def.element_change(t[0], t[1], self._coerce(t[2]))
 
                 adds = controller.get(fmt, {}).get("element_add", {})
                 for t in adds:
                     self._do_element_add(
-                        exp_def, definition.ElementAdd(t[0], t[1], eval(t[2]), False)
+                        exp_def,
+                        definition.ElementAdd(t[0], t[1], self._coerce(t[2]), False),
                     )
+
+                chgs = controller.get(fmt, {}).get("attr_change", {})
+                for t in chgs:
+                    exp_def.attr_change(t[0], t[1], self._coerce(t[2]))
 
 
 class ScenarioGenerator:

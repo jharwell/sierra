@@ -26,14 +26,12 @@ def cmdline_postparse_configure(args: argparse.Namespace) -> argparse.Namespace:
     Uses the following environment variables (if any of them are not defined an
     assertion will be triggered):
 
-    - :envvar:`PBS_NUM_PPN`
-
     - :envvar:`PBS_NODEFILE`
 
     - :envvar:`PBS_JOBID`
     """
 
-    keys = ["PBS_NUM_PPN", "PBS_NODEFILE", "PBS_JOBID"]
+    keys = ["PBS_NODEFILE", "PBS_JOBID"]
 
     for k in keys:
         assert k in os.environ, f"Non-PBS environment detected: '{k}' not found"
@@ -60,7 +58,7 @@ class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
             # Since parallel doesn't export any envvars to child processes by
             # default, we add some common ones.
             types.ShellCmdSpec(
-                cmd='export PARALLEL="--env LD_LIBRARY_PATH"',
+                cmd='export PARALLEL="--env LD_LIBRARY_PATH --env PYTHONPATH"',
                 shell=True,
                 wait=True,
                 env=True,
@@ -88,9 +86,31 @@ class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
         if exec_opts["exec_resume"]:
             resume = "--resume-failed"
 
-        unique_nodes = types.ShellCmdSpec(
-            cmd=f"sort -u $PBS_NODEFILE > {nodelist}", shell=True, wait=True
+        # 2026-08-14 [JRH]: # GNU parallel only runs a task remotely (over ssh)
+        # when its --sshloginfile names a host it considers non-local; for such
+        # hosts it opens a fresh, non-login ssh shell that inherits almost none
+        # of the submitting environment. PBS populates $PBS_NODEFILE with the
+        # node's registered hostname, so on a single-node allocation that name
+        # is the local machine's own hostname -- and parallel, not recognizing
+        # it as local, sshes to us and runs whatever in a stripped environment
+        # where e.g., PYTHONPATH, PATH, and LD_LIBRARY_PATH are
+        # absent unless explicitly forwarded.
+        #
+        # When the allocation is a single node that IS the local host, write ":"
+        # (GNU parallel's token for "run locally") instead of the
+        # hostname. Local tasks are forked, not sshed, so they inherit the full
+        # submitting environment and need no --env forwarding at all -- exactly
+        # what the slurm execenv gets for free (see its plugin). Multi-node
+        # allocations keep the real hostnames and distribute over ssh as normal;
+        # for those, env forwarding via $PARALLEL --env must cover
+        # all needed envvars.
+        cmd = (
+            f'if [ "$(sort -u "$PBS_NODEFILE" | wc -l)" -eq 1 ] && '
+            f'[ "$(sort -u "$PBS_NODEFILE")" = "$(hostname)" ]; then '
+            f'echo ":" > "{nodelist}"; '
+            f'else sort -u "$PBS_NODEFILE" > "{nodelist}"; fi'
         )
+        unique_nodes = types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)
 
         parallel = (
             "parallel {2} "

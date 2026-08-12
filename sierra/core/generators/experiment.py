@@ -53,7 +53,7 @@ class BatchExpDefGenerator:
     ) -> None:
         #: batch_config_template: Absolute path to the root template expdef
         # configuration file.
-        self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
+        self.batch_config_template = cmdopts["expdef_template"]
 
         assert self.batch_config_template.is_file(), "'{}' is not a valid file".format(
             self.batch_config_template
@@ -152,7 +152,7 @@ class BatchExpCreator:
     ) -> None:
 
         #: Absolute path to the root template expdef configuration file.
-        self.batch_config_template = pathlib.Path(cmdopts["expdef_template"])
+        self.batch_config_template = cmdopts["expdef_template"]
 
         self.pathset = pathset
 

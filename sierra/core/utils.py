@@ -317,7 +317,7 @@ def exp_template_path(
     per-run input files.
 
     """
-    template = pathlib.Path(cmdopts["expdef_template"])
+    template = cmdopts["expdef_template"]
     return batch_input_root / dirname / template.stem
 
 

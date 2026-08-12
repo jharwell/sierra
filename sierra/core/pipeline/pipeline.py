@@ -73,6 +73,9 @@ class Pipeline:
         self._load_config()
 
         if 5 not in self.args.pipeline:
+            self.cmdopts["expdef_template"] = pathlib.Path(
+                self.cmdopts["expdef_template"]
+            )
             bc = pm.module_load_tiered(
                 project=self.cmdopts["project"], path="variables.batch_criteria"
             )
@@ -134,6 +137,8 @@ class Pipeline:
             "pipeline": self.args.pipeline,
             "sierra_root": pathlib.Path(self.args.sierra_root).expanduser(),
             "scenario": self.args.scenario,
+            # 2026-08-13 [JRH]: We can't make this a pathlib.Path here, because
+            # for stage5, this is None.
             "expdef_template": self.args.expdef_template,
             "project": self.args.project,
             "execenv": self.args.execenv,

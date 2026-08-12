@@ -191,27 +191,53 @@ def execenv_hpc(session, env, engine):
 
     elif env == "hpc.pbs":
         os.environ["SIERRA_CMD"] = sierra_cmd
+
+        # Bring PBS fully up: postgres -> daemons -> node registration ->
+        # scheduling on -> wait for the node to reach 'free'. This must run
+        # through a real shell because the script uses source/&&/${}/pipes;
+        # session.run(..., external=True) execs a single program with argv and
+        # does NOT go through a shell, so those constructs would be passed
+        # literally (which is what made the old mock's commands silently no-op).
         session.run(
             "bash",
-            "./tests/smoke-tests/pbs-start.sh",
+            "./tests/smoke_tests/pbs-start.sh",
             external=True,
         )
 
-        # PBS refuses jobs from root, so submit as an unprivileged user.
-        # -W block=true makes qsub wait for the job to finish, so the
-        # output check below runs against completed results.
+        # `qsub -W block=true` makes qsub wait for the job to finish before
+        # returning, so the output check below runs against completed results
+        # (the analog of the SLURM path's `sbatch --wait`). `-V` exports the
+        # submitter environment into the job.
         session.run(
-            "sudo",
-            "-u",
-            "pbstest",
-            "-E",
             "/opt/pbs/bin/qsub",
+            "-V",
             "-W",
             "block=true",
             "./tests/smoke_tests/pbs-test.sh",
             external=True,
             silent=True,
+            success_codes=[0, 1],
         )
+        session.run(
+            "sh",
+            "-c",
+            "find /github/home/test .  -name 'sierra_smoke.o*' -o -name 'sierra_smoke.e*' "
+            "-o -name '*.o0' -o -name '*.e0' 2>/dev/null | xargs -r cat; true",
+            external=True,
+        )
+        # job id is 0.<host> for the first job; dump its output files
+        session.run(
+            "sh",
+            "-c",
+            "cat pbs-test.sh.o* pbs-test.sh.e* 2>/dev/null || true",
+            external=True,
+        )
+
+        # PBS's own stitched log for the job
+        session.run(
+            "/opt/pbs/bin/tracejob", "0", success_codes=range(0, 256), external=True
+        )
+        session.run("sh", "-c", "cat /tmp/pbs-test.out; true", external=True)
         utils.stage2_univar_check_outputs(
             engine.split(".")[1], batch_root, cardinality, 4
         )
