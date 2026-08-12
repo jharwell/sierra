@@ -54,6 +54,7 @@ runs:
       with:
         key: ${{ runner.os }}-${{ steps.system-info.outputs.release }}-build-objects
         verbose: 0
+        update-package-index: true
 
     ############################################################################
     # ARGoS setup

@@ -85,7 +85,16 @@ class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
         self.cmdopts = cmdopts
 
     def pre_exp_cmds(self) -> list[types.ShellCmdSpec]:
-        return []
+        return [
+            # Since parallel doesn't export any envvars to child processes by
+            # default, we add what we need
+            types.ShellCmdSpec(
+                cmd='export PARALLEL="--env ARGOS_PLUGIN_PATH"',
+                shell=True,
+                wait=True,
+                env=True,
+            ),
+        ]
 
     def exec_exp_cmds(self, exec_opts: types.StrDict) -> list[types.ShellCmdSpec]:
         return []
@@ -211,8 +220,8 @@ def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:
     #
     # However, PBS does not have an environment variable for # jobs/node, so
     # we have to rely on the user to set this appropriately.
-    args.physics_n_engines = int(
-        float(os.environ["PBS_NUM_PPN"]) / args.exec_jobs_per_node
+    args.physics_n_engines = max(
+        1, int(_pbs_cores_per_node() / args.exec_jobs_per_node)
     )
 
     _logger.debug(
@@ -314,6 +323,24 @@ def _configure_hpc_adhoc(args: argparse.Namespace) -> argparse.Namespace:
         args.exec_jobs_per_node,
     )
     return args
+
+
+def _pbs_cores_per_node() -> int:
+    """Per-node core count, across PBS flavors.
+
+    Torque sets :envvar:`PBS_NUM_PPN` directly. OpenPBS / PBS Pro does not, but
+    sets :envvar:`NCPUS` to the job's ncpus. Try them in that order.
+
+    """
+    if "PBS_NUM_PPN" in os.environ:  # Torque
+        return int(float(os.environ["PBS_NUM_PPN"]))
+    if "NCPUS" in os.environ:  # OpenPBS / PBS Pro
+        return int(os.environ["NCPUS"])
+
+    raise RuntimeError(
+        "Cannot determine cores/node: neither PBS_NUM_PPN or NCPUS are set. Is "
+        "this a PBS job environment?"
+    )
 
 
 def population_size_from_pickle(

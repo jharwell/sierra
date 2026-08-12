@@ -268,7 +268,11 @@ jobs:
       # 2025-09-11 [JRH]: Volumes to mount must be passed as options so they can
       # be mounted rw;  specifying in the 'volumes' field mounts them ro, which
       # doesn't work for slurm.
-      options: --privileged --cgroupns=host --cpus 2 -v /sys/fs/cgroup:/sys/fs/cgroup:rw -v /run/dbus:/run/dbus
+      #
+      # 2026-08-12 [JRH]: ulimit setting needed because PBS sets its epoll event
+      # buffer size to "ulimit # files -1", which can be 2^30, causing the
+      # kernel to refuse to allow any epoll based comms.
+      options: --privileged --cgroupns=host --cpus 2 --ulimit nofile=8192:8192 -v /sys/fs/cgroup:/sys/fs/cgroup:rw -v /run/dbus:/run/dbus
     defaults:
       run:
         shell: bash

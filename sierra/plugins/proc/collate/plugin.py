@@ -60,7 +60,7 @@ def proc_batch_exp(
 
     worker_opts = {
         "project": cmdopts["project"],
-        "template_input_leaf": pathlib.Path(cmdopts["expdef_template"]).stem,
+        "template_input_leaf": cmdopts["expdef_template"].stem,
         "df_verify": cmdopts["df_verify"],
         "processing_mem_limit": cmdopts["processing_mem_limit"],
         "storage": cmdopts["storage"],

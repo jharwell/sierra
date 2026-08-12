@@ -5,7 +5,6 @@
 #
 
 # Core packages
-import shutil
 
 # 3rd party packages
 import nox
@@ -173,7 +172,13 @@ def _graphs_backend_yamlsim(session):
     # Check interexp files
     interexp_files = [
         "SLN-random-noise-col1.png",
-        "HG-random-noise-col1.png",
+        "HG-random-noise-col1-overlay.png",
+        "HG-random-noise-col1-steps.png",
+        "HG-random-noise-col1-facet.png",
+        "SLN-random-noise-col1.html",
+        "HG-random-noise-col1-overlay.html",
+        "HG-random-noise-col1-steps.html",
+        "HG-random-noise-col1-facet.html",
     ]
 
     for file_name in interexp_files:

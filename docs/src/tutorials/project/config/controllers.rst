@@ -40,20 +40,27 @@ subsection keys are supported, each taking a list of three-element lists:
 ``attr_change``
    Modify an existing attribute. Format: ``[path, attr, value]`` where
    ``path`` is an expression for the **parent** element, ``attr`` is
-   the attribute name, and ``value`` is the new value as a string.
+   the attribute name, and ``value`` is the new value, which can be a string or
+   a python list/dictionary, depending on the
+   ``--expdef<src/reference/cli:sierra---expdef>`` plugin used.
 
 ``element_change``
-   Modify an existing child element. Format: ``[path, child_tag, value]``.
+   Modify an existing child element. Format: ``[path, child_tag, value]``. Value
+   can be a string or a python list/dictionary, depending on the
+   ``--expdef<src/reference/cli:sierra---expdef>`` plugin used.
 
-``element_add``
-   Add a new child element. Format: ``[path, child_tag, attr_dict]`` where
-   ``attr_dict`` is a string passed to ``eval()`` to produce a Python
-   dictionary of attribute names and values for the new element.
+``element_add`` Add a new child element. Format: ``[path, child_tag,
+   attr_dict]`` where ``attr_dict`` is a string OR which can be a string or a
+   python dictionary, parsed via AST to produce a Python dictionary of attribute
+   names and values for the new element.
 
 All three subsections are optional. The path syntax in each list entry depends
 on your template format: XPath for XML, JSONPath for JSON, YAMLPath for YAML.
 See :ref:`tutorials/plugins/expdef/format-restrictions` for the full format
 reference.
+
+Changes are applied in the order of ``element_change`` -> ``element_add`` ->
+``attr_change``.
 
 .. _tutorials/project/config/controllers/tokens:
 

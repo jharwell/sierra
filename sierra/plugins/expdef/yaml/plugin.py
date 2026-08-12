@@ -257,7 +257,11 @@ class ExpDef(definition.BaseExpDef):
             self.logger.trace("Modify attr: '%s' = '%s'", full_path, value)
 
         if mod:
-            self.attr_chgs.add(definition.AttrChange(path, attr, tp.cast("tp.Union[str, int, float]", value)))
+            self.attr_chgs.add(
+                definition.AttrChange(
+                    path, attr, tp.cast("tp.Union[str, int, float]", value)
+                )
+            )
         else:
             self.logger.warning("Attribute '%s' not found in parent '%s'", attr, path)
 
@@ -303,7 +307,11 @@ class ExpDef(definition.BaseExpDef):
             full_path = f"{path}.{attr}" if path else attr
             self.logger.trace("Add new attribute: '%s' = '%s'", full_path, value)
 
-        self.attr_chgs.add(definition.AttrChange(path, attr, tp.cast("tp.Union[str, int, float]", value)))
+        self.attr_chgs.add(
+            definition.AttrChange(
+                path, attr, tp.cast("tp.Union[str, int, float]", value)
+            )
+        )
         return True
 
     def has_element(self, path: str) -> bool:
@@ -570,7 +578,9 @@ class ExpDef(definition.BaseExpDef):
                 str(attr),
             )
 
-        self.element_adds.append(definition.ElementAdd(path, tag, attr if attr else {}, allow_dup))
+        self.element_adds.append(
+            definition.ElementAdd(path, tag, attr if attr else {}, allow_dup)
+        )
         return True
 
 
