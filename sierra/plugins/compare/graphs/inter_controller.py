@@ -225,7 +225,10 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             spec["dest"],
         )
         ipath = pathset.stat_interexp_root / (
-            spec["src"] + config.STATS["mean"].exts["mean"]
+            spec["src"]
+            + config.STATS[self.cmdopts["center"]]
+            .spreads["none"]
+            .exts[self.cmdopts["center"]]
         )
 
         # Some experiments might not generate the necessary performance measure
@@ -322,7 +325,8 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             pathset=paths,
             input_stem=opath_leaf,
             output_stem=opath_leaf,
-            stats=cmdopts.get("dist_stats", "none"),
+            stats_center=cmdopts.get("center", "mean"),
+            stats_spread=cmdopts.get("spread", "none"),
             medium="storage.csv",
             title=spec["title"],
             xlabel=info.xlabel,
@@ -507,7 +511,10 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         )
 
         csv_ipath = pathset.stat_interexp_root / (
-            spec["src"] + config.STATS["mean"].exts["mean"]
+            spec["src"]
+            + config.STATS[self.cmdopts["center"]]
+            .spreads["none"]
+            .exts[self.cmdopts["center"]]
         )
 
         # Some experiments might not generate the necessary performance measure
@@ -516,11 +523,10 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             self.logger.warning("%s missing for controller '%s'", csv_ipath, controller)
             return
 
-        if cmdopts["dist_stats"] != "none":
+        if cmdopts["spread"] != "mean":
             self.logger.warning(
-                "--dist-stats is not supported with "
-                "1D CSVs sliced from 2D CSV for linegraph "
-                "generation: no stats will be included"
+                "--spread is not supported with 1D CSVs sliced from 2D CSV for "
+                "linear generation: no stats will be included"
             )
 
         if spec["primary_axis"] == 0:
@@ -612,7 +618,8 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
             input_stem=opath_leaf,
             output_stem=opath_leaf,
             medium="storage.csv",
-            stats="none",
+            stats_center=self.cmdopts.get("center", "mean"),
+            stats_spread=self.cmdopts.get("spread", "none"),
             title=spec["title"],
             xlabel=xlabel,
             ylabel=spec["label"],

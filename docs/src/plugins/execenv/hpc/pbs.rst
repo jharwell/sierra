@@ -3,13 +3,19 @@
 PBS HPC Plugin
 ==============
 
-This HPC environment can be selected via ``--execenv=hpc.pbs``.
-In this HPC environment, SIERRA will run experiments spread across multiple
-allocated nodes by a PBS compatible scheduler such as Moab.
+This HPC environment can be selected via ``--execenv=hpc.pbs``.  In this HPC
+environment, SIERRA will run experiments spread across multiple nodes allocated
+by a scheduler from the PBS family: OpenPBS / PBS Pro, or legacy Torque.
 
 The following table describes the PBS-SIERRA interface. Some PBS environment
 variables are used by SIERRA to configure experiments during stage {1,2}; if
-they are not defined SIERRA will throw an error.
+the required ones are not defined SIERRA will throw an error. Because OpenPBS /
+PBS Pro and Torque expose per-node resources differently, :ref:`Engine` plugins
+wanting to use the # of allocated cores to set run-time parameters will need to
+query the environment to see which variable is available:
+
+- ``PBS_NUM_PPN`` (Torque),
+- ``NCPUS`` (OpenPBS / PBS Pro)
 
 The following environmental variables are used in the PBS HPC environment:
 
@@ -38,16 +44,6 @@ The following environmental variables are used in the PBS HPC environment:
    * - :envvar:`PATH`
      - Exported by SIERRA via :envvar:`PARALLEL` to child GNU parallel
        processes. Can be undefined when SIERRA starts.
-
-   * - :envvar:`PBS_NUM_PPN`
-     - Used to calculate # threads per experimental run for each allocated
-       compute node via::
-
-         floor(PBS_NUM_PPN / --exec-jobs-per-node)
-
-       That is,
-       :ref:`--exec-jobs-per-node<src/plugins/execenv/index:sierra---exec-jobs-per-node>`
-       is required for PBS HPC environments.
 
    * - :envvar:`PBS_NODEFILE`
      - Obtaining the list of nodes allocated to a job which SIERRA can direct

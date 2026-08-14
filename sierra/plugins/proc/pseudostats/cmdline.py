@@ -20,6 +20,16 @@ def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCm
     """
     cmdline = PluginCmdline(parents, stages)
     cmdline.multistage.add_argument(
+        "--center",
+        choices=["mean", "median"],
+        help="""
+        Specify the measure of central tendency: mean or median, so
+        files can be moved/copied appropriately for downstream consumption.
+        """
+        + cmdline.stage_usage_doc([3, 4, 5]),
+        default="mean",
+    )
+    cmdline.multistage.add_argument(
         "--dataop",
         choices=["copy", "move"],
         help="""
@@ -42,7 +52,7 @@ def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCm
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    return {"dataop": args.dataop}
+    return {"dataop": args.dataop, "center": args.center}
 
 
 def sphinx_cmdline_multistage():

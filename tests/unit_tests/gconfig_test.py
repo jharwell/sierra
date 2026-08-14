@@ -171,7 +171,8 @@ class TestDispatchTables:
 
         cmdopts = {
             "plot_log_yscale": False,
-            "dist_stats": "none",
+            "center": "mean",
+            "spread": "none",
             "graphs_backend": "matplotlib",
             "plot_large_text": False,
         }

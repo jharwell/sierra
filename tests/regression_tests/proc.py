@@ -14,7 +14,7 @@ from polars.testing import assert_frame_equal
 
 # Project packages
 from tests.smoke_tests import utils, setup
-from sierra.core import batchroot
+from sierra.core import batchroot, config
 
 versions = ["3.9", "3.12"]
 
@@ -22,12 +22,21 @@ versions = ["3.9", "3.12"]
 @nox.session(python=utils.versions, tags=["jsonsim"])
 @setup.session_setup
 @setup.session_teardown
-@nox.parametrize("stats", ["bw"])
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "iqr"),
+    ],
+)
 def statistics_reg(session, stats):
     """Check that the statistics plugin outputs what it is supposed to by
     comparing against known good outputs when asked to compute statistics for
-    95% confidence intervals.
+    all supported measures of central tendency and spread.
     """
+    center = stats[0]
+    spread = stats[1]
     bc = ["max_speed.1.9.C5"]
     template_stem = "template"
     scenario = "scenario1"
@@ -46,26 +55,31 @@ def statistics_reg(session, stats):
         f"--controller=default.default "
         f"--batch-criteria max_speed.1.9.C5 "
         f"--pipeline 1 2 3 "
-        f"--dist-stats={stats}"
+        f"--center={center} "
+        f"--spread={spread}"
     )
 
     # Run the command
     session.run(*sierra_cmd.split(), silent=True)
 
     # Check stage3 generated stuff
-    stats_map = {
-        "conf95": ["mean", "stddev"],
-        "bw": ["mean", "median", "whishi", "whislo", "q1", "q3", "cilo", "cihi"],
-    }
-    to_check = stats_map[stats]
-    _stage3_univar_check_outputs_jsonsim(batch_root / "statistics", 5, stats, to_check)
+    to_check = config.STATS[center].spreads[spread].exts
+    _stage3_univar_check_outputs_jsonsim(
+        batch_root / "statistics", 5, center, spread, to_check
+    )
 
 
 def _stage3_univar_check_outputs_jsonsim(
-    stat_root: pathlib.Path, cardinality: int, stats: str, to_check: list[str]
+    stat_root: pathlib.Path,
+    cardinality: int,
+    center: str,
+    spread: str,
+    to_check: list[str],
 ):
     current_dir = pathlib.Path.cwd()
-    ref_root = current_dir / f"tests/regression_tests/statistics-jsonsim-{stats}"
+    ref_root = (
+        current_dir / f"tests/regression_tests/statistics-jsonsim-{center}-{spread}"
+    )
 
     # Statistics gathers exactly the raw outputs named by a graph 'src' in
     # graphs.yaml, matched exactly (rooted, path-qualified for nesting) -- the

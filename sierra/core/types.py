@@ -146,10 +146,21 @@ class OSPackagesSpec:
 
 
 @dataclass
-class StatisticsSpec:
-    """Spec mapping file types of statistics to file extensions to contain said stats."""
+class StatSpreadSpec:
+    """Captures file extensions needed for a single measure of spread.
+
+    Maps requires inputs for measures of spread for a given measure of central
+    tendency to file extensions.
+    """
 
     exts: StrDict
+
+
+@dataclass
+class StatCentralTendencySpec:
+    """Maps a measure of central tendency to supported measures of spread for it."""
+
+    spreads: dict[str, StatSpreadSpec]
 
 
 @dataclass
@@ -239,7 +250,8 @@ __all__ = [
     "RobotConfig",
     "ShellCmdSpec",
     "SimpleDict",
-    "StatisticsSpec",
+    "StatCentralTendencySpec",
+    "StatSpreadSpec",
     "StrDict",
     "TextSizeConfig",
     "YAMLConfigFileSpec",

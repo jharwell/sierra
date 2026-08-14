@@ -91,14 +91,16 @@ class Project:
     # of that var (':'-joined, PATH-style), so a pre-set value is preserved.
     # {sample_root} in the suffix is expanded. ARGoS needs ARGOS_PLUGIN_PATH to
     # point at the compiled controller/loop-function libraries.
-    env_append: tp.List[tp.Tuple[str, str]] = dataclasses.field(
-        default_factory=list
-    )
-    # ARGoS varies --dist-stats and tags the intra subdir with it; other projects
+    env_append: tp.List[tp.Tuple[str, str]] = dataclasses.field(default_factory=list)
+    # ARGoS varies --spread and tags the intra subdir with it; other projects
     # use a single (None) variant collected into plain intra/.
-    dist_stats: tp.List[tp.Optional[str]] = dataclasses.field(
+    stats_spread: tp.List[tp.Optional[str]] = dataclasses.field(
         default_factory=lambda: [None]
     )
+    stats_center: tp.List[tp.Optional[str]] = dataclasses.field(
+        default_factory=lambda: "mean"
+    )
+
     # Collect the collated inter-exp graphs only on this stats value (ARGoS shows
     # them once, not per-stats). None => collect on the single/first variant.
     inter_on_stats: tp.Optional[str] = None
@@ -113,9 +115,7 @@ class Project:
         suffix = stats if stats is not None else self.name
         return f"{base}-{suffix}"
 
-    def build_env(
-        self, sample_root: pathlib.Path
-    ) -> tp.Optional[tp.Dict[str, str]]:
+    def build_env(self, sample_root: pathlib.Path) -> tp.Optional[tp.Dict[str, str]]:
         """Return the subprocess environment, or None if unchanged from parent.
 
         Each (name, suffix) in env_append is appended PATH-style to the current
@@ -148,7 +148,8 @@ def build_projects(sample_root: pathlib.Path) -> tp.List[Project]:
                 "--with-robot-rab",
                 "--exp-n-datapoints-factor=0.1",
             ],
-            dist_stats=["none", "conf95"],
+            stats_center=["mean", "median"],
+            spread=["bw", "conf95"],
             inter_on_stats="none",
             env_append=[("ARGOS_PLUGIN_PATH", "{sample_root}/argos/build")],
         ),
@@ -342,21 +343,24 @@ class Regen:
             "--exp-overwrite",
         ]
         if stats is not None:
-            cmd.append(f"--dist-stats={stats}")
+            cmd.append(f"--spread={stats}")
         cmd += ["--pipeline", *self.pipeline_stages(backend)]
         return cmd
 
     # -- drive one project -------------------------------------------------
     def do_project(self, proj: Project) -> None:
         env = proj.build_env(self.args.sample_root)
-        for stats in proj.dist_stats:
+        for stats in proj.stats_spread:
             sierra_root = proj.sierra_root(self.args.sierra_root, stats)
             tag = stats or proj.name
             for backend in self.BACKENDS:
                 label = f"{proj.name.upper()}  stats={stats or '-'}  backend={backend}"
-                self.run(proj.expect_fail, label,
-                         self.sierra_cmd(proj, backend, stats, sierra_root),
-                         env=env)
+                self.run(
+                    proj.expect_fail,
+                    label,
+                    self.sierra_cmd(proj, backend, stats, sierra_root),
+                    env=env,
+                )
 
             if not self.args.collect:
                 continue

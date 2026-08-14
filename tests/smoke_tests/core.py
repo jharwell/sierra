@@ -16,7 +16,7 @@ import nox
 
 # Project packages
 from tests.smoke_tests import setup, utils
-from sierra.core import batchroot
+from sierra.core import batchroot, config
 
 
 @nox.session(python=utils.versions, tags=["core"])
@@ -234,7 +234,7 @@ def core_stage5_univar(session):
             f"--controller {c} "
             f"--physics-n-engines=1 "
             f"--batch-criteria population_size.Linear3.C3 "
-            f"--pipeline 1 2 3 4 --dist-stats=all "
+            f"--pipeline 1 2 3 4 --spread=bw "
             f"--scenario=HighBlockCount.10x10x2"
         )
         session.run(*sierra_cmd.split(), silent=True)
@@ -252,7 +252,7 @@ def core_stage5_univar(session):
         f"--batch-criteria population_size.Linear3.C3 "
         f"--compare compare.graphs "
         f"--across=controllers "
-        f"--dist-stats=none "
+        f"--spread=none "
         f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
     )
     session.run(*stage5_cmd.split(), silent=True)
@@ -380,7 +380,16 @@ def core_stage2_bivar(session):
 @nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
-def core_stage3_bivar(session):
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "none"),
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "iqr"),
+    ],
+)
+def core_stage3_bivar(session, stats):
     """Test stage 3 bivariate batch criteria."""
 
     # Generate batch root path
@@ -405,44 +414,33 @@ def core_stage3_bivar(session):
         f"--pipeline 1 2 3"
     )
 
-    # Define stat types to check
-    none_stats = ["mean"]
-    conf95_stats = ["mean", "stddev"]
-    bw_stats = ["mean", "median", "whishi", "whislo", "q1", "q3", "cilo", "cihi"]
-
-    # Run tests for each stats type
-
-    # Test 1: none stats
     if session.env["SIERRA_ROOT"].exists():
         shutil.rmtree(session.env["SIERRA_ROOT"])
 
-    session.run(*(f"{sierra_cmd} --dist-stats=none").split(), silent=True)
-    utils.stage3_bivar_check_outputs("argos", batch_root, 2, 3, none_stats)
+    center = stats[0]
+    spread = stats[1]
+    to_check = config.STATS[center].spreads[spread].exts
 
-    # Test 2: conf95 stats
-    if session.env["SIERRA_ROOT"].exists():
-        shutil.rmtree(session.env["SIERRA_ROOT"])
-
-    session.run(*(f"{sierra_cmd} --dist-stats=conf95").split(), silent=True)
-    utils.stage3_bivar_check_outputs("argos", batch_root, 2, 3, conf95_stats)
-
-    # Test 3: bw stats
-    if session.env["SIERRA_ROOT"].exists():
-        shutil.rmtree(session.env["SIERRA_ROOT"])
-
-    session.run(*(f"{sierra_cmd} --dist-stats=bw").split(), silent=True)
-    utils.stage3_bivar_check_outputs("argos", batch_root, 2, 3, bw_stats)
+    session.run(
+        *(f"{sierra_cmd} --center={center} --spread={spread}").split(), silent=True
+    )
+    utils.stage3_bivar_check_outputs("argos", batch_root, 2, 3, to_check)
 
 
 @nox.session(python=utils.versions, tags=["core"])
 @setup.session_setup
 @setup.session_teardown
-def core_stage4_bivar(session):
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "none"),
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "iqr"),
+    ],
+)
+def core_stage4_bivar(session, stats):
     """Test stage 4 bivariate batch criteria."""
-    # Define stat types to check
-    none_stats = ["mean"]
-    conf95_stats = ["mean", "stddev"]
-    bw_stats = ["mean", "median", "whishi", "whislo", "q1", "q3", "cilo", "cihi"]
 
     # Define SIERRA command
     sierra_cmd = (
@@ -466,27 +464,16 @@ def core_stage4_bivar(session):
         scenario=scenario,
     ).to_path()
 
-    # Test 1: none stats
-    session.run(*(f"{sierra_cmd} --dist-stats=none").split(), silent=True)
-    utils.stage4_bivar_check_outputs("argos", batch_root, 3, 3, none_stats)
     if session.env["SIERRA_ROOT"].exists():
         shutil.rmtree(session.env["SIERRA_ROOT"])
 
-    # Test 2: conf95 stats
-    session.run(*(f"{sierra_cmd} --dist-stats=conf95").split(), silent=True)
-    utils.stage4_bivar_check_outputs("argos", batch_root, 3, 3, conf95_stats)
-    if session.env["SIERRA_ROOT"].exists():
-        shutil.rmtree(session.env["SIERRA_ROOT"])
-
-    # Test 3: bw stats
-    session.run(*(f"{sierra_cmd} --dist-stats=bw").split(), silent=True)
-    utils.stage4_bivar_check_outputs("argos", batch_root, 3, 3, bw_stats)
-    if session.env["SIERRA_ROOT"].exists():
-        shutil.rmtree(session.env["SIERRA_ROOT"])
-
-    # Test 4: all stats
-    session.run(*(f"{sierra_cmd} --dist-stats=all").split(), silent=True)
-    utils.stage4_bivar_check_outputs("argos", batch_root, 3, 3, bw_stats + conf95_stats)
+    center = stats[0]
+    spread = stats[1]
+    to_check = config.STATS[center].spreads[spread].exts
+    session.run(
+        *(f"{sierra_cmd} --center={center} --spread={spread}").split(), silent=True
+    )
+    utils.stage4_bivar_check_outputs("argos", batch_root, 3, 3, to_check)
 
 
 @nox.session(python=utils.versions, tags=["core"])
@@ -525,7 +512,7 @@ def core_stage5_bivar(session):
         f"--batch-criteria population_size.Linear3.C3 max_speed.1.9.C5 "
         f"--compare compare.graphs "
         f"--across=controllers "
-        f"--dist-stats=conf95 "
+        f"--spread=conf95 "
         f"--comparison-type=LNraw "
         f"--things=foraging.footbot_foraging2,foraging.footbot_foraging_slow2"
     )

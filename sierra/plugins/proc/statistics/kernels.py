@@ -14,6 +14,53 @@ import numpy as np
 from sierra.core import config
 
 
+################################################################################
+# Moment-based
+################################################################################
+def mean(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
+    """
+    Generate mean statistics only.
+
+    Applicable to:
+
+        - :func:`~sierra.core.graphs.summary_line`
+
+        - :func:`~sierra.core.graphs.stacked_line`
+
+        - :func:`~sierra.core.graphs.heatmap`
+
+        - :func:`~sierra.core.graphs.confusion_matrix`
+
+    .. versionchanged:: 1.5.6
+
+       Now supports non-numeric columns via ``mode()``.
+    """
+    # Get the grouping column names
+    group_cols = groupby.by if hasattr(groupby, "by") else []
+
+    # Build expressions based on actual column dtypes
+    agg_exprs = []
+    for col in ungrouped.columns:
+        if col not in group_cols:  # Skip grouping columns
+            if ungrouped[col].dtype.is_numeric():
+                agg_exprs.append(pl.col(col).mean().alias(col))
+            else:
+                agg_exprs.append(pl.col(col).mode().first().alias(col))
+
+    # Aggregate by group - this computes stats for each group
+    df_like = groupby.agg(agg_exprs)
+    if isinstance(df_like, pl.LazyFrame):
+        df_like = df_like.collect()
+
+    # Sort by row_idx to maintain original order, because group_by() does not
+    # preserve order
+    df_like = df_like.sort(group_cols[0])
+    # Then drop the row_idx column
+    df_like = df_like.drop(group_cols)
+
+    return {config.STATS["mean"].spreads["none"].exts["mean"]: _fillna(df_like)}
+
+
 def conf95(
     groupby,
     ungrouped: pl.DataFrame,
@@ -59,53 +106,11 @@ def conf95(
     df_std = df_like.select(std_cols).rename(lambda col: col.replace("_std", ""))
 
     return {
-        config.STATS["mean"].exts["mean"]: _fillna(_df_round(df_mean)),
-        config.STATS["conf95"].exts["stddev"]: _fillna(_df_round(df_std)),
+        config.STATS["mean"].spreads["none"].exts["mean"]: _fillna(_df_round(df_mean)),
+        config.STATS["mean"]
+        .spreads["conf95"]
+        .exts["stddev"]: _fillna(_df_round(df_std)),
     }
-
-
-def mean(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
-    """
-    Generate mean statistics only.
-
-    Applicable to:
-
-        - :func:`~sierra.core.graphs.summary_line`
-
-        - :func:`~sierra.core.graphs.stacked_line`
-
-        - :func:`~sierra.core.graphs.heatmap`
-
-        - :func:`~sierra.core.graphs.confusion_matrix`
-
-    .. versionchanged:: 1.5.6
-
-       Now supports non-numeric columns via ``mode()``.
-    """
-    # Get the grouping column names
-    group_cols = groupby.by if hasattr(groupby, "by") else []
-
-    # Build expressions based on actual column dtypes
-    agg_exprs = []
-    for col in ungrouped.columns:
-        if col not in group_cols:  # Skip grouping columns
-            if ungrouped[col].dtype.is_numeric():
-                agg_exprs.append(pl.col(col).mean().alias(col))
-            else:
-                agg_exprs.append(pl.col(col).mode().first().alias(col))
-
-    # Aggregate by group - this computes stats for each group
-    df_like = groupby.agg(agg_exprs)
-    if isinstance(df_like, pl.LazyFrame):
-        df_like = df_like.collect()
-
-    # Sort by row_idx to maintain original order, because group_by() does not
-    # preserve order
-    df_like = df_like.sort(group_cols[0])
-    # Then drop the row_idx column
-    df_like = df_like.drop(group_cols)
-
-    return {config.STATS["mean"].exts["mean"]: _fillna(df_like)}
 
 
 def bw(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
@@ -239,14 +244,107 @@ def bw(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
     csv_cihi = pl.DataFrame(cihi_vals, schema=csv_median.columns)
 
     return {
-        config.STATS["mean"].exts["mean"]: csv_mean,
-        config.STATS["bw"].exts["median"]: csv_median,
-        config.STATS["bw"].exts["q1"]: csv_q1,
-        config.STATS["bw"].exts["q3"]: csv_q3,
-        config.STATS["bw"].exts["cilo"]: csv_cilo,
-        config.STATS["bw"].exts["cihi"]: csv_cihi,
-        config.STATS["bw"].exts["whislo"]: csv_whislo,
-        config.STATS["bw"].exts["whishi"]: csv_whishi,
+        config.STATS["mean"].spreads["none"].exts["mean"]: csv_mean,
+        config.STATS["mean"].spreads["bw"].exts["median"]: csv_median,
+        config.STATS["mean"].spreads["bw"].exts["q1"]: csv_q1,
+        config.STATS["mean"].spreads["bw"].exts["q3"]: csv_q3,
+        config.STATS["mean"].spreads["bw"].exts["cilo"]: csv_cilo,
+        config.STATS["mean"].spreads["bw"].exts["cihi"]: csv_cihi,
+        config.STATS["mean"].spreads["bw"].exts["whislo"]: csv_whislo,
+        config.STATS["mean"].spreads["bw"].exts["whishi"]: csv_whishi,
+    }
+
+
+################################################################################
+# Rank-based
+################################################################################
+def median(groupby, ungrouped: pl.DataFrame) -> dict[str, pl.DataFrame]:
+    """
+    Generate median statistics only.
+
+    Applicable to:
+
+        - :func:`~sierra.core.graphs.summary_line`
+
+        - :func:`~sierra.core.graphs.stacked_line`
+
+        - :func:`~sierra.core.graphs.heatmap`
+
+        - :func:`~sierra.core.graphs.confusion_matrix`
+
+    .. versionadded:: 1.5.14
+    """
+    # Get the grouping column names
+    group_cols = groupby.by if hasattr(groupby, "by") else []
+
+    # Build expressions based on actual column dtypes
+    agg_exprs = [
+        pl.col(col).median().alias(col)
+        for col in ungrouped.columns
+        if col not in group_cols and ungrouped[col].dtype.is_numeric()
+    ]
+
+    # Aggregate by group - this computes stats for each group
+    df_like = groupby.agg(agg_exprs)
+    if isinstance(df_like, pl.LazyFrame):
+        df_like = df_like.collect()
+
+    # Sort by row_idx to maintain original order, because group_by() does not
+    # preserve order
+    df_like = df_like.sort(group_cols[0])
+    # Then drop the row_idx column
+    df_like = df_like.drop(group_cols)
+
+    return {config.STATS["median"].spreads["none"].exts["median"]: _fillna(df_like)}
+
+
+def iqr(
+    groupby,
+    ungrouped: pl.DataFrame,
+) -> dict[str, pl.DataFrame]:
+    """Generate IQR statistics plotting for IQR intervals.
+
+    Does not support non-numeric data.  Applicable to:
+
+        - :func:`~sierra.core.graphs.stacked_line`
+
+        - :func:`~sierra.core.graphs.summary_line`
+    """
+    # Get the grouping column names
+    group_cols = groupby.by if hasattr(groupby, "by") else []
+
+    # Build aggregation expressions for non-grouping columns only
+    agg_exprs = []
+    for col in ungrouped.columns:
+        if col not in group_cols:
+            agg_exprs.extend(
+                [
+                    pl.col(col).quantile(0.25).alias(f"{col}_q1"),
+                    pl.col(col).quantile(0.75).alias(f"{col}_q3"),
+                ]
+            )
+
+    # Aggregate by group
+    df_like = groupby.agg(agg_exprs)
+    if isinstance(df_like, pl.LazyFrame):
+        df_like = df_like.collect()
+
+    # Sort by grouping column to maintain order
+    if group_cols:
+        df_like = df_like.sort(group_cols[0])
+        # Then drop the grouping column
+        df_like = df_like.drop(group_cols)
+
+    # Split into separate dataframes for mean and stddev
+    q1_cols = [col for col in df_like.columns if col.endswith("_q1")]
+    q3_cols = [col for col in df_like.columns if col.endswith("_q3")]
+
+    df_q1 = df_like.select(q1_cols).rename(lambda col: col.replace("_q1", ""))
+    df_q3 = df_like.select(q3_cols).rename(lambda col: col.replace("_q3", ""))
+
+    return {
+        config.STATS["median"].spreads["iqr"].exts["q1"]: _fillna(_df_round(df_q1)),
+        config.STATS["median"].spreads["iqr"].exts["q3"]: _fillna(_df_round(df_q3)),
     }
 
 
@@ -287,4 +385,4 @@ def _fillna(
     raise TypeError(f"Unknown type={type(df_like)}, value={df_like}")
 
 
-__all__ = ["bw", "conf95", "mean"]
+__all__ = ["bw", "conf95", "iqr", "mean", "median"]

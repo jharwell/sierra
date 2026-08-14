@@ -67,6 +67,7 @@ def _heatmap_kwargs(
         "ylabel": loaded["ylabel"],
         "zlabel": loaded["zlabel"],
         "colnames": (loaded["x"], loaded["y"], loaded["z"]),
+        "stats_center": cmdopts.get("center", "mean"),
     }
 
 
@@ -81,7 +82,8 @@ def _stacked_line_kwargs(
         "legend": loaded.get("legend", loaded.get("cols", None)),
         "points": loaded["points"],
         "logyscale": loaded.get("logy", cmdopts["plot_log_yscale"]),
-        "stats": cmdopts.get("dist_stats", "none"),
+        "stats_center": cmdopts.get("center", "mean"),
+        "stats_spread": cmdopts.get("spread", "none"),
         "xticks": _xticks(cmdopts, pathset),
     }
 
@@ -94,6 +96,7 @@ def _confusion_matrix_kwargs(
         "truth_col": loaded["truth_col"],
         "predicted_col": loaded["predicted_col"],
         "xlabels_rotate": loaded["xlabels_rotate"],
+        "stats_center": cmdopts.get("center", "mean"),
     }
 
 
@@ -108,6 +111,7 @@ def _histogram_kwargs(
         "bins": loaded.get("bins", None),
         "kind": loaded["kind"],
         "legend": loaded.get("legend", loaded.get("cols", None)),
+        "stats_center": cmdopts.get("center", "mean"),
     }
 
 
@@ -123,6 +127,7 @@ def _scatterplot_kwargs(
         "legend": None,
         "show_best_fit": loaded["show_best_fit"],
         "best_fit_kind": loaded["best_fit_kind"],
+        "stats_center": cmdopts.get("center", "mean"),
     }
 
 
@@ -350,18 +355,23 @@ class _ExpGraphGenerator:
 def _stat_exts(cmdopts: types.Cmdopts) -> list[str]:
     """Get the statistic file extensions an intra-exp graph reads for one stem.
 
-    Mirrors the collation path: the mean is always present, with dispersion
-    (conf95) and/or box-and-whisker (bw) extensions added per ``--dist-stats``.
-    An intra-exp graph reads one file per extension (mean line plus error
-    bands), so a multi-source graph must join per extension.
-    """
-    exts = dict(config.STATS["mean"].exts)
+    Mirrors the collation path.  An intra-exp graph reads one file per extension
+    (mean line plus error bands), so a multi-source graph must join per
+    extension.
 
-    dist = cmdopts.get("dist_stats", "none")
-    if dist in ("conf95", "all"):
-        exts.update(config.STATS["conf95"].exts)
-    if dist in ("bw", "all"):
-        exts.update(config.STATS["bw"].exts)
+    """
+    exts = {}
+
+    center = cmdopts["center"]
+    spread = cmdopts.get("spread", "none")
+
+    if center == "mean":
+        exts.update(config.STATS["mean"].spreads["none"].exts)
+        exts.update(config.STATS["mean"].spreads[spread].exts)
+
+    if center == "median":
+        exts.update(config.STATS["median"].spreads["none"].exts)
+        exts.update(config.STATS["median"].spreads[spread].exts)
 
     return list(exts.values())
 
@@ -374,16 +384,17 @@ def _materialize_sources(
 ) -> str:
     """Join a multi-source graph's inputs into one derived file *family*.
 
-    An intra-exp graph reads a *family* of statistic files per stem (``.mean``
-    plus, per ``--dist-stats``, dispersion/box-whisker extensions) to draw the
-    line and its error bands. So for each such extension, the selected+renamed
-    columns from every source are read from ``<file><ext>``, concatenated
-    horizontally on a shared row axis, and written to ``<derived_stem><ext>``.
-    The derived stem is returned for the plotter, which then reads the whole
-    family exactly as it would for a single ``src``.
+    An intra-exp graph reads a *family* of statistic files per stem (file for
+    central tendency, plus (maybe) some files for measures of spread) to draw
+    the line and its error bands. So for each such extension, the
+    selected+renamed columns from every source are read from ``<file><ext>``,
+    concatenated horizontally on a shared row axis, and written to
+    ``<derived_stem><ext>``.  The derived stem is returned for the plotter,
+    which then reads the whole family exactly as it would for a single ``src``.
 
     Sources have already been validated by gconfig (no duplicate columns within
     a source, no unresolved cross-source collisions).
+
     """
     # normalize once; the (file, col_map) pairs are ext-independent.
     pairs = []  # type: list[tuple[str, srcspec.ColMap]]

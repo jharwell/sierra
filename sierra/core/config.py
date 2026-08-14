@@ -134,21 +134,35 @@ GRAPHS: types.GraphsConfig = {
 # with new extensions contextualizing them.
 STORAGE_EXT: types.StrDict = {"csv": ".csv", "arrow": ".arrow"}
 
-STATS: dict[str, types.StatisticsSpec] = {
-    # The default for averaging
-    "mean": types.StatisticsSpec({"mean": ".mean"}),
-    # For calculating 95% confidence intervals
-    "conf95": types.StatisticsSpec({"stddev": ".stddev"}),
-    # For calculating box and whisker plots
-    "bw": types.StatisticsSpec(
+STATS: dict[str, types.StatCentralTendencySpec] = {
+    "mean": types.StatCentralTendencySpec(
         {
-            "median": ".median",
-            "q1": ".q1",
-            "q3": ".q3",
-            "whislo": ".whislo",
-            "whishi": ".whishi",
-            "cilo": ".cilo",
-            "cihi": ".cihi",
+            # The default for averaging
+            "none": types.StatSpreadSpec({"mean": ".mean"}),
+            # For calculating 95% confidence intervals
+            "conf95": types.StatSpreadSpec({"stddev": ".stddev"}),
+            # For calculating box and whisker plots
+            "bw": types.StatSpreadSpec(
+                {
+                    "median": ".median",
+                    "q1": ".q1",
+                    "q3": ".q3",
+                    "whislo": ".whislo",
+                    "whishi": ".whishi",
+                    "cilo": ".cilo",
+                    "cihi": ".cihi",
+                }
+            ),
+        }
+    ),
+    "median": types.StatCentralTendencySpec(
+        {
+            # The default for median-based measures of central tendency
+            "none": types.StatSpreadSpec({"median": ".median"}),
+            # For calculating IQR intervals
+            "iqr": types.StatSpreadSpec(
+                {"q1": ".q1", "q3": ".q3"},
+            ),
         }
     ),
 }

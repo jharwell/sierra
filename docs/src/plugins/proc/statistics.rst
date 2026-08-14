@@ -13,7 +13,13 @@ When doing Monte Carlo simulations, or dealing with any sort of :term:`Engine`
 or :term:`Project` which contains randomness, data analysis an the ensemble
 level is required. This plugin supports such analysis by automatically computing
 statistics to e.g., enable plotting 95% confidence intervals on graph
-products in stage 4.
+products in stage 4. It supports the following measures of central tendency and
+(optionally) associated measures of spread::
+
+- mean - 95% confidence intervals, box-and-whisker calculations (IQR, CI
+  high/low, median, etc)
+
+- median
 
 This plugin processes at the file level for each :term:`Experimental Run`. All
 :term:`Raw Output Data` files produced by each run are gathered and statistics
@@ -27,8 +33,9 @@ When run:
 
 - Floating point numeric data is rounded to 8 decimals.
 - Integer data is not rounded.
-- Categorical data is "averaged" via ``mode()``. Thus, only ``df-stats=mean`` is
-  supported for categorical data.
+- Categorical data is "averaged" via ``mode()``. Thus, only
+  :ref:`--spread=mean<src/plugin/proc/statistics:sierra---spread>` is supported
+  for categorical data.
 
 .. NOTE:: This plugin is not intended for use with projects whose output is
           deterministic. That is, if you always use ``--n-runs=1`` because your

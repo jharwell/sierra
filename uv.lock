@@ -7898,7 +7898,7 @@ wheels = [
 
 [[package]]
 name = "sierra-research"
-version = "1.5.12"
+version = "1.5.14"
 source = { editable = "." }
 dependencies = [
     { name = "certifi" },

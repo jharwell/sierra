@@ -22,15 +22,16 @@ from sierra.core.variables import batch_criteria as bc
 
 
 def _all_stat_exts() -> dict:
-    """Return the union of the mean/conf95/bw statistic extensions.
+    """Return the union of all measures of spread file extensions.
 
     Built as a fresh dict; ``config.STATS[...].exts`` must not be mutated in
     place (it is shared module-level state).
     """
     return {
-        **config.STATS["mean"].exts,
-        **config.STATS["conf95"].exts,
-        **config.STATS["bw"].exts,
+        **config.STATS["mean"].spreads["none"].exts,
+        **config.STATS["mean"].spreads["conf95"].exts,
+        **config.STATS["mean"].spreads["bw"].exts,
+        **config.STATS["median"].spreads["iqr"].exts,
     }
 
 

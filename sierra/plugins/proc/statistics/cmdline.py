@@ -21,25 +21,38 @@ def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCm
     """
     cmdline = PluginCmdline(parents, stages)
     cmdline.multistage.add_argument(
-        "--dist-stats",
-        choices=["none", "all", "conf95", "bw"],
+        "--center",
+        choices=["mean", "median"],
         help="""
-             Specify what kinds of statistics, if any, should be calculated on
-             the distribution of experimental data during stage 3 for inclusion
-             on graphs during stage 4:
+             Specify the measure of central tendency: mean or median.
+             """
+        + cmdline.stage_usage_doc([3, 4, 5]),
+        default="mean",
+    )
+    cmdline.multistage.add_argument(
+        "--spread",
+        choices=["none", "conf95", "bw", "iqr"],
+        help=""" Specify what kinds of measures of statistical spread, if any,
+             should be calculated on the distribution of experimental data:
 
-                 - ``none`` - Only calculate and show raw mean on graphs.
+               - ``none`` - Do not generate any additional distribution stats.
+
+               - For ``--center=mean``:
 
                  - ``conf95`` - Calculate standard deviation of experimental
                    distribution and show 95%% confidence interval on relevant
-                   graphs.
+                   graphs w.r.t. the calculated mean.
 
                  - ``bw`` - Calculate statistics necessary to show box and
-                   whisker plots around each point in the graph (Summary Line
-                   graphs only).
+                   whisker plots around each mean point in supported
+                   graphs.
 
-                 - ``all`` - Generate all possible statistics, and plot all
-                   possible statistics on graphs.
+                - For ``--center=median``:
+
+                  - ``iqr`` - Calculate interquartile range (IQR) of experimental
+                   distribution and show distribution on relevant
+                   graphs w.r.t. the calculated median.
+
              """
         + cmdline.graphs_applicable_doc(
             [
@@ -55,7 +68,7 @@ def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCm
 
 
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
-    return {"dist_stats": args.dist_stats}
+    return {"center": args.center, "spread": args.spread}
 
 
 def sphinx_cmdline_multistage():
