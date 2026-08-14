@@ -306,7 +306,7 @@ class TestMaterializeSources:
             ],
         }
         stem = intra._materialize_sources(
-            graph, tmp_path, "storage.csv", {"dist_stats": "none"}
+            graph, tmp_path, "storage.csv", {"spread": "conf95", "center": "mean"}
         )
         assert stem == "combined"
 
@@ -326,7 +326,7 @@ class TestMaterializeSources:
             ],
         }
         intra._materialize_sources(
-            graph, tmp_path, "storage.csv", {"dist_stats": "conf95"}
+            graph, tmp_path, "storage.csv", {"spread": "conf95", "center": "mean"}
         )
         # Both the mean and the stddev families are joined.
         assert (tmp_path / "j.mean").is_file()
@@ -349,7 +349,7 @@ class TestMaterializeSources:
             ],
         }
         intra._materialize_sources(
-            graph, tmp_path, "storage.csv", {"dist_stats": "conf95"}
+            graph, tmp_path, "storage.csv", {"spread": "conf95", "center": "mean"}
         )
         mean = pl.read_csv(tmp_path / "s.mean")
         stddev = pl.read_csv(tmp_path / "s.stddev")
@@ -369,7 +369,7 @@ class TestMaterializeSources:
             ],
         }
         intra._materialize_sources(
-            graph, tmp_path, "storage.csv", {"dist_stats": "conf95"}
+            graph, tmp_path, "storage.csv", {"center": "mean", "spread": "conf95"}
         )
         assert (tmp_path / "m.mean").is_file()
         # stddev family absent -> no derived stddev written.

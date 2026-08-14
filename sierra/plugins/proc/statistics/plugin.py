@@ -66,7 +66,7 @@ class DataGatherer(gather.BaseGatherer):
         self, df: pl.DataFrame, spec: gather.GatherSpec
     ) -> None:
         nonnumeric = [col for col in df.columns if not df[col].dtype.is_numeric()]
-        if nonnumeric and self.gather_opts["dist_stats"] != "none":
+        if nonnumeric and self.gather_opts["spread"] != "mean":
             self.logger.warning(
                 (
                     "Non-numeric columns only support mean aggregation via "
@@ -201,7 +201,8 @@ def proc_batch_exp(
     stat_opts = {
         "template_input_leaf": template_input_leaf,
         "df_verify": cmdopts["df_verify"],
-        "dist_stats": cmdopts["dist_stats"],
+        "spread": cmdopts["spread"],
+        "center": cmdopts["center"],
         "processing_mem_limit": cmdopts["processing_mem_limit"],
         "storage": cmdopts["storage"],
         "project_config_root": cmdopts["project_config_root"],
@@ -404,14 +405,17 @@ def _proc_single_exp(
     utils.dir_create_checked(exp_stat_root, exist_ok=True)
 
     dfs = {}
-    if stat_opts["dist_stats"] in ["none", "all"]:
+    if stat_opts["center"] == "mean":
         dfs.update(kernels.mean(by_row_index, csv_concat))
+        if stat_opts["spread"] == "conf95":
+            dfs.update(kernels.conf95(by_row_index, csv_concat))
+        if stat_opts["spread"] == "bw":
+            dfs.update(kernels.bw(by_row_index, csv_concat))
 
-    if stat_opts["dist_stats"] in ["conf95", "all"]:
-        dfs.update(kernels.conf95(by_row_index, csv_concat))
-
-    if stat_opts["dist_stats"] in ["bw", "all"]:
-        dfs.update(kernels.bw(by_row_index, csv_concat))
+    elif stat_opts["center"] == "median":
+        dfs.update(kernels.median(by_row_index, csv_concat))
+        if stat_opts["spread"] == "iqr":
+            dfs.update(kernels.iqr(by_row_index, csv_concat))
 
     for ext, df in dfs.items():
         opath = exp_stat_root / spec.gather.primary_stem_path

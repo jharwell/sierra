@@ -77,6 +77,7 @@ def proc_batch_exp(
                 exp_output_root,
                 imagize_config,
                 cmdopts["storage"],
+                cmdopts.get("center", "mean"),
             )
         )
 
@@ -101,6 +102,7 @@ def _build_tasklist_for_exp(
     exp_output_root: pathlib.Path,
     imagize_config: list[types.YAMLDict],
     storage: str,
+    stats_center: str,
 ) -> list[tuple[list[types.YAMLDict], dict]]:
     """Add all files from experiment to multiprocessing queue for processing.
 
@@ -120,7 +122,12 @@ def _build_tasklist_for_exp(
         if graph["type"] == "heatmap":
             res.extend(
                 _build_task_for_heatmap(
-                    graph, imagize_config, storage, exp_stat_root, exp_imagize_root
+                    graph,
+                    imagize_config,
+                    storage,
+                    stats_center,
+                    exp_stat_root,
+                    exp_imagize_root,
                 )
             )
 
@@ -147,6 +154,7 @@ def _build_task_for_heatmap(
     graph: types.YAMLDict,
     imagize_config: list[types.YAMLDict],
     storage: str,
+    stats_center: str,
     exp_stat_root: pathlib.Path,
     exp_imagize_root: pathlib.Path,
 ) -> list[tuple[list[types.YAMLDict], dict]]:
@@ -177,6 +185,7 @@ def _build_task_for_heatmap(
                     "imagize_output_root": imagize_output_root,
                     "batch_root": exp_stat_root.parent.parent,
                     "storage": storage,
+                    "stats_center": stats_center,
                 },
             )
         )
@@ -263,6 +272,7 @@ def _proc_single_exp(imagize_config: list[types.YAMLDict], imagize_opts: dict) -
                 output_stem=imagize_opts["input_path"].stem,
                 title=str(match["title"]),
                 medium=imagize_opts["storage"],
+                stats_center=imagize_opts["stats_center"],
                 xlabel="X",
                 ylabel="Y",
                 colnames=(
@@ -349,9 +359,7 @@ class ImagizeInputGatherer(gather.BaseGatherer):
                 ):
                     continue
 
-                if not any(
-                    g["src"] in str(imagizable) for g in self.imagize_config
-                ):
+                if not any(g["src"] in str(imagizable) for g in self.imagize_config):
                     continue
 
                 if item.name in imagizable.name:

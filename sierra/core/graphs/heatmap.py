@@ -34,13 +34,14 @@ def generate_confusion(  # noqa: PLR0913
     backend: str,
     truth_col: str,
     predicted_col: str,
+    stats_center: str,
     xlabels_rotate: bool = False,
     large_text: bool = False,
 ) -> bool:
     """
-    Generate a confusion matrix from a ``.mean`` file.
+    Generate a confusion matrix.
 
-    If the necessary ``.mean`` file does not exist, the graph is not generated.
+    If the necessary input file does not exist, the graph is not generated.
     Dataframe must be constructed with {truth,predicted} columns; e.g.::
 
         truth,predicted
@@ -55,7 +56,9 @@ def generate_confusion(  # noqa: PLR0913
     hv.extension(backend, inline=False, logo=False)
 
     ofile_ext = graphutils.ofile_ext(backend)
-    input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
+    input_fpath = pathset.input_root / (
+        input_stem + config.STATS[stats_center].spreads["none"].exts[stats_center]
+    )
     output_fpath = pathset.output_root / f"CM-{output_stem}.{ofile_ext}"
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -159,7 +162,7 @@ def generate_confusion(  # noqa: PLR0913
     if xlabels_rotate:
         plot.opts(xrotation=90)
 
-    graphutils.save_plot(plot, output_fpath, backend)
+    graphutils.plot_save(plot, output_fpath, backend)
 
     _logger.debug(
         "Graph written to <batchroot>/%s",
@@ -175,6 +178,7 @@ def generate_numeric(  # noqa: PLR0913
     medium: str,
     title: str,
     backend: str,
+    stats_center: str,
     colnames: tuple[str, str, str] = ("x", "y", "z"),
     xlabel: tp.Optional[str] = "",
     ylabel: tp.Optional[str] = "",
@@ -185,12 +189,11 @@ def generate_numeric(  # noqa: PLR0913
     xticks: tp.Optional[list[float]] = None,
     yticks: tp.Optional[list[float]] = None,
     transpose: bool = False,
-    ext=config.STATS["mean"].exts["mean"],
 ) -> bool:
     """
-    Generate a X vs. Y vs. Z heatmap plot of a ``.mean`` file.
+    Generate a X vs. Y vs. Z heatmap plot.
 
-    If the necessary ``.mean`` file does not exist, the graph is not generated.
+    If the necessary input file does not exist, the graph is not generated.
     Dataframe must be constructed with {x,y,z} columns; e.g.::
 
        x,y,z
@@ -209,7 +212,9 @@ def generate_numeric(  # noqa: PLR0913
     hv.extension(backend, inline=False, logo=False)
 
     ofile_ext = graphutils.ofile_ext(backend)
-    input_fpath = pathset.input_root / (input_stem + ext)
+    input_fpath = pathset.input_root / (
+        input_stem + config.STATS[stats_center].spreads["none"].exts[stats_center]
+    )
     output_fpath = pathset.output_root / f"HM-{output_stem}.{ofile_ext}"
     if not utils.path_exists(input_fpath):
         _logger.debug(
@@ -284,7 +289,7 @@ def generate_numeric(  # noqa: PLR0913
         # colorbar_opts={"label": ...} doesn't work for unknown reasons.
         plot.opts(colorbar=True, backend_opts={"colorbar.label": zlabel})
 
-    graphutils.save_plot(plot, output_fpath, backend)
+    graphutils.plot_save(plot, output_fpath, backend)
 
     _logger.debug(
         "Graph written to <batchroot>/%s",

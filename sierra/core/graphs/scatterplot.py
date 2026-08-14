@@ -30,6 +30,7 @@ def generate(  # noqa: PLR0913
     xlabel: str,
     ylabel: str,
     backend: str,
+    stats_center: str,
     legend: tp.Optional[list[str]] = None,
     xcol: tp.Optional[str] = None,
     ycol: tp.Optional[str] = None,
@@ -49,6 +50,9 @@ def generate(  # noqa: PLR0913
 
         output_fpath: The absolute path to the output image file to save
                       generated graph to.
+
+        stats: The type of statistics to use as the main data input. (from
+               ``--stats``).
 
         title: Graph title.
 
@@ -76,7 +80,9 @@ def generate(  # noqa: PLR0913
 
     ofile_ext = graphutils.ofile_ext(backend)
 
-    input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
+    input_fpath = pathset.input_root / (
+        input_stem + config.STATS[stats_center].spreads["none"].exts[stats_center]
+    )
     output_fpath = pathset.output_root / f"SP-{output_stem}.{ofile_ext}"
 
     if not utils.path_exists(input_fpath):
@@ -160,7 +166,7 @@ def generate(  # noqa: PLR0913
         },
     )
 
-    graphutils.save_plot(plot, output_fpath, backend)
+    graphutils.plot_save(plot, output_fpath, backend)
 
     _logger.debug(
         "Graph written to <batchroot>/%s", output_fpath.relative_to(pathset.batchroot)

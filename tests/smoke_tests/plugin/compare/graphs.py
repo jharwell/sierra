@@ -23,6 +23,7 @@ import nox
 
 # Project packages
 from tests.smoke_tests import utils, setup
+from sierra.core import config
 
 
 def _stage5_base_cmd(session) -> str:
@@ -45,7 +46,7 @@ def _run_stage1234(session, scenario: str, controllers, proc: str = ""):
             f"--controller {c} "
             f"--physics-n-engines=1 "
             f"--batch-criteria population_size.Linear3.C3 "
-            f"--pipeline 1 2 3 4 --dist-stats=all "
+            f"--pipeline 1 2 3 4 --center=mean --spread=bw "
             f"--scenario={scenario} "
             f"{proc}"
         )
@@ -55,47 +56,69 @@ def _run_stage1234(session, scenario: str, controllers, proc: str = ""):
 @nox.session(python=utils.versions, tags=["compare"])
 @setup.session_setup
 @setup.session_teardown
-def compare_cc_univar(session):
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "none"),
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "iqr"),
+    ],
+)
+def compare_cc_univar(session, stats):
     """Inter-controller univariate comparison: collated CSVs + graphs."""
     controllers = ["foraging.footbot_foraging", "foraging.footbot_foraging_slow"]
 
     _run_stage1234(session, "HighBlockCount.10x10x2", controllers)
 
-    for stat in ["none", "conf95", "bw"]:
-        stage5_cmd = (
-            f"{_stage5_base_cmd(session)} "
-            f"--batch-criteria population_size.Linear3.C3 "
-            f"--compare compare.graphs "
-            f"--across=controllers "
-            f"--dist-stats={stat} "
-            f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
-        )
-        session.run(*stage5_cmd.split(), silent=True)
-        utils.stage5_univar_check_cc_outputs(session, "argos")
+    center = stats[0]
+    spread = stats[1]
+    stage5_cmd = (
+        f"{_stage5_base_cmd(session)} "
+        f"--batch-criteria population_size.Linear3.C3 "
+        f"--compare compare.graphs "
+        f"--across=controllers "
+        f"--center={center} "
+        f"--spread={spread} "
+        f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
+    )
+    session.run(*stage5_cmd.split(), silent=True)
+    utils.stage5_univar_check_cc_outputs(session, "argos", 16)
 
 
 @nox.session(python=utils.versions, tags=["compare"])
 @setup.session_setup
 @setup.session_teardown
-def compare_sc_univar(session):
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "none"),
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "iqr"),
+    ],
+)
+def compare_sc_univar(session, stats):
     """Inter-scenario univariate comparison: collated CSVs + graphs."""
     controllers = ["foraging.footbot_foraging", "foraging.footbot_foraging_slow"]
 
     _run_stage1234(session, "HighBlockCount.10x10x2", controllers)
     _run_stage1234(session, "LowBlockCount.10x10x2", controllers)
 
-    for stat in ["none", "conf95", "bw"]:
-        stage5_cmd = (
-            f"{_stage5_base_cmd(session)} "
-            f"--batch-criteria population_size.Linear3.C3 "
-            f"--compare compare.graphs "
-            f"--across=scenarios "
-            f"--controller=foraging.footbot_foraging "
-            f"--dist-stats={stat} "
-            f"--things=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
-        )
-        session.run(*stage5_cmd.split(), silent=True)
-        utils.stage5_univar_check_sc_outputs(session, "argos")
+    center = stats[0]
+    spread = stats[1]
+    stage5_cmd = (
+        f"{_stage5_base_cmd(session)} "
+        f"--batch-criteria population_size.Linear3.C3 "
+        f"--compare compare.graphs "
+        f"--across=scenarios "
+        f"--controller=foraging.footbot_foraging "
+        f"--center={center} "
+        f"--spread={spread} "
+        f"--things=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
+    )
+    session.run(*stage5_cmd.split(), silent=True)
+    utils.stage5_univar_check_sc_outputs(session, "argos", 16)
 
 
 @nox.session(python=utils.versions, tags=["compare"])
@@ -130,7 +153,7 @@ def compare_cc_bivar(session):
         f"{stage5_base_cmd} "
         f"--batch-criteria population_size.Linear3.C3 max_speed.1.9.C5 "
         f"--across=controllers "
-        f"--dist-stats=conf95 "
+        f"--spread=conf95 "
         f"--comparison-type=LNraw "
         f"--plot-log-yscale "
         f"--plot-large-text "
@@ -188,7 +211,7 @@ def compare_models(session):
         f"--batch-criteria population_size.Linear3.C3 "
         f"--compare compare.graphs "
         f"--across=controllers "
-        f"--dist-stats=none "
+        f"--spread=none "
         f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow"
     )
     session.run(*cc_cmd.split(), silent=True)
@@ -204,34 +227,8 @@ def compare_models(session):
         f"--compare compare.graphs "
         f"--across=scenarios "
         f"--controller=foraging.footbot_foraging "
-        f"--dist-stats=none "
+        f"--spread=none "
         f"--things=LowBlockCount.10x10x2,HighBlockCount.10x10x2"
     )
     session.run(*sc_cmd.split(), silent=True)
     utils.stage5_univar_check_sc_models_outputs(session, "argos")
-
-
-@nox.session(python=utils.versions, tags=["compare"])
-@setup.session_setup
-@setup.session_teardown
-def compare_things_legend(session):
-    """Inter-controller comparison with custom ``--things-legend`` names.
-
-    Smoke-level: verifies the run succeeds and produces the comparison
-    artifacts; does not (yet) parse the generated legends.
-    """
-    controllers = ["foraging.footbot_foraging", "foraging.footbot_foraging_slow"]
-
-    _run_stage1234(session, "HighBlockCount.10x10x2", controllers)
-
-    stage5_cmd = (
-        f"{_stage5_base_cmd(session)} "
-        f"--batch-criteria population_size.Linear3.C3 "
-        f"--compare compare.graphs "
-        f"--across=controllers "
-        f"--dist-stats=none "
-        f"--things=foraging.footbot_foraging,foraging.footbot_foraging_slow "
-        f"--things-legend=Baseline,Slow"
-    )
-    session.run(*stage5_cmd.split(), silent=True)
-    utils.stage5_univar_check_cc_outputs(session, "argos")

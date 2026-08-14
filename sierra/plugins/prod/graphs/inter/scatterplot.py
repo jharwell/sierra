@@ -62,6 +62,7 @@ def generate(
                 xlabel=str(graph["xlabel"]),
                 ylabel=str(graph["ylabel"]),
                 large_text=cmdopts["plot_large_text"],
+                stats_center=str(cmdopts.get("center", "mean")),
                 xcol=None,
                 ycol=None,
                 show_best_fit=bool(graph["show_best_fit"]),

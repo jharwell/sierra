@@ -35,10 +35,11 @@ def generate(  # noqa: PLR0913
     backend: str,
     legend: list[str],
     xticks: list[float],
+    stats_center: str,
+    stats_spread: str,
     xticklabels: tp.Optional[list[str]] = None,
     large_text: bool = False,
     logyscale: bool = False,
-    stats: str = "none",
 ) -> bool:
     """Generate a linegraph from a :term:`Batch Summary Data` file.
 
@@ -75,8 +76,11 @@ def generate(  # noqa: PLR0913
 
         logyscale: Should the Y axis be in the log2 domain ?
 
-        stats: The type of statistics to include on the graph (from
-               ``--dist-stats``).
+        stats_sread: The type of spread statistics to include on the graph (from
+                     ``--spread``).
+
+        stats_center: The measure of centeral tendency to use as the main data
+                      input. (from ``--center``).
 
         model_root: The absolute path to the ``models/`` directory for the batch
                      experiment.
@@ -86,7 +90,9 @@ def generate(  # noqa: PLR0913
 
     ofile_ext = graphutils.ofile_ext(backend)
 
-    input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
+    input_fpath = pathset.input_root / (
+        input_stem + config.STATS[stats_center].spreads["none"].exts[stats_center]
+    )
     output_fpath = pathset.output_root / f"SM-{output_stem}.{ofile_ext}"
 
     if not utils.path_exists(input_fpath):
@@ -121,8 +127,19 @@ def generate(  # noqa: PLR0913
     model_info = _read_model_info(pathset.model_root, input_stem, medium, xticks)
 
     # Add statistics according to configuration
-    stat_dfs = _read_stats(stats, medium, pathset.input_root, input_stem)
-    plot = _plot_stats(dataset, stats, stat_dfs, backend)
+    stat_dfs = graphutils.read_spread_stats(
+        stats_center, stats_spread, pathset.input_root, input_stem, medium
+    )
+
+    vdim_color = graphutils.build_color_map(dataset, legend)
+    plot = graphutils.plot_stats(
+        dataset,
+        stats_center,
+        stats_spread,
+        stat_dfs,
+        backend=backend,
+        vdim_color=vdim_color,
+    )
 
     # Add legend
     plot.opts(legend_position="bottom")
@@ -150,7 +167,7 @@ def generate(  # noqa: PLR0913
     # Add title
     plot.opts(title=title)
 
-    graphutils.save_plot(plot, output_fpath, backend)
+    graphutils.plot_save(plot, output_fpath, backend)
 
     _logger.debug(
         "Graph written to <batchroot>/%s", output_fpath.relative_to(pathset.batchroot)
@@ -215,155 +232,6 @@ def _plot_lines(
     return plot
 
 
-def _plot_stats(
-    dataset: hv.Dataset,
-    setting: str,
-    stat_dfs: dict[str, pl.DataFrame],
-    backend: str,
-) -> hv.NdOverlay:
-    """
-    Plot statistics for all lines on the graph.
-    """
-    plot = _plot_conf95_stats(dataset, setting, stat_dfs)
-    plot *= _plot_bw_stats(dataset, setting, stat_dfs, backend)
-
-    return plot
-
-
-def _plot_conf95_stats(
-    dataset: hv.Dataset, setting: str, stat_dfs: dict[str, pl.DataFrame]
-) -> hv.NdOverlay:
-    if setting not in ["conf95", "all"]:
-        return hv.Overlay()
-
-    if not all(k in stat_dfs for k in config.STATS["conf95"].exts):
-        _logger.warning(
-            (
-                "Cannot plot 95%% confidence intervals: "
-                "missing some statistics: %s vs %s"
-            ),
-            stat_dfs.keys(),
-            config.STATS["conf95"].exts,
-        )
-        return hv.Overlay()
-
-    # Build stddev columns
-    stddev_cols = {}
-    for c in dataset.vdims:
-        stddev_vals = stat_dfs["stddev"][c.name].abs().to_numpy()
-        stddev_cols[f"{c}_stddev_l"] = dataset.data[c.name] - 2 * stddev_vals
-        stddev_cols[f"{c}_stddev_u"] = dataset.data[c.name] + 2 * stddev_vals
-
-    # Add stddev columns to dataset
-    for col_name, col_data in stddev_cols.items():
-        dataset.data[col_name] = col_data
-
-    return hv.Overlay(
-        [
-            hv.Area(
-                dataset, vdims=[f"{vdim.name}_stddev_l", f"{vdim.name}_stddev_u"]
-            ).opts(
-                alpha=0.5,
-            )
-            for vdim in dataset.vdims
-        ]
-    )
-
-
-def _plot_bw_stats(
-    dataset: hv.Dataset,
-    setting: str,
-    stat_dfs: dict[str, pl.DataFrame],
-    backend: str,
-) -> hv.NdOverlay:
-    if setting not in ["bw", "all"]:
-        return hv.Overlay()
-
-    if not all(k in stat_dfs for k in config.STATS["bw"].exts):
-        _logger.warning(
-            ("Cannot plot box-and-whisker plots: missing some statistics: %s vs %s"),
-            stat_dfs.keys(),
-            config.STATS["bw"].exts,
-        )
-        return hv.Overlay()
-
-    elements = []
-
-    if backend == "matplotlib":
-        opts = {"linewidth": 2}
-    elif backend == "bokeh":
-        opts = {"line_width": 2}
-    else:
-        raise ValueError(f"Bad value for backend: {backend}")
-
-    # For each value dimension (set of datapoints from a batch experiment)
-    for _, v in enumerate(dataset.vdims):
-
-        # For each datapoint captured from an experiment in the batch
-        for j in range(0, len(dataset.data)):
-            col = v.name
-
-            # Read stats from file (convert to scalar values)
-            q1 = stat_dfs["q1"][col].item(j)
-            median = stat_dfs["median"][col].item(j)
-            q3 = stat_dfs["q3"][col].item(j)
-            whishi = stat_dfs["whislo"][col].item(j)
-            whislo = stat_dfs["whishi"][col].item(j)
-
-            # Box (Rectangle from q1 to q3).
-            # Args: x center, y center, x width, y height
-            box = hv.Box(dataset.data["xticks"][j], median, (0.2, (q3 - q1))).opts(
-                **opts
-            )
-
-            # Median line
-            median_line = hv.Segments(
-                (
-                    dataset.data["xticks"][j] - 0.2,
-                    median,
-                    dataset.data["xticks"][j] + 0.2,
-                    median,
-                )
-            ).opts(color="darkred", **opts)
-
-            # Whisker lines (vertical lines from box to min/max)
-            lower_whisker = hv.Segments(
-                (dataset.data["xticks"][j], q1, dataset.data["xticks"][j], whislo)
-            ).opts(color="black", **opts)
-            upper_whisker = hv.Segments(
-                (dataset.data["xticks"][j], q3, dataset.data["xticks"][j], whishi)
-            ).opts(color="black", **opts)
-
-            # Whisker caps (horizontal lines at min/max)
-            lower_cap = hv.Segments(
-                (
-                    dataset.data["xticks"][j] - 0.1,
-                    whislo,
-                    dataset.data["xticks"][j] + 0.1,
-                    whislo,
-                )
-            ).opts(color="black", **opts)
-            upper_cap = hv.Segments(
-                (
-                    dataset.data["xticks"][j] - 0.1,
-                    whishi,
-                    dataset.data["xticks"][j] + 0.1,
-                    whishi,
-                )
-            ).opts(color="black", **opts)
-            # Combine all elements
-            elements.append(
-                box
-                * median_line
-                * lower_whisker
-                * upper_whisker
-                * lower_cap
-                * upper_cap
-            )
-
-    return hv.Overlay(elements)
-
-
 def _plot_ticks(
     plot: hv.NdOverlay,
     logyscale: bool,
@@ -379,59 +247,6 @@ def _plot_ticks(
         plot.opts(xticks=list(zip(xticks, xticklabels)), xrotation=90)
 
     return plot
-
-
-def _read_stats(
-    setting: str, medium: str, stats_root: pathlib.Path, input_stem: str
-) -> dict[str, pl.DataFrame]:
-    dfs = {}
-
-    dfs.update(_read_conf95_stats(setting, medium, stats_root, input_stem))
-    dfs.update(_read_bw_stats(setting, medium, stats_root, input_stem))
-    return dfs
-
-
-def _read_conf95_stats(
-    setting: str,
-    medium: str,
-    stats_root: pathlib.Path,
-    input_stem: str,
-) -> dict[str, pl.DataFrame]:
-    dfs = {}
-
-    exts = config.STATS["conf95"].exts
-    if setting in ["conf95", "all"]:
-        for k in exts:
-            ipath = stats_root / (input_stem + exts[k])
-
-            if utils.path_exists(ipath):
-                dfs[k] = storage.df_read(ipath, medium)
-            else:
-                _logger.warning("%s file not found for '%s'", exts[k], input_stem)
-
-    return dfs
-
-
-def _read_bw_stats(
-    setting: str,
-    medium: str,
-    stats_root: pathlib.Path,
-    input_stem: str,
-) -> dict[str, pl.DataFrame]:
-    dfs = {}
-
-    exts = config.STATS["bw"].exts
-
-    if setting in ["bw", "all"]:
-        for k in exts:
-            ipath = stats_root / (input_stem + exts[k])
-
-            if utils.path_exists(ipath):
-                dfs[k] = storage.df_read(ipath, medium)
-            else:
-                _logger.warning("%s file not found for '%s'", exts[k], input_stem)
-
-    return dfs
 
 
 # 2024/09/13 [JRH]: The union is for compatability with type checkers in

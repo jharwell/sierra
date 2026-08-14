@@ -130,7 +130,7 @@ def stage2_univar_check_outputs(
 
 
 def stage3_univar_check_outputs(
-    engine: str, batch_root: pathlib.Path, cardinality: int, stats: list[str]
+    engine: str, batch_root: pathlib.Path, cardinality: int, spread: list[str]
 ):
     """
     Helper function to check stage 3 outputs.
@@ -149,22 +149,22 @@ def stage3_univar_check_outputs(
         assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
     if engine == "argos":
-        _stage3_univar_check_outputs_argos(stat_root, cardinality, stats)
+        _stage3_univar_check_outputs_argos(stat_root, cardinality, spread)
     elif engine == "jsonsim":
-        _stage3_univar_check_outputs_jsonsim(stat_root, cardinality, stats)
+        _stage3_univar_check_outputs_jsonsim(stat_root, cardinality, spread)
     elif engine == "yamlsim":
-        _stage3_univar_check_outputs_yamlsim(stat_root, cardinality, stats)
+        _stage3_univar_check_outputs_yamlsim(stat_root, cardinality, spread)
 
 
 def _stage3_univar_check_outputs_yamlsim(
     stat_root: pathlib.Path,
     cardinality: int,
-    stats: list[str],
+    spreads: list[str],
     check_interexp: bool = True,
 ):
     # Check stage3 generated statistics
     for i in range(0, cardinality):
-        for stat in stats:
+        for stat in spreads:
             exp_dir = stat_root / f"c1-exp{i}"
             intraexp_items = [
                 exp_dir / f"output1D.{stat}",
@@ -194,15 +194,14 @@ def _stage3_univar_check_outputs_yamlsim(
             # Must NOT exist: the nested source file is never written by the
             # yamlsim engine, so its collated output is not produced.
             interexp_absent = [
-                stat_root
-                / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
+                stat_root / f"inter-exp/c1-exp{i}/subdir1/subdir2/output1D-col1.csv",
             ]
             for item in interexp_absent:
                 assert not item.is_file(), f"Unexpected collated file {item}"
 
 
 def _stage3_univar_check_outputs_jsonsim(
-    stat_root: pathlib.Path, cardinality: int, stats: list[str]
+    stat_root: pathlib.Path, cardinality: int, spreads: list[str]
 ):
     # Statistics are generated for exactly the raw outputs named by a graph
     # 'src' in graphs.yaml, matched exactly (rooted, path-qualified for
@@ -222,7 +221,7 @@ def _stage3_univar_check_outputs_jsonsim(
 
     # Check stage3 generated statistics
     for i in range(0, cardinality):
-        for stat in stats:
+        for stat in spreads:
             exp_dir = stat_root / f"c1-exp{i}"
             for stem in intraexp_stems:
                 item = exp_dir / f"{stem}.{stat}"
@@ -261,14 +260,14 @@ def _stage3_univar_check_outputs_jsonsim(
 
 
 def _stage3_univar_check_outputs_argos(
-    stat_root: pathlib.Path, cardinality: int, stats: list[str]
+    stat_root: pathlib.Path, cardinality: int, spreads: list[str]
 ):
     """Helper function to check stage 3 outputs for ARGoS."""
     interexp_dir = stat_root / "inter-exp"
     assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
     # Check stage3 generated statistics
-    for stat in stats:
+    for stat in spreads:
         # Check interexp stats
         interexp_file = interexp_dir / "c1-exp0/collected-data-collected_food.csv"
         assert interexp_file.is_file(), f"File {interexp_file} does not exist"
@@ -280,7 +279,7 @@ def _stage3_univar_check_outputs_argos(
 
 
 def stage4_univar_check_outputs(
-    engine: str, batch_root: pathlib.Path, cardinality: int, stats: list[str]
+    engine: str, batch_root: pathlib.Path, cardinality: int, spreads: list[str]
 ):
     """Helper function to check stage 4 outputs."""
     graph_root = batch_root / "graphs"
@@ -295,11 +294,15 @@ def stage4_univar_check_outputs(
     assert interexp_dir.is_dir(), f"Directory {interexp_dir} does not exist"
 
     if engine == "argos":
-        _stage4_univar_check_outputs_argos(graph_root, stat_root, cardinality, stats)
+        _stage4_univar_check_outputs_argos(graph_root, stat_root, cardinality, spreads)
     elif engine == "jsonsim":
-        _stage4_univar_check_outputs_jsonsim(graph_root, stat_root, cardinality, stats)
+        _stage4_univar_check_outputs_jsonsim(
+            graph_root, stat_root, cardinality, spreads
+        )
     elif engine == "yamlsim":
-        _stage4_univar_check_outputs_yamlsim(graph_root, stat_root, cardinality, stats)
+        _stage4_univar_check_outputs_yamlsim(
+            graph_root, stat_root, cardinality, spreads
+        )
     else:
         raise RuntimeError(f"Engine {engine} checks not implemented")
 
@@ -308,11 +311,11 @@ def _stage4_univar_check_outputs_argos(
     graph_root: pathlib.Path,
     stat_root: pathlib.Path,
     cardinality: int,
-    stats: list[str],
+    spreads: list[str],
 ):
     """Helper function to check stage 4 outputs for ARGoS."""
     # Check stage4 generated .csvs
-    for stat in stats:
+    for stat in spreads:
         interexp_csvs = [
             f"food-counts.{stat}",
             f"robot-counts-resting.{stat}",
@@ -348,11 +351,11 @@ def _stage4_univar_check_outputs_jsonsim(
     graph_root: pathlib.Path,
     stat_root: pathlib.Path,
     cardinality: int,
-    stats: list[str],
+    spreads: list[str],
 ):
     """Helper function to check stage 4 outputs for JSONSIM."""
     # Check stage4 generated .csvs
-    for stat in stats:
+    for stat in spreads:
         interexp_csvs = [
             f"random-noise2-col2.{stat}",
             f"random-noise3-col2.{stat}",
@@ -388,11 +391,11 @@ def _stage4_univar_check_outputs_yamlsim(
     graph_root: pathlib.Path,
     stat_root: pathlib.Path,
     cardinality: int,
-    stats: list[str],
+    spreads: list[str],
 ):
     """Helper function to check stage 4 outputs for YAMLSIM."""
     # Check stage4 generated .csvs
-    for stat in stats:
+    for stat in spreads:
         interexp_csvs = [
             f"random-noise-col1.{stat}",
         ]
@@ -586,7 +589,7 @@ def _csv_dims(path: pathlib.Path) -> tp.Tuple[int, int]:
     return n_rows, n_cols
 
 
-def stage5_univar_check_cc_outputs(session, engine: str):
+def stage5_univar_check_cc_outputs(session, engine: str, n_stats_files: int):
     """Check controller comparison outputs.
 
     Verifies file counts, that every collated CSV has one column per compared
@@ -605,7 +608,9 @@ def stage5_univar_check_cc_outputs(session, engine: str):
         csvs = list(cc_csv_root.iterdir())
         graphs = list(cc_graph_root.iterdir())
 
-        assert len(csvs) == 18, f"Expected 18 CSV files, found {len(csvs)}"
+        assert (
+            len(csvs) == n_stats_files
+        ), f"Expected {n_stats_files} CSV files, found {len(csvs)}"
         assert len(graphs) == 2, f"Expected 2 graph files, found {len(graphs)}"
 
         for path in csvs:
@@ -620,10 +625,10 @@ def stage5_univar_check_cc_outputs(session, engine: str):
                 assert n_rows == 2, f"Expected 2 rows in {path.name}, got {n_rows}"
 
     else:
-        assert False, f"Unhandled engine case {engine}"
+        raise AssertionError(f"Unhandled engine case {engine}")
 
 
-def stage5_univar_check_sc_outputs(session, engine: str):
+def stage5_univar_check_sc_outputs(session, engine: str, n_stats_files: int):
     """Check scenario comparison outputs.
 
     Same contract as the CC check: file counts, one column per compared
@@ -643,7 +648,9 @@ def stage5_univar_check_sc_outputs(session, engine: str):
         csvs = list(sc_csv_root.iterdir())
         graphs = list(sc_graph_root.iterdir())
 
-        assert len(csvs) == 18, f"Expected 18 CSV files, found {len(csvs)}"
+        assert (
+            len(csvs) == n_stats_files
+        ), f"Expected {n_stats_files} CSV files, found {len(csvs)}"
         assert len(graphs) == 2, f"Expected 2 graph files, found {len(graphs)}"
 
         for path in csvs:
@@ -671,9 +678,7 @@ def stage5_bivar_check_cc_outputs(cc_graph_root: pathlib.Path, n_files: int):
     ), f"Expected {n_files} files in {cc_graph_root}, found {file_count}"
 
 
-def _check_models_dir(
-    models_root: pathlib.Path, measures: "dict[str, int]"
-):
+def _check_models_dir(models_root: pathlib.Path, measures: "dict[str, int]"):
     """Check a stage-5 ``-*-models`` directory holds the collated model
     predictions and legends.
 
@@ -709,9 +714,9 @@ def _check_models_dir(
         # footbot_foraging_slow), so index + 2 controllers = 3 columns -- the
         # same shape the sibling comparison-CSV check expects.
         n_rows, n_cols = _csv_dims(mf)
-        assert n_rows == exp_rows, (
-            f"Expected {exp_rows} rows in {mf.name}, got {n_rows}"
-        )
+        assert (
+            n_rows == exp_rows
+        ), f"Expected {exp_rows} rows in {mf.name}, got {n_rows}"
         assert n_cols == 3, (
             f"Expected index + 2 controllers in {mf.name}, got {n_cols} "
             f"({n_cols - 1} controller column(s))"
@@ -729,9 +734,7 @@ def stage5_univar_check_cc_models_outputs(session, engine: str):
             f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
             "foraging.footbot_foraging+foraging.footbot_foraging_slow-cc-models"
         )
-        _check_models_dir(
-            cc_models_root, {"cc-food-counts": 3, "cc-swarm-energy": 2}
-        )
+        _check_models_dir(cc_models_root, {"cc-food-counts": 3, "cc-swarm-energy": 2})
     else:
         assert False, f"Unhandled engine case {engine}"
 
@@ -743,8 +746,6 @@ def stage5_univar_check_sc_models_outputs(session, engine: str):
             f"{session.env['SIERRA_ROOT']}/projects.sample_argos/"
             "LowBlockCount.10x10x2+HighBlockCount.10x10x2-sc-models"
         )
-        _check_models_dir(
-            sc_models_root, {"sc-food-counts": 3, "sc-swarm-energy": 2}
-        )
+        _check_models_dir(sc_models_root, {"sc-food-counts": 3, "sc-swarm-energy": 2})
     else:
         assert False, f"Unhandled engine case {engine}"

@@ -202,7 +202,8 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         graphs.summary_line(
             pathset=paths,
             input_stem=opath_leaf,
-            stats=cmdopts.get("dist_stats", "none"),
+            stats_center=cmdopts.get("center", "mean"),
+            stats_spread=cmdopts.get("spread", "none"),
             medium=cmdopts["storage"],
             output_stem=opath_leaf,
             title=spec["title"],
@@ -248,7 +249,11 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         # Some experiments might not generate the necessary performance measure
         # CSVs for graph generation, which is OK.
-        csv_ipath_mean = csv_ipath_stem.with_suffix(config.STATS["mean"].exts["mean"])
+        csv_ipath_mean = csv_ipath_stem.with_suffix(
+            config.STATS[self.cmdopts["center"]]
+            .spreads["none"]
+            .exts[self.cmdopts["center"]]
+        )
         if not utils.path_exists(csv_ipath_mean):
             self.logger.warning(
                 "%s missing for controller %s", csv_ipath_mean, self.controller

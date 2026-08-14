@@ -489,7 +489,7 @@ from the :xref:`ARGoS sample project <SIERRA_SAMPLE_PROJECT>`.
            --controller=foraging.footbot_foraging \
            --batch-criteria population_size.Linear5.C5 \
            --exp-n-datapoints-factor=0.1 \
-           --dist-stats=none
+           --spread=none
 
    .. tab-item:: YAML config
 
@@ -573,7 +573,7 @@ and ``.yaml`` configuration capabilities we can generate graphs easily with
 
 
 If we then want to plot 95% confidence intervals by doing
-``--dist-stats=conf95``:
+:ref:`--spread=conf95<src/plugins/proc/statistics:sierra---spread`:
 
 .. tab-set::
 
@@ -602,7 +602,8 @@ If we then want to plot 95% confidence intervals by doing
        .. raw:: html
           :file: figures/graphs/argos/intra-conf95/SLN-swarm-energy.html
 
-Same idea for box-and-whisker plots via ``--dist-stats=bw`` (not shown). Now
+Same idea for box-and-whisker plots via
+:ref:`--spread=bw<src/plugins/proc/statistics:sierra---spread` (not shown). Now
 suppose we want the walking/resting counts to appear on separate graphs. YAML
 configuration becomes:
 

@@ -141,11 +141,6 @@ Plugins
 
             The version of ROS. Currently SIERRA only supports ROS1.
 
-.. envvar:: PBS_NUM_PPN
-
-            # CPUs/node on a compute node allocated to a job on a HPC cluster
-            managed by the PBS scheduler.
-
 .. envvar:: PBS_NODEFILE
 
             Newline delimited list of compute nodes allocated to the current job

@@ -54,6 +54,7 @@ def proc_batch_exp(
                     run_output_leaf,
                     cmdopts["storage"],
                     cmdopts["dataop"],
+                    cmdopts["center"],
                 )
                 for run_output_root in (pathset.output_root / exp.name).iterdir()
             ]
@@ -72,6 +73,7 @@ def _worker(
     run_output_leaf: str,
     storage: str,
     dataop: str,
+    stats_center: str,
 ) -> None:
     """Copy all files in the output root for a run to the statistics root.
 
@@ -94,7 +96,7 @@ def _worker(
             continue
         utils.dir_create_checked(exp_stat_root, exist_ok=True)
         dest = (exp_stat_root / item.name).with_suffix(
-            config.STATS["mean"].exts["mean"]
+            config.STATS[stats_center].spreads["none"].exts[stats_center]
         )
         if dataop == "move":
             item.rename(dest)

@@ -474,7 +474,7 @@ Compare a single controller across all scenarios it has been run on:
    --project=projects.sample_argos \
    --pipeline 5 \
    --across=scenarios \
-   --dist-stats=conf95 \
+   --spread=conf95 \
    --bc-univar \
    --things=foraging.footbot_foraging
 
@@ -496,7 +496,7 @@ Compare multiple controllers in the scenarios they have all been run on:
    --project=projects.sample_argos \
    --pipeline 5 \
    --across=controllers \
-   --dist-stats=conf95 \
+   --spread=conf95 \
    --bc-univar \
    --things=foraging.footbot_foraging,foraging.footbot_foraging-slow
 

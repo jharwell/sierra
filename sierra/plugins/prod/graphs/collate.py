@@ -217,20 +217,25 @@ class GraphCollator:
             criteria.gen_exp_names(),
         )
 
-        # Always do the mean, even if stats are disabled.
+        # Always do the base, even if distribution stats are disabled.
         #
-        # NOTE: copy the exts dict rather than aliasing it. config.STATS["mean"]
-        # .exts is shared module state.
-        stat_config = dict(config.STATS["mean"].exts)
-
+        # NOTE: copy the exts dict rather than aliasing it.
+        center = self.cmdopts["center"]
         # We have to test for membership, because it is perfectly valid to run
         # this plugin with deterministic data which has fake/pseudo stats; i.e.,
         # the proc.statistics plugin is not active.
-        if self.cmdopts["dist_stats"] in ("conf95", "all"):
-            stat_config.update(config.STATS["conf95"].exts)
+        if center == "mean":
+            stat_config = dict(config.STATS["mean"].spreads["none"].exts)
+            if self.cmdopts.get("spread", "none") == "conf95":
+                stat_config.update(config.STATS["mean"].spreads["conf95"].exts)
 
-        if "dist_stats" in self.cmdopts and self.cmdopts["dist_stats"] in ["bw", "all"]:
-            stat_config.update(config.STATS["bw"].exts)
+            if self.cmdopts.get("spread", "none") == "bw":
+                stat_config.update(config.STATS["mean"].spreads["bw"].exts)
+
+        elif center == "median":
+            stat_config = dict(config.STATS["median"].spreads["none"].exts)
+            if self.cmdopts.get("spread", "none") == "iqr":
+                stat_config.update(config.STATS["median"].spreads["iqr"].exts)
 
         stats = [
             GraphCollationInfo(

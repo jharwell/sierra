@@ -488,7 +488,6 @@ jobs:
           - compare_sc_univar
           - compare_cc_bivar
           - compare_models
-          - compare_things_legend
 
         container:
           - jharwell/ubuntu24.04-sierra:latest

@@ -71,7 +71,7 @@ class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
             # Since parallel doesn't export any envvars to child processes by
             # default, we add some common ones.
             types.ShellCmdSpec(
-                cmd='export PARALLEL="--env LD_LIBRARY_PATH"',
+                cmd='export PARALLEL="--env LD_LIBRARY_PATH --env PYTHONPATH"',
                 shell=True,
                 wait=True,
                 env=True,
@@ -98,6 +98,19 @@ class ExpShellCmdsGenerator(bindings.IExpShellCmdsGenerator):
         if exec_opts["exec_resume"]:
             resume = "--resume-failed"
 
+        # 2026-08-14 [JRH]: Unlike the pbs execenv, no special-casing is needed
+        # here to keep engines in the right environment. GNU parallel only
+        # strips the environment when it runs a task *remotely* (over ssh to a
+        # host it considers non-local); locally run tasks are forked and inherit
+        # the full submitting environment (ARGOS_PLUGIN_PATH, PYTHONPATH,
+        # etc.). On a single-node allocation `scontrol show hostnames
+        # $SLURM_JOB_NODELIST` resolves to a node name that parallel treats as
+        # local (e.g. localhost), so parallel forks rather than sshes and the
+        # environment carries through with no --env forwarding needed.
+        #
+        # On the other hand, the pbs execenv has to write ":" explicitly to get
+        # this same local-execution behavior, because  $PBS_NODEFILE gives it the
+        # machine's routable hostname rather than a local-recognized name.
         unique_nodes = types.ShellCmdSpec(
             cmd=f"scontrol show hostnames $SLURM_JOB_NODELIST > {nodelist}",
             shell=True,

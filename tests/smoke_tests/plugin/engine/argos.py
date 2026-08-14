@@ -14,7 +14,7 @@ import pathlib
 import nox
 
 # Project packages
-from sierra.core import batchroot
+from sierra.core import batchroot, config
 from tests.smoke_tests import utils, setup
 
 
@@ -97,16 +97,21 @@ def argos_stage1_univar(session):
 @nox.session(python=utils.versions, tags=["argos"])
 @setup.session_setup
 @setup.session_teardown
-@nox.parametrize("dist_stats", ["none", "conf95", "bw"])
-def argos_stage3_univar(session, dist_stats):
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "none"),
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "none"),
+        ("median", "iqr"),
+    ],
+)
+def argos_stage3_univar(session, stats):
     """Check that stage 3 outputs what it is supposed to."""
-    # Define expected stats files based on dist_stats parameter
-    stats_map = {
-        "none": ["mean"],
-        "conf95": ["mean", "stddev"],
-        "bw": ["mean", "median", "whishi", "whislo", "q1", "q3", "cilo", "cihi"],
-    }
-    to_check = stats_map[dist_stats]
+    central = stats[0]
+    spread = stats[1]
+    to_check = config.STATS[central].spreads[spread].exts
 
     # Get batch root path
     bc = ["population_size.Linear3.C3"]
@@ -127,7 +132,8 @@ def argos_stage3_univar(session, dist_stats):
         f"--controller=foraging.footbot_foraging "
         f"--batch-criteria population_size.Linear3.C3 "
         f"--pipeline 1 2 3 "
-        f"--dist-stats={dist_stats}"
+        f"--center={central} "
+        f"--spread={spread}"
     )
 
     # Run the command
@@ -143,27 +149,22 @@ def argos_stage3_univar(session, dist_stats):
 @nox.parametrize(
     "bc", ["population_size.Linear3.C3", "population_variable_density.1p0.4p0.C4"]
 )
-@nox.parametrize("dist_stats", ["none", "conf95", "bw", "all"])
-def argos_stage4_univar(session, bc, dist_stats):
+@nox.parametrize(
+    "stats",
+    [
+        ("mean", "none"),
+        ("mean", "conf95"),
+        ("mean", "bw"),
+        ("median", "none"),
+        ("median", "iqr"),
+    ],
+)
+def argos_stage4_univar(session, bc, stats):
     """Check that stage 4 outputs what it is supposed to."""
-    # Define expected stats files based on dist_stats parameter
-    stats_map = {
-        "none": ["mean"],
-        "conf95": ["mean", "stddev"],
-        "bw": ["mean", "median", "whishi", "whislo", "q1", "q3", "cilo", "cihi"],
-        "all": [
-            "mean",
-            "stddev",
-            "median",
-            "whishi",
-            "whislo",
-            "q1",
-            "q3",
-            "cilo",
-            "cihi",
-        ],
-    }
-    to_check = stats_map[dist_stats]
+    # Define expected stats files based on spread parameter
+    central = stats[0]
+    spread = stats[1]
+    to_check = config.STATS[central].spreads[spread].exts
 
     # Get batch root path
     template_stem = "template"
@@ -183,7 +184,8 @@ def argos_stage4_univar(session, bc, dist_stats):
         f"--controller=foraging.footbot_foraging "
         f"--batch-criteria {bc} "
         f"--pipeline 1 2 3 4 "
-        f"--dist-stats={dist_stats}"
+        f"--center={central} "
+        f"--spread={spread} "
     )
 
     # Run the command

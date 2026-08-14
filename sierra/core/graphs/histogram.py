@@ -33,6 +33,7 @@ def generate(  # noqa: PLR0913
     backend: str,
     cols: tp.Optional[list[str]],
     kind: str,
+    stats_center: str,
     bins: tp.Optional[str] = None,
     xlabel: tp.Optional[str] = None,
     ylabel: tp.Optional[str] = None,
@@ -49,7 +50,9 @@ def generate(  # noqa: PLR0913
     """
     hv.extension(backend, inline=False, logo=False)
 
-    input_fpath = pathset.input_root / (input_stem + config.STATS["mean"].exts["mean"])
+    input_fpath = pathset.input_root / (
+        input_stem + config.STATS[stats_center].spreads["none"].exts[stats_center]
+    )
     output_fpath = pathset.output_root / "HG-{}.{}".format(
         output_stem, graphutils.ofile_ext(backend)
     )
@@ -140,7 +143,7 @@ def generate(  # noqa: PLR0913
         },
     )
 
-    graphutils.save_plot(plot, output_fpath, backend)
+    graphutils.plot_save(plot, output_fpath, backend)
     _logger.debug(
         "Graph written to <batchroot>/%s",
         output_fpath.relative_to(pathset.batchroot),

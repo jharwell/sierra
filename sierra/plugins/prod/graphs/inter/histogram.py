@@ -63,6 +63,7 @@ def generate(
                 xlabel=str(graph["xlabel"]),
                 ylabel=str(graph["ylabel"]),
                 large_text=cmdopts["plot_large_text"],
+                stats_center=cmdopts.get("center", "mean"),
                 # 2026-07-22 [JRH]: 'cols' selects which column is pulled from
                 # each experiment during collation; the collated frame then has
                 # one column *per experiment*, all of which are plotted. So the

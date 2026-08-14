@@ -76,7 +76,8 @@ def _gen_summary_linegraph(
         output_stem=str(graph["dest"]),
         medium="storage.csv",
         legend=[legend],
-        stats=str(cmdopts.get("dist_stats", "none")),
+        stats_center=str(cmdopts.get("center", "mean")),
+        stats_spread=str(cmdopts.get("spread", "none")),
         title=str(graph["title"]),
         xlabel=info.xlabel,
         ylabel=str(graph["ylabel"]),
@@ -106,7 +107,8 @@ def _gen_stacked_linegraph(
         pathset=paths,
         input_stem=str(graph["dest"]),
         output_stem=str(graph["dest"]),
-        stats=str(cmdopts.get("dist_stats", "none")),
+        stats_center=str(cmdopts.get("center", "mean")),
+        stats_spread=str(cmdopts.get("spread", "none")),
         medium="storage.csv",
         title=str(graph["title"]),
         backend=str(graph.get("backend", cmdopts["graphs_backend"])),
@@ -115,9 +117,7 @@ def _gen_stacked_linegraph(
         ylabel=str(graph["ylabel"]),
         logyscale=bool(graph.get("logy", cmdopts["plot_log_yscale"])),
         large_text=cmdopts["plot_large_text"],
-        legend=tp.cast(
-            "tp.Optional[list[str]]", graph.get("legend", info.exp_names)
-        ),
+        legend=tp.cast("tp.Optional[list[str]]", graph.get("legend", info.exp_names)),
     )
 
 

@@ -212,7 +212,8 @@ paths.
 .. NOTE:: The ``--scenario`` argument can be used to encode the arena dimensions
           used in an experiment; this is one of two ways to communicate to
           SIERRA that size of the experimental arena for each
-          :term:`Experiment`. See :ref:`tutorials/project/new-bc/arena-size` for more details.
+          :term:`Experiment`. See :ref:`tutorials/project/new-bc/arena-size` for
+          more details.
 
 Next Steps
 ==========

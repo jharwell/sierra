@@ -108,7 +108,7 @@ def generate(  # noqa: PLR0913
 
     plot.opts(title=title)
     try:
-        graphutils.save_plot(plot, output_fpath, backend)
+        graphutils.plot_save(plot, output_fpath, backend)
     except Exception as e:
         _logger.warning("Failed to output plot: %s", e)
 

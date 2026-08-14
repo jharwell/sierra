@@ -152,9 +152,4 @@ RUN mkdir -p /var/spool/pbs/mom_priv && \
     printf '$clienthost localhost\n$restrict_user_maxsysid 999\n$logevent 0xffffffff\n' \
     > /var/spool/pbs/mom_priv/config
 
-# PBS refuses jobs submitted by root, so create an unprivileged submitter.
-# -m ensures $HOME exists (the mom stages the job's working dir there; without
-# it you get obscure staging / "Access from host not allowed" failures).
-RUN useradd -m -s /bin/bash pbstest
-
 COPY ./tests/smoke_tests/pbs.conf /etc/pbs.conf
