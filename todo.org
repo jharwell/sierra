@@ -1,5 +1,5 @@
 * SIERRA                                                             :sierra:
-** TODO [#B] Add additional integration tests [70%]
+** TODO [#B] Add additional integration tests [90%]
 - [X] Verifying ARGoS stage 1,2,3,4 outputs
 - [X] Testing ARGoS video generation
 - [X] Verifying ROS1+Gazebo stage 1 outputs
@@ -12,21 +12,10 @@
   core not tested by the plugin integration tests. This should get its own
   workflow file. What shows up as github badges should be a core+plugins yml
   file with an "Integration tests" label.
-- [ ] Simple model for testing in the sample project, associated tests
-- [ ] Switch from bash to something else (python/noxfile?); my scripts are
+- [X] Simple model for testing in the sample project, associated tests
+- [X] Switch from bash to something else (python/noxfile?); my scripts are
   getting too complicated.
 - [X] Imagizing integration tests
-
-
-** TODO Update other plugin tutorials {storage, expdef}
-After the {platform, execenv} docs overhaul, these tutorials look really bad by
-comparison.
-
-** TODO Add additional unit tests [0%]
-- [ ] Parser unit tests (for CLI variables that can be used as batch criteria)
-- [ ] Nodefile parsing
-
-** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
 
 ** TODO Add --seed to gazebo commands so experiments are more idempotent
 
@@ -39,10 +28,6 @@ setup written to the pkl file.
 Might be helpful to spot trends among different controllers. Would also need to
 be implemented in stage 5 as another comparison option.
 
-** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
-Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
-
-** DONE [#C] Check out the fastcore library
 ** TODO [#B] Document why you need 2 GNU parallel processes for rosrobot :sierra:
    Because you can't have robot controllers running on the master, which could
    happen if you only had a single GNU parallel process.
@@ -186,3 +171,9 @@ better type checking
 ** DONE Make cmdline a first-class plugin, update tutorials
 ** DONE Added tutorial for creating a new model
 - And add an example in the sample project
+** DONE Update other plugin tutorials {storage, expdef}
+After the {platform, execenv} docs overhaul, these tutorials look really bad by
+comparison.
+** DONE Add additional unit tests [100%]
+- [X] Parser unit tests (for CLI variables that can be used as batch criteria)
+- [X] Nodefile parsing

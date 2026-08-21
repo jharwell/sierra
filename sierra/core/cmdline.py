@@ -694,22 +694,21 @@ class CoreCmdline(BaseCmdline):
         self.stage3.add_argument(
             "--df-verify",
             help="""
-                 SIERRA generally assumes/relies on all dataframes with the same
+                 It can be useful to check that all dataframes with the same
                  name having the same # of columns which are of equivalent
                  length across :term:`Experimental Runs <Experimental Run>`
                  (different columns within a dataframe can of course have
-                 different lengths).  However this is not checked by default.
+                 different lengths).  This is not checked by default.
 
-                 If passed, then the verification step not be skipped, and will
-                 be executed during experimental results processing, and outputs
-                 will be averaged directly.
+                 If passed, then the verification step is executed during
+                 experimental results processing. If not all the corresponding
+                 CSV files in all experiments generated the same # rows, then
+                 SIERRA will raise an error. Verification can take a long time
+                 with large # of runs and/or dataframes per experiment.
 
-                 If not all the corresponding CSV files in all experiments
-                 generated the same # rows, then SIERRA will (probably) crash
-                 during experiments exist and/or have the stage4.  Verification
-                 can take a long time with large # of runs and/or dataframes per
-                 experiment.
-                 """
+                 This option is not useful if the same data stream can
+                 legitimately be different lengths across experimental runs.
+            """
             + self.stage_usage_doc([3]),
             action="store_true",
             default=False,

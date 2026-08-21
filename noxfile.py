@@ -11,29 +11,43 @@ import nox
 import psutil
 
 # Project packages
-from tests.smoke_tests import core, utils
-from tests.smoke_tests.plugin.engine import (
-    argos,
-    jsonsim,
-    yamlsim,
-    ros1robot,
-    ros1gazebo,
-)
-from tests.regression_tests import proc
-from tests.smoke_tests.plugin.proc import modelrunner, compression, pseudostats
-from tests.smoke_tests.plugin.prod import graphs
-from tests.smoke_tests.plugin.compare import graphs as compare_graphs
+#
+# Importing these modules registers their @nox.session functions with nox. The
+# test suite was reorganized around tests/_framework (shared machinery) plus
+# thin session modules; the old per-engine smoke files (argos/jsonsim/yamlsim/
+# ros1robot/ros1gazebo) and the old utils/setup modules no longer exist -- their
+# sessions are now the manifest/spec-driven sessions in tests.smoke.smoke.
+from tests._framework import env
+from tests.smoke import core, smoke
+from tests.smoke.plugin import execenv
+from tests.smoke.plugin.proc import modelrunner, compression, pseudostats
+from tests.smoke.plugin.prod import graphs
+from tests.smoke.plugin.compare import graphs as compare_graphs
+from tests.regression import regression
 
-from tests.smoke_tests.plugin import execenv
+# Silence "imported but unused" linters: these imports exist for their
+# side effect of registering nox sessions.
+__all__ = [
+    "core",
+    "smoke",
+    "execenv",
+    "modelrunner",
+    "compression",
+    "pseudostats",
+    "graphs",
+    "compare_graphs",
+    "proc",
+    "regression",
+]
 
 nox.options.default_venv_backend = "uv"
 nox.options.reuse_venv = "always"
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=env.VERSIONS)
 def analyze_misc(session):
     session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
+    session.install(".[dev]")  # same as 'pip3 install .[dev]'
 
     session.run(
         "xenon",
@@ -44,19 +58,19 @@ def analyze_misc(session):
     )
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=env.VERSIONS)
 def analyze_ruff(session):
     session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
+    session.install(".[dev]")  # same as 'pip3 install .[dev]'
 
     session.run("ruff", "check", "sierra")
 
 
 # venv argument needed so the apt module can be found in the nox venv on linux
-@nox.session(python=utils.versions)
+@nox.session(python=env.VERSIONS)
 def analyze_pytype(session):
     session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
+    session.install(".[dev]")  # same as 'pip3 install .[dev]'
 
     cores = psutil.cpu_count()
     session.run(
@@ -70,18 +84,18 @@ def analyze_pytype(session):
 
 
 # venv argument needed so the apt module can be found in the nox venv on linux
-@nox.session(python=utils.versions)
+@nox.session(python=env.VERSIONS)
 def analyze_mypy(session):
     session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
+    session.install(".[dev]")  # same as 'pip3 install .[dev]'
     session.run("mypy", "--install-types", "--non-interactive", external=False)
     session.run("mypy", "--install-types")
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=env.VERSIONS)
 def docs(session):
     session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
+    session.install(".[dev]")  # same as 'pip3 install .[dev]'
 
     # Check for imperative voice
     session.run("pydocstyle", "--select=D401", "sierra")
@@ -93,45 +107,13 @@ def docs(session):
     session.run("pydocstyle", "--select=D400", "sierra")
 
 
-@nox.session(python=utils.versions)
+@nox.session(python=env.VERSIONS)
 def unit_tests(session):
     session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
+    session.install(".[dev]")  # same as 'pip3 install .[dev]'
 
-    if env := os.environ.get("GITHUB_WORKSPACE"):
-        session.env["SIERRA_PLUGIN_PATH"] = f"{env}/sierra-sample-project"
-    else:
-        path = pathlib.Path(os.environ.get("HOME"), "git/thesis/sierra-sample-project")
-        session.env["SIERRA_PLUGIN_PATH"] = str(path)
-
-    session.run("pytest", "--cov", "tests/unit_tests")
-
-
-# 2024-11-19 [JRH]: This currently is just a paper-thin wrapper around the shell
-# scripts, which were implemented a long time ago. And it works. Some/all of the
-# stuff in these scripts should be migrated into python, where doing things like
-# loops is way easier/better/cleaner.
-
-
-@nox.session(python=utils.versions)
-def plugin_ros1gazebo_smoke(session):
-    session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
-
-    session.run("./scripts/ros1gazebo-smoke-tests.sh", *session.posargs)
-
-
-@nox.session(python=utils.versions)
-def plugin_ros1robot_smoke(session):
-    session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
-
-    session.run("./scripts/ros1robot-smoke-tests.sh", *session.posargs)
-
-
-@nox.session(python=utils.versions)
-def plugin_jsonsim_smoke(session):
-    session.install(".")  # same as 'pip3 install .'
-    session.install(".[devel]")  # same as 'pip3 install .[devel]'
-
-    session.run("./scripts/jsonsim-smoke-tests.sh", *session.posargs)
+    # The sample project supplies the plugins the unit tests load. Resolve its
+    # path through the framework's single local-vs-CI resolver rather than
+    # re-deriving GITHUB_WORKSPACE/HOME here.
+    session.env["SIERRA_PLUGIN_PATH"] = str(env.sample_project_root())
+    session.run("pytest", "--cov", "tests/unit")

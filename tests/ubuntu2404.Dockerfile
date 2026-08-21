@@ -86,8 +86,9 @@ RUN mkdir -p /etc/slurm-llnl/ && \
     chown -R slurm:slurm /var/lib/slurm-llnl/ && \
     chown -R slurm:slurm /var/log/slurm-llnl/
 
-COPY ./tests/smoke_tests/slurm.conf /etc/slurm-llnl/slurm.conf
-COPY ./tests/smoke_tests/slurm.conf /etc/slurm/slurm.conf
+COPY ./tests/smoke/slurm.conf /etc/slurm-llnl/slurm.conf
+COPY ./tests/smoke/slurm.conf /etc/slurm/slurm.conf
+COPY ./tests/smoke/slurm-cgroup.conf /etc/slurm/cgroup.conf
 
 ################################################################################
 # PBS execution environment
@@ -152,4 +153,4 @@ RUN mkdir -p /var/spool/pbs/mom_priv && \
     printf '$clienthost localhost\n$restrict_user_maxsysid 999\n$logevent 0xffffffff\n' \
     > /var/spool/pbs/mom_priv/config
 
-COPY ./tests/smoke_tests/pbs.conf /etc/pbs.conf
+COPY ./tests/smoke/pbs.conf /etc/pbs.conf

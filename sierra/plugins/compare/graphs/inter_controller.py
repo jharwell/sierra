@@ -8,8 +8,6 @@ Batch criteria and scenario are the same across all compared controllers.
 """
 
 # Core packages
-import glob
-import re
 import typing as tp
 import argparse
 import logging
@@ -100,21 +98,12 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         cmdopts: types.Cmdopts,
         graph: types.YAMLDict,
         roots: list[batchroot.ExpRoot],
-        legend: list[str],
     ) -> None:
 
-        graph_spec = {
-            "src": graph["src"],
-            "index": graph["index"],
-            "dest": graph["dest"],
-            "title": graph["title"],
-            "label": graph["label"],
-            "inc_exps": graph["include_exp"],
-            "legend": legend,
-            "backend": graph["backend"],
-        }
-
         processed = []  # type: list[str]
+
+        if not graph["legend"]:
+            graph["legend"] = self.controllers
 
         for controller in self.things:
             valid_configurations = sum(r.controller == controller for r in roots)
@@ -138,7 +127,6 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             # experiment that we selected for controller comparison, by
             # definition.
             root = next(r for r in roots if r.controller == controller)
-
             # We need to generate the root directory paths for each batch
             # experiment (which # lives inside of the scenario dir), because
             # they are all different. We need generate these paths for EACH
@@ -168,7 +156,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
                 criteria=criteria,
                 pathset=pathset,
                 controller=controller,
-                spec=graph_spec,
+                spec=graph,
             )
             processed.append(controller)
 
@@ -177,7 +165,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         if not processed:
             self.logger.warning(
                 "No controllers could be compared for '%s'; skipping graph",
-                graph_spec["dest"],
+                graph["dest"],
             )
             return
 
@@ -206,7 +194,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             criteria=ref_criteria,
             cmdopts=cmdopts,
             batch_output_root=ref_pathset.output_root,
-            spec=graph_spec,
+            spec=graph,
         )
 
     def _accum_csv(
@@ -219,7 +207,7 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
     ) -> None:
         """Accumulate info in a CSV file for inter-controller comparison."""
         self.logger.debug(
-            "Gathering data for %s from %s -> %s",
+            "Gathering data for %s from <batchroot>/statistics/inter-exp/%s -> %s",
             controller,
             spec["src"],
             spec["dest"],
@@ -242,13 +230,15 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
             ipath_leaf=spec["src"],
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
+            stat_center=self.cmdopts.get("center", "mean"),
+            stat_spread=self.cmdopts.get("spread", "none"),
         )
         opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], None)
         preparer.for_cc(
             controller=controller,
             opath_leaf=opath_leaf,
             index=spec["index"],
-            inc_exps=spec["inc_exps"],
+            include_exp=spec["include_exp"],
         )
 
         # Collect performance results models and legends. Append to existing
@@ -264,27 +254,30 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         )
 
         # Per-controller model prediction, produced by stage 4 inter-experiment
-        # model running. Only present if models were run for this performance
-        # measure; if absent, there is simply nothing to collate here.
+        # model running. Only present if models were run for this controller if
+        # absent, there is simply nothing to collate here.
         model_ipath = (pathset.model_interexp_root / spec["src"]).with_suffix(
             config.MODELS_EXT["model"]
         )
 
         model_df = None
         if utils.path_exists(model_ipath):
+            self.logger.debug("Inter-exp model file %s exists", model_ipath)
             cum_df = (
                 storage.df_read(model_opath, "storage.csv")
                 if utils.path_exists(model_opath)
                 else None
             )
             src_df = storage.df_read(model_ipath, "storage.csv")
-            model_df = preprocess.collate_model_column(
+            model_df = preprocess._collate_model_column(
                 cum_df,
                 src_df,
-                spec["inc_exps"],
+                spec["include_exp"],
                 controller,
                 criteria.gen_exp_names(),
             )
+        else:
+            self.logger.debug("Inter-exp model file %s does not exist", model_ipath)
 
         if model_df is not None:
             storage.df_write(model_df, model_opath, "storage.csv")
@@ -306,10 +299,10 @@ class UnivarInterControllerComparator(BaseInterControllerComparator):
         info = criteria.graph_info(cmdopts, batch_output_root=batch_output_root)
 
         xtick_labels = utils.exp_include_filter(
-            spec["inc_exps"], info.xticklabels, criteria.n_exp()
+            spec["include_exp"], info.xticklabels, criteria.n_exp()
         )
         xticks = utils.exp_include_filter(
-            spec["inc_exps"], info.xticks, criteria.n_exp()
+            spec["include_exp"], info.xticks, criteria.n_exp()
         )
 
         paths = graphs.PathSet(
@@ -379,22 +372,12 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         cmdopts: types.Cmdopts,
         graph: types.YAMLDict,
         roots: list[batchroot.ExpRoot],
-        legend: list[str],
     ) -> None:
 
-        graph_spec = {
-            "index": graph["index"],
-            "src": graph["src"],
-            "dest": graph["dest"],
-            "title": graph["title"],
-            "label": graph["label"],
-            "inc_exps": graph["include_exp"],
-            "legend": legend,
-            "primary_axis": graph["primary_axis"],
-            "backend": graph["backend"],
-        }
-
         processed = []  # type: list[str]
+
+        if not graph["legend"]:
+            graph["legend"] = self.controllers
 
         for controller in self.things:
             valid_configurations = sum(r.controller == controller for r in roots)
@@ -441,25 +424,29 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 root.scenario,
             )
 
-            if self.cli_args.comparison_type == "LNraw":
+            if graph["type"] == "comparison_line":
                 self._gen_csvs_1d(
                     cmdopts=cmdopts,
                     criteria=criteria,
                     pathset=pathset,
                     controller=controller,
                     batch_leaf=root.leaf,
-                    spec=graph_spec,
+                    spec=graph,
                 )
                 processed.append(controller)
+            else:
+                raise RuntimeError(
+                    "Bad stage5 graph type {} selected".format(graph["type"])
+                )
 
         if not processed:
             self.logger.warning(
                 "No controllers could be compared for '%s'; skipping graph",
-                graph_spec["dest"],
+                graph["dest"],
             )
             return
 
-        if self.cli_args.comparison_type == "LNraw":
+        if graph["type"] == "comparison_line":
             # Use the first successfully-processed controller as the reference,
             # rather than whichever loop iteration ran last.
             ref_controller = processed[0]
@@ -483,7 +470,11 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 criteria=ref_criteria,
                 cmdopts=cmdopts,
                 pathset=ref_pathset,
-                spec=graph_spec,
+                spec=graph,
+            )
+        else:
+            raise RuntimeError(
+                "Bad stage5 graph type {} selected".format(graph["type"])
             )
 
     def _gen_csvs_1d(
@@ -535,6 +526,8 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 ipath_leaf=spec["src"],
                 opath_stem=self.stage5_roots.csv_root,
                 criteria=criteria,
+                stat_center=self.cmdopts.get("center", "mean"),
+                stat_spread=self.cmdopts.get("spread", "none"),
             )
 
             opath_leaf = namecalc.for_cc(batch_leaf, spec["dest"], [spec["index"]])
@@ -542,7 +535,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 controller,
                 opath_leaf=opath_leaf,
                 index=spec["index"],
-                inc_exps=spec["inc_exps"],
+                include_exp=spec["include_exp"],
             )
         else:
             preparer = preprocess.IntraExpPreparer(
@@ -550,12 +543,14 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                 ipath_leaf=spec["src"],
                 opath_stem=self.stage5_roots.csv_root,
                 criteria=criteria,
+                stat_center=self.cmdopts.get("center", "mean"),
+                stat_spread=self.cmdopts.get("spread", "none"),
             )
 
             exp_dirs = criteria.gen_exp_names()
             xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
             xlabels = utils.exp_include_filter(
-                spec["inc_exps"], xlabels, criteria.criterias[0].n_exp()
+                spec["include_exp"], xlabels, criteria.criterias[0].n_exp()
             )
 
             for col in ylabels:
@@ -565,7 +560,7 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
                     controller,
                     opath_leaf=opath_leaf,
                     index=col_index,
-                    inc_exps=spec["inc_exps"],
+                    include_exp=spec["include_exp"],
                 )
 
     def _gen_graphs_1d(
@@ -581,21 +576,21 @@ class BivarInterControllerComparator(BaseInterControllerComparator):
         if spec["primary_axis"] == 0:
             n_exp = criteria.criterias[0].n_exp()
             yticks = info.yticks
-            xticks = utils.exp_include_filter(spec["inc_exps"], yticks, n_exp)
+            xticks = utils.exp_include_filter(spec["include_exp"], yticks, n_exp)
 
             ytick_labels = info.yticklabels
             xtick_labels = utils.exp_include_filter(
-                spec["inc_exps"], ytick_labels, n_exp
+                spec["include_exp"], ytick_labels, n_exp
             )
             xlabel = info.ylabel
         else:
             n_exp = criteria.criterias[1].n_exp()
             yticks = info.xticks
-            xticks = utils.exp_include_filter(spec["inc_exps"], yticks, n_exp)
+            xticks = utils.exp_include_filter(spec["include_exp"], yticks, n_exp)
 
             ytick_labels = info.xticklabels
             xtick_labels = utils.exp_include_filter(
-                spec["inc_exps"], ytick_labels, n_exp
+                spec["include_exp"], ytick_labels, n_exp
             )
             xlabel = info.xlabel
 

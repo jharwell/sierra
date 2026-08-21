@@ -1,0 +1,111 @@
+#
+# Copyright 2025 John Harwell, All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+#
+"""Regression tests — shape (tier 2) and value (tier 3).
+
+These are NOT a replacement for the smoke presence tests; they sit above them.
+They read the SAME ``EngineSpec`` manifests, so the file list is defined once
+and checked at three depths:
+
+    smoke.py       -> max_tier=1   (presence; broad, every PR)
+    this file      -> max_tier=2   (shape; cheap, reference engines)
+    this file      -> max_tier=3   (value; golden compare, on-release)
+
+Because coarser tiers run first inside ``verify_stage``, a pipeline that broke
+upstream fails with a clean presence error here too, not a cryptic parse error.
+"""
+
+# Core packages
+import pathlib
+
+# 3rd party packages
+import nox
+
+# Project packages
+from tests._framework import engines, verify, env
+from tests._framework.command import SierraCommand
+from sierra.core import batchroot
+
+_GOLDENS = pathlib.Path(__file__).parent / "goldens"
+
+
+def _run_full(session, spec, center, spread, *stages):
+    stages = stages or (1, 2, 3)
+    leaf = batchroot.ExpRootLeaf(
+        bc=[spec.batch_criteria], template_stem=spec.template_stem
+    )
+    batch_root = batchroot.ExpRoot(
+        sierra_root=session.env["SIERRA_ROOT"],
+        project=spec.project,
+        controller=spec.controller,
+        leaf=leaf,
+        scenario=spec.scenario,
+    ).to_path()
+
+    cmd = (
+        SierraCommand.from_base(session.env[spec.base_cmd_env].split())
+        .set("--batch-criteria", spec.batch_criteria)
+        .set("--center", center)
+        .set("--spread", spread)
+        .pipeline(*stages)
+        .render()
+    )
+    session.run(*cmd, silent=True)
+    return batch_root
+
+
+# Tier 2 — shape. Cheap, no goldens. Runs on the lightweight reference engines.
+@nox.session(python=env.VERSIONS, tags=["regression", "shape"])
+@nox.parametrize(
+    "engine",
+    [e for e in engines.ALL_ENGINES if e.lightweight and 3 in e.stages],
+    ids=[e.name for e in engines.ALL_ENGINES if e.lightweight and 3 in e.stages],
+)
+@env.session_setup
+@env.session_teardown
+def regression_shape_stage3(session, engine):
+    center, spread = "mean", "conf95"
+    batch_root = _run_full(session, engine, center, spread)
+    verify.verify_stage(
+        engine, 3, batch_root, max_tier=2, center=center, spread=spread
+    )
+
+
+@nox.session(python=env.VERSIONS, tags=["regression", "shape"])
+@nox.parametrize(
+    "engine",
+    [e for e in engines.ALL_ENGINES if e.lightweight and 4 in e.stages],
+    ids=[e.name for e in engines.ALL_ENGINES if e.lightweight and 4 in e.stages],
+)
+@env.session_setup
+@env.session_teardown
+def regression_shape_stage4(session, engine):
+    center, spread = "mean", "conf95"
+    batch_root = _run_full(session, engine, center, spread, 1, 2, 3, 4)
+    verify.verify_stage(
+        engine, 4, batch_root, max_tier=2, center=center, spread=spread
+    )
+
+
+# Tier 3 — value. Expensive; golden compare across measures of center/spread.
+@nox.session(python=env.VERSIONS, tags=["regression", "value"])
+@nox.parametrize(
+    "stats",
+    [("mean", "conf95"), ("mean", "bw"), ("median", "iqr")],
+    ids=["mean-conf95", "mean-bw", "median-iqr"],
+)
+@env.session_setup
+@env.session_teardown
+def regression_value_stage3(session, stats):
+    center, spread = stats
+    engine = engines.REFERENCE_ENGINE
+    batch_root = _run_full(session, engine, center, spread)
+    # Only entries whose manifest sets ``value_check`` are golden-compared; the
+    # rest fall through to presence+shape automatically. Stat extensions resolve
+    # from config.STATS for this center/spread.
+    verify.verify_stage(
+        engine, 3, batch_root, max_tier=3, goldens_root=_GOLDENS,
+        center=center, spread=spread,
+    )

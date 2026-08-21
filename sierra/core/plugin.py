@@ -46,7 +46,13 @@ class BasePluginManager:
             self.logger.fatal("Cannot locate plugin %s", name)
             self.logger.fatal(
                 "Loaded plugins: %s\n",
-                json.dumps(self.loaded, default=lambda x: "<ModuleSpec>", indent=4),
+                json.dumps(
+                    self.loaded,
+                    default=lambda x: (
+                        str(x) if hasattr(x, "__str__") else "<ModuleSpec>"
+                    ),
+                    indent=4,
+                ),
             )
             raise RuntimeError(f"Cannot locate plugin '{name}'")
 

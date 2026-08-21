@@ -84,9 +84,7 @@ class Writer:
             assert elt is not None, f"Could not find graft source '{g}'"
             graft_parent.append(elt)
 
-    def _add_new_children(
-        self, config: dict, tree: ET.Element
-    ) -> ET.Element:
+    def _add_new_children(self, config: dict, tree: ET.Element) -> ET.Element:
         """Given the experiment definition, add new children as configured.
 
         We operate on the whole definition in-situ, rather than creating a new

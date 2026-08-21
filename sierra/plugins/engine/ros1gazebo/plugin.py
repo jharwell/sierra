@@ -236,7 +236,8 @@ def cmdline_postparse_configure(
     if env == "hpc.pbs":
         return _configure_hpc_pbs(args)
 
-    raise RuntimeError(f"'{env}' unsupported on ROS1+Gazebo")
+    _logger.warning("Execution environment %s untested--a crash is likely", env)
+    return args
 
 
 def _configure_hpc_pbs(args: argparse.Namespace) -> argparse.Namespace:

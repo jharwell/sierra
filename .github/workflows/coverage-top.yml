@@ -21,21 +21,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 2024/08/27: We don't test the core with OSX, because if it works on linux,
-  # it should work on OSX. Plus, the plugin tests utilize a lot of "core"
-  # functionality, it the core is already largely tested on OSX via that
-  # route. Plugins are another story, and are explicitly tested on OSX where
-  # feasible.
-  core-smoke-tests:
-    uses: ./.github/workflows/core-smoke.yml
+  smoke-presence:
+    uses: ./.github/workflows/smoke-presence.yml
     secrets: inherit
 
-  plugin-smoke-tests:
-    uses: ./.github/workflows/plugin-smoke.yml
-    secrets: inherit
-
-  plugin-regression-tests:
-    uses: ./.github/workflows/plugin-reg.yml
+  regression:
+    uses: ./.github/workflows/regression.yml
     secrets: inherit
 
   unit-tests:
@@ -47,8 +38,8 @@ jobs:
     container: jharwell/ubuntu24.04-sierra:latest
 
     needs:
-      - core-smoke-tests
-      - plugin-smoke-tests
+      - smoke-presence
+      - regression
       - unit-tests
 
     steps:
@@ -61,11 +52,6 @@ jobs:
       - name: Generate coverage report
         shell: bash
         run: |
-          # ls -al . || true
-          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/.* || true
-          # ls -al ci-*-Linux-${{ matrix.python-version }}-coverage/* || true
-          # find . -name "ci-*-Linux-${{ matrix.python-version }}-coverage*"
-
           # This is necessary for coverage since we run all integration tests in
           # nox, otherwise coverage can't find e.g., the sierra-cli executable
           # and we can't upload coverage.

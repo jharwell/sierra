@@ -33,6 +33,7 @@ comparison_line = strictyaml.Map(
         # consumers back to .get().
         strictyaml.Optional("include_exp", default=":"): strictyaml.Str(),
         strictyaml.Optional("backend"): strictyaml.Str(),
+        strictyaml.Optional("legend"): strictyaml.Seq(strictyaml.Str()),
     }
 )
 """
@@ -62,9 +63,7 @@ BY_TYPE = {
 #: Keeping this here rather than inline at each call site means the schema
 #: module remains the single place which knows how every key is defaulted --
 #: whether that default is a constant or comes from the cmdline.
-CMDLINE_DEFAULTS = {
-    "backend": "graphs_backend",
-}
+CMDLINE_DEFAULTS = {"backend": "graphs_backend", "legend": "things"}
 
 
 def resolve(graph, cmdopts: types.Cmdopts):

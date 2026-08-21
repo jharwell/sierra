@@ -15,9 +15,7 @@ from sierra.core import types, utils
 from sierra.plugins import PluginCmdline
 
 
-def build(
-    parents: list[argparse.ArgumentParser], stages: list[int]
-) -> PluginCmdline:
+def build(parents: list[argparse.ArgumentParser], stages: list[int]) -> PluginCmdline:
     """
     Get a cmdline parser supporting the ``compare.graphs`` comparison plugin.
     """
@@ -34,18 +32,6 @@ def build(
     )
 
     cmdline.stage5.add_argument(
-        "--things-legend",
-        help="""
-             Comma separated list of names to use on the legend for the
-             generated comparison graphs, specified in the same order as the
-             ``--things``.
-             """
-        + cmdline.stage_usage_doc(
-            [5], "If omitted: the raw names of the compared things will be used."
-        ),
-    )
-
-    cmdline.stage5.add_argument(
         "--across",
         choices=["controllers", "scenarios", "criterias"],
         help="""
@@ -57,47 +43,12 @@ def build(
     )
 
     cmdline.stage5.add_argument(
-        "--comparison-type",
-        choices=["LNraw"],
-        help=r"""
-             Specify how controller comparisons should be performed.
-
-             If the batch criteria is univariate, the options are:
-
-                 - ``LNraw`` - Output raw 1D performance measures using a single
-                   {0} for each measure, with all ``--things`` shown on the same
-                   graph.
-
-             If the batch criteria is bivariate, the options are:
-
-                 - ``LNraw`` - Output raw performance measures as a set of {0},
-                   where each line graph is constructed from the i-th row/column
-                   for the 2D dataframe for the performance results for all
-                   ``--things``.
-
-             .. NOTE:: SIERRA cannot currently plot statistics on the linegraphs
-                       built from slices of the 2D CSVs/heatmaps generated
-                       during stage4, because statistics generation is limited
-                       to stage3.  This limitation may be removed in a future
-                       release.
-
-             For all comparison types, ``--things-legend`` is used if passed for
-             legend.
-             """.format(
-            utils.sphinx_ref(
-                ":py:func:`Summary Line <sierra.core.graphs.summary_line.generate>`"
-            )
-        )
-        + cmdline.stage_usage_doc([5]),
-    )
-
-    cmdline.stage5.add_argument(
         "--bc-cardinality",
         help="""
-             Specify the cardinality of the batch criteria used.  It is not
-             trivial to deduce this correctly for all ``--across`` /
-             ``--comparison-type`` combinations, so for now the solution is to
-             require that this be passed.
+             Specify the cardinality of the batch criteria used.  It is much
+             easier to specify this here rather than try to deduce this *before*
+             creating the batch criteria for each scenario/controller to compare
+             for all ``--across`` combinations.
              """
         + cmdline.stage_usage_doc([5]),
         type=int,
@@ -109,9 +60,7 @@ def build(
 def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
     return {
         "things": args.things,
-        "things_legend": args.things_legend,
         "across": args.across,
-        "comparison_type": args.comparison_type,
         "bc_cardinality": args.bc_cardinality,
     }
 

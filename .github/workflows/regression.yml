@@ -1,0 +1,46 @@
+name: Regression (shape + value)
+
+on:
+  workflow_call:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - 3.9
+          - 3.12
+
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
+
+        slice:
+          - name: shape
+            tags: "regression and shape"
+          - name: value
+            tags: "regression and value"
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          engine: jsonsim
+
+      - name: Run nox (regression ${{ matrix.slice.name }})
+        run: |
+          uv run nox -p ${{ matrix.python-version }} -k "${{ matrix.slice.tags }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-regression-${{ matrix.slice.name }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error

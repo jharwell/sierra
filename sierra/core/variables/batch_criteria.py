@@ -589,6 +589,11 @@ def univar_factory(
     else:
         ret = bcfactory(cli_arg, main_config, cmdopts, batch_input_root)
 
+    if ret is None:
+        raise RuntimeError(
+            "%s returned None for batch criteria built from %s", bcfactory, cli_arg
+        )
+
     logging.info("Create univariate batch criteria %s from %s", ret.name, path)
     return ret
 
@@ -603,6 +608,12 @@ def factory(
     """
     Construct a multivariate batch criteria object from cmdline input.
     """
+    if any(" " in bc for bc in args.batch_criteria):
+        logging.warning(
+            "Parsed --batch-criteria contains spaces: this will probably "
+            "cause a crash with the N-D batch criteria being interpreted "
+            "as a single string"
+        )
     criterias = [
         univar_factory(main_config, cmdopts, batch_input_root, arg, scenario)
         for arg in args.batch_criteria

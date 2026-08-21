@@ -365,8 +365,8 @@ translate directly; replace the engine, project, and template arguments:
    --engine=plugins.jsonsim \
    --project=projects.sample_jsonsim \
    --execenv=hpc.local \
-   --controller=default.default \
-   --scenario=scenario1 \
+   --controller=signal.kalman \
+   --scenario=cleanroom \
    --batch-criteria max_speed.1.9.C3
 
 .. code-block:: bash

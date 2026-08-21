@@ -156,6 +156,8 @@ def parse_nodefile(nodefile: str) -> list[types.ParsedNodefileSpec]:
         lines = f.readlines()
 
         for line in lines:
+            if len(line) == 0:
+                continue
             if parsed := _parse_nodefile_line(line):
                 ret.extend([parsed])
 
@@ -168,9 +170,8 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
     if res := re.search(comment_re, line):
         return None
 
-    cores_re = r"^[0-9]+/"
-    if res := re.search(cores_re, line):
-        cores_str, ssh = line.split("/")
+    if re.search(r"^[0-9]+/", line):
+        cores_str, ssh = line.split("/", maxsplit=1)
         cores = int(cores_str)
     else:
         cores = 1
@@ -179,7 +180,7 @@ def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
     identifier_re = r"[a-zA-Z0-9_.:]+"
     port_re = r"ssh -p\s*([0-9]+)"
     username_at_host_re = f"({identifier_re})+@({identifier_re})"
-    port_and_username_at_host_re = port_re + r"\*s" + username_at_host_re
+    port_and_username_at_host_re = port_re + r"\s+" + username_at_host_re
     port_and_hostname_re = port_re + rf"\s+({identifier_re})"
 
     if res := re.search(port_and_username_at_host_re, ssh):

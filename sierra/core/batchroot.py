@@ -105,7 +105,7 @@ class ExpRoot:
 
         # Don't reslove() the path--that makes symlinked dirs under $HOME throw
         # errors which are fatal from pathlib's POV, but actually harmless.
-        self.sierra_root = pathlib.Path(sierra_root)
+        self.sierra_root = pathlib.Path(sierra_root).resolve()
 
     def to_path(self) -> pathlib.Path:
         return (
@@ -149,7 +149,6 @@ class PathSet:
         model_root = root_path / "models"
         stat_root = root_path / "statistics"
         graph_root = root_path / "graphs"
-
         return cls(
             input_root=root_path / "exp-inputs",
             output_root=root_path / "exp-outputs",

@@ -238,7 +238,6 @@ def proc_batch_exp(
     )
     for exp in exp_to_gen:
         exproots = exproot.PathSet(pathset, exp.name)
-
         if exproots.stat_root.is_dir():
             generator(exproots)
         else:

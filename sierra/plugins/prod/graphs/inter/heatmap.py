@@ -33,7 +33,6 @@ def generate(
         "Heatmaps from <batch_root>/%s",
         pathset.stat_interexp_root.relative_to(pathset.root),
     )
-
     # For each category of heatmaps we are generating
     for category in targets:
 

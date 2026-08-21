@@ -12,6 +12,7 @@ previous stages into the correct files(s) for comparison.
 # Core packages
 import pathlib
 import typing as tp
+import logging
 
 # 3rd party packages
 import polars as pl
@@ -21,32 +22,22 @@ from sierra.core import utils, config, storage
 from sierra.core.variables import batch_criteria as bc
 
 
-def _all_stat_exts() -> dict:
-    """Return the union of all measures of spread file extensions.
-
-    Built as a fresh dict; ``config.STATS[...].exts`` must not be mutated in
-    place (it is shared module-level state).
-    """
-    return {
-        **config.STATS["mean"].spreads["none"].exts,
-        **config.STATS["mean"].spreads["conf95"].exts,
-        **config.STATS["mean"].spreads["bw"].exts,
-        **config.STATS["median"].spreads["iqr"].exts,
-    }
+_logger = logging.getLogger(__name__)
 
 
-def collate_row(
+def _collate_row(
     cum_df: tp.Optional[pl.DataFrame],
     src_df: pl.DataFrame,
     index: int,
-    inc_exps: tp.Optional[str],
+    include_exp: tp.Optional[str],
     column_key: str,
     exp_names: list,
 ) -> pl.DataFrame:
     """Collate a single row from ``src_df`` into ``cum_df``.
 
     Append one ``column_key`` column to ``cum_df`` from the ``index`` row of
-    ``src_df``, filtering the included experiments by ``inc_exps``.
+    ``src_df``, filtering the included experiments by ``include_exp``. Requires
+    that ``src_df`` corresponds to a time series dataframe.
 
     Shared by the statistic collation (:class:`IntraExpPreparer`) and the model
     collation in the comparators so that ``include_exp`` filters data
@@ -57,30 +48,37 @@ def collate_row(
     if cum_df is None:
         cum_df = pl.DataFrame({"Experiment ID": exp_names})
 
+    if "Experiment ID" in src_df.columns:
+        _logger.warning(
+            "Source dataframe has 'Experiment ID' as a column; if this "
+            "corresponds to a SIERRA summary_line graph dataframe, stage 5 "
+            "will crash. If this is from project outputs this warning can "
+            "safely be ignored."
+        )
     row_data = list(src_df.row(index if index >= 0 else len(src_df) + index))
 
-    if inc_exps is not None:
+    if include_exp is not None:
         n_exps = len(exp_names)
-        row_data = utils.exp_include_filter(inc_exps, row_data, n_exps)
+        row_data = utils.exp_include_filter(include_exp, row_data, n_exps)
 
         if cum_df.height != len(row_data):
-            filtered_names = utils.exp_include_filter(inc_exps, exp_names, n_exps)
+            filtered_names = utils.exp_include_filter(include_exp, exp_names, n_exps)
             cum_df = pl.DataFrame({"Experiment ID": filtered_names})
 
     return cum_df.with_columns(pl.Series(column_key, row_data))
 
 
-def collate_model_column(
+def _collate_model_column(
     cum_df: tp.Optional[pl.DataFrame],
     model_df: pl.DataFrame,
-    inc_exps: tp.Optional[str],
+    include_exp: tp.Optional[str],
     column_key: str,
     exp_names: list,
 ) -> pl.DataFrame:
     """Collate  a single model column (duh).
 
     Append one ``column_key`` column to ``cum_df`` from a model's per-
-    experiment prediction column, filtering by ``inc_exps``.
+    experiment prediction column, filtering by ``include_exp``.
 
     Unlike :func:`collate_row` (which slices a single time-index *row* out of a
     1-row-per-datapoint statistics file), an inter-experiment model produces one
@@ -98,12 +96,12 @@ def collate_model_column(
     value_col = model_df.columns[-1]
     col_data = model_df[value_col].to_list()
 
-    if inc_exps is not None:
+    if include_exp is not None:
         n_exps = len(exp_names)
-        col_data = utils.exp_include_filter(inc_exps, col_data, n_exps)
+        col_data = utils.exp_include_filter(include_exp, col_data, n_exps)
 
         if cum_df.height != len(col_data):
-            filtered_names = utils.exp_include_filter(inc_exps, exp_names, n_exps)
+            filtered_names = utils.exp_include_filter(include_exp, exp_names, n_exps)
             cum_df = pl.DataFrame({"Experiment ID": filtered_names})
 
     return cum_df.with_columns(pl.Series(column_key, col_data))
@@ -120,18 +118,22 @@ class IntraExpPreparer:
         ipath_leaf: str,
         opath_stem: pathlib.Path,
         criteria: bc.XVarBatchCriteria,
+        stat_center: str,
+        stat_spread: str,
     ):
         self.ipath_stem = ipath_stem
         self.ipath_leaf = ipath_leaf
         self.opath_stem = opath_stem
         self.criteria = criteria
+        self.stat_center = stat_center
+        self.stat_spread = stat_spread
 
     def for_cc(
         self,
         controller: str,
         opath_leaf: str,
         index: int,
-        inc_exps: tp.Optional[str],
+        include_exp: tp.Optional[str],
     ) -> None:
         """
         Take batch-level dataframes and create a new dataframe.
@@ -146,14 +148,14 @@ class IntraExpPreparer:
         - df[controller] columns as timeslices *across* columns (i.e., across
           experiments in the batch) in the source dataframe.
         """
-        self._collate(controller, opath_leaf, index, inc_exps)
+        self._collate(controller, opath_leaf, index, include_exp)
 
     def for_sc(
         self,
         scenario: str,
         opath_leaf: str,
         index: int,
-        inc_exps: tp.Optional[str],
+        include_exp: tp.Optional[str],
     ) -> None:
         """
         Take batch-level dataframes and create a new dataframe.
@@ -168,27 +170,30 @@ class IntraExpPreparer:
         - df[scenario] columns as timeslices *across* columns (i.e., across
           experiments in the batch) in the source dataframe.
         """
-        self._collate(scenario, opath_leaf, index, inc_exps)
+        self._collate(scenario, opath_leaf, index, include_exp)
 
     def _collate(
         self,
         column_key: str,
         opath_leaf: str,
         index: int,
-        inc_exps: tp.Optional[str],
+        include_exp: tp.Optional[str],
     ) -> None:
         """Collate one *thing* across all stats into comparison dataframes."""
-        exts = _all_stat_exts()
+        exts = {
+            **config.STATS[self.stat_center].spreads["none"].exts,
+            **config.STATS[self.stat_center].spreads[self.stat_spread].exts,
+        }
 
-        for k in exts:
-            stat_ipath = pathlib.Path(self.ipath_stem, self.ipath_leaf + exts[k])
-            stat_opath = pathlib.Path(self.opath_stem, opath_leaf + exts[k])
-            df = self._for_stat(stat_ipath, stat_opath, index, inc_exps, column_key)
+        for v in exts.values():
+            stat_ipath = pathlib.Path(self.ipath_stem, self.ipath_leaf + v)
+            stat_opath = pathlib.Path(self.opath_stem, opath_leaf + v)
+            df = self._for_stat(stat_ipath, stat_opath, index, include_exp, column_key)
 
             if df is not None:
                 storage.df_write(
                     df,
-                    self.opath_stem / (opath_leaf + exts[k]),
+                    self.opath_stem / (opath_leaf + v),
                     "storage.csv",
                 )
 
@@ -197,7 +202,7 @@ class IntraExpPreparer:
         ipath: pathlib.Path,
         opath: pathlib.Path,
         index: int,
-        inc_exps: tp.Optional[str],
+        include_exp: tp.Optional[str],
         column_key: str,
     ) -> tp.Optional[pl.DataFrame]:
         if not utils.path_exists(ipath):
@@ -208,11 +213,11 @@ class IntraExpPreparer:
         )
         src_df = storage.df_read(ipath, "storage.csv")
 
-        return collate_row(
+        return _collate_row(
             cum_df,
             src_df,
             index,
-            inc_exps,
+            include_exp,
             column_key,
             self.criteria.gen_exp_names(),
         )

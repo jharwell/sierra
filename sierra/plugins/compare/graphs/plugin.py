@@ -41,7 +41,9 @@ def proc_exps(
 
     assert (
         cmdopts["bc_cardinality"] <= 2
-    ), "This plugin only supports batch criteria with cardinality <=2"
+    ), "This plugin only supports batch criteria with cardinality <=2, have {}".format(
+        cmdopts["bc_cardinality"]
+    )
 
     graphs_config = gconfig.load(cmdopts)
 
@@ -69,12 +71,6 @@ def _run_cc(
 ) -> None:
     controllers = cmdopts["things"].split(",")
 
-    # Use nice controller names on graph legends if configured
-    if cmdopts["things_legend"] is not None:
-        legend = cmdopts["things_legend"].split(",")
-    else:
-        legend = controllers
-
     _logger.info("Inter-batch controller comparison of %s...", controllers)
 
     if cmdopts["bc_cardinality"] == 1:
@@ -85,10 +81,8 @@ def _run_cc(
             cli_args,
             main_config,
         )
-        univar(
-            target_graphs=_targets(graphs_config, "inter-controller"),
-            legend=list(legend),
-        )
+
+        univar(target_graphs=_targets(graphs_config, "inter-controller"))
     elif cmdopts["bc_cardinality"] == 2:
         bivar = intercc.BivarInterControllerComparator(
             controllers,
@@ -97,10 +91,7 @@ def _run_cc(
             cli_args,
             main_config,
         )
-        bivar(
-            target_graphs=_targets(graphs_config, "inter-controller"),
-            legend=list(legend),
-        )
+        bivar(target_graphs=_targets(graphs_config, "inter-controller"))
 
     _logger.info("Inter-batch controller comparison complete")
 
@@ -115,10 +106,7 @@ def _run_sc(
     scenarios = cmdopts["things"].split(",")
 
     # Use nice scenario names on graph legends if configured
-    if cmdopts["things_legend"] is not None:
-        legend = cmdopts["things_legend"].split(",")
-    else:
-        legend = scenarios
+    _targets(graphs_config, "inter-scenario")
 
     controller = cmdopts["controller"]
 
@@ -137,10 +125,7 @@ def _run_sc(
         main_config,
     )
 
-    comparator(
-        target_graphs=_targets(graphs_config, "inter-scenario"),
-        legend=list(legend),
-    )
+    comparator(target_graphs=_targets(graphs_config, "inter-scenario"))
 
     _logger.info(
         "Inter-batch  comparison of %s across %s complete",

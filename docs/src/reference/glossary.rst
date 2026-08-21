@@ -166,8 +166,8 @@ works/is designed the way it is, and to help you find your way around.
 
       A csv/arrow/etc file created by SIERRA during stage 4 (if inter-experiment
       graph generation is to be run). Created from a :term:`Collated Output
-      Data` file by taking the last row; this usually corresponds to things
-      like:
+      Data` file by taking the last row dy default; this usually corresponds to
+      things like:
 
       - Steady-state behavior
 

@@ -129,9 +129,6 @@ runs:
       if: inputs.engine == 'ros1gazebo'
       shell: bash
       run: |
-        source /opt/ros/${{ inputs.rosdistro }}/setup.bash
-
-
         pip3 install pysip \
                      numpy \
                      matplotlib \

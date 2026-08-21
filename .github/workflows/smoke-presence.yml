@@ -1,0 +1,153 @@
+name: Smoke (presence)
+
+# Every-PR breadth sweep. Runs the `presence` depth tier across all areas, sliced
+# by tag so each matrix row is an independent, parallel job. Rows are cut on the
+# `argos` engine tag: lightweight (pure-python jsonsim/yamlsim) rows skip the
+# heavier ARGoS sample-project setup entirely, so the bulk of the sweep runs on
+# the fast path. ARGoS setup is confined to the rows that actually test the ARGoS
+# engine plugin (core-argos, plugin-argos, conformance).
+#
+# Each row runs `nox -k "<expr>"`, NOT a hardcoded session name -- new sessions
+# with matching tags join automatically with no edit here.
+
+on:
+  workflow_call:
+
+jobs:
+  smoke-presence:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.container }}
+      # 2026-08-12 [JRH]: ulimit setting needed because PBS sets its epoll event
+      # buffer size to "ulimit # files -1", which can be 2^30, causing the
+      # kernel to refuse to allow any epoll based comms.
+      options: --cgroupns=host -v /sys/fs/cgroup:/sys/fs/cgroup:rw --privileged --cpus 2 --ulimit nofile=8192:8192
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    strategy:
+      # One failing slice shouldn't cancel the others -- we want the full
+      # picture of what passed/failed in a single run.
+      fail-fast: false
+      matrix:
+        # 2026-09-02 [JRH]: Only test with latest supported python for smoke
+        # tests in general; testing with multiple versions adds marginal value;
+        # differences between versions will be surfaced with regression tests,
+        # if any.
+        python-version:
+          - 3.12
+
+        container:
+          - jharwell/ubuntu24.04-sierra:latest
+
+        # Each slice: a stable `name` (artifact id + readability), the nox tag
+        # expression, and the space-separated engines to set up for it.
+        #
+        # NOTE: the ROS engines (ros1robot/ros1gazebo) are NOT in any slice here
+        # -- their ROS1/Noetic stack only exists on the ubuntu20.04 image.
+        slice:
+          - name: core-a
+            tags: "smoke and core and presence and grpa"
+            engines: "argos jsonsim yamlsim"
+          - name: core-b
+            tags: "smoke and core and presence and grpb"
+            engines: "argos jsonsim yamlsim"
+
+          - name: plugin-engine-a
+            tags: "smoke and engine and presence and not ros and grpa"
+            engines: "argos jsonsim yamlsim"
+          - name: plugin-engine-b
+            tags: "smoke and engine and presence and not ros and grpb"
+            engines: "argos jsonsim yamlsim"
+
+          - name: proc
+            tags: "smoke and proc and presence"
+            engines: "jsonsim yamlsim"
+
+          - name: compare-a
+            tags: "smoke and compare and presence and grpa"
+            engines: "jsonsim yamlsim"
+          - name: compare-b
+            tags: "smoke and compare and presence and grpb"
+            engines: "jsonsim yamlsim"
+
+          - name: graphs
+            tags: "smoke and graphs and presence"
+            engines: "jsonsim yamlsim"
+          - name: conformance
+            tags: "smoke and conformance and presence and not ros"
+            engines: "jsonsim yamlsim argos"
+          - name: hpc
+            tags: "smoke and hpc and presence and not ros"
+            engines: "argos jsonsim yamlsim"
+
+          - name: prefectserver
+            tags: "smoke and prefectserver and presence"
+            engines: "jsonsim yamlsim"
+
+        # The ROS slice is a pinned combination, not part of the cross-product:
+        # it must run on the ubuntu20.04 image (the only one with ROS1/Noetic)
+        # and only on Python 3.9 (no 3.12 ROS1 build). `include` sets every
+        # matrix key explicitly so the job body's ${{ matrix.* }} refs resolve.
+        include:
+          - python-version: 3.9
+            container: jharwell/ubuntu20.04-sierra:latest
+            slice:
+              name: ros
+              tags: "smoke and ros and presence"
+              engines: "ros1robot ros1gazebo"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Set up only the engines this slice needs. The composite action takes a
+      # single engine, so we gate one call per engine on the slice's engine list;
+      # lightweight slices never trigger the ARGoS setup.
+      - name: Set up ARGoS sample project
+        if: contains(matrix.slice.engines, 'argos')
+        uses: ./.github/actions/sample-project-setup
+        with:
+          engine: argos
+
+      - name: Set up jsonsim sample project
+        if: contains(matrix.slice.engines, 'jsonsim')
+        uses: ./.github/actions/sample-project-setup
+        with:
+          engine: jsonsim
+
+      - name: Set up yamlsim sample project
+        if: contains(matrix.slice.engines, 'yamlsim')
+        uses: ./.github/actions/sample-project-setup
+        with:
+          engine: yamlsim
+
+      - name: Set up ros1robot sample project
+        if: contains(matrix.slice.engines, 'ros1robot')
+        uses: ./.github/actions/sample-project-setup
+        with:
+          engine: ros1robot
+
+      - name: Set up ros1gazebo sample project
+        if: contains(matrix.slice.engines, 'ros1gazebo')
+        uses: ./.github/actions/sample-project-setup
+        with:
+          engine: ros1gazebo
+
+      - name: Run nox (tag slice)
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 45
+          max_attempts: 1
+          shell: bash
+          command: |
+            uv run nox -p ${{ matrix.python-version }} -k "${{ matrix.slice.tags }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-smoke-${{ matrix.slice.name }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: error

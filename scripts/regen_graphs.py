@@ -171,10 +171,10 @@ def build_projects(sample_root: pathlib.Path) -> tp.List[Project]:
         ),
         Project(
             name="jsonsim",
-            controller="default.default",
+            controller="signal.lowpass",
             engine="plugins.jsonsim",
             project="projects.sample_jsonsim",
-            scenario="scenario1",
+            scenario="cleanroom",
             template="template.json",
             criteria="max_speed.1.9.C5",
             extra_flags=[

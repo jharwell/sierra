@@ -20,6 +20,13 @@ This page has the following sections:
 All configuration for this plugin is in ``<project>/config/graphs.yaml``
 file.
 
+This plugin works with inter-experiment :term:`Batch Summary Data` files from
+stage4. Currently, it *only* works with files targeting
+inter-experiment :class:`~sierra.core.graphs.stacked_line` graphs. That means,
+the ``src`` field of configuration items for this plugin must correspond to the
+``dest`` field of a ``stacked_line`` inter-experiment linegraph which has been
+previously generated.
+
 This plugin performs stage-5 :term:`Data Collation`: it takes the per-batch
 :term:`Collated Output Data` for each compared thing (controller or scenario)
 and places them side by side -- one column per compared thing, indexed by

@@ -93,19 +93,9 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         cmdopts: types.Cmdopts,
         graph: types.YAMLDict,
         roots: list[batchroot.ExpRoot],
-        legend: list[str],
     ) -> None:
-        graph_spec = {
-            "index": graph["index"],
-            "src": graph["src"],
-            "dest": graph["dest"],
-            "title": graph["title"],
-            "label": graph["label"],
-            "inc_exps": graph["include_exp"],
-            "legend": legend,
-            "primary_axis": graph["primary_axis"],
-            "backend": graph["backend"],
-        }
+        if not graph["legend"]:
+            graph["legend"] = self.scenarios
 
         for scenario in self.things:
             valid_configurations = sum(r.scenario == scenario for r in roots)
@@ -157,7 +147,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
                 pathset=pathset,
                 project=self.cli_args.project,
                 root=root,
-                spec=graph_spec,
+                spec=graph,
             )
 
             self._gen_graph(
@@ -165,7 +155,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
                 criteria=criteria,
                 cmdopts=cmdopts,
                 batch_output_root=pathset.output_root,
-                spec=graph_spec,
+                spec=graph,
             )
 
     def _gen_graph(
@@ -184,10 +174,10 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
         # defaults to ':' (the whole range), which exp_include_filter() treats
         # as a no-op. This matches how every other call site here uses it.
         xticklabels = utils.exp_include_filter(
-            spec["inc_exps"], info.xticklabels, criteria.n_exp()
+            spec["include_exp"], info.xticklabels, criteria.n_exp()
         )
         xticks = utils.exp_include_filter(
-            spec["inc_exps"], info.xticks, criteria.n_exp()
+            spec["include_exp"], info.xticks, criteria.n_exp()
         )
 
         paths = graphs.PathSet(
@@ -265,6 +255,8 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
             ipath_leaf=spec["src"],
             opath_stem=self.stage5_roots.csv_root,
             criteria=criteria,
+            stat_center=self.cmdopts.get("center", "mean"),
+            stat_spread=self.cmdopts.get("spread", "none"),
         )
         opath_leaf = namecalc.for_sc(root.leaf, self.things, spec["dest"], None)
 
@@ -272,7 +264,7 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
             scenario=root.scenario,
             opath_leaf=opath_leaf,
             index=spec["index"],
-            inc_exps=spec["inc_exps"],
+            include_exp=spec["include_exp"],
         )
 
         # Collect performance results models and legends. Append to existing
@@ -297,19 +289,22 @@ class UnivarInterScenarioComparator(comparator.BaseComparator):
 
         model_df = None
         if utils.path_exists(model_ipath):
+            self.logger.debug("Inter-exp model file %s exists", model_ipath)
             cum_df = (
                 storage.df_read(model_opath, "storage.csv")
                 if utils.path_exists(model_opath)
                 else None
             )
             src_df = storage.df_read(model_ipath, "storage.csv")
-            model_df = preprocess.collate_model_column(
+            model_df = preprocess._collate_model_column(
                 cum_df,
                 src_df,
-                spec["inc_exps"],
+                spec["include_exp"],
                 root.scenario,
                 criteria.gen_exp_names(),
             )
+        else:
+            self.logger.debug("Inter-exp model file %s does not exist", model_ipath)
 
         if model_df is not None:
             storage.df_write(model_df, model_opath, "storage.csv")

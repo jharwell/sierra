@@ -56,19 +56,19 @@ class PathSet:
                 cmdopts["sierra_root"],
                 cmdopts["project"],
                 "+".join(controllers) + "-cc-graphs",
-            )
+            ).resolve()
 
             self.csv_root = pathlib.Path(
                 cmdopts["sierra_root"],
                 cmdopts["project"],
                 "+".join(controllers) + "-cc-csvs",
-            )
+            ).resolve()
 
             self.model_root = pathlib.Path(
                 cmdopts["sierra_root"],
                 cmdopts["project"],
                 "+".join(controllers) + "-cc-models",
-            )
+            ).resolve()
 
         if scenarios:
             # We add the scenario list to the directory path for the .csv
@@ -79,17 +79,17 @@ class PathSet:
                 cmdopts["sierra_root"],
                 cmdopts["project"],
                 "+".join(scenarios) + "-sc-graphs",
-            )
+            ).resolve()
             self.csv_root = pathlib.Path(
                 cmdopts["sierra_root"],
                 cmdopts["project"],
                 "+".join(scenarios) + "-sc-csvs",
-            )
+            ).resolve()
             self.model_root = pathlib.Path(
                 cmdopts["sierra_root"],
                 cmdopts["project"],
                 "+".join(scenarios) + "-sc-models",
-            )
+            ).resolve()
 
 
 __all__ = ["PathSet"]

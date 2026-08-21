@@ -277,7 +277,7 @@ class SIERRA:
         # 2. --arg=foo
         # 3. --arg foo
         #
-        # If you encounter a ~, we assume its a path, so we expand it to
+        # If we encounter a ~, we assume its a path, so we expand it to
         # match cmdline behavior.
         line = line.strip("\n")
         components = line.split()
@@ -295,7 +295,7 @@ class SIERRA:
             # --expdef-template the cmdline will cause a --expdef in the
             # rcfile not to work.
             if any(line.split("=")[0] == a.split("=")[0] for a in sys.argv if "=" in a):
-                self.logger.trace("Skip =rcfile arg %s: passed on cmdline", line)
+                self.logger.trace("Skip rcfile arg %s: passed on cmdline", line)
                 return False
 
             key = line.split("=")[0][2:].replace("-", "_")

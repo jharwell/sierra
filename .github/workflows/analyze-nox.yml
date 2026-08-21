@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ inputs.container }}
     strategy:
+      fail-fast: false
       matrix:
         python-version:
           - 3.12
@@ -28,11 +29,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run nox
         run: |
-          #
-          # 2025-11-19 [JRH]: Manually installing astroid to its latest version
-          # is necessary to get pylint to work. Maybe someday this won't be
-          # needed.
-          uv sync -p ${{ matrix.python-version }} --group dev && \
           uv run -p ${{ matrix.python-version }} nox \
             --pythons ${{ matrix.python-version }} \
             --sessions ${{ matrix.session }}

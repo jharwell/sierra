@@ -247,8 +247,8 @@ sample project to ``$HOME/research``; adjust if needed.
            --n-runs=4 \
            --engine=plugins.jsonsim \
            --project=projects.sample_jsonsim \
-           --controller=default.default \
-           --scenario=scenario1 \
+           --controller=signal.lowpass \
+           --scenario=cleanroom \
            --batch-criteria max_speed.1.9.C3 \
            --exp-overwrite
 

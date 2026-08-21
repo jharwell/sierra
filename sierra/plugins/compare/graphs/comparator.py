@@ -73,14 +73,12 @@ class BaseComparator:
         cmdopts: types.Cmdopts,
         graph: types.YAMLDict,
         roots: list[batchroot.ExpRoot],
-        legend: list[str],
     ) -> None:
         raise NotImplementedError
 
     def __call__(
         self,
         target_graphs: list[types.YAMLDict],
-        legend: list[str],
     ) -> None:
         self._check_comparability()
 
@@ -116,7 +114,6 @@ class BaseComparator:
                 cmdopts=self.cmdopts,
                 graph=schema.resolve(graph, self.cmdopts),
                 roots=selected,
-                legend=legend,
             )
 
     def _check_comparability(self) -> None:

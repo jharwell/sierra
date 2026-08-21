@@ -160,7 +160,7 @@ class GraphCollationInfo:
 
         if graph_type == "summary_line":
             # Polars has no index; use an explicit "Experiment ID" column. Seed
-            # summary_col with nulls so an experiment we never fill in already
+            # summary_col with nulls so an experiment we never fill in always
             # reads as missing.
             self.df = pl.DataFrame(
                 {"Experiment ID": exp_names, summary_col: [None] * len(exp_names)}
