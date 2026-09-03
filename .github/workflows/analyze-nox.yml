@@ -26,7 +26,7 @@ jobs:
 
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run nox
         run: |
           uv run -p ${{ matrix.python-version }} nox \

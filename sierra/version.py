@@ -10,4 +10,7 @@ import importlib.metadata
 
 # Project packages
 
-__version__ = importlib.metadata.version("sierra_research")
+try:
+    __version__ = importlib.metadata.version("sierra-research")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0+unknown"
