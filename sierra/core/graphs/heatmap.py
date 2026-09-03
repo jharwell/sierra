@@ -237,11 +237,11 @@ def generate_numeric(  # noqa: PLR0913
 
     # Convert to pandas for holoviews
     df_pd = df.to_pandas()
-    dataset = hv.Dataset(df_pd, kdims=[colnames[0], colnames[1]], vdims=colnames[2])
 
     # Transpose if requested
-    if transpose:
-        dataset.data = dataset.data.transpose()
+    kdims = [colnames[1], colnames[0]] if transpose else [colnames[0], colnames[1]]
+
+    dataset = hv.Dataset(df_pd, kdims=kdims, vdims=colnames[2])
 
     # Plot heatmap, without showing the Z-value in each cell, which generally
     # obscures things more than it helps. Plus, statistical significance isn't
@@ -298,107 +298,4 @@ def generate_numeric(  # noqa: PLR0913
     return True
 
 
-def generate_dual_numeric(  # noqa: PLR0913
-    pathset: _pathset.PathSet,
-    ipaths: types.PathList,
-    output_stem: pathlib.Path,
-    medium: str,
-    title: str,
-    xlabel: tp.Optional[str] = None,
-    ylabel: tp.Optional[str] = None,
-    zlabel: tp.Optional[str] = None,
-    large_text: bool = False,
-    xticklabels: tp.Optional[list[str]] = None,
-    yticklabels: tp.Optional[list[str]] = None,
-) -> bool:
-    """Generate a side-by-side plot of two heataps from two CSV files.
-
-    ``.mean`` files must be named as ``<input_stem_fpath>_X.mean``, where `X` is
-    non-negative integer. Input ``.mean`` files must be 2D grids of the same
-    cardinality.
-
-    This graph does not plot standard deviation.
-
-    If there are not exactly two file paths passed, the graph is not generated.
-
-    """
-    hv.extension("matplotlib", inline=False, logo=False)
-
-    output_fpath = (
-        pathset.output_root / f"HM-{output_stem}.{config.GRAPHS['static_type']}"
-    )
-
-    # Optional arguments
-    text_size = (
-        config.GRAPHS["text_size_large"]
-        if large_text
-        else config.GRAPHS["text_size_small"]
-    )
-
-    dfs = [storage.df_read(f, medium) for f in ipaths]
-
-    if not dfs or len(dfs) != 2:
-        _logger.debug(
-            ("Not generating dual heatmap: wrong # files %s (must be 2)"), len(dfs)
-        )
-        return False
-
-    # Convert polars DataFrames to pandas for holoviews
-    dfs_pd = [df.to_pandas() for df in dfs]
-
-    yticks = np.arange(len(dfs_pd[0].columns))
-    xticks = dfs_pd[0].index
-
-    # Plot heatmaps
-    plot = hv.Image(dfs_pd[0]) + hv.Image(dfs_pd[1])
-
-    # Add X,Y ticks
-    if xticklabels:
-        plot.opts(xformatter=lambda x: xticklabels[list(xticks).index(x)])
-    if yticklabels:
-        plot.opts(yformatter=lambda y: yticklabels[list(yticks).index(y)])
-
-    # Add labels
-    plot.opts(xlabel=xlabel)
-    plot.opts(ylabel=ylabel)
-
-    # Set fontsizes
-    plot.opts(
-        fontsize={
-            "title": text_size["title"],
-            "labels": text_size["xyz_label"],
-            "ticks": text_size["tick_label"],
-        }
-    )
-    # Add title
-    plot.opts(title=title)
-
-    # Add colorbar.
-    plot.opts(
-        hv.opts.Layout(shared_axes=False),
-        hv.opts.Image(
-            colorbar=True,
-            colorbar_position="right",
-            backend_opts={"colorbar.label": zlabel},
-        ),
-    )
-
-    # Output figures
-    plot.opts(fig_inches=config.GRAPHS["fig_size"])
-
-    hv.save(
-        plot,
-        output_fpath,
-        fig=config.GRAPHS["static_type"],
-        dpi=config.GRAPHS["dpi"],
-    )
-    plt.close("all")
-
-    _logger.debug(
-        "Graph written to <batchroot>/%s",
-        output_fpath.relative_to(pathset.batchroot),
-    )
-    return True
-
-
-__all__ = ["generate_confusion", "generate_dual_numeric", "generate_numeric"]
+__all__ = ["generate_confusion", "generate_numeric"]

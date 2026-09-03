@@ -13,7 +13,6 @@ from .histogram import generate as histogram
 from .summary_line import generate as summary_line
 from .heatmap import generate_confusion as confusion_matrix
 from .heatmap import generate_numeric as heatmap
-from .heatmap import generate_dual_numeric as dual_heatmap
 from .network import generate as network
 from .scatterplot import generate as scatterplot
 from .pathset import PathSet
@@ -24,7 +23,6 @@ __all__ = [
     "PathSet",
     "bcbridge",
     "confusion_matrix",
-    "dual_heatmap",
     "gconfig",
     "heatmap",
     "histogram",

@@ -88,7 +88,6 @@ class BasePluginManager:
 
         if plugin_type == "pipeline":
             self._load_pipeline_plugin(name)
-
         elif plugin_type == "project":
             self._load_project_plugin(name)
         elif plugin_type == "model":

@@ -3,19 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 #
-"""Regression tests — shape (tier 2) and value (tier 3).
-
-These are NOT a replacement for the smoke presence tests; they sit above them.
-They read the SAME ``EngineSpec`` manifests, so the file list is defined once
-and checked at three depths:
-
-    smoke.py       -> max_tier=1   (presence; broad, every PR)
-    this file      -> max_tier=2   (shape; cheap, reference engines)
-    this file      -> max_tier=3   (value; golden compare, on-release)
-
-Because coarser tiers run first inside ``verify_stage``, a pipeline that broke
-upstream fails with a clean presence error here too, not a cryptic parse error.
-"""
+"""Regression tests — shape (tier 2) and value (tier 3)."""
 
 # Core packages
 import pathlib
@@ -28,7 +16,8 @@ from tests._framework import engines, verify, env
 from tests._framework.command import SierraCommand
 from sierra.core import batchroot
 
-_GOLDENS = pathlib.Path(__file__).parent / "goldens"
+_HERE = pathlib.Path(__file__).parent
+_GOLDENS = _HERE / "goldens"
 
 
 def _run_full(session, spec, center, spread, *stages):
@@ -56,7 +45,9 @@ def _run_full(session, spec, center, spread, *stages):
     return batch_root
 
 
+# ---------------------------------------------------------------------------------
 # Tier 2 — shape. Cheap, no goldens. Runs on the lightweight reference engines.
+# ---------------------------------------------------------------------------------
 @nox.session(python=env.VERSIONS, tags=["regression", "shape"])
 @nox.parametrize(
     "engine",
@@ -68,9 +59,7 @@ def _run_full(session, spec, center, spread, *stages):
 def regression_shape_stage3(session, engine):
     center, spread = "mean", "conf95"
     batch_root = _run_full(session, engine, center, spread)
-    verify.verify_stage(
-        engine, 3, batch_root, max_tier=2, center=center, spread=spread
-    )
+    verify.verify_stage(engine, 3, batch_root, max_tier=2, center=center, spread=spread)
 
 
 @nox.session(python=env.VERSIONS, tags=["regression", "shape"])
@@ -84,12 +73,12 @@ def regression_shape_stage3(session, engine):
 def regression_shape_stage4(session, engine):
     center, spread = "mean", "conf95"
     batch_root = _run_full(session, engine, center, spread, 1, 2, 3, 4)
-    verify.verify_stage(
-        engine, 4, batch_root, max_tier=2, center=center, spread=spread
-    )
+    verify.verify_stage(engine, 4, batch_root, max_tier=2, center=center, spread=spread)
 
 
+# --------------------------------------------------------------------------------
 # Tier 3 — value. Expensive; golden compare across measures of center/spread.
+# --------------------------------------------------------------------------------
 @nox.session(python=env.VERSIONS, tags=["regression", "value"])
 @nox.parametrize(
     "stats",
@@ -98,7 +87,7 @@ def regression_shape_stage4(session, engine):
 )
 @env.session_setup
 @env.session_teardown
-def regression_value_stage3(session, stats):
+def regression_value_statistics(session, stats):
     center, spread = stats
     engine = engines.REFERENCE_ENGINE
     batch_root = _run_full(session, engine, center, spread)
@@ -106,6 +95,44 @@ def regression_value_stage3(session, stats):
     # rest fall through to presence+shape automatically. Stat extensions resolve
     # from config.STATS for this center/spread.
     verify.verify_stage(
-        engine, 3, batch_root, max_tier=3, goldens_root=_GOLDENS,
-        center=center, spread=spread,
+        engine,
+        3,
+        batch_root,
+        max_tier=3,
+        goldens_root=_GOLDENS / "statistics",
+        center=center,
+        spread=spread,
+    )
+
+
+@nox.session(python=env.VERSIONS, tags=["regression", "value"])
+@env.session_setup
+@env.session_teardown
+def regression_value_graphs(session, *_):
+    """Blessed-PNG comparison for every generator in ``sierra.core.graphs``.
+
+    Pass ``--bless`` (after ``--``) to (re)bless goldens instead of
+    comparing; any other trailing args are forwarded to pytest.
+    """
+    posargs = list(session.posargs)
+    if "--bless" in posargs:
+        posargs.remove("--bless")
+        mpl_args = [f"--mpl-generate-path={_GOLDENS}/graphs"]
+    else:
+        # Default to compare mode; allow the caller to override/add flags.
+        mpl_args = ["--mpl"] if "--mpl" not in posargs else []
+
+    # We use 'coverage run' instead of 'pytest' directly, because the latter
+    # autocombines all coverage at reports it at the end of the session
+    # into .coverage, which is not unique across CI jobs.
+    session.run(
+        "coverage",
+        "run",
+        "-m",
+        "pytest",
+        str(_HERE / "graphs/test_graphs.py"),
+        *mpl_args,
+        *posargs,
+        silent=False,
+        env={"SIERRA_REPO_ROOT": str(session.invoked_from)},
     )

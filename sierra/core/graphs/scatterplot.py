@@ -228,7 +228,7 @@ def _format_poly_eqn(coeffs):
         elif power == 1:
             terms.append(f"{c:.3g}x")
         else:
-            terms.append(f"{c:.3g}x^{power}")
+            terms.append(f"${c:.3g}x^{power}$")
     return "y = " + " + ".join(terms)
 
 

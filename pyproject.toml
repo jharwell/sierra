@@ -89,6 +89,7 @@ ci = [
     'psutil',
     'pytest',
     'pytest-cov',
+    'pytest-mpl',
     'xmldiff',
     'jsondiff',
     "deepdiff",
@@ -135,7 +136,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 include = ["sierra"]
-
 
 # There should be a way to do this an the directory level with
 # excludes, but there doesn't seem to be, so listing out each man page

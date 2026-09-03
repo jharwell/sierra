@@ -116,4 +116,14 @@ def unit_tests(session):
     # path through the framework's single local-vs-CI resolver rather than
     # re-deriving GITHUB_WORKSPACE/HOME here.
     session.env["SIERRA_PLUGIN_PATH"] = str(env.sample_project_root())
-    session.run("pytest", "--cov", "tests/unit")
+
+    # We use 'coverage run' instead of 'pytest' directly, because the latter
+    # autocombines all coverage at reports it at the end of the session
+    # into .coverage, which is not unique across CI jobs.
+    session.run(
+        "coverage",
+        "run",
+        "-m",
+        "pytest",
+        "tests/unit",
+    )
