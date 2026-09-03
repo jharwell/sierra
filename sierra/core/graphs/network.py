@@ -10,13 +10,10 @@ Heatmap graph generation classes for stage{4,5}.
 import textwrap
 import typing as tp
 import logging
-import pathlib
 
 # 3rd party packages
-import matplotlib.pyplot as plt
 import networkx as nx
 import holoviews as hv
-import bokeh
 
 # Project packages
 from sierra.core import utils, config, storage
@@ -33,6 +30,7 @@ def generate(  # noqa: PLR0913
     title: str,
     backend: str,
     layout: str,
+    *,
     node_color_attr: tp.Optional[str] = None,
     node_size_attr: tp.Optional[str] = None,
     edge_color_attr: tp.Optional[str] = None,

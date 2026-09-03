@@ -24,7 +24,7 @@ from . import pathset, graphutils
 _logger = logging.getLogger(__name__)
 
 
-def generate(  # noqa: PLR0913
+def generate(  # noqa: PLR0913,PLR0917
     pathset: pathset.PathSet,
     input_stem: str,
     output_stem: str,
@@ -37,6 +37,7 @@ def generate(  # noqa: PLR0913
     xticks: list[float],
     stats_center: str,
     stats_spread: str,
+    *,
     xticklabels: tp.Optional[list[str]] = None,
     large_text: bool = False,
     logyscale: bool = False,

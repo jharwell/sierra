@@ -1,0 +1,88 @@
+name: Release
+
+# Triggered ONLY by pushing a stable version tag: vX.Y.Z.
+#
+# This is a SEPARATE workflow from coverage-top.yml because `paths` (needed
+# there for feature-branch CI) also filters tag pushes, which would silently
+# skip releases. Tag-triggered releases therefore live on their own.
+#
+# Cutting a release (manual):
+#   git checkout master && git pull
+#   git tag -a v1.5.16 -m "Release v1.5.16"
+#   git push origin v1.5.16
+#
+# hatch-vcs reads the tag and builds EXACTLY 1.5.16 (no .devN, because the
+# build happens on the tagged commit). The build job hands the dist to the
+# release job, which publishes a GitHub release named v1.5.16. That release's
+# 'published' event then triggers publish.yml -> PyPI.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: jharwell/ubuntu24.04-sierra:latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # hatch-vcs needs full history + tags to resolve the version.
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Build package with manpages
+        shell: bash
+        run: |
+          uv sync -p 3.12 --group dev
+
+          # Manpages must live inside the package dir for hatch shared-data to
+          # pick them up; generated in CI, not committed.
+          mkdir -p sierra/data/man
+          (cd docs && uv run -p 3.12 sphinx-build -b man . _build/man)
+          cp docs/_build/man/*.1 sierra/data/man/
+
+          # On a tagged commit hatch-vcs stamps exactly X.Y.Z.
+          uv build && python3 -m zipfile -l dist/sierra_research-*.whl | grep man
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sierra-release-dist
+          path: dist/
+          retention-days: 14
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    permissions:
+      contents: write   # create the GitHub release / attach assets
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sierra-release-dist
+          path: dist
+
+      - name: Github release
+        uses: softprops/action-gh-release@v2
+        with:
+          # NOTE: intentionally NOT secrets.GITHUB_TOKEN. A workflow can't
+          # trigger another workflow (publish.yml) using the token it was
+          # itself triggered with. BOT_RELEASE_TOKEN is a fine-grained PAT
+          # scoped to this repo whose 'published' event DOES trigger
+          # publish.yml.
+          token: ${{ secrets.BOT_RELEASE_TOKEN }}
+          # The tag already exists (you pushed it) — reuse it.
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          prerelease: false
+          files: dist/*

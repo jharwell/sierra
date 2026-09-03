@@ -105,7 +105,10 @@ def regression_value_statistics(session, stats):
     )
 
 
-@nox.session(python=env.VERSIONS, tags=["regression", "value"])
+# 2026-09-03 [JRH]: Only test with 3.12 because networkx on python 3.9 vs 3.12
+# has some important differences which can't be overcome with pinning; once
+# SIERRA moves to 3.10 this can go away.
+@nox.session(python=["3.12"], tags=["regression", "value"])
 @env.session_setup
 @env.session_teardown
 def regression_value_graphs(session, *_):

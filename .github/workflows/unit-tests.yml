@@ -17,7 +17,7 @@ jobs:
           - 3.12
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: argos
@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-unit-tests-${{ matrix.os }}-${{ matrix.python-version }}-coverage
+          name: ci-unit-tests-${{ matrix.python-version }}-coverage
           path: .coverage*
           include-hidden-files: true
           if-no-files-found: error

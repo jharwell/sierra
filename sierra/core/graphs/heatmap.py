@@ -10,22 +10,19 @@ Heatmap graph generation classes for stage{4,5}.
 import textwrap
 import typing as tp
 import logging
-import pathlib
 
 # 3rd party packages
-import numpy as np
-import matplotlib.pyplot as plt
 import holoviews as hv
 import polars as pl
 
 # Project packages
-from sierra.core import utils, config, storage, types
+from sierra.core import utils, config, storage
 from . import pathset as _pathset, graphutils
 
 _logger = logging.getLogger(__name__)
 
 
-def generate_confusion(  # noqa: PLR0913
+def generate_confusion(  # noqa: PLR0913,PLR0917
     pathset: _pathset.PathSet,
     input_stem: str,
     output_stem: str,
@@ -35,6 +32,7 @@ def generate_confusion(  # noqa: PLR0913
     truth_col: str,
     predicted_col: str,
     stats_center: str,
+    *,
     xlabels_rotate: bool = False,
     large_text: bool = False,
 ) -> bool:
@@ -179,6 +177,7 @@ def generate_numeric(  # noqa: PLR0913
     title: str,
     backend: str,
     stats_center: str,
+    *,
     colnames: tuple[str, str, str] = ("x", "y", "z"),
     xlabel: tp.Optional[str] = "",
     ylabel: tp.Optional[str] = "",

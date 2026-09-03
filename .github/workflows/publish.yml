@@ -1,26 +1,38 @@
 name: Publishing
 description: Publish SIERRA to PyPI
 
-# 2025-04-29 [JRH]: Note that per github actions guidance, the publish job has
-# to be in a separate workflow than anything else; if it is in the same workflow
-# it is unsupported/still might work.
+# Per GitHub Actions guidance, the publish job must live in its own workflow,
+# separate from anything else; combining it with other workflows is unsupported.
 #
-# Note also that the 'published' release type will trigger for both prelease
-# (what I call beta releases) and formal releases.
+# The 'published' release type triggers for BOTH prereleases (beta releases)
+# and formal releases. We route between TestPyPI and PyPI using the structured
+# `github.event.release.prerelease` boolean rather than string-matching the tag.
+#
+# Publishing uses PyPI Trusted Publishing (OIDC): no API token/password is
+# passed. The `id-token: write` permission plus a configured Trusted Publisher
+# on PyPI/TestPyPI is all that's required. Make sure both projects have a
+# Trusted Publisher registered pointing at this repo + workflow + environment.
 on:
   release:
     types: [published]
+
+# Prevent two near-simultaneous releases from racing the publish.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container: jharwell/ubuntu24.04-sierra:latest
 
+    env:
+      PYTHON_VERSION: "3.10"
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         persist-credentials: false
-
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -28,24 +40,26 @@ jobs:
     - name: Build package
       shell: bash
       run: |
-        uv sync -p 3.10 --group dev
-        cd docs
-        uv run -p 3.10 sphinx-build -b linkcheck . _build
-        cd ..
+        uv sync -p "${PYTHON_VERSION}" --group dev
+        (cd docs && uv run -p "${PYTHON_VERSION}" sphinx-build -b linkcheck . _build)
         uv build
 
     - uses: actions/upload-artifact@v4
       with:
         name: pypi-dist
         path: dist/
+        retention-days: 7
 
   upload:
     runs-on: ubuntu-latest
     needs:
       - build
 
-    # 2025-04-29 [JRH]: Magic sauce to get trusted publishing to work with
-    # pypi+github actions.
+    # A GitHub deployment environment lets you scope the OIDC trust on PyPI's
+    # side and (optionally) add required reviewers before a publish runs.
+    environment: pypi
+
+    # Required for Trusted Publishing (OIDC). No password/token is set below.
     permissions:
       id-token: write
 
@@ -55,18 +69,15 @@ jobs:
         name: pypi-dist
         path: dist
 
-
     - name: Publish to PyPI
-      if: ${{ !contains(github.ref, 'beta') }}
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        skip_existing: true
-        password: ${{ inputs.pypi-token }}
-
-    - name: Publish to TestPyPI
-      if: ${{ contains(github.ref, 'beta') }}
+      if: github.event.release.prerelease == false
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         skip-existing: true
-        password: ${{ inputs.testpypi-token }}
+
+    - name: Publish to TestPyPI
+      if: github.event.release.prerelease == true
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true
         repository-url: https://test.pypi.org/legacy/

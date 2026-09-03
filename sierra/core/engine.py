@@ -299,8 +299,6 @@ def get_local_ip():
 
 __all__ = [
     "ExpRunShellCmdsGenerator",
-    "ExpRunShellCmdsGenerator",
-    "ExpShellCmdsGenerator",
     "ExpShellCmdsGenerator",
     "cmdline_postparse_configure",
 ]

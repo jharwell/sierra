@@ -23,6 +23,7 @@ import pathlib
 
 # 3rd party packages
 import pytest
+import networkx as nx
 
 # Project packages
 from sierra.core import graphs

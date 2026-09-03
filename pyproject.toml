@@ -2,9 +2,12 @@
 name = "sierra-research"
 
 ################################################################################
-# The one and only place where the current SIERRA version is recorded.
+# Version is derived from git tags by hatch-vcs (see [tool.hatch.version]).
+#   - Stable tag  vX.Y.Z        -> version X.Y.Z
+#   - Untagged commits after it -> X.Y.(Z+1).devN  (N = commits since the tag)
+# There is deliberately no hardcoded version string here anymore.
 ################################################################################
-version = "1.5.15"
+dynamic = ["version"]
 
 description = "Automation framework for the scientific method in R&D"
 authors = [
@@ -19,7 +22,6 @@ dependencies = [
     # python3.10+ only. So the fix is in two stages, only one of which I control.
     "matplotlib >=3.9.0, <3.10.0",
     "hvplot",
-    "hatchling",
     "coloredlogs",
     "distro",
     "networkx",
@@ -29,7 +31,6 @@ dependencies = [
     "jsonpath-ng",
     "yamlpath",
     "ruamel.yaml",
-    "matplotlib",
     "pygraphviz",
     # 2025-11-24 [JRH]: Causes errors of the form: np.unicode_ was
     # removed in the NumPy 2.0 release. Use np.str_ instead.
@@ -131,8 +132,20 @@ sierra-cli = "sierra.main:main_deprecated"
 sierra = "sierra.main:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+# Version is computed from git tags at build time.
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+# Untagged commits after stable vX.Y.Z build as X.Y.(Z+1).devN, matching the
+# old bump-version.sh semantics (dev stream targets the next patch).
+version_scheme = "guess-next-dev"
+# Strip the +gHASH local segment. PyPI/TestPyPI REJECT local-version segments
+# on upload, so this is required for .devN uploads from CI to succeed.
+local_scheme = "no-local-version"
 
 [tool.hatch.build.targets.wheel]
 include = ["sierra"]
