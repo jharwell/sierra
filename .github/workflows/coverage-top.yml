@@ -1,11 +1,23 @@
-name: Smoke Coverage Top-level
+name: Coverage Top-level
 
 # Run:
 #
-# - Every month.  Scheduling helps keep drift/issues with updates
-#   to runners at bay.
-# - On pushes.
+# - On pushes to ANY branch, filtered to commits touching sierra/** or
+#   .github/**
 #
+# - Every month, to catch drift from runner/image updates.
+#
+# Releases are handled by a SEPARATE workflow (release.yml), triggered on
+# vX.Y.Z tag pushes. `paths` and `tags` cannot coexact correctly in one push
+# event (a `paths` filter also applies to tag pushes and would silently skip
+# releases), which is why releasing lives in its own file.
+#
+# Cutting a stable release (manual):
+#   git checkout master && git pull
+#   git tag -a v1.5.16 -m "Release v1.5.16"
+#   git push origin v1.5.16
+# hatch-vcs reads the tag and builds exactly 1.5.16; the release job tags the
+# GitHub release to match.
 on:
   push:
     paths:
@@ -21,11 +33,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  smoke-presence:
+  smoke-tests:
     uses: ./.github/workflows/smoke-presence.yml
     secrets: inherit
 
-  regression:
+  regression-tests:
     uses: ./.github/workflows/regression.yml
     secrets: inherit
 
@@ -33,17 +45,17 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     secrets: inherit
 
-  coverage-smoke:
+  coverage:
     runs-on: ubuntu-latest
     container: jharwell/ubuntu24.04-sierra:latest
 
     needs:
-      - smoke-presence
-      - regression
+      - smoke-tests
+      - regression-tests
       - unit-tests
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
 
       - name: Install uv
@@ -55,7 +67,7 @@ jobs:
           # This is necessary for coverage since we run all integration tests in
           # nox, otherwise coverage can't find e.g., the sierra-cli executable
           # and we can't upload coverage.
-          uv sync -p 3.9 --group dev
+          uv sync --group dev
           source .venv/bin/activate
 
           which sierra-cli
@@ -90,17 +102,30 @@ jobs:
 
         run: |
           git config --global --add safe.directory ${{ github.workspace}}
-          uv run -p 3.9 coveralls
+          uv run coveralls
 
-  create-release:
+  # Build the .devN distribution and hand it to the TestPyPI publish job.
+  # Gated to devel: feature branches run tests/coverage above, but only devel
+  # produces a published dev build. Stable releases are built in release.yml.
+  build-dist:
+    if: github.ref == 'refs/heads/devel'
     runs-on: ubuntu-latest
     container: jharwell/ubuntu24.04-sierra:latest
 
     needs:
-      - coverage-smoke
+      - coverage
+
+    # softprops/action-gh-release creates the stable GitHub release on tag push.
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          # hatch-vcs derives the version from git history + tags. The default
+          # shallow clone (fetch-depth: 1) strips tags and commit distance,
+          # which makes hatch-vcs fall back to 0.1.dev0. Full history is required.
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -108,61 +133,51 @@ jobs:
       - name: Generate manpages
         shell: bash
         run: |
-          # 3.10 is known to work with the current configuration to generate
-          # docs.
           uv sync -p 3.12 --group dev
 
-          # Hatch will only pickup manpages with shared-data if they are INSIDE
-          # a package directory. Since we don't want to commit this to source
-          # control, we copy it in CI here.
+          # Hatch only picks up manpages via shared-data if they live INSIDE a
+          # package directory. We don't commit them to source control, so we
+          # generate and copy them in CI here.
           mkdir -p sierra/data/man
-
-          # 3.12 is known to work with the current configuration to generate
-          # docs.
           cd docs && uv run -p 3.12 sphinx-build -b man . _build/man
-          cd ..
           cp docs/_build/man/*.1 sierra/data/man/
 
-          # Build the package and verify manpages were included
-          uv build && python3 -m zipfile -l dist/sierra_research-*.whl |grep man
+          # Build the package and verify manpages were included. hatch-vcs
+          # stamps the version from git here
+          uv build && python3 -m zipfile -l dist/sierra_research-*.whl | grep man
 
-      - name: Set beta release tag
-        if: github.ref == 'refs/heads/devel'
-        shell: bash
-        run: |
-          uv sync --group ci
-          echo RELEASE_TAG=$(uv run pyproject-info project.version | tr -d '"')-beta >> $GITHUB_ENV
-
-      - name: Github beta release
-        if: github.ref == 'refs/heads/devel'
-        uses: "marvinpinto/action-automatic-releases@latest"
+      # Hand the built dist to the container-less publish job below. The
+      # pypi-publish action is NOT supported inside a `container:` job, so the
+      # actual TestPyPI upload happens in a dependent job which doesn't use a
+      # container.
+      - uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.BOT_RELEASE_TOKEN }}
-          automatic_release_tag: ${{ env.RELEASE_TAG }}
-          prerelease: true
-          title: "Development release ${{ env.RELEASE_TAG }}"
+          name: sierra-dev-dist
+          path: dist/
+          retention-days: 14
 
-      - name: Set release tag
-        if: github.ref == 'refs/heads/master'
-        shell: bash
-        run: |
-          uv sync --group ci
-          echo RELEASE_TAG=$(uv run pyproject-info project.version | tr -d '"') >> $GITHUB_ENV
+  # Publish dev (.devN) builds to TestPyPI. Separate, container-LESS job:
+  # pypa/gh-action-pypi-publish is unsupported inside a `container:` job, and
+  # keeping publish separate from build is the recommended security posture for
+  # Trusted Publishing.
+  publish-dev-testpypi:
+    runs-on: ubuntu-latest
+    needs:
+      - build-dist
 
-      - name: Github release
-        if: github.ref == 'refs/heads/master'
-        uses: "marvinpinto/action-automatic-releases@latest"
+    environment: testpypi
+
+    permissions:
+      id-token: write   # mandatory for Trusted Publishing (OIDC)
+
+    steps:
+      - uses: actions/download-artifact@v4
         with:
-          # 2025-04-29 [JRH]: This is NOT the usual secrets.GITHUB_TOKEN because
-          # as of now, you can't trigger a workflow (such as the publish
-          # workflow) with the same token that THIS workflow was triggered with,
-          # because...reasons.
-          #
-          # The workaround is to create a fine-grained token for my account,
-          # give it permissions only for the SIERRA repo, and set it as a CI
-          # secret. THEN the publish workflow will be triggered on successful
-          # release publishing.
-          repo_token: ${{ secrets.BOT_RELEASE_TOKEN }}
-          automatic_release_tag: ${{ env.RELEASE_TAG }}
-          prerelease: false
-          title: "Release ${{ env.RELEASE_TAG }}"
+          name: sierra-dev-dist
+          path: dist
+
+      - name: Publish dev build to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+          repository-url: https://test.pypi.org/legacy/

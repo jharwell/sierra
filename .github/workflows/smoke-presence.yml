@@ -101,7 +101,7 @@ jobs:
               engines: "ros1robot ros1gazebo"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Set up only the engines this slice needs. The composite action takes a
       # single engine, so we gate one call per engine on the slice's engine list;
