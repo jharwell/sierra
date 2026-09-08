@@ -22,6 +22,7 @@ on:
   push:
     paths:
       - 'sierra/**'
+      - 'tests/**'
       - '.github/**'
 
   schedule:
@@ -84,7 +85,7 @@ jobs:
           coverage \
             report \
             --ignore-errors \
-            --fail-under=80
+            --fail-under=85
 
           coverage \
             xml \

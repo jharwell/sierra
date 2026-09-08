@@ -138,6 +138,11 @@ build-backend = "hatchling.build"
 # Version is computed from git tags at build time.
 [tool.hatch.version]
 source = "vcs"
+# - Optional v? — accepts both v1.2.x history and newever bare 1.5.x tags
+# - Named version group — required by hatch-vcs
+# - The ([a-z]+[0-9]+)? tail — accepts PEP 440 pre-release patterns like 1.5.14b1
+# - Anchored ^...$ — rejects 2022-thesis-1, 2020-aamas-1, etc. entirely
+tag-pattern = '''^v?(?P<version>[0-9]+\.[0-9]+\.[0-9]+([a-z]+[0-9]+)?)$'''
 
 [tool.hatch.version.raw-options]
 # Untagged commits after stable vX.Y.Z build as X.Y.(Z+1).devN, matching the
@@ -146,6 +151,9 @@ version_scheme = "guess-next-dev"
 # Strip the +gHASH local segment. PyPI/TestPyPI REJECT local-version segments
 # on upload, so this is required for .devN uploads from CI to succeed.
 local_scheme = "no-local-version"
+
+# Exclude old thesis tags
+git_describe_command = "git describe --dirty --tags --long --match v[0-9]* --match [0-9]*"
 
 [tool.hatch.build.targets.wheel]
 include = ["sierra"]

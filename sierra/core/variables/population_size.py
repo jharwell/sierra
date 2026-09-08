@@ -88,7 +88,17 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
 
 def parse(arg: str) -> list[int]:
-    """Generate the system sizes for each experiment in a batch."""
+    """Generate the system sizes for each experiment in a batch.
+
+    For ``Linear<N>.C<k>`` the increment is ``floor(N / k)`` and the sizes are
+    ``[inc, 2*inc, ..., k*inc]``. Because the increment is floored, the nominal
+    maximum ``N`` is included as a data point only when ``N`` is divisible by the
+    cardinality ``k``; otherwise the largest size is ``k * floor(N / k)`` which
+    is strictly less than ``N`` (e.g. ``Linear10.C3`` -> ``[3, 6, 9]``, not
+    ``[..., 10]``).
+
+    For ``Log<N>`` the sizes are the powers of two ``2**0 .. 2**floor(log2(N))``.
+    """
     sections = arg.split(".")
 
     # remove batch criteria variable name, leaving only the spec
