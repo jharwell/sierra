@@ -65,6 +65,14 @@ class ArenaExtent:
     def __str__(self) -> str:
         return str(self.dims) + "@" + str(self._origin)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ArenaExtent):
+            return NotImplemented
+        return self.dims == other.dims and self._origin == other._origin
+
+    def __hash__(self) -> int:
+        return hash((self.dims, self._origin))
+
 
 class Sigmoid:
     r"""

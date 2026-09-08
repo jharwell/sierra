@@ -22,6 +22,7 @@ on:
   push:
     paths:
       - 'sierra/**'
+      - 'tests/**'
       - '.github/**'
 
   schedule:

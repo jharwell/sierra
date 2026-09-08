@@ -557,13 +557,35 @@ class XVarBatchCriteria(
             indices.append(dim_index)
             remaining_exp_num = remaining_exp_num % stride
 
-        # Find the first criteria that has an n_agents method and use it
-        for i, criteria in enumerate(self.criterias):
-            if hasattr(criteria, "n_agents"):
-                return criteria.n_agents(indices[i])
-
-        # If no criteria has n_agents method, raise an error
-        raise AttributeError("No criteria has an 'n_agents' method")
+        # Find the criteria that actually PROVIDES a working n_agents and use it.
+        #
+        # A criteria qualifies only if it defines n_agents AND that definition
+        # is not the IQueryableBatchCriteria stub (which just raises
+        # NotImplementedError). Two cases are correctly rejected:
+        #   * criteria that never mix in IQueryableBatchCriteria have no
+        #     n_agents attribute at all (getattr -> None);
+        #   * criteria that mix it in but never override it resolve to the stub.
+        # The old ``hasattr`` guard caught neither: it was always True for the
+        # mixed-in stub, so axis 0 was always chosen and a non-population axis-0
+        # criteria raised NotImplementedError even when a later axis could
+        # answer.
+        stub = IQueryableBatchCriteria.n_agents
+        owners = [
+            (i, c)
+            for i, c in enumerate(self.criterias)
+            if getattr(type(c), "n_agents", None) not in (None, stub)
+        ]
+        if not owners:
+            raise AttributeError("No sub-criteria overrides 'n_agents'")
+        if len(owners) > 1:
+            # Two population axes is ambiguous; fail loudly rather than
+            # silently taking the first.
+            raise RuntimeError(
+                f"Multiple sub-criteria in {owners} override 'n_agents'; "
+                "ambiguous population axis"
+            )
+        i, criteria = owners[0]
+        return criteria.n_agents(indices[i])
 
 
 def univar_factory(

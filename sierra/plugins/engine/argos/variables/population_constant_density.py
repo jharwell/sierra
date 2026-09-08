@@ -41,6 +41,18 @@ class PopulationConstantDensity(cd.ConstantDensity, bcbridge.IGraphable):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
+    @staticmethod
+    def _agents_for(area: float, target_density: float) -> tuple[int, bool]:
+        """Agents for an arena area at a density, clamped to >=1 for ARGoS.
+
+        ARGoS won't start with 0 robots, so a computed count of 0 is clamped up
+        to 1. Returns ``(n_agents, was_clamped)`` so callers can warn once. This
+        is the single source of truth shared by :meth:`gen_attr_changelist` and
+        :meth:`n_agents` -- keep them from disagreeing.
+        """
+        raw = int(area * (target_density / 100.0))
+        return (1, True) if raw == 0 else (raw, False)
+
     def gen_attr_changelist(self) -> list[definition.AttrChangeSet]:
         """Generate XML modifications to to maintain constant population density.
 
@@ -56,9 +68,10 @@ class PopulationConstantDensity(cd.ConstantDensity, bcbridge.IGraphable):
                         extent = utils.ArenaExtent(Vector3D(x, y, z))
                         # ARGoS won't start if there are 0 robots, so you always
                         # need to put at least 1.
-                        n_agents = int(extent.area() * (self.target_density / 100.0))
-                        if n_agents == 0:
-                            n_agents = 1
+                        n_agents, clamped = self._agents_for(
+                            extent.area(), self.target_density
+                        )
+                        if clamped:
                             self.logger.warning(
                                 (
                                     "n_agents set to 1 even though "
@@ -116,7 +129,10 @@ class PopulationConstantDensity(cd.ConstantDensity, bcbridge.IGraphable):
         return info
 
     def n_agents(self, exp_num: int) -> int:
-        return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
+        n, _ = self._agents_for(
+            self.dimensions[exp_num].area(), self.target_density
+        )
+        return n
 
 
 def calc_dims(

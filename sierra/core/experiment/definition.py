@@ -286,6 +286,20 @@ class AttrChange:
     def __repr__(self) -> str:
         return self.path + "/" + self.attr + ": " + str(self.value)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AttrChange):
+            return NotImplemented
+        # value normalized to str: 1 and "1" compare equal, matching how the
+        # change is serialized into XML.
+        return (self.path, self.attr, str(self.value)) == (
+            other.path,
+            other.attr,
+            str(other.value),
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.path, self.attr, str(self.value)))
+
 
 class NullMod:
     """

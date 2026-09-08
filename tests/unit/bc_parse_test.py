@@ -12,12 +12,6 @@ the full factory -> attr-changelist -> exp-names integration for specific
 criteria; here we pin just the spec-string -> numbers/cardinality mapping, where
 an off-by-one silently produces the wrong number of experiments.
 
-Scope note: the only BUILTIN batch criterion is MonteCarlo (``builtin.py``); the
-per-project criteria (max_speed, fuel, ...) are thin shims over these shared
-helpers and aren't re-tested here. What's worth pinning is the shared grammar:
-``linspace_parse`` (used by density/speed/fuel-style ranges), the MonteCarlo
-parse, ``population_size.parse`` (Log/Linear), ``variable_density.parse``, and
-``exp_setup.parse``.
 """
 
 # Core packages
@@ -74,7 +68,7 @@ class TestLinspaceParse:
             builtin.linspace_parse("not-a-spec")
 
 
-# --- The one builtin criterion: MonteCarlo ----------------------------------
+# --- MonteCarlo ----------------------------------
 class TestMonteCarloParse:
     def test_cardinality_extracted(self):
         # "MonteCarlo.C7" -> cardinality 7.
@@ -133,6 +127,16 @@ class TestPopulationSizeParse:
         # returns None and .group() raises AttributeError before the assert.
         with pytest.raises((AssertionError, AttributeError)):
             population_size.parse("population_size.Exponential16")
+
+    def test_linear_non_integral_increment_truncates(self):
+        # Linear10.C3 -> increment int(10/3) == 3 -> [3, 6, 9]. Note the max
+        # (10) is NOT reached when N is not divisible by the cardinality; this
+        # test pins that behavior (see write-up smell note).
+        assert population_size.parse("population_size.Linear10.C3") == [3, 6, 9]
+
+    def test_log_single_point(self):
+        # Log1 -> 2^0 only -> [1].
+        assert population_size.parse("population_size.Log1") == [1]
 
 
 # --- variable_density.parse: <minpNN>.<maxpNN>.C<card> ----------------------
