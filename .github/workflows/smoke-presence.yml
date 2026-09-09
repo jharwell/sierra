@@ -139,8 +139,8 @@ jobs:
       - name: Run nox (tag slice)
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 45
-          max_attempts: 1
+          timeout_minutes: 20
+          max_attempts: 2
           shell: bash
           command: |
             uv run nox -p ${{ matrix.python-version }} -k "${{ matrix.slice.tags }}"

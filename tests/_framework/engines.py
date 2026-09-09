@@ -532,6 +532,11 @@ YAMLSIM = EngineSpec(
                     min_rows=50,
                     columns=_SIGNAL_COLS,
                 ),
+                ExpectedOutput(
+                    "statistics/c1-exp{i}/sensors/primary/signal-trace.{stat}",
+                    min_rows=50,
+                    columns=_SIGNAL_COLS,
+                ),
                 ExpectedOutput("statistics/c1-exp{i}/classification.{stat}"),
             ),
             inter_exp=(

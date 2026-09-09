@@ -87,15 +87,18 @@ def _worker(
         storage: Storage medium.
     """
     plugin = pm.pipeline.get_plugin_module(storage)
-    for item in (run_output_root / run_output_leaf).rglob("*"):
+    proj_output_root = run_output_root / run_output_leaf
+    for item in proj_output_root.rglob("*"):
         if (
             item.is_dir()
             or item.stat().st_size == 0
             or not any(plugin.supports_input(s) for s in item.suffixes)
         ):
             continue
-        utils.dir_create_checked(exp_stat_root, exist_ok=True)
-        dest = (exp_stat_root / item.name).with_suffix(
+        utils.dir_create_checked(
+            (exp_stat_root / item.relative_to(proj_output_root)).parent, exist_ok=True
+        )
+        dest = (exp_stat_root / item.relative_to(proj_output_root)).with_suffix(
             config.STATS[stats_center].spreads["none"].exts[stats_center]
         )
         if dataop == "move":
