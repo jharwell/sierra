@@ -1,28 +1,35 @@
-.. |pepy-downloads| image:: https://pepy.tech/badge/sierra-research
-                    :target: https://pepy.tech/project/sierra-research
-
 .. |pypi-version| image:: https://img.shields.io/pypi/v/sierra-research.svg
                   :target: https://pypi.python.org/pypi/sierra-research/
 
-.. |supported-pythons| image:: https://img.shields.io/pypi/pyversions/sierra-research.svg
-
-.. |os-supported| image:: https://img.shields.io/badge/os-linux%20%7C%20macOS-blue
-
 .. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=master
-.. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master
+                        :target: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml
 
-.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=devel
-.. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
-
-.. |license| image:: https://img.shields.io/github/license/jharwell/sierra
-   :alt: GitHub License
-   :target: https://github.com/jharwell/sierra/blob/master/LICENSE
+.. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
+          :target: https://sierra.readthedocs.io/en/master/
 
 .. |doi| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6834758.svg
          :target: https://doi.org/10.5281/zenodo.6834758
 
-.. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
-          :target: https://sierra.readthedocs.io/en/master/
+.. |pepy-downloads| image:: https://pepy.tech/badge/sierra-research
+                    :target: https://pepy.tech/project/sierra-research
+
+.. |supported-pythons| image:: https://img.shields.io/pypi/pyversions/sierra-research.svg
+                       :target: https://pypi.python.org/pypi/sierra-research/
+
+.. |os-supported| image:: https://img.shields.io/badge/os-linux%20%7C%20macOS-blue
+
+.. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master
+                        :target: https://coveralls.io/github/jharwell/sierra?branch=master
+
+.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=devel
+                       :target: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml
+
+.. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
+                       :target: https://coveralls.io/github/jharwell/sierra?branch=devel
+
+.. |license| image:: https://img.shields.io/github/license/jharwell/sierra
+   :alt: GitHub License
+   :target: https://github.com/jharwell/sierra/blob/master/LICENSE
 
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
                  :target: https://github.com/jharwell/sierra/graphs/commit-activity
@@ -30,57 +37,93 @@
 .. image:: docs/_static/logo-banner.png
    :width: 400px
 
-+---------------+--------------------------------------------------------------------+
-| Usage         | |pepy-downloads| |pypi-version| |supported-pythons| |os-supported| |
-+---------------+--------------------------------------------------------------------+
-| Release       | |ci-analysis-master| |ci-coverage-master|                          |
-+---------------+--------------------------------------------------------------------+
-| Development   | |ci-analysis-devel| |ci-coverage-devel|                            |
-+---------------+--------------------------------------------------------------------+
-| Miscellaneous | |license| |doi| |docs| |maintenance|                               |
-+---------------+--------------------------------------------------------------------+
+|pypi-version| |ci-analysis-master| |docs| |doi|
 
-Quick Links
+
+**SIERRA is a command-line tool that turns a one-line description of an
+experiment into fully executed, reproducible results — inputs, runs, and
+finished plots.** It automates the parts of large-scale computational
+experiments that are usually manual engineering: generating configurations,
+running them across simulators and clusters, processing outputs, and producing
+analysis artifacts.
+
+Instead of writing (and re-writing) glue scripts for every project:
+
+.. code-block:: text
+
+   "I need one script to run the experiment, another to process the data,
+   and a third to generate the graphs I want."
+
+you describe the *what*, and SIERRA does the rest:
+
+.. code-block:: text
+
+   "Here is the simulator/environment I want, the deliverables I want to
+   generate, and the data I want on them — GO."
+
+Think of it as a **backend compiler for research**: a description of what you
+want in, a fully executed experiment with processed results out.
+
+.. code-block:: shell
+
+   pip3 install sierra-research
+
+`Read the docs <https://sierra.readthedocs.io/en/master/>`_ ·
+`Quick Start`_ · `Why SIERRA?`_ · `Limitations`_ · `Citing`_
+
+----
+
+Quick Start
 ===========
 
-- `Quick Start`_ — Install and run your first experiment
-- `What is SIERRA?`_ — Overview and architecture
-- `Features at a Glance`_ — Supported platforms and capabilities
-- `Why SIERRA?`_ — Motivation and comparison with alternatives
-- `Limitations`_ — What SIERRA is not designed for
-- `Citing`_ — How to cite SIERRA in your research
-- `Troubleshooting`_ — Common issues and how to get help
-- `Contributing`_ — How to contribute to SIERRA
+**Install:**
+
+.. code-block:: shell
+
+   pip3 install sierra-research
+
+**Run your first sweep.** This runs a small parameter sweep locally using the
+built-in `sample project`_:
+
+.. code-block:: shell
+
+   sierra \
+     --sierra-root=$HOME/exp \
+     --project=sierra_sample_project \
+     --platform=platform.argos \
+     --exec-env=hpc.local \
+     --template-input-file=exp/argos/template.argos \
+     --scenario=LowBlockCount.10x10x1 \
+     --batch-criteria population_size.Log8 \
+     --n-runs=2 \
+     --pipeline 1 2 3 4
+
+This generates all experiment inputs, runs them locally, and processes the
+results into graphs under ``$HOME/exp``. See the `getting started guide`_ for a
+full walkthrough, including the expected output.
 
 
 What is SIERRA?
 ===============
 
-Running large-scale computational experiments is mostly engineering: writing
-scripts, managing configuration files, wrangling outputs, and rebuilding the
-same pipeline for every new project.
+SIERRA (**reSearch pIpEline for Reproducibility, Reusability, and
+Automation**) is a command-line tool and plugin framework that automates the
+full experimental workflow — generating experiment inputs, executing
+experiments across heterogeneous computing environments, processing results,
+and producing analysis artifacts such as plots, videos, and comparative
+summaries.
 
-SIERRA automates this entire workflow.
-
-SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation) is a
-command-line tool and plugin framework that automates the full experimental
-workflow — generating experiment inputs, executing experiments across
-heterogeneous computing environments, processing results, and producing analysis
-artifacts such as plots, videos, and comparative summaries.
-
-.. figure:: https://raw.githubusercontent.com/jharwell/sierra/master/docs/figures/architecture.png
-
-   SIERRA architecture, organized by pipeline stage (left to right).
-
-Pipeline Stages
----------------
-
-SIERRA organizes experiments into a fixed pipeline:
+It organizes every experiment into a fixed, four-stage pipeline:
 
 1. **Input generation** --- Create experiment configurations from templates
 2. **Execution** --- Run experiments locally, on clusters, etc.
 3. **Postprocessing** --- Parse raw outputs into structured datasets
 4. **Product generation** --- Generate plots, summaries, and derived artifacts
+
+.. figure:: https://raw.githubusercontent.com/jharwell/sierra/master/docs/figures/architecture.png
+
+   The SIERRA pipeline, stage 1 through stage 4 (left to right). Each stage is
+   extensible via plugins.
 
 SIERRA is built around three design goals:
 
@@ -120,57 +163,13 @@ All categories below are extensible via plugins.
 +-------------------------------+------------------------------------------------------+
 
 
-Quick Start
-===========
-
-**Install**:
-
-.. code-block:: shell
-
-   pip3 install sierra-research
-
-Minimal Example
----------------
-
-Run a small parameter sweep locally using the built-in `sample project`_.
-
-.. code-block:: shell
-
-   sierra \
-     --sierra-root=$HOME/exp \
-     --project=sierra_sample_project \
-     --platform=platform.argos \
-     --exec-env=hpc.local \
-     --template-input-file=exp/argos/template.argos \
-     --scenario=LowBlockCount.10x10x1 \
-     --batch-criteria population_size.Log8 \
-     --n-runs=2 \
-     --pipeline 1 2 3 4
-
-This generates all experiment inputs, runs them locally, and processes results
-into graphs. See the `getting started guide`_ for a full walkthrough including
-expected output.
-
 Why SIERRA?
 ===========
 
 SIERRA changes the paradigm of running experiments from manual and procedural
-to **declarative and automated**. Instead of:
-
-.. code-block:: text
-
-   "I need to write a script to run the experiment, another script to
-   process the data and a 3rd script to generate the graphs I want."
-
-you describe:
-
-.. code-block:: text
-
-   "Here is the environment and/or simulator I want to use, the deliverables
-   I want to generate, and the data I want on them — GO."
-
-SIERRA acts as a backend compiler for research: turning a description of what
-you want into a fully executed experiment with processed results.
+to **declarative and automated**. You describe the environment, the
+deliverables, and the data you want — SIERRA turns that description into a
+fully executed experiment with processed results.
 
 **Key advantages:**
 
@@ -214,7 +213,7 @@ right tool if:
   tasks — use Prefect, Dagster, or Airflow instead.
 - Your experiments are highly irregular and cannot be expressed as systematic
   variations on a template.
-- You need **ROS2**---ROS1 is supported; ROS2 support is planned.
+- You need **ROS2** --- ROS1 is supported; ROS2 support is planned.
 
 If you are unsure whether SIERRA fits your use case, check the `use cases`_ page
 or open a `discussion thread <https://github.com/jharwell/sierra/discussions>`_.
@@ -236,8 +235,8 @@ If you use SIERRA and have found it helpful, please cite the following paper:
   pages = {1905–1907}
   }
 
-To cite a specific version of SIERRA (recommended for reproducibility), use
-the DOI badge in the Miscellaneous row of the badge table above.
+To cite a specific version of SIERRA (recommended for reproducibility), use the
+DOI: |doi|
 
 
 Troubleshooting
@@ -257,12 +256,26 @@ Contributions of all sizes are welcome — bug fixes, documentation improvements
 new plugins, or larger features.
 
 A good first contribution is adding a storage plugin or a simple processor
-plugin — both are typically under 100 lines and have clear contracts defined
-in the `plugin developer guide`_.
+plugin — both are typically under 100 lines and have clear contracts defined in
+the `plugin developer guide`_.
 
-If you have an idea to discuss before diving in, open a discussion thread at
-any point. See the `contributing guide`_ for the
-full procedure.
+If you have an idea to discuss before diving in, open a discussion thread at any
+point. See the `contributing guide`_ for the full procedure.
+
+
+Project Status
+==============
+
++---------------+--------------------------------------------------------------------+
+| Usage         | |pepy-downloads| |supported-pythons| |os-supported|                |
++---------------+--------------------------------------------------------------------+
+| Release       | |ci-analysis-master| |ci-coverage-master|                          |
++---------------+--------------------------------------------------------------------+
+| Development   | |ci-analysis-devel| |ci-coverage-devel|                            |
++---------------+--------------------------------------------------------------------+
+| Miscellaneous | |license| |doi| |docs| |maintenance|                               |
++---------------+--------------------------------------------------------------------+
+
 
 .. _`getting started guide`: https://sierra.readthedocs.io/en/master/src/getting-started/trial.html
 .. _`pipeline documentation`: https://sierra.readthedocs.io/en/master/src/concepts/pipeline.html
