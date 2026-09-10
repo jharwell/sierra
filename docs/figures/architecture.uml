@@ -1,172 +1,75 @@
 @startuml
-
-' Basic configuration
-!theme cyborg
-skinparam defaultTextAlignment center
+!theme plain
+!include sierra-palette.iuml
 skinparam shadowing false
 skinparam RoundCorner 10
-skinparam ArrowColor #black
-skinparam BackgroundColor #white
-skinparam stateFontSize 48
 skinparam linetype ortho
-skinparam stateBorderThickness 8
-skinparam stateFontStyle bold
+skinparam defaultTextAlignment center
 hide empty description
-skinparam stateFontColor #black
 
-' Title configuration
-skinparam titleBorderThickness 8
-skinparam titleFontSize 48
-skinparam titleFontColor #black
-skinparam titleBorderColor #white
-   skinparam defaultTextAlignment center
+'title SIERRA pipeline — each stage transforms inputs into outputs via swappable plugins
 
-' Pipeline
-state "Pipeline" as pipeline
-
-
-' Labels for rows
-state "Input\nArtifacts" as input_artifacts #lightcyan
-state "Output\nArtifacts" as output_artifacts #skyblue
-state "Active\nPlugins" as plugins #Lightcoral
-state "Active\nComputing\nresources" as resources #Cornflowerblue
-
-
-' Stage 1
-state "1. Generate\nExperimental\nInputs" as stage1  {
-   state "Experiment\nInput\nTemplate" as input1 #lightcyan
-   state "Experiment\nInput\nFiles" as output1 #skyblue {
-                state " XML,JSON,\nYAML,...  " as plugins1 #lightcoral
-      }
-   state " " as plugin1 #white ##white {
-      state "Engine" as engine1 #lightcoral
-      state "Execution\nenvironment" as exec_env1 #lightcoral
-      state "Experiment\ninput format" as expdef1 #lightcoral
-
-     engine1 -[hidden]d-> exec_env1
-     exec_env1 -[hidden]d-> expdef1
-   }
-   state "Host\nmachine\n" as resources1 #Cornflowerblue
-   }
-
-' Stage 2
-state "2. Execute\nExperiments\n" as stage2  {
-   state "Experiment\nInput Files" as input2 #lightcyan {
-      state " XML,JSON,\nYAML,...  " as plugins_in2 #lightcoral
-   }
-   state "Experimental\nOutputs" as output2 #skyblue {
-      state "CSV,Arrow,\nGraphML,..." as plugins_out2 #lightcoral
-   }
-   state " " as plugin2 #white ##white {
-      state "Engine" as engine2 #lightcoral
-      state "Execution\nenvironment" as exec_env2 #lightcoral
-
-     engine2 -[hidden]d-> exec_env2
-   }
-   state "Host machine,\nHPC cluster,\nReal robots,..." as resources2  #Cornflowerblue
+state "Key" as key {
+  state "Input artifact"   as k_in   $ROLE_INPUT
+  state "Output artifact"  as k_out  $ROLE_OUTPUT
+  state "Active plugin"      as k_plug $ROLE_PLUGIN
+  state "Active compute\nresource" as k_res  $ROLE_COMPUTE
+  k_in -[hidden]r-> k_out
+  k_out -[hidden]r-> k_plug
+  k_plug -[hidden]r-> k_res
 }
 
-' Stage 3
-state "3. Process\nExperiment\nOutputs" as stage3  {
-   state "Experiment\nOutputs" as input3 #lightcyan {
-      state ".csv,.arrow,..." as plugins_in3 #lightcoral
-   }
-   state "Processed\nExperiment\nOutputs" as output3 #skyblue {
-      state "CSV,Arrow,\nGraphML,PNG,..." as plugins_out3 #lightcoral
-   }
-
-   state " " as plugin3 #white ##white {
-      state "Engine" as engine3 #lightcoral
-      state "Processor set" as proc_set3 #lightcoral
-      state "Storage" as storage3 #lightcoral
-
-      engine3 -[hidden]d-> proc_set3
-      proc_set3 -[hidden]d-> storage3
-   }
-   state "Host\nmachine\n" as resources3 #Cornflowerblue
+state "1. Generate inputs" as s1 {
+  state "Expdef template\nXML, JSON, YAML,..." as in1 $ROLE_INPUT
+  state "Experiment inputs\nXML, JSON, YAML,..." as out1 $ROLE_OUTPUT
+  state "Engine\nExecution environment\nExpdef" as plug1 $ROLE_PLUGIN
+  state "Host machine" as res1 $ROLE_COMPUTE
+  in1 --> out1
+  out1 -[hidden]d-> plug1
+  plug1 -[hidden]d-> res1
+}
+state "2. Execute" as s2 {
+  state "Experiment inputs\nXML, JSON, YAML" as in2 $ROLE_INPUT
+  state "Raw outputs\nCSV, Arrow, GraphML,..." as out2 $ROLE_OUTPUT
+  state "Engine\nExecution environment" as plug2 $ROLE_PLUGIN
+  state "Host\nHPC\nReal robots" as res2 $ROLE_COMPUTE
+  in2 --> out2
+  out2 -[hidden]d-> plug2
+  plug2 -[hidden]d-> res2
+}
+state "3. Process" as s3 {
+  state "Raw outputs\n.csv, .arrow" as in3 $ROLE_INPUT
+  state "Processed outputs\nCSV, Arrow, GraphML,..." as out3 $ROLE_OUTPUT
+  state "Engine\nProcessors\nStorage" as plug3 $ROLE_PLUGIN
+  state "Host machine" as res3 $ROLE_COMPUTE
+  in3 --> out3
+  out3 -[hidden]d-> plug3
+  plug3 -[hidden]d-> res3
+}
+state "4. Generate products" as s4 {
+  state "Processed outputs\nCSV, Arrow, GraphML" as in4 $ROLE_INPUT
+  state "Products\ngraphs (PNG/HTML), video (mp4),..." as out4 $ROLE_OUTPUT
+  state "Engine\nGenerators\nStorage" as plug4 $ROLE_PLUGIN
+  state "Host machine" as res4 $ROLE_COMPUTE
+  in4 --> out4
+  out4 -[hidden]d-> plug4
+  plug4 -[hidden]d-> res4
+}
+state "5. Compare products" as s5 {
+  state "Products\ngraphs (PNG)" as in5 $ROLE_INPUT
+  state "Comparisons\ngraphs (PNG),..." as out5 $ROLE_OUTPUT
+  state "Engine\nComparators\nStorage" as plug5 $ROLE_PLUGIN
+  state "Host machine" as res5 $ROLE_COMPUTE
+  in5 --> out5
+  out5 -[hidden]d-> plug5
+  plug5 -[hidden]d-> res5
 }
 
-' Stage 4
-state "4. Generate\nProducts\n" as stage4  {
-   state "Processed\nExperiment\nOutputs" as input4 #lightcyan {
-      state "CSV,Arrow,\nGraphML,..." as plugins_in4 #lightcoral
-   }
-   state "Products" as output4 #skyblue {
-      state "Graphs (PNG,HTML),\nVideos (mp4),..." as subblob4 #lightcoral
-   }
-   state " "  as plugin4 #white ##white {
-   top to bottom direction
-      state "Engine" as engine4 #lightcoral
-      state "Product\ngenerator\nset" as products4 #lightcoral
-      state "Storage" as storage4 #lightcoral
-
-      engine4 -[hidden]d-> products4
-      products4 -[hidden]d-> storage4
-   }
-   state "Host\nmachine\n" as resources4 #Cornflowerblue
-}
-
-' Stage 5
-state "5. Compare\nProducts\n" as stage5  {
-   state "Products" as input5 #lightcyan {
-      state "Graphs (PNG,...)" as plugins_in5 #lightcoral
-   }
-   state "Product\nComparisons" as output5 #skyblue {
-      state "Graphs (PNG,...)" as final_outputs #lightcoral
-   }
-   state " " as plugin5 #white ##white {
-      state "Engine" as engine5 #lightcoral
-      state "Comparator set" as comparator5 #lightcoral
-      state "Storage" as storage5 #lightcoral
-
-     engine5 -[hidden]d-> comparator5
-     comparator5 -[hidden]d-> storage5
-   }
-
-
-state "Host\nmachine\n" as resources5 #Cornflowerblue
-}
-
-' Stages horizontal layout
-pipeline -right-> stage1
-stage1 -right-> stage2
-stage2 -right-> stage3
-stage3 -right-> stage4
-stage4 -right-> stage5
-
-' Vertical flows for each stage
-top to bottom direction
-input1 --> output1
-output1 -[hidden]-> plugin1
-plugin1 -[hidden]-> resources1
-input2 --> output2
-output2 -[hidden]-> plugin2
-plugin2 -[hidden]-> resources2
-input3 --> output3
-output3 -[hidden]-> plugin3
-plugin3 -[hidden]-> resources3
-input4 --> output4
-output4 -[hidden]-> plugin4
-plugin4 -[hidden]-> resources4
-input5 --> output5
-output5 -[hidden]-> plugin5
-plugin5 -[hidden]-> resources5
-
-' Connect the categories
-pipeline -[hidden]d-> input_artifacts
-input_artifacts --> output_artifacts
-output_artifacts -[hidden]d-> plugins
-plugins -[hidden]d-> resources
-
-' Pipeline connection
-pipeline -[hidden]d->input_artifacts
-input_artifacts -[hidden]r->input1
-
-' Layout hints
-stage1 -[hidden]d-> input1
-stage2 -[hidden]d-> input2
-stage3 -[hidden]d-> input3
-stage4 -[hidden]d-> input4
-stage5 -[hidden]d-> input5
-
+s1 -right-> s2
+s2 -right-> s3
+s3 -right-> s4
+s4 -right-> s5
+' key sits BELOW the pipeline (anchored off the stage container so it doesn't
+' stretch any single column)
+s3 -[hidden]d-> key
 @enduml

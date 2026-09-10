@@ -1,0 +1,20 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam backgroundColor transparent
+skinparam defaultFontStyle bold
+skinparam ArrowThickness 2
+skinparam componentBorderThickness 2
+skinparam packageBorderThickness 2
+skinparam DefaultFontSize $FONT_BODY
+
+' User-managed inputs vs SIERRA-managed output.
+package "Your repository" $PROV_USER_HDR {
+  component "Project directory\n(on SIERRA_PLUGIN_PATH)\n\ncmdline.py\nconfig/\ngenerators/\nvariables/" as PROJ $PROV_USER
+  component "Experiment template\n(--expdef-template)\n\ntemplate.xml / .json\n.yaml / .launch" as TMPL $ROLE_INPUT
+}
+component "sierra-root\n(--sierra-root)\n\nAll generated inputs,\nraw outputs, statistics,\nand graphs land here.\nSIERRA manages this entirely." as ROOT $ROLE_OUTPUT
+
+PROJ --> ROOT : "configures stage 1-5\nbehaviour"
+TMPL --> ROOT : "modified by stage 1\nto produce exp inputs"
+@enduml

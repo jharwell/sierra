@@ -1,0 +1,39 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam backgroundColor transparent
+skinparam defaultFontStyle bold
+skinparam ArrowThickness 2
+skinparam RectangleBorderThickness 2
+skinparam DefaultFontSize $FONT_BODY
+
+rectangle "Experimental Design" as ED {
+  rectangle "--controller"     as CTRL
+  rectangle "--scenario"       as SCEN
+  rectangle "--batch-criteria" as BC
+}
+rectangle "Batch Experiment" as BATCH {
+  rectangle "exp0" as E0
+  rectangle "exp1" as E1
+  rectangle "expN" as EN
+}
+rectangle "Pipeline" as PIPE {
+  rectangle "1. Generate"          as S1 $ROLE_INPUT
+  rectangle "2. Execute"           as S2
+  rectangle "3. Post-process"      as S3
+  rectangle "4. Generate products" as S4 $ROLE_OUTPUT
+  rectangle "5. Compare"           as S5 $ROLE_OUTPUT
+}
+rectangle "Runtime Tree\n(--sierra-root)" as RT $ROLE_OUTPUT
+
+ED    --> BATCH : "instantiates"
+BATCH --> S1    : "feeds"
+S1    --> S2
+S2    --> S3
+S3    --> S4
+S4    --> S5    : "optional"
+S1    --> RT    : "writes inputs"
+S2    --> RT    : "writes outputs"
+S3    --> RT    : "writes stats"
+S4    --> RT    : "writes graphs"
+@enduml

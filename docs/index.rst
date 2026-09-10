@@ -65,12 +65,12 @@ Quick Paths
 System Overview
 ===============
 
-SIERRA organizes experimentation as a **five-stage pipeline** that transforms
-an experiment template into comparable, reproducible results — generating
-inputs, executing runs, post-processing outputs, producing graphs and videos,
-and optionally comparing across configurations. Every stage is driven by
-interchangeable plugins, so the same pipeline works across simulators, HPC
-clusters, and physical robots.
+SIERRA organizes experimentation as a **five-stage pipeline** that transforms an
+experiment template into comparable, reproducible results — generating inputs,
+executing runs, post-processing outputs, producing graphs and videos, and
+optionally comparing across configurations. Every stage is driven by
+interchangeable plugins, so the same pipeline works across simulators,
+processing pipelines, HPC clusters, and physical hardware configuration.
 
 .. figure:: figures/architecture.png
    :align: center

@@ -1,0 +1,58 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam defaultTextAlignment center
+skinparam DefaultFontSize $FONT_BODY
+skinparam stateFontStyle bold
+hide empty description
+
+' Per-run raw output files reduced into a single processed-outputs file.
+' Color = file INDEX (0,1,...,k), traced positionally across the reduce.
+state "run 0" as run0 $FILEBOX {
+   state "file 0" as file00 $COL_0
+   state "file 1" as file01 $COL_1
+   state "..." as file0x $DEEMPHASIS
+   state "file k" as file0k $COL_B
+   file00 -[hidden]r-> file01
+   file00 -[hidden]d-> file0x
+   file01 -[hidden]d-> file0k
+   file0x -[hidden]r-> file0k
+}
+state "run 1" as run1 $FILEBOX {
+   state "file 0" as file10 $COL_0
+   state "file 1" as file11 $COL_1
+   state "..." as file1x $DEEMPHASIS
+   state "file k" as file1k $COL_B
+   file10 -[hidden]r-> file11
+   file10 -[hidden]d-> file1x
+   file11 -[hidden]d-> file1k
+   file1x -[hidden]r-> file1k
+}
+state "..." as runx $DEEMPHASIS
+state "run j" as runj $FILEBOX {
+   state "file 0" as filej0 $COL_0
+   state "file 1" as filej1 $COL_1
+   state "..." as filejx $DEEMPHASIS
+   state "file k" as filejk $COL_B
+   filej0 -[hidden]r-> filej1
+   filej0 -[hidden]d-> filejx
+   filej1 -[hidden]d-> filejk
+   filejx -[hidden]r-> filejk
+}
+state "Processed outputs" as intra $ROLE_OUTPUT {
+   state "file 0" as filep0 $COL_0
+   state "file 1" as filep1 $COL_1
+   state "..." as filepx $DEEMPHASIS
+   state "file k" as filepk $COL_B
+   filep0 -[hidden]r-> filep1
+   filep1 -[hidden]r-> filepx
+   filepx -[hidden]r-> filepk
+}
+run0 -[hidden]r-> run1
+run1 -[hidden]r-> runx
+runx -[hidden]r-> runj
+run0 -d-> intra
+run1 -d-> intra
+runx -d-> intra
+runj -d-> intra
+@enduml

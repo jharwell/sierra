@@ -2,9 +2,9 @@
 
 !theme cerulean-outline
 
-skinparam DefaultFontSize 14
+skinparam DefaultFontSize $FONT_BODY
 skinparam defaultTextAlignment center
-skinparam TitleFontSize 24
+skinparam TitleFontSize $FONT_TITLE
 skinparam SequenceMessageAlignment center
 skinparam DefaultFontColor #black
 skinparam TitleFontColor #black

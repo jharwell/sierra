@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam defaultTextAlignment center
+skinparam DefaultFontSize $FONT_BODY
+skinparam stateFontStyle bold
+hide empty description
+
+' 1:1 mapping: each processed-outputs file becomes one product.
+' Color = item INDEX, traced across the map.
+state "Processed Experiment\nOutputs" as proc $ROLE_OUTPUT {
+   state "file 0" as filep0 $COL_0
+   state "file 1" as filep1 $COL_1
+   state "..." as filepx $DEEMPHASIS
+   state "file k" as filepk $COL_B
+   filepx -[hidden]r-> filepk
+   filep1 -[hidden]r-> filepx
+   filep0 -[hidden]r-> filep1
+}
+state "Intra-Experiment\nProducts" as prod $ROLE_OUTPUT {
+   state "product 0" as productp0 $COL_0
+   state "product 1" as productp1 $COL_1
+   state "..." as productpx $DEEMPHASIS
+   state "product k" as productpk $COL_B
+   productpx -[hidden]r-> productpk
+   productp1 -[hidden]r-> productpx
+   productp0 -[hidden]r-> productp1
+}
+filep0 --> productp0
+filep1 --> productp1
+filepk --> productpk
+filepx --> productpx
+@enduml

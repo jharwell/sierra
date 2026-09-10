@@ -74,8 +74,7 @@ up to the limit set by the execution environment.
 Implemented by
 :class:`~sierra.core.experiment.bindings.IBatchShellCmdsGenerator`. The
 ``pre_batch_cmds()`` and ``post_batch_cmds()`` hooks bracket the entire batch;
-``exec_batch_cmds()`` is the GNU parallel invocation that processes the
-cmdfile.
+``exec_batch_cmds()`` is the invocation that processes the cmdfile.
 
 Appropriate when:
 
@@ -99,8 +98,7 @@ to the execution environment's concurrency limit.
 Implemented by
 :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`. The
 ``pre_exp_cmds()`` and ``post_exp_cmds()`` hooks bracket each experiment;
-``exec_exp_cmds()`` is the GNU parallel invocation for that experiment's
-cmdfile.
+``exec_exp_cmds()`` is the invocation for that experiment's cmdfile.
 
 .. NOTE:: ``exec_exp_cmds()`` is only meaningful on execution environment
    plugins. When defined on an engine plugin, its return value is ignored —
@@ -138,10 +136,9 @@ individual robots) within a single run.
 
 Appropriate when:
 
-- Your engine targets real hardware. A single physical robot cannot
-  participate in more than one experimental run simultaneously, so runs must
-  be sequential. Each run requires one subprocess per robot, dispatched over
-  SSH to each device in the nodefile.
+- Your engine targets real hardware, such as physical robots, which cannot
+  participate in more than one experimental run simultaneously, so runs must be
+  sequential.
 
 Real-Robot Execution Topology
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,9 +172,9 @@ relevant controls are:
   control if you know how many things you want running at once.
 
 - HPC scheduler parameters — for SLURM and PBS environments, plugins may read
-e.g. :envvar:`SLURM_TASKS_PER_NODE` to set concurrency automatically from the
-resources the scheduler has allocated. See :ref:`plugins/execenv` for the full
-variable list each environment reads.
+  e.g. :envvar:`SLURM_TASKS_PER_NODE` to set concurrency automatically from the
+  resources the scheduler has allocated. See :ref:`plugins/execenv` for the full
+  variable list each environment reads.
 
 - Available cores — for ``hpc.local``, SIERRA uses the number of cores on
   the invoking machine.

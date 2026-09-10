@@ -1,73 +1,69 @@
 @startuml
-
+!theme plain
+!include sierra-palette.iuml
 skinparam defaultTextAlignment center
-
-!theme cyborg
-
-' Configuration
-skinparam DefaultFontSize 48
-skinparam DefaultFontColor #black
-skinparam stateBorderThickness 8
+skinparam DefaultFontSize $FONT_BODY
 skinparam stateFontStyle bold
+hide empty description
 
-state "User\nSpecification" as user #lightcoral
+state "User\nSpecification" as user $USERSPEC
 
 state "SCOPE 0" as SCOPE0 {
-   state "file0" as file00 #skyblue {
-      state "col0" as col000 #darkturquoise
-      state "col1" as col001 #limegreen
+   state "file0" as file00 $FILEBOX {
+      state "col0" as col000 $COL_0
+      state "col1" as col001 $COL_1
    }
-   state "file 1" as file01  #skyblue {
-      state "colA" as col010 #green
-      state "colB" as col011 #lightseagreen
+   state "file 1" as file01 $FILEBOX {
+      state "colA" as col010 $COL_A
+      state "colB" as col011 $COL_B
    }
-   state "..." as file0x #skyblue
+   state "..." as file0x $DEEMPHASIS
 }
 state "SCOPE 1" as SCOPE1 {
-   state "file0" as file10 #skyblue {
-      state "col0" as col100 #darkturquoise
-      state "col1" as col101 #limegreen
+   state "file0" as file10 $FILEBOX {
+      state "col0" as col100 $COL_0
+      state "col1" as col101 $COL_1
    }
-   state "file 1" as file11  #skyblue {
-      state "colA" as col110 #green
-      state "colB" as col111 #lightseagreen
+   state "file 1" as file11 $FILEBOX {
+      state "colA" as col110 $COL_A
+      state "colB" as col111 $COL_B
    }
-   state "..." as file1x #skyblue
+   state "..." as file1x $DEEMPHASIS
 }
-state "..." as SCOPEx #skyblue
+state "..." as SCOPEx $DEEMPHASIS
 
 state "SCOPE j" as SCOPEj {
-   state "file0" as filej0 #skyblue {
-      state "col0" as colj00 #darkturquoise
-      state "col1" as colj01 #limegreen
+   state "file0" as filej0 $FILEBOX {
+      state "col0" as colj00 $COL_0
+      state "col1" as colj01 $COL_1
    }
-   state "file1" as filej1  #skyblue {
-      state "colA" as colj10 #green
-      state "colB" as colj11 #lightseagreen
+   state "file1" as filej1 $FILEBOX {
+      state "colA" as colj10 $COL_A
+      state "colB" as colj11 $COL_B
    }
-   state "..." as filejx #skyblue
+   state "..." as filejx $DEEMPHASIS
 }
 
 state "Outputs" as inter {
-   state "col0 file" as filep0 #darkturquoise {
+   state "col0 file" as filep0 $COL_0 {
       state "SCOPE 0" as colp00
       state "SCOPE 1" as colp01
       state "..." as colp0x
       state "SCOPE j" as colp0j
    }
-   state "col1 file" as filep1 #limegreen {
+   state "col1 file" as filep1 $COL_1 {
       state "SCOPE 0" as colp10
       state "SCOPE 1" as colp11
       state "..." as colp1x
       state "SCOPE j" as colp1j
    }
-   state "colA file" as filep2 #green {
+   state "colA file" as filep2 $COL_A {
       state "SCOPE 0" as colp20
       state "SCOPE 1" as colp21
       state "..." as colp2x
       state "SCOPE j" as colp2j
    }
-   state "colB file" as filep3 #lightseagreen {
+   state "colB file" as filep3 $COL_B {
       state "SCOPE 0" as colp30
       state "SCOPE 1" as colp31
       state "..." as colp3x
@@ -89,5 +85,4 @@ SCOPE0 --> inter
 SCOPE1 --> inter
 SCOPEx --> inter
 SCOPEj --> inter
-
 @enduml

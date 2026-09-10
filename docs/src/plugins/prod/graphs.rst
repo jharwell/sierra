@@ -6,17 +6,16 @@ Graph Generation
 
 This plugin generates graphs using holoviews during stage 4; any graph type
 supported by a holoviews backend can be selected with
-:ref:`--graphs-backend<src/plugins/prod/graphs:sierra---graphs-backend>`.
-Since this plugin uses holoviews to do all the heavy lifting, you may wonder
-"Why wrap holoviews backends at all?" A wrapper of a wrapper would seem
-gratuitous at first glance. The reason is that SIERRA's wrapping here enables
-*declarative* generation graphs supported by any of the holoviews backends. If
-you used holoviews directly, you would have to change your python code to use a
-different backend, as well as to account for subtleties when switching between
-backends which are not yet ironed out in holoviews. SIERRA's declarative
-approach here enables you focus on your goal (what type of graph to generate,
-what you want on it, etc.), rather than the details of *how* that is
-implemented.
+:ref:`--graphs-backend<src/plugins/prod/graphs:sierra---graphs-backend>`.  Since
+this plugin uses holoviews to do all the heavy lifting, you may wonder "Why wrap
+holoviews backends at all?" A wrapper of a wrapper would seem gratuitous at
+first glance. The reason is that SIERRA's wrapping here enables *declarative*
+generation graphs supported by any of the holoviews backends. If you used
+holoviews directly, you would have to change your python code to use a different
+backend, as well as to account for subtleties when switching between backends
+which are not yet ironed out in holoviews. SIERRA's declarative approach here
+enables you focus on your goal (what type of graph to generate, what you want on
+it, etc.), rather than the details of *how* that is implemented.
 
 .. _plugins/prod/graphs/packages:
 

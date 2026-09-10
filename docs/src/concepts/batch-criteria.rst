@@ -63,23 +63,6 @@ experiment names encode both dimensions using ``+`` as a separator:
 The same pattern extends to higher-dimensional criteria:
 ``c1-exp0+c2-exp0+c3-exp0``, and so on.
 
-.. _concepts/batch-criteria/graphs:
-
-Graph Types
-===========
-
-The dimensionality of the batch determines what stage 4 can produce:
-
-- **Univariate** — line graphs, with the varied parameter on the X axis
-  and the quantity of interest on the Y.
-
-- **Bivariate** — heatmaps with one criteria on each axis and the
-  quantity of interest on the Z, or line graph "slices" along either
-  axis.
-
-- **Higher-dimensional** — graph generation beyond 2 dimensions is not
-  yet supported. See :ref:`roadmap`.
-
 .. _concepts/batch-criteria/sources:
 
 Where Batch Criteria Come From

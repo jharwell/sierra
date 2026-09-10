@@ -1,0 +1,73 @@
+'============================================================================
+' SIERRA shared diagram palette -- single source of truth for semantic colors.
+' Okabe-Ito colorblind-safe hues. Two families (architecture ROLES; collation
+' DATA IDENTITY). A hue is reused across families ONLY where the concept is
+' genuinely identical:  OUTPUT(role) == COMBINED(collation output container).
+' Nothing else shares a hue across families.
+'============================================================================
+
+' ---- shared structural tokens (identical meaning everywhere) ----
+' de-emphasised / non-participating / "..." boxes
+!$DEEMPHASIS    = "#D9D9D9"
+!$DEEMPHASIS_FG = "#000000"
+!$FONT_TITLE = "36"
+!$FONT_BODY  = "24"
+!$FONT_SMALL = "18"
+
+' ============================ Family A: architecture ROLES ============
+' input artifact (sky, light -> dark text)
+!$ROLE_INPUT      = "#9BD3F0"
+!$ROLE_INPUT_FG   = "#000000"
+' output artifact (orange payoff) -- shared with COMBINED below
+!$ROLE_OUTPUT     = "#E69F00"
+!$ROLE_OUTPUT_FG  = "#000000"
+' plugin slot (reddish-purple, swappable)
+!$ROLE_PLUGIN     = "#E3B0CF"
+!$ROLE_PLUGIN_FG  = "#000000"
+' compute resource (bluish-green, where it runs)
+!$ROLE_COMPUTE    = "#8FD6BE"
+!$ROLE_COMPUTE_FG = "#000000"
+
+' ============================ Family B: collation DATA IDENTITY =======
+' the user specification that drives the flow (its own hue; NOT a role color)
+!$USERSPEC    = "#F0E442"
+!$USERSPEC_FG = "#000000"
+' file / scope container that holds columns (near-white, dark text)
+!$FILEBOX     = "#EAF3F9"
+!$FILEBOX_FG  = "#000000"
+' collated OUTPUT container == ROLE_OUTPUT hue (same concept: the result)
+!$COMBINED    = "#E69F00"
+!$COMBINED_FG = "#000000"
+
+' fixed column -> color map, stable across ALL collation diagrams so that a
+' given column keeps ONE hue everywhere (traceable correlation). Saturated for
+' maximum mutual distinctness -> white text.
+!$COL_0     = "#0072B2"
+!$COL_0_FG  = "#FFFFFF"
+!$COL_1     = "#D55E00"
+!$COL_1_FG  = "#FFFFFF"
+!$COL_A     = "#009E73"
+!$COL_A_FG  = "#FFFFFF"
+!$COL_B     = "#CC79A7"
+!$COL_B_FG  = "#000000"
+
+' ============================ docs additions ==========================
+' ---- run-time tree: brightness ramp = NESTING DEPTH (a hierarchy axis,
+'      deliberately distinct from role/column meaning) ----
+!$TREE_L0 = "#D6EAF8"
+!$TREE_L1 = "#AED6F1"
+!$TREE_L2 = "#85C1E9"
+!$TREE_L3 = "#5DADE2"
+!$TREE_L4 = "#2E86C1"
+' leaf dirs reuse ROLE hues (same concepts):
+'   exp-inputs -> $ROLE_INPUT, exp-outputs -> $ROLE_OUTPUT, scratch -> $DEEMPHASIS
+
+' ---- plugin provenance (component diagrams) ----
+' infrastructure plugins provided by SIERRA/vendor
+!$PROV_INFRA    = "#E3B0CF"
+!$PROV_INFRA_HDR= "#F0D9EA"
+' your code (the project you write) -- user family
+!$PROV_USER     = "#CDE8D6"
+!$PROV_USER_HDR = "#E4F3EA"
+' SIERRA core / orchestrator -- neutral
+!$PROV_CORE     = "#EAF3F9"

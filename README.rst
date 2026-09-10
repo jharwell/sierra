@@ -37,15 +37,23 @@
 .. image:: docs/_static/logo-banner.png
    :width: 400px
 
-|pypi-version| |ci-analysis-master| |docs| |doi|
++---------------+--------------------------------------------------------------------+
+| Usage         | |pypi-version| |pepy-downloads| |supported-pythons| |os-supported| |
++---------------+--------------------------------------------------------------------+
+| Release       | |ci-analysis-master| |ci-coverage-master|                          |
++---------------+--------------------------------------------------------------------+
+| Development   | |ci-analysis-devel| |ci-coverage-devel|                            |
++---------------+--------------------------------------------------------------------+
+| Miscellaneous | |license| |doi| |docs| |maintenance|                               |
++---------------+--------------------------------------------------------------------+
 
 
 **SIERRA is a command-line tool that turns a one-line description of an
 experiment into fully executed, reproducible results — inputs, runs, and
-finished plots.** It automates the parts of large-scale computational
-experiments that are usually manual engineering: generating configurations,
-running them across simulators and clusters, processing outputs, and producing
-analysis artifacts.
+finished plots.** It automates the parts of R&D experiments that are usually
+manual engineering: generating configurations, running them across
+simulators/processing pipelines, processing outputs, and producing analysis
+artifacts.
 
 Instead of writing (and re-writing) glue scripts for every project:
 
@@ -58,8 +66,8 @@ you describe the *what*, and SIERRA does the rest:
 
 .. code-block:: text
 
-   "Here is the simulator/environment I want, the deliverables I want to
-   generate, and the data I want on them — GO."
+   "Here is the simulator/processing pipeline I want to run, the final
+   deliverables I want to generate, and the data I want on them — GO."
 
 Think of it as a **backend compiler for research**: a description of what you
 want in, a fully executed experiment with processed results out.
@@ -113,12 +121,14 @@ experiments across heterogeneous computing environments, processing results,
 and producing analysis artifacts such as plots, videos, and comparative
 summaries.
 
-It organizes every experiment into a fixed, four-stage pipeline:
+It organizes every experiment into a fixed, five-stage pipeline:
 
 1. **Input generation** --- Create experiment configurations from templates
 2. **Execution** --- Run experiments locally, on clusters, etc.
 3. **Postprocessing** --- Parse raw outputs into structured datasets
 4. **Product generation** --- Generate plots, summaries, and derived artifacts
+5. **Product comparison** --- Combine/overlay generated plots and other
+   artifacts
 
 .. figure:: https://raw.githubusercontent.com/jharwell/sierra/master/docs/figures/architecture.png
 
@@ -261,20 +271,6 @@ the `plugin developer guide`_.
 
 If you have an idea to discuss before diving in, open a discussion thread at any
 point. See the `contributing guide`_ for the full procedure.
-
-
-Project Status
-==============
-
-+---------------+--------------------------------------------------------------------+
-| Usage         | |pepy-downloads| |supported-pythons| |os-supported|                |
-+---------------+--------------------------------------------------------------------+
-| Release       | |ci-analysis-master| |ci-coverage-master|                          |
-+---------------+--------------------------------------------------------------------+
-| Development   | |ci-analysis-devel| |ci-coverage-devel|                            |
-+---------------+--------------------------------------------------------------------+
-| Miscellaneous | |license| |doi| |docs| |maintenance|                               |
-+---------------+--------------------------------------------------------------------+
 
 
 .. _`getting started guide`: https://sierra.readthedocs.io/en/master/src/getting-started/trial.html

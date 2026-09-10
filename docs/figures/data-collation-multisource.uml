@@ -1,73 +1,63 @@
 @startuml
-
+!theme plain
+!include sierra-palette.iuml
 skinparam defaultTextAlignment center
-
-!theme cyborg
-
-' Configuration
-skinparam DefaultFontSize 44
-skinparam DefaultFontColor #black
-skinparam stateBorderThickness 8
+skinparam DefaultFontSize $FONT_BODY
 skinparam stateFontStyle bold
+hide empty description
 
-state "User\nSpecification" as user #lightcoral
+state "User\nSpecification" as user $USERSPEC
 
-' --- Sources: within each SCOPE, one target draws col0 from file0 AND colA
-'     from file1. The two contributing columns are highlighted; the other
-'     columns are shown greyed to emphasise that only the named columns from
-'     each file participate. ---
-
+' Within each SCOPE, one target draws col0 from file0 AND colA from file1.
+' The two contributing columns are colored; the others are de-emphasised to
+' show only the named columns participate.
 state "SCOPE 0" as SCOPE0 {
-   state "file0" as file00 #skyblue {
-      state "col0" as col000 #darkturquoise
-      state "col1" as col001 #lightgrey
+   state "file0" as file00 $FILEBOX {
+      state "col0" as col000 $COL_0
+      state "col1" as col001 $DEEMPHASIS
    }
-   state "file1" as file01 #skyblue {
-      state "colA" as col010 #green
-      state "colB" as col011 #lightgrey
+   state "file1" as file01 $FILEBOX {
+      state "colA" as col010 $COL_A
+      state "colB" as col011 $DEEMPHASIS
    }
 }
 state "SCOPE 1" as SCOPE1 {
-   state "file0" as file10 #skyblue {
-      state "col0" as col100 #darkturquoise
-      state "col1" as col101 #lightgrey
+   state "file0" as file10 $FILEBOX {
+      state "col0" as col100 $COL_0
+      state "col1" as col101 $DEEMPHASIS
    }
-   state "file1" as file11 #skyblue {
-      state "colA" as col110 #green
-      state "colB" as col111 #lightgrey
+   state "file1" as file11 $FILEBOX {
+      state "colA" as col110 $COL_A
+      state "colB" as col111 $DEEMPHASIS
    }
 }
-state "..." as SCOPEx #skyblue
-
+state "..." as SCOPEx $DEEMPHASIS
 state "SCOPE j" as SCOPEj {
-   state "file0" as filej0 #skyblue {
-      state "col0" as colj00 #darkturquoise
-      state "col1" as colj01 #lightgrey
+   state "file0" as filej0 $FILEBOX {
+      state "col0" as colj00 $COL_0
+      state "col1" as colj01 $DEEMPHASIS
    }
-   state "file1" as filej1 #skyblue {
-      state "colA" as colj10 #green
-      state "colB" as colj11 #lightgrey
+   state "file1" as filej1 $FILEBOX {
+      state "colA" as colj10 $COL_A
+      state "colB" as colj11 $DEEMPHASIS
    }
 }
 
-' --- Output: a SINGLE collated file ("combined"), whose columns are the joined
-'     (col0-from-file0, colA-from-file1) pair from every SCOPE. Each SCOPE
-'     contributes a joined row-group, illustrating the per-run horizontal join
-'     of columns drawn from different source files. ---
-
-state "Output: 'combined'" as inter #orange {
+' Output: a SINGLE collated file whose columns are the joined
+' (col0-from-file0, colA-from-file1) pair from every SCOPE.
+state "Output: 'combined'" as inter $COMBINED {
    state "SCOPE 0" as colp0 {
-      state "col0" as c00 #darkturquoise
-      state "colA" as c01 #green
+      state "col0" as c00 $COL_0
+      state "colA" as c01 $COL_A
    }
    state "SCOPE 1" as colp1 {
-      state "col0" as c10 #darkturquoise
-      state "colA" as c11 #green
+      state "col0" as c10 $COL_0
+      state "colA" as c11 $COL_A
    }
-   state "..." as colpx
+   state "..." as colpx $DEEMPHASIS
    state "SCOPE j" as colpj {
-      state "col0" as cj0 #darkturquoise
-      state "colA" as cj1 #green
+      state "col0" as cj0 $COL_0
+      state "colA" as cj1 $COL_A
    }
 }
 
@@ -79,10 +69,8 @@ user --> SCOPE0
 user --> SCOPE1
 user --> SCOPEx
 user --> SCOPEj
-
 SCOPE0 --> inter
 SCOPE1 --> inter
 SCOPEx --> inter
 SCOPEj --> inter
-
 @enduml

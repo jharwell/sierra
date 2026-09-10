@@ -44,7 +44,7 @@ batch experiment. The outputs of this phase include:
 
    skinparam defaultTextAlignment center
 
-   !theme reddress-lightblue
+   !theme cerulean
 
    ' Title configuration
    skinparam titleFontSize 48
@@ -101,7 +101,7 @@ include:
 
 .. plantuml::
 
-   !theme reddress-lightblue
+   !theme cerulean
    hide empty description
 
    ' Title configuration

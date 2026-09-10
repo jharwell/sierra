@@ -1,0 +1,50 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam backgroundColor transparent
+skinparam defaultFontStyle bold
+skinparam ArrowThickness 2
+skinparam RectangleBorderThickness 2
+skinparam DefaultFontSize $FONT_BODY
+
+' Brightness ramp = nesting depth. Leaf dirs reuse role hues
+' (exp-inputs=input, exp-outputs=output, scratch=de-emphasis).
+rectangle "--sierra-root\ne.g. $HOME/exp" as ROOT $TREE_L0 {
+  rectangle "--project fordyca" as PROJ1 $TREE_L1 {
+    rectangle "--controller ALG.ctrl_a" as CTRL1 $TREE_L2 {
+      rectangle "--scenario SS.12x6" as SCEN1 $TREE_L3 {
+        rectangle "template-population_size.Log8" as B1 $TREE_L4 {
+          rectangle "exp-inputs/" as I1 $ROLE_INPUT
+          rectangle "exp-outputs/" as O1 $ROLE_OUTPUT
+          rectangle "scratch/" as S1 $DEEMPHASIS
+        }
+        rectangle "template-max_speed.1.4.C4" as B2 $TREE_L4 {
+          rectangle "exp-inputs/" as I2 $ROLE_INPUT
+          rectangle "exp-outputs/" as O2 $ROLE_OUTPUT
+          rectangle "scratch/" as S2 $DEEMPHASIS
+        }
+      }
+    }
+    rectangle "--controller ALG.ctrl_b" as CTRL2 $TREE_L2 {
+      rectangle "--scenario multibody.100x100" as SCEN2 $TREE_L3 {
+        rectangle "template-impulse_factory.Linear3" as B3 $TREE_L4 {
+          rectangle "exp-inputs/" as I3 $ROLE_INPUT
+          rectangle "exp-outputs/" as O3 $ROLE_OUTPUT
+          rectangle "scratch/" as S3 $DEEMPHASIS
+        }
+      }
+    }
+  }
+  rectangle "--project my_other_project" as PROJ2 $TREE_L1 {
+    rectangle "--controller OTH.ctrl_x" as CTRL3 $TREE_L2 {
+      rectangle "--scenario dataset1" as SCEN3 $TREE_L3 {
+        rectangle "template-collusion_ratio.Log16" as B4 $TREE_L4 {
+          rectangle "exp-inputs/" as I4 $ROLE_INPUT
+          rectangle "exp-outputs/" as O4 $ROLE_OUTPUT
+          rectangle "scratch/" as S4 $DEEMPHASIS
+        }
+      }
+    }
+  }
+}
+@enduml

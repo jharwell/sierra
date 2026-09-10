@@ -1,43 +1,35 @@
 @startuml
-
+!theme plain
+!include sierra-palette.iuml
 skinparam defaultTextAlignment center
-
-!theme cyborg
-
-' Configuration
-skinparam DefaultFontSize 44
-skinparam DefaultFontColor #black
-skinparam stateBorderThickness 8
+skinparam DefaultFontSize $FONT_BODY
 skinparam stateFontStyle bold
+hide empty description
 
-state "User\nSpecification" as user #lightcoral
+state "User\nSpecification" as user $USERSPEC
 
-' --- Inputs: one Collated Output Data file per SCOPE (a Batch Experiment,
-'     i.e. one controller or one scenario being compared). Each such file is
-'     itself indexed by experiment. From each, the value series is taken. ---
-
-state "SCOPE 0\n(e.g. controller A)" as b0 #skyblue {
-   state "collated file\n(per experiment)" as cf0 #darkturquoise
+' Inputs: one Collated Output Data file per SCOPE (a Batch Experiment: one
+' controller or scenario being compared). Each compared SCOPE keeps a fixed
+' hue so it is traceable from input to output column.
+state "SCOPE 0\n(e.g. controller A)" as b0 $FILEBOX {
+   state "collated file\n(per experiment)" as cf0 $COL_0
 }
-state "SCOPE 1\n(e.g. controller B)" as b1 #skyblue {
-   state "collated file\n(per experiment)" as cf1 #green
+state "SCOPE 1\n(e.g. controller B)" as b1 $FILEBOX {
+   state "collated file\n(per experiment)" as cf1 $COL_1
 }
-state "..." as bx #skyblue
-state "SCOPE m\n(e.g. controller M)" as bm #skyblue {
-   state "collated file\n(per experiment)" as cfm #lightseagreen
+state "..." as bx $DEEMPHASIS
+state "SCOPE m\n(e.g. controller M)" as bm $FILEBOX {
+   state "collated file\n(per experiment)" as cfm $COL_A
 }
 
-' --- Output: a SINGLE Inter-Batch Data file. Rows are indexed by Experiment ID;
-'     each COLUMN is one compared SCOPE (controller/scenario). So the compared
-'     things sit side by side, one column each, ready to be plotted together. ---
-
-state "Output:\none Inter-Batch Data file" as inter #orange {
-   state "Experiment ID" as eid #lightgrey
-   state "SCOPE 0" as o0 #darkturquoise
-   state "SCOPE 1" as o1 #green
-   state "..." as ox #skyblue
-   state "SCOPE m" as om #lightseagreen
-
+' Output: a SINGLE Inter-Batch Data file. Rows indexed by Experiment ID; each
+' COLUMN is one compared SCOPE, same hue as its input -> side-by-side compare.
+state "Output:\none Inter-Batch Data file" as inter $COMBINED {
+   state "Experiment ID" as eid $DEEMPHASIS
+   state "SCOPE 0" as o0 $COL_0
+   state "SCOPE 1" as o1 $COL_1
+   state "..." as ox $DEEMPHASIS
+   state "SCOPE m" as om $COL_A
    eid -[hidden]r-> o0
    o0 -[hidden]r-> o1
    o1 -[hidden]r-> ox
@@ -48,10 +40,8 @@ user --> b0
 user --> b1
 user --> bx
 user --> bm
-
 b0 --> inter
 b1 --> inter
 bx --> inter
 bm --> inter
-
 @enduml

@@ -14,12 +14,12 @@ or :term:`Project` which contains randomness, data analysis an the ensemble
 level is required. This plugin supports such analysis by automatically computing
 statistics to e.g., enable plotting 95% confidence intervals on graph
 products in stage 4. It supports the following measures of central tendency and
-(optionally) associated measures of spread::
+(optionally) associated measures of spread:
 
 - mean - 95% confidence intervals, box-and-whisker calculations (IQR, CI
-  high/low, median, etc)
+  high/low, median, etc).
 
-- median
+- median - IQR.
 
 This plugin processes at the file level for each :term:`Experimental Run`. All
 :term:`Raw Output Data` files produced by each run are gathered and statistics

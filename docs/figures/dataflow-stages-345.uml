@@ -1,0 +1,24 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam defaultTextAlignment center
+left to right direction
+skinparam DefaultFontSize $FONT_BODY
+skinparam stateFontStyle bold
+hide empty description
+
+state "3. Process\nExperiment\nOutputs" as stage3 {
+   state "Processed Experiment\nOutputs" as proc $ROLE_OUTPUT
+}
+state "4. Generate\nProducts" as stage4 {
+   state "Products" as products $ROLE_OUTPUT {
+      state "Intra-experiment Products" as intra_prod $ROLE_INPUT
+      state "Inter-experiment Products" as inter_prod $ROLE_INPUT
+   }
+}
+state "5. Compare\nProducts" as stage5 {
+   state "Inter-batch Products" as inter_batch $ROLE_OUTPUT
+}
+stage3 --> stage4
+stage4 --> stage5
+@enduml

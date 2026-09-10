@@ -1,0 +1,21 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam defaultTextAlignment center
+left to right direction
+skinparam DefaultFontSize $FONT_BODY
+skinparam stateFontStyle bold
+hide empty description
+
+state "2. Execute\nExperiments" as stage2 {
+   state "Raw Output Data" as raw $ROLE_OUTPUT
+}
+state "3. Process\nExperiment\nOutputs" as stage3 {
+   state "Processed Output Data" as proc $ROLE_OUTPUT
+}
+state "4. Generate\nProducts" as stage4 {
+   state "Products" as products $ROLE_OUTPUT
+}
+raw --> proc
+proc --> products
+@enduml

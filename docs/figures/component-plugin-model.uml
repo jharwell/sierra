@@ -1,0 +1,24 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam backgroundColor transparent
+skinparam defaultFontStyle bold
+skinparam ArrowThickness 2
+skinparam componentBorderThickness 2
+skinparam packageBorderThickness 2
+skinparam DefaultFontSize $FONT_BODY
+
+package "Infrastructure plugins (provided by SIERRA or vendor)" $PROV_INFRA_HDR {
+  component "Engine plugin\n(--engine)\n\nDefines the platform API, how\ntemplates are modified and how\nruns are launched." as ENGINE $PROV_INFRA
+  component "Execution environment plugin\n(--execenv)\n\nDefines where and how runs\nexecute: laptop, SLURM cluster, real robots,..." as EXECENV $PROV_INFRA
+}
+package "Your code" $PROV_USER_HDR {
+  component "Project plugin\n(--project)\n\nYour batch criteria, controller\nand scenario definitions, graph\nconfiguration, and processing\nhooks." as PROJECT $PROV_USER
+}
+component "SIERRA core\n\nPipeline orchestrator.\nCalls into all three." as CORE $PROV_CORE
+
+CORE   --> ENGINE  : "stage 1, 2, 3, 4, 5"
+CORE   --> EXECENV : "stage 1, 2"
+CORE   --> PROJECT : "stage 1, 3, 4"
+ENGINE <.. PROJECT : "built against\n(not portable)"
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+!theme plain
+!include sierra-palette.iuml
+skinparam defaultTextAlignment center
+left to right direction
+skinparam DefaultFontSize $FONT_BODY
+skinparam stateFontStyle bold
+hide empty description
+
+' One run's k raw output files. Color = file INDEX (0,1,...,k).
+state "run j" as runj $FILEBOX {
+   state "file 0" as filej0 $COL_0
+   state "file 1" as filej1 $COL_1
+   state "..." as filejx $DEEMPHASIS
+   state "file k" as filejk $COL_B
+   filej0 -[hidden]r-> filej1
+   filej0 -[hidden]d-> filejx
+   filej1 -[hidden]d-> filejk
+   filejx -[hidden]r-> filejk
+}
+@enduml

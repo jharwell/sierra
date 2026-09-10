@@ -1,52 +1,42 @@
 @startuml
-
+!theme plain
+!include sierra-palette.iuml
 skinparam defaultTextAlignment center
-
-!theme cyborg
-
-' Configuration
-skinparam DefaultFontSize 44
-skinparam DefaultFontColor #black
-skinparam stateBorderThickness 8
+skinparam DefaultFontSize $FONT_BODY
 skinparam stateFontStyle bold
+hide empty description
 
-state "User\nSpecification" as user #lightcoral
+state "User\nSpecification" as user $USERSPEC
 
-' --- Inputs: one Processed Output Data file per EXPERIMENT (SCOPE), each named
-'     by a single src_stem. From each, ONE configured column ('col') is taken.
-'     Unlike stage 3, there is a single input file per SCOPE here (the multi-file
-'     joining already happened upstream), and a single column is extracted. ---
-
-state "SCOPE 0\n(Experiment 0)" as exp0 #skyblue {
-   state "processed file\n(src_stem)" as f0 #skyblue {
-      state "col" as c0 #darkturquoise
-      state "..." as c0x #lightgrey
+' Inputs: one Processed Output Data file per EXPERIMENT (SCOPE). From each,
+' ONE configured column ('col') is taken; other columns de-emphasised.
+state "SCOPE 0\n(Experiment 0)" as exp0 $FILEBOX {
+   state "processed file" as f0 $FILEBOX {
+      state "col" as c0 $COL_0
+      state "..." as c0x $DEEMPHASIS
    }
 }
-state "SCOPE 1\n(Experiment 1)" as exp1 #skyblue {
-   state "processed file\n(src_stem)" as f1 #skyblue {
-      state "col" as c1 #darkturquoise
-      state "..." as c1x #lightgrey
+state "SCOPE 1\n(Experiment 1)" as exp1 $FILEBOX {
+   state "processed file" as f1 $FILEBOX {
+      state "col" as c1 $COL_0
+      state "..." as c1x $DEEMPHASIS
    }
 }
-state "..." as expx #skyblue
-state "SCOPE i\n(Experiment i)" as expi #skyblue {
-   state "processed file\n(src_stem)" as fi #skyblue {
-      state "col" as ci #darkturquoise
-      state "..." as cix #lightgrey
+state "..." as expx $DEEMPHASIS
+state "SCOPE i\n(Experiment i)" as expi $FILEBOX {
+   state "processed file" as fi $FILEBOX {
+      state "col" as ci $COL_0
+      state "..." as cix $DEEMPHASIS
    }
 }
 
-' --- Output: a SINGLE collated file. Its COLUMNS are the experiments; each
-'     column is that experiment's extracted 'col' series. This is the transpose
-'     of the stage-3 picture (there: one file per column, cells per run). ---
-
-state "Output:\none Collated Output Data file" as inter #orange {
-   state "SCOPE 0" as o0 #darkturquoise
-   state "SCOPE 1" as o1 #darkturquoise
-   state "..." as ox #darkturquoise
-   state "SCOPE i" as oi #darkturquoise
-
+' Output: a SINGLE collated file. Its COLUMNS are the experiments; each column
+' is that experiment's extracted 'col' series (transpose of the stage-3 view).
+state "Output:\nONE data file" as inter $COMBINED {
+   state "SCOPE 0" as o0 $COL_0
+   state "SCOPE 1" as o1 $COL_0
+   state "..." as ox $COL_0
+   state "SCOPE i" as oi $COL_0
    o0 -[hidden]r-> o1
    o1 -[hidden]r-> ox
    ox -[hidden]r-> oi
@@ -56,10 +46,8 @@ user --> exp0
 user --> exp1
 user --> expx
 user --> expi
-
 exp0 --> inter
 exp1 --> inter
 expx --> inter
 expi --> inter
-
 @enduml

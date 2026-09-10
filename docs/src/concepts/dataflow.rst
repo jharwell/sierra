@@ -17,32 +17,8 @@ Stage 3 Dataflow
 At the highest level we have the following in the context of pipeline stages
 2-4:
 
-.. plantuml::
-
-   skinparam defaultTextAlignment center
-
-   !theme cyborg
-
-   ' Configuration
-   left to right direction
-   skinparam DefaultFontSize 48
-   skinparam DefaultFontColor #black
-   skinparam stateFontStyle bold
-
-   state "2. Execute\nExperiments\n" as stage2 {
-      state "Raw Output Data" as raw  #lightcyan
-   }
-
-   state "3. Process\nExperiment\nOutputs" as stage3  {
-      state "Processed Output Data" as proc #lightcyan
-   }
-
-   state "4. Generate\nProducts\n" as stage4  {
-      state "Products " as products #lightcyan
-   }
-
-   raw --> proc
-   proc --> products
+.. uml:: ../../figures/dataflow-stages-234.uml
+   :align: center
 
 The :term:`Raw Output Data` files from experimental runs are processed during
 stage 3 into :term:`Processed Output Data` files. In stage 4 those processed
@@ -68,30 +44,8 @@ single :term:`Experimental Run` :math:`j` from :term:`Experiment` :math:`i` in
 :term:`Batch Experiment` which produces :math:`k` raw output files, we could
 represent the output data abstractly as:
 
-.. plantuml::
-
-   skinparam defaultTextAlignment center
-
-   !theme cyborg
-
-   ' Configuration
-   left to right direction
-   skinparam DefaultFontSize 24
-   skinparam DefaultFontColor #black
-   skinparam stateFontStyle bold
-
-
-   state "run j" as runj #skyblue {
-      state "file 0" as filej0 #darkturquoise
-      state "file 1" as filej1 #limegreen
-      state "..." as filejx #green
-      state "file k" as filejk #lightseagreen
-
-      filej0 -[hidden]r-> filej1
-      filej0 -[hidden]d-> filejx
-      filej1 -[hidden]d-> filejk
-      filejx -[hidden]r-> filejk
-   }
+.. uml:: ../../figures/dataflow-single-run.uml
+   :align: center
 
 For intra-experiment data processing, all of the per-run outputs are matched
 across :term:`Experimental Runs <Experimental Run>` within an
@@ -104,76 +58,8 @@ Data` files as well.
 
 This can be visualized as follows:
 
-.. plantuml::
-
-   skinparam defaultTextAlignment center
-
-   !theme cyborg
-
-   ' Configuration
-   skinparam DefaultFontSize 48
-   skinparam DefaultFontColor #black
-   skinparam stateBorderThickness 8
-   skinparam stateFontStyle bold
-
-   state "run 0" as run0 #skyblue {
-      state "file 0" as file00 #darkturquoise
-      state "file 1" as file01 #limegreen
-      state "..." as file0x #green
-      state "file k" as file0k #lightseagreen
-
-      file00 -[hidden]r-> file01
-      file00 -[hidden]d-> file0x
-      file01 -[hidden]d-> file0k
-      file0x -[hidden]r-> file0k
-
-   }
-   state "run 1" as run1  #skyblue {
-      state "file 0" as file10 #darkturquoise
-      state "file 1" as file11 #limegreen
-      state "..." as file1x #green
-      state "file k" as file1k #lightseagreen
-
-      file10 -[hidden]r-> file11
-      file10 -[hidden]d-> file1x
-      file11 -[hidden]d-> file1k
-      file1x -[hidden]r-> file1k
-   }
-
-   state "..." as runx #skyblue
-
-   state "run j" as runj #skyblue {
-      state "file 0" as filej0 #darkturquoise
-      state "file 1" as filej1 #limegreen
-      state "..." as filejx #green
-      state "file k" as filejk #lightseagreen
-
-      filej0 -[hidden]r-> filej1
-      filej0 -[hidden]d-> filejx
-      filej1 -[hidden]d-> filejk
-      filejx -[hidden]r-> filejk
-   }
-
-   state "Processed outputs" as intra #skyblue {
-      state "file 0" as filep0 #darkturquoise
-      state "file 1" as filep1 #limegreen
-      state "..." as filepx #green
-      state "file k" as filepk #lightseagreen
-
-      filep0 -[hidden]r-> filep1
-      filep1 -[hidden]r-> filepx
-      filepx -[hidden]r-> filepk
-   }
-
-   run0 -[hidden]r-> run1
-   run1 -[hidden]r-> runx
-   runx -[hidden]r-> runj
-
-
-   run1 -d-> intra
-   run0 -d-> intra
-   runx -d-> intra
-   runj -d-> intra
+.. uml:: ../../figures/dataflow-intra-run.uml
+   :align: center
 
 Some examples of plugins performing this reduce operation:
 
@@ -235,33 +121,8 @@ Stage 4 Dataflow
 At the highest level we have the following in the context of pipeline stages
 3-5:
 
-.. plantuml::
-
-   skinparam defaultTextAlignment center
-
-   !theme cyborg
-   ' Configuration
-    left to right direction
-   skinparam DefaultFontSize 48
-   skinparam DefaultFontColor #black
-   skinparam stateFontStyle bold
-
-   state "3. Process\nExperiment\nOutputs" as stage3  {
-      state "Processed Experiment\nOutputs" as proc #lightcyan
-   }
-
-   state "4. Generate\nProducts\n" as stage4  {
-      state "Products" as products #lightcyan {
-         state "Intra-experiment Products" as intra_prod #lightcoral
-         state "Inter-experiment Products" as inter_prod #lightcoral
-      }
-    }
-    state "5. Compare\nProducts\n" as stage5 {
-       state "Inter-batch Products" as inter_batch  #lightcyan
-    }
-
-    stage3 --> stage4
-    stage4 --> stage5
+.. uml:: ../../figures/dataflow-stages-345.uml
+   :align: center
 
 After :ref:`concepts/dataflow/stage3`, data is in :term:`Processed Output Data`
 files and/or :term:`Collated Output Data` files. In stage 4, the
@@ -280,44 +141,8 @@ Like the stage3 dataflow, generally in stage4 things are file-level.
 Intra-Experiment Dataflow
 -------------------------
 
-.. plantuml::
-
-   skinparam defaultTextAlignment center
-
-   !theme cyborg
-   ' Configuration
-    left to right direction
-   skinparam DefaultFontSize 48
-   skinparam DefaultFontColor #black
-   skinparam stateFontStyle bold
-
-   state "Processed Experiment\nOutputs" as proc #lightcyan {
-      state "file 0" as filep0 #darkturquoise
-      state "file 1" as filep1 #limegreen
-      state "..." as filepx #green
-      state "file k" as filepk #lightseagreen
-
-      filepx -[hidden]r-> filepk
-      filep1 -[hidden]r-> filepx
-      filep0 -[hidden]r-> filep1
-
-   }
-
-   state "Intra-Experiment\nProducts" as prod #lightcyan {
-      state "product 0" as productp0 #darkturquoise
-      state "product 1" as productp1 #limegreen
-      state "..." as productpx #green
-      state "product k" as productpk #lightseagreen
-
-      productpx -[hidden]r-> productpk
-      productp1 -[hidden]r-> productpx
-      productp0 -[hidden]r-> productp1
-   }
-
-   filep0 --> productp0
-   filep1 --> productp1
-   filepk --> productpk
-   filepx --> productpx
+.. uml:: ../../figures/dataflow-stage4-intra-exp.uml
+   :align: center
 
 There isn't really any dataflow for intra-experiment products, because there is
 a 1:1 mapping between the :term:`Processed Output Data` file and the
