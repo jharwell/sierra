@@ -15,6 +15,7 @@ from .heatmap import generate_confusion as confusion_matrix
 from .heatmap import generate_numeric as heatmap
 from .network import generate as network
 from .scatterplot import generate as scatterplot
+from .tsne import generate as tsne
 from .pathset import PathSet
 from . import schema, sections, bcbridge, gconfig
 
@@ -32,4 +33,5 @@ __all__ = [
     "sections",
     "stacked_line",
     "summary_line",
+    "tsne",
 ]

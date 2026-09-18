@@ -30,7 +30,7 @@ jobs:
     container: jharwell/ubuntu24.04-sierra:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # hatch-vcs needs full history + tags to resolve the version.
           fetch-depth: 0
@@ -52,7 +52,7 @@ jobs:
           # On a tagged commit hatch-vcs stamps exactly X.Y.Z.
           uv build && python3 -m zipfile -l dist/sierra_research-*.whl | grep man
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: sierra-release-dist
           path: dist/

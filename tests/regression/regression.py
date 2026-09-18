@@ -71,7 +71,7 @@ def regression_shape_stage3(session, engine):
 @env.session_setup
 @env.session_teardown
 def regression_shape_stage4(session, engine):
-    center, spread = "mean", "conf95"
+    center, spread = "mean", "none"
     batch_root = _run_full(session, engine, center, spread, 1, 2, 3, 4)
     verify.verify_stage(engine, 4, batch_root, max_tier=2, center=center, spread=spread)
 

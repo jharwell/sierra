@@ -85,8 +85,7 @@ presentations and interactive graphs for inclusion in webpages easy.
        - The data you want to graph requires comparison between multiple
          experiments in a batch.
 
-     - The data is contained in one or more columns in a single file. Each
-       column contains numerical data forming a time series.
+     - Each column contains numerical data forming a time series.
 
    * - Heatmap
 
@@ -99,8 +98,8 @@ presentations and interactive graphs for inclusion in webpages easy.
          significant differences between cells in a heatmap cannot be determined
          just from the graph itself).
 
-     - The data is contained in 3 columns a single file: an X coord column, a Y
-       coord column, and a Z (value) column.
+     - The data has: an X coord column, a Y coord column, and a Z (value)
+       column.
 
    * - Confusion Matrix
      - The data you want to graph is a set of predicted vs actual category
@@ -117,8 +116,7 @@ presentations and interactive graphs for inclusion in webpages easy.
          set of bins (they are binned over a shared range so that the
          distributions line up).
 
-     - The data is contained in one or more columns in a single file. Each
-       column contains numerical data.
+     - Each column contains numerical data.
 
    * - Scatterplot
 
@@ -131,9 +129,17 @@ presentations and interactive graphs for inclusion in webpages easy.
        - You optionally want a line/curve of best fit (linear, polynomial, log,
          etc.) overlaid, with an R\ :sup:`2` goodness-of-fit value.
 
-     - The data is contained in two columns in a single file: an X column and a
-       Y column. The two columns must be the same length (each row is one
-       point). Unlike time series, the points need not be ordered.
+     - The data has an X column and a Y column. The two columns must be the same
+       length (each row is one point). Unlike time series, the points need not
+       be ordered.
+
+   * - t-SNE
+
+     - The datapoints in the data you want to graph have many dimensions, and
+       you want to see ho the data is clustered according to some categorical
+       label.
+
+     - Unlike time series, the points need not be ordered.
 
    * - Network
      - The data you want to graph is a network (graph) of some kind.
@@ -882,3 +888,70 @@ interactive widgets with ``--graphs-backend=bokeh``:
 
       .. raw:: html
          :file: figures/graphs/jsonsim/intra/SP-noise-vs-noise-fit.html
+
+t-SNE Plot Examples
+====================
+
+For these examples, we will use the following SIERRA cmd and YAML configuration
+from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
+
+.. tab-set::
+
+   .. tab-item:: SIERRA cmd
+
+      ::
+
+         sierra \
+            --sierra-root=~/test \
+            --controller=default.default \
+            --engine=plugins.yamlsim \
+            --project=projects.sample_yamlsim \
+            --n-runs=4 \
+            --expdef-template=~/git/sierra-sample-project/exp/yamlsim/template.yaml \
+            --scenario=scenario1 \
+            --expdef=expdef.yaml \
+            --yamlsim-path=~/git/sierra-sample-project/plugins/yamlsim/yamlsim.py \
+            --proc proc.statistics proc.collate \
+            --controller=default.default \
+            --batch-criteria noise_floor.1.9.C5 \
+            --pipeline 1 2 3 4
+
+   .. tab-item:: YAML config
+
+      .. code-block:: YAML
+
+         intra-exp:
+           TSNE_default:
+             - src: alg-behavior
+                dest: alg-behavior-intra
+                vcols:
+                  - throughput
+                  - latency
+                  - energy
+                  - path_eff
+                  - collisions
+                  - coverage
+                  - convergence
+                  - load_balance
+                labelcol: controller
+                type: tSNE
+
+A t-SNE of from a single experiment's data. Generate static images with
+``--graphs-backend=matplotlib`` or interactive widgets with
+``--graphs-backend=bokeh``:
+
+.. tab-set::
+
+   .. tab-item:: matplotlib
+
+      .. list-table::
+         :header-rows: 0
+         :widths: 50 50
+
+         * - .. figure:: figures/graphs/yamlsim/intra/tSNE-alg-behavior-intra.png
+
+
+   .. tab-item:: bokeh
+
+      .. raw:: html
+         :file: figures/graphs/yamlsim/intra/tSNE-alg-behavior-intra.html

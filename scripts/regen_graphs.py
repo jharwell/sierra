@@ -149,7 +149,7 @@ def build_projects(sample_root: pathlib.Path) -> tp.List[Project]:
                 "--exp-n-datapoints-factor=0.1",
             ],
             stats_center=["mean", "median"],
-            spread=["bw", "conf95"],
+            stats_spread=["bw", "conf95"],
             inter_on_stats="none",
             env_append=[("ARGOS_PLUGIN_PATH", "{sample_root}/argos/build")],
         ),

@@ -56,7 +56,7 @@ jobs:
       - unit-tests
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
 
       - name: Install uv
@@ -91,7 +91,7 @@ jobs:
             xml \
             --ignore-errors
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ci-integration-coverage-xml
           path: coverage.xml
@@ -121,7 +121,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # hatch-vcs derives the version from git history + tags. The default
           # shallow clone (fetch-depth: 1) strips tags and commit distance,
@@ -152,7 +152,7 @@ jobs:
       # pypi-publish action is NOT supported inside a `container:` job, so the
       # actual TestPyPI upload happens in a dependent job which doesn't use a
       # container.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: sierra-dev-dist
           path: dist/

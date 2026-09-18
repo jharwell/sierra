@@ -1,0 +1,31 @@
+mycategory:
+  - src_stem: 'somesubdir/foo'
+    backend: "matplotlib"
+    title: 'My Title'
+    dest_stem: 'bar'
+
+    # The type of graph. Must be 'tsne'.
+    type: 'tsne'
+
+    # Name of the source columns to use for the datapoint dimensions.
+    vcols: ['a', 'b', 'c', '...']
+
+    # Name of the label column to use for the categorical label. Defaults to
+    # 'label' if omitted.
+    labelcol: myycol
+
+    # Perplexity hyperparameter. Defaults to 30 if omitted.
+    perplexity: 12
+
+    # The target # of samples to send to the t-SNE algorithm. Running say 1M
+    # points through will take forever and the plot will be garbage, so tune
+    # here as needed. -1 means take all samples (default).
+    target_samples: -1
+
+    # List of names of the plotted lines within the graph. Matched pairwise with
+    # the vcols columns. Defaults to name of each vcols column if omitted.
+    legend:
+      - 'Column 1'
+      - 'Column 2'
+      - 'Column 3'
+      - '...'

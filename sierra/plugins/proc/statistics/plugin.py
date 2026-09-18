@@ -66,7 +66,7 @@ class DataGatherer(gather.BaseGatherer):
         self, df: pl.DataFrame, spec: gather.GatherSpec
     ) -> None:
         nonnumeric = [col for col in df.columns if not df[col].dtype.is_numeric()]
-        if nonnumeric and self.gather_opts["spread"] != "mean":
+        if nonnumeric and self.gather_opts["spread"] != "none":
             self.logger.warning(
                 (
                     "Non-numeric columns only support mean aggregation via "

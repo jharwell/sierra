@@ -1,4 +1,4 @@
-# Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2026 John Harwell, All rights reserved.
 #
 # SPDX-License-Identifier: MIT
 #
@@ -52,8 +52,8 @@ def generate(  # noqa: PLR0913,PLR0917
         output_fpath: The absolute path to the output image file to save
                       generated graph to.
 
-        stats: The type of statistics to use as the main data input. (from
-               ``--stats``).
+        stats_center: The type of statistics to use as the main data input. (from
+                      ``--center``).
 
         title: Graph title.
 

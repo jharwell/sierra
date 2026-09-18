@@ -166,6 +166,8 @@ class TestDispatchTables:
         }
         if gtype == "histogram":
             minimal["cols"] = ["a"]
+        elif gtype == "tsne":
+            minimal["vcols"] = ["a", "b"]
 
         validated = gconfig.validate(_cfg(minimal))["intra-exp"]["cat"][0]
 

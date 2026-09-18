@@ -305,6 +305,35 @@ def scatter_long_data(root, stem, nexp=3, kind="linear"):
 
 
 # ---------------------------------------------------------------------------
+# Clustered embeddings (t-SNE)
+# ---------------------------------------------------------------------------
+def cluster_data(root, stem, nclusters=4, ndims=5, per=40, labelcol="cluster_id"):
+    """Labeled Gaussian blobs in ndims-space for t-SNE.
+
+    Each cluster is a tight isotropic gaussian around a well-separated random
+    center, so the 2D t-SNE embedding resolves into visually distinct groups.
+    ``labelcol`` is emitted as a float column (mirroring real ``cluster_id``
+    inputs) and is the first column; the ``d0..d{ndims-1}`` value dims follow.
+
+    Determinism: centers and per-cluster jitter are drawn from a tag-seeded
+    generator, so the on-disk fixture is byte-stable across runs -- and t-SNE
+    itself is pinned via ``random_state`` in the generator under test, so the
+    resulting embedding is a valid pixel baseline.
+    """
+    rng = _rng("tsne:" + stem)
+    dims = [f"d{i}" for i in range(ndims)]
+    cols: dict[str, list] = {c: [] for c in dims}
+    labels: list[float] = []
+    for k in range(nclusters):
+        center = rng.normal(0.0, 6.0, ndims)
+        pts = center + rng.normal(0.0, 0.6, (per, ndims))
+        for i, c in enumerate(dims):
+            cols[c].extend(pts[:, i].tolist())
+        labels.extend([float(k)] * per)
+    _write(pl.DataFrame({labelcol: labels, **cols}), root, stem, ".mean")
+
+
+# ---------------------------------------------------------------------------
 # Histograms
 # ---------------------------------------------------------------------------
 def histogram_data(root, stem, family="beta"):

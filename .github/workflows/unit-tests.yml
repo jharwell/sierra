@@ -17,7 +17,7 @@ jobs:
           - 3.12
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: argos
@@ -32,7 +32,7 @@ jobs:
           --pythons ${{ matrix.python-version }} \
           --sessions unit_tests
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ci-unit-tests-${{ matrix.python-version }}-coverage
           path: .coverage*

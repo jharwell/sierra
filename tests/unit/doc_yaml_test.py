@@ -38,6 +38,7 @@ DOC_FILES = {
     "prod/histogram.yaml": schema.histogram,
     "prod/summary_line.yaml": schema.summary_line,
     "prod/network.yaml": schema.network,
+    "prod/tsne.yaml": schema.tsne,
     "compare/cc_and_sc.yaml": compareschema.comparison_line,
 }
 

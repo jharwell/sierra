@@ -142,6 +142,9 @@ histogram = strictyaml.Map(
     }
 )
 
+"""
+Schema for :func:`~sierra.core.graphs.scatterplot.generate` graphs.
+"""
 scatterplot = strictyaml.Map(
     {
         # src and sources are mutually exclusive input spellings, both
@@ -164,9 +167,28 @@ scatterplot = strictyaml.Map(
         strictyaml.Optional("backend"): strictyaml.Str(),
     }
 )
+
 """
-Schema for :func:`~sierra.core.graphs.scatterplot.generate` graphs.
+Schema for :func:`~sierra.core.graphs.tsne.generate` graphs.
 """
+tsne = strictyaml.Map(
+    {
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. sources (columns
+        # from several files, joined per experiment) is intra-exp only.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
+        "type": strictyaml.Enum(["tsne"]),
+        strictyaml.Optional("vcols"): strictyaml.Seq(strictyaml.Str()),
+        strictyaml.Optional("labelcol", default="label"): strictyaml.Str(),
+        strictyaml.Optional("perplexity", default=30): strictyaml.Int(),
+        strictyaml.Optional("target_samples", default=-1): strictyaml.Int(),
+        strictyaml.Optional("title", default=""): strictyaml.Str(),
+        strictyaml.Optional("legend"): strictyaml.Seq(strictyaml.Str()),
+        strictyaml.Optional("backend"): strictyaml.Str(),
+    }
+)
 
 summary_line = strictyaml.Map(
     {
@@ -220,6 +242,7 @@ BY_TYPE = {
     "summary_line": summary_line,
     "network": network,
     "scatterplot": scatterplot,
+    "tsne": tsne,
 }
 
 __all__ = [

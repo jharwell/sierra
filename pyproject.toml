@@ -21,6 +21,7 @@ dependencies = [
     # still supports python 3.9, we can't just pin to <3.11.0, because that is
     # python3.10+ only. So the fix is in two stages, only one of which I control.
     "matplotlib >=3.9.0, <3.10.0",
+    "scikit-learn",
     "hvplot",
     "coloredlogs",
     "distro",

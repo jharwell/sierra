@@ -30,7 +30,7 @@ jobs:
       PYTHON_VERSION: "3.10"
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         persist-credentials: false
 
@@ -44,7 +44,7 @@ jobs:
         (cd docs && uv run -p "${PYTHON_VERSION}" sphinx-build -b linkcheck . _build)
         uv build
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: pypi-dist
         path: dist/

@@ -24,6 +24,7 @@ import pathlib
 # 3rd party packages
 import pytest
 import networkx as nx
+import holoviews as hv
 
 # Project packages
 from sierra.core import graphs
@@ -33,6 +34,22 @@ from tests.regression.graphs import generate, conftest
 # SAME directory
 BASELINE = str((pathlib.Path(__file__).parent / ".." / "goldens" / "graphs").resolve())
 TOL = 8.0
+
+
+def _palette_len() -> int:
+    """Length of the Holoviews color cycle, resolved at collection time.
+
+    ``hv.Cycle().values`` is empty until a plotting backend is loaded, so the
+    matplotlib extension is loaded eagerly here. This lets the t-SNE cluster
+    sweep pick a cluster count that is guaranteed to exceed the palette and
+    thus exercise the ``i % len(palette)`` colour-cycling wrap, regardless of
+    the palette shipped by the installed Holoviews.
+    """
+    hv.extension("matplotlib", inline=False, logo=False)
+    return len(hv.Cycle().values)
+
+
+_PALETTE_LEN = _palette_len()
 
 
 def mpl(baseline):
@@ -515,6 +532,156 @@ def test_scatter_long_bestfit(make_pathset):
         legend=["exp0", "exp1", "exp2"],
         show_best_fit=True,
         best_fit_kind="linear",
+    )
+
+
+# ===========================================================================
+# tsne
+# ===========================================================================
+_TSNE_VCOLS = [f"d{i}" for i in range(5)]
+
+
+@pytest.mark.mpl_image_compare(baseline_dir=BASELINE, tolerance=TOL)
+@pytest.mark.parametrize("perplexity", [15, 30], ids=["perp15", "perp30"])
+def test_tsne_perplexity(make_pathset, perplexity):
+    ps = make_pathset()
+    generate.cluster_data(ps.input_root, "blobs", nclusters=4, ndims=5, per=40)
+    return _run(
+        ps,
+        graphs.tsne,
+        input_stem="blobs",
+        output_stem="blobs",
+        title="Clustering embedding",
+        stats_center="mean",
+        vcols=_TSNE_VCOLS,
+        labelcol="cluster_id",
+        perplexity=perplexity,
+        target_samples=-1,
+    )
+
+
+@pytest.mark.mpl_image_compare(baseline_dir=BASELINE, tolerance=TOL)
+@pytest.mark.parametrize(
+    "nclusters",
+    [2, _PALETTE_LEN + 2],
+    ids=["k_small", "k_wrap"],
+)
+def test_tsne_ncluster_sweep(make_pathset, nclusters):
+    # k_wrap deliberately exceeds the palette length so the cmap's
+    # `i % len(palette)` wrap is exercised (colours reused, legend still 1:1).
+    ps = make_pathset()
+    generate.cluster_data(
+        ps.input_root, "blobs", nclusters=nclusters, ndims=5, per=30
+    )
+    return _run(
+        ps,
+        graphs.tsne,
+        input_stem="blobs",
+        output_stem="blobs",
+        title=f"{nclusters} clusters",
+        stats_center="mean",
+        vcols=_TSNE_VCOLS,
+        labelcol="cluster_id",
+        perplexity=30,
+        target_samples=-1,
+    )
+
+
+@mpl("tsne-downsample")
+def test_tsne_downsample(make_pathset):
+    ps = make_pathset()
+    generate.cluster_data(ps.input_root, "blobs", nclusters=4, ndims=5, per=60)
+    return _run(
+        ps,
+        graphs.tsne,
+        input_stem="blobs",
+        output_stem="blobs",
+        title="Downsampled",
+        stats_center="mean",
+        vcols=_TSNE_VCOLS,
+        labelcol="cluster_id",
+        perplexity=30,
+        target_samples=100,
+    )
+
+
+@mpl("tsne-legend")
+def test_tsne_custom_legend(make_pathset):
+    ps = make_pathset()
+    generate.cluster_data(ps.input_root, "blobs", nclusters=3, ndims=5, per=40)
+    return _run(
+        ps,
+        graphs.tsne,
+        input_stem="blobs",
+        output_stem="blobs",
+        title="Named clusters",
+        stats_center="mean",
+        vcols=_TSNE_VCOLS,
+        labelcol="cluster_id",
+        perplexity=30,
+        target_samples=-1,
+        legend=["alpha", "beta", "gamma"],
+    )
+
+
+@mpl("tsne-large_text")
+def test_tsne_large_text(make_pathset):
+    ps = make_pathset()
+    generate.cluster_data(ps.input_root, "blobs", nclusters=4, ndims=5, per=40)
+    return _run(
+        ps,
+        graphs.tsne,
+        input_stem="blobs",
+        output_stem="blobs",
+        title="Big text",
+        stats_center="mean",
+        vcols=_TSNE_VCOLS,
+        labelcol="cluster_id",
+        perplexity=30,
+        target_samples=-1,
+        large_text=True,
+    )
+
+
+def test_tsne_legend_length_mismatch(make_pathset):
+    # A custom legend shorter/longer than the cluster count must fail loudly
+    # (this is the guard that replaced replace_strict's strictness).
+    ps = make_pathset()
+    generate.cluster_data(ps.input_root, "blobs", nclusters=3, ndims=5, per=20)
+    with pytest.raises(ValueError):
+        graphs.tsne(
+            ps,
+            input_stem="blobs",
+            output_stem="blobs",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="mismatch",
+            stats_center="mean",
+            vcols=_TSNE_VCOLS,
+            labelcol="cluster_id",
+            perplexity=30,
+            target_samples=-1,
+            legend=["only", "two"],
+        )
+
+
+def test_tsne_missing_input(make_pathset):
+    ps = make_pathset()
+    assert (
+        graphs.tsne(
+            ps,
+            input_stem="does_not_exist",
+            output_stem="x",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="t",
+            stats_center="mean",
+            vcols=_TSNE_VCOLS,
+            labelcol="cluster_id",
+            perplexity=30,
+            target_samples=-1,
+        )
+        is False
     )
 
 

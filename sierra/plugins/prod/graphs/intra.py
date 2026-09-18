@@ -131,6 +131,20 @@ def _scatterplot_kwargs(
     }
 
 
+def _tsne_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "vcols": loaded["vcols"],
+        "labelcol": loaded["labelcol"],
+        "perplexity": loaded["perplexity"],
+        "target_samples": loaded["target_samples"],
+        "legend": None,
+        "stats_center": cmdopts.get("center", "mean"),
+    }
+
+
 def _network_kwargs(
     loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
 ) -> dict[str, tp.Any]:
@@ -185,6 +199,13 @@ KINDS = {
         func=graphs.scatterplot,
         medium="storage.csv",
         kwargs_fn=_scatterplot_kwargs,
+    ),
+    "tsne": _GraphKind(
+        cli_flag="graphs_no_tSNE",
+        label="t-SNE plots",
+        func=graphs.tsne,
+        medium="storage.csv",
+        kwargs_fn=_tsne_kwargs,
     ),
     "network": _GraphKind(
         cli_flag="graphs_no_NW",
@@ -461,6 +482,15 @@ def _materialize_sources(
             frames.append(df.select([pl.col(src).alias(out) for src, out in present]))
 
         if not frames:
+            _logger.warning(
+                (
+                    "No frames from '%s%s' found for materializing multi-source"
+                    "graph %s--configuration error?"
+                ),
+                file,
+                ext,
+                graph["dest"],
+            )
             continue
 
         # Equal-height horizontal join. The row-axis guard above already

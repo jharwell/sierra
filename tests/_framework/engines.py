@@ -520,6 +520,21 @@ YAMLSIM = EngineSpec(
                     min_rows=50,
                     columns=_SIGNAL_COLS,
                 ),
+                ExpectedOutput(
+                    "exp-outputs/c1-exp{i}/template_run{run}_output/output/"
+                    "alg-behavior.csv",
+                    min_rows=200,
+                    columns=[
+                        "throughput",
+                        "latency",
+                        "energy",
+                        "path_eff",
+                        "collisions",
+                        "coverage",
+                        "convergence",
+                        "load_balance",
+                    ],
+                ),
             ),
         ),
         3: StageManifest(
@@ -538,6 +553,9 @@ YAMLSIM = EngineSpec(
                     columns=_SIGNAL_COLS,
                 ),
                 ExpectedOutput("statistics/c1-exp{i}/classification.{stat}"),
+                ExpectedOutput(
+                    "statistics/c1-exp{i}/alg-behavior.{stat}", min_rows=200
+                ),
             ),
             inter_exp=(
                 # Per-experiment run-collation (collate.yaml).
@@ -563,13 +581,12 @@ YAMLSIM = EngineSpec(
         ),
         4: StageManifest(
             per_exp=(
-                # Intra-exp graphs per yamlsim graphs.yaml: line, confusion, and
-                # three histogram render kinds.
                 ExpectedOutput("graphs/c1-exp{i}/SLN-signal-intra.png"),
                 ExpectedOutput("graphs/c1-exp{i}/CM-classification.png"),
                 ExpectedOutput("graphs/c1-exp{i}/HG-signal-hist-overlay.png"),
                 ExpectedOutput("graphs/c1-exp{i}/HG-signal-hist-steps.png"),
                 ExpectedOutput("graphs/c1-exp{i}/HG-signal-hist-facet.png"),
+                ExpectedOutput("graphs/c1-exp{i}/tSNE-alg-behavior.png"),
             ),
             inter_exp=(
                 ExpectedOutput(

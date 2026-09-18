@@ -29,7 +29,7 @@ jobs:
             tags: "regression and value"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/sample-project-setup
         with:
           engine: jsonsim
@@ -38,7 +38,7 @@ jobs:
         run: |
           uv run nox -p ${{ matrix.python-version }} -k "${{ matrix.slice.tags }}"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ci-regression-${{ matrix.slice.name }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
