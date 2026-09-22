@@ -275,11 +275,9 @@ def _proc_single_exp(imagize_config: list[types.YAMLDict], imagize_opts: dict) -
                 stats_center=imagize_opts["stats_center"],
                 xlabel="X",
                 ylabel="Y",
-                colnames=(
-                    str(match.get("x", "x")),
-                    str(match.get("y", "y")),
-                    str(match.get("z", "z")),
-                ),
+                xcol=str(match["x"]),
+                ycol=str(match["y"]),
+                zcol=str(match["z"]),
                 backend="matplotlib",
             )
         elif graph["type"] == "network":

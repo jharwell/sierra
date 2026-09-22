@@ -298,6 +298,32 @@ def _build_stage4(cmdline: PluginCmdline) -> PluginCmdline:
              """,
         action="store_true",
     )
+    cmdline.stage4.add_argument(
+        "--graphs-no-RC",
+        help="""
+             Specify that Risk Coverage Curves defined in project YAML
+             configuration should not be generated.  Useful if you are working
+             on something which results in the generation of other types of
+             graphs, and the generation of these plots only slows down your
+             development cycle.
+
+             .. versionadded:: 1.5.15
+             """,
+        action="store_true",
+    )
+    cmdline.stage4.add_argument(
+        "--graphs-no-ROC",
+        help="""
+             Specify that Receiver Operating Characteristic Curves defined in project YAML
+             configuration should not be generated.  Useful if you are working
+             on something which results in the generation of other types of
+             graphs, and the generation of these plots only slows down your
+             development cycle.
+
+             .. versionadded:: 1.5.15
+             """,
+        action="store_true",
+    )
 
     return cmdline
 
@@ -322,6 +348,8 @@ def to_cmdopts(args: argparse.Namespace) -> types.Cmdopts:
         "graphs_no_NW": args.graphs_no_NW,
         "graphs_no_SP": args.graphs_no_SP,
         "graphs_no_tSNE": args.graphs_no_tSNE,
+        "graphs_no_RC": args.graphs_no_RC,
+        "graphs_no_ROC": args.graphs_no_ROC,
     }
 
 

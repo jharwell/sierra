@@ -51,6 +51,13 @@ class CurveStyleConfig(tp.TypedDict):
     matplotlib: dict[str, str]
 
 
+class CurveWidthConfig(tp.TypedDict):
+    """Curve width, by backend."""
+
+    bokeh: dict[str, int]
+    matplotlib: dict[str, int]
+
+
 class GraphsConfig(tp.TypedDict):
     """Typed schema for the hard-coded ``GRAPHS`` graph-rendering config."""
 
@@ -61,7 +68,9 @@ class GraphsConfig(tp.TypedDict):
     text_size_small: TextSizeConfig
     text_size_large: TextSizeConfig
     points_size: PointsSizeConfig
-    curve_style: CurveStyleConfig
+    curve_dashed: CurveStyleConfig
+    curve_dotted: CurveStyleConfig
+    curve_width: CurveWidthConfig
 
 
 YAMLScalar = tp.Union[None, bool, str, float, int]

@@ -66,7 +66,9 @@ def _heatmap_kwargs(
         "xlabel": loaded["xlabel"],
         "ylabel": loaded["ylabel"],
         "zlabel": loaded["zlabel"],
-        "colnames": (loaded["x"], loaded["y"], loaded["z"]),
+        "xcol": loaded["x"],
+        "ycol": loaded["y"],
+        "zcol": loaded["z"],
         "stats_center": cmdopts.get("center", "mean"),
     }
 
@@ -93,8 +95,8 @@ def _confusion_matrix_kwargs(
 ) -> dict[str, tp.Any]:
     return {
         "title": loaded["title"],
-        "truth_col": loaded["truth_col"],
-        "predicted_col": loaded["predicted_col"],
+        "truthcol": loaded["truthcol"],
+        "predcol": loaded["predcol"],
         "xlabels_rotate": loaded["xlabels_rotate"],
         "stats_center": cmdopts.get("center", "mean"),
     }
@@ -141,6 +143,37 @@ def _tsne_kwargs(
         "perplexity": loaded["perplexity"],
         "target_samples": loaded["target_samples"],
         "legend": None,
+        "stats_center": cmdopts.get("center", "mean"),
+    }
+
+
+def _risk_coverage_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "xlabel": loaded["xlabel"],
+        "ylabel": loaded["ylabel"],
+        "truthcol": loaded["truthcol"],
+        "predcol": loaded["predcol"],
+        "confcol": loaded["confcol"],
+        "show_baseline": loaded["show_baseline"],
+        "show_oracle": loaded["show_oracle"],
+        "stats_center": cmdopts.get("center", "mean"),
+    }
+
+
+def _roc_kwargs(
+    loaded: types.YAMLDict, cmdopts: types.Cmdopts, pathset: exproot.PathSet
+) -> dict[str, tp.Any]:
+    return {
+        "title": loaded["title"],
+        "xlabel": loaded["xlabel"],
+        "ylabel": loaded["ylabel"],
+        "truthcol": loaded["truthcol"],
+        "scorecols": loaded["scorecols"],
+        "show_micro": loaded["show_micro"],
+        "show_diagonal": loaded["show_diagonal"],
         "stats_center": cmdopts.get("center", "mean"),
     }
 
@@ -206,6 +239,20 @@ KINDS = {
         func=graphs.tsne,
         medium="storage.csv",
         kwargs_fn=_tsne_kwargs,
+    ),
+    "risk_coverage": _GraphKind(
+        cli_flag="graphs_no_RC",
+        label="Risk-Coverage Curves",
+        func=graphs.risk_coverage,
+        medium="storage.csv",
+        kwargs_fn=_risk_coverage_kwargs,
+    ),
+    "roc": _GraphKind(
+        cli_flag="graphs_no_ROC",
+        label="Receiver Operating Characteristic Curves",
+        func=graphs.roc,
+        medium="storage.csv",
+        kwargs_fn=_roc_kwargs,
     ),
     "network": _GraphKind(
         cli_flag="graphs_no_NW",
@@ -484,7 +531,7 @@ def _materialize_sources(
         if not frames:
             _logger.warning(
                 (
-                    "No frames from '%s%s' found for materializing multi-source"
+                    "No frames from '%s%s' found for materializing multi-source "
                     "graph %s--configuration error?"
                 ),
                 file,
@@ -520,7 +567,7 @@ def _generate(
     Config has already been validated by :mod:`gconfig`, so the definitions
     reaching here are known-conformant and can be indexed directly.
     """
-    _logger.info(
+    _logger.debug(
         "%s from <batch_root>/%s",
         kind.label,
         pathset.stat_root.relative_to(pathset.parent),

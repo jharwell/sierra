@@ -223,8 +223,8 @@ class TestRoleColumnTypes:
                 {
                     "dest": "cm",
                     "type": "confusion_matrix",
-                    "truth_col": "a",
-                    "predicted_col": "p",
+                    "truthcol": "a",
+                    "predcol": "p",
                     "sources": [
                         {"file": "l", "cols": ["a"]},
                         {"file": "m", "cols": ["p"]},

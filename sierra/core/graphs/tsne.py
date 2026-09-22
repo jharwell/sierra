@@ -95,6 +95,18 @@ def generate(  # noqa: PLR0913,PLR0917
         else config.GRAPHS["text_size_small"]
     )
     df = storage.df_read(input_fpath, medium)
+    required_cols = [*vcols, labelcol]
+    if not all(c in df.columns for c in required_cols):
+        _logger.warning(
+            (
+                "Not generating <batchroot>/%s: not all required columns present:"
+                "required=%s,missing=%s"
+            ),
+            output_fpath.relative_to(pathset.batchroot),
+            required_cols,
+            set(required_cols) - set(df.columns),
+        )
+        return False
 
     if target_samples == -1:
         target_samples = len(df)

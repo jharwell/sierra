@@ -70,6 +70,17 @@ def generate(  # noqa: PLR0913,PLR0917
         return False
 
     df = storage.df_read(input_fpath, medium)
+    if cols is not None and not all(c in df.columns for c in cols):
+        _logger.warning(
+            (
+                "Not generating <batchroot>/%s: not all required columns "
+                "present: required=%s,missing=%s"
+            ),
+            output_fpath.relative_to(pathset.batchroot),
+            cols,
+            set(cols) - set(df.columns),
+        )
+        return False
 
     # Normalize to a list so the single- and multi-column cases share a code
     # path.

@@ -254,7 +254,7 @@ def _validate_one(
 #: :mod:`sierra.core.graphs.schema`.
 _ROLE_COLUMNS = {
     "heatmap": {"x": "x", "y": "y", "z": "z"},
-    "confusion_matrix": {"truth_col": "truth", "predicted_col": "predicted"},
+    "confusion_matrix": {"truthcol": "truth", "predcol": "predicted"},
     "scatterplot": {"xcol": "xcol", "ycol": "ycol"},
 }
 
@@ -363,9 +363,9 @@ def _check_input_spelling_multi_source(
         return False
 
     # For types that reference columns by named role (heatmap's x/y/z,
-    # confusion_matrix's truth_col/predicted_col), those roles must resolve
-    # to output columns the joined sources actually produce -- otherwise the
-    # plot would fail at read time. Checked here so it fails up front.
+    # confusion_matrix's truthcol/predcol), those roles must resolve to output
+    # columns the joined sources actually produce -- otherwise the plot would
+    # fail at read time. Checked here so it fails up front.
     produced = {out for _, col_map in normalized for _, out in col_map}
     for key, default in _ROLE_COLUMNS.get(graph["type"], {}).items():
         wanted = graph.get(key, default)

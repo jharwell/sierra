@@ -381,6 +381,85 @@ def network_graphml(root, stem, kind="scale_free", directed=False):
     nx.write_graphml(G, root / f"{stem}.graphml")
 
 
+# ---------------------------------------------------------------------------
+# Multiclass score vectors (ROC + selective risk)
+# ---------------------------------------------------------------------------
+def _score_vectors(tag, nclasses, per, margin):
+    """Graded-margin softmax score vectors: returns (truth, probs).
+
+    Shared core for the ROC and risk-coverage fixtures. Class 0 gets the full
+    ``margin`` boost on its true-class logit, fading linearly to ~0 for the last
+    class, so separability -- and thus both per-class AUC and the coupling
+    between top-1 confidence and correctness -- spans clean to near-chance.
+    Deterministic via the tag-seeded generator; softmax is analytic, so the
+    resulting fixture is byte-stable.
+    """
+    rng = _rng(tag)
+    truth: list[int] = []
+    rows: list[np.ndarray] = []
+    for c in range(nclasses):
+        frac = (nclasses - 1 - c) / max(nclasses - 1, 1)  # 1.0 (class 0) -> 0.0 (last)
+        cls_margin = margin * frac
+        for _ in range(per):
+            logits = rng.normal(0.0, 1.0, nclasses)
+            logits[c] += cls_margin
+            truth.append(c)
+            rows.append(logits)
+    logits = np.asarray(rows)
+    ex = np.exp(logits - logits.max(axis=1, keepdims=True))
+    probs = ex / ex.sum(axis=1, keepdims=True)
+    return np.asarray(truth), probs
+
+
+def roc_data(root, stem, nclasses=4, per=60, truthcol="truth", margin=2.5):
+    """Per-sample score-vector fixture for the OvR ROC graph.
+
+    Emits ``truthcol`` plus one score column per class (``classconf_0`` ..
+    ``classconf_{nclasses-1}``) from a proper softmax vector (rows sum to 1).
+    Separability is graded so the blessed ROC spans clean (AUC~0.95) down to
+    near-chance (AUC~0.64) curves rather than every curve hugging the corner.
+    """
+    truth, probs = _score_vectors("roc:" + stem, nclasses, per, margin)
+    data: dict[str, list] = {truthcol: truth.tolist()}
+    for c in range(nclasses):
+        data[f"classconf_{c}"] = probs[:, c].tolist()
+    _write(pl.DataFrame(data), root, stem, ".mean")
+
+
+def risk_coverage_data(
+    root,
+    stem,
+    nclasses=4,
+    per=60,
+    truthcol="truth",
+    predcol="predicted",
+    confcol="confidence",
+    margin=2.5,
+):
+    """Top-1 fixture for the selective-risk / risk-coverage graph.
+
+    Reuses the graded-margin softmax vectors, then collapses each row to what a
+    top-1 classifier actually emits: ``predicted`` = argmax score, ``confidence``
+    = max score. Because separability is graded, top-1 confidence genuinely
+    tracks correctness, so the model curve lands *between* oracle and baseline
+    (informative). Pass ``margin=0.0`` for the degenerate case where confidence
+    carries no signal and the model curve collapses onto the baseline.
+    """
+    truth, probs = _score_vectors("src:" + stem, nclasses, per, margin)
+    _write(
+        pl.DataFrame(
+            {
+                truthcol: truth.tolist(),
+                predcol: probs.argmax(axis=1).tolist(),
+                confcol: probs.max(axis=1).tolist(),
+            }
+        ),
+        root,
+        stem,
+        ".mean",
+    )
+
+
 __all__ = [
     "summary_data",
     "timeseries_data",
@@ -390,5 +469,7 @@ __all__ = [
     "scatter_wide_data",
     "scatter_long_data",
     "histogram_data",
+    "risk_coverage_data",
+    "roc_data",
     "network_graphml",
 ]

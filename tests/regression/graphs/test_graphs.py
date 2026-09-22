@@ -23,7 +23,6 @@ import pathlib
 
 # 3rd party packages
 import pytest
-import networkx as nx
 import holoviews as hv
 
 # Project packages
@@ -345,6 +344,9 @@ def test_heatmap_basic(make_pathset):
         stats_center="mean",
         xlabel="x",
         ylabel="y",
+        xcol="x",
+        ycol="y",
+        zcol="z",
         zlabel="amplitude",
     )
 
@@ -368,6 +370,9 @@ def test_heatmap_transpose(make_pathset, transpose):
         output_stem="field",
         title="Field",
         stats_center="mean",
+        xcol="x",
+        ycol="y",
+        zcol="z",
         xlabel="x",
         ylabel="y",
         zlabel="z",
@@ -386,6 +391,9 @@ def test_heatmap_ticklabels(make_pathset):
         output_stem="field",
         title="Labeled",
         stats_center="mean",
+        xcol="x",
+        ycol="y",
+        zcol="z",
         xlabel="x",
         ylabel="y",
         zlabel="z",
@@ -407,6 +415,9 @@ def test_heatmap_large_text(make_pathset):
         output_stem="field",
         title="Big text",
         stats_center="mean",
+        xcol="x",
+        ycol="y",
+        zcol="z",
         xlabel="x",
         ylabel="y",
         zlabel="z",
@@ -429,8 +440,8 @@ def test_confusion_matrix(make_pathset, rotate):
         output_stem="cm",
         title="Classifier",
         stats_center="mean",
-        truth_col="truth",
-        predicted_col="predicted",
+        truthcol="truth",
+        predcol="predicted",
         xlabels_rotate=rotate,
     )
 
@@ -446,8 +457,8 @@ def test_confusion_matrix_large_text(make_pathset):
         output_stem="cm",
         title="Classifier",
         stats_center="mean",
-        truth_col="truth",
-        predicted_col="predicted",
+        truthcol="truth",
+        predcol="predicted",
         large_text=True,
     )
 
@@ -570,9 +581,7 @@ def test_tsne_ncluster_sweep(make_pathset, nclusters):
     # k_wrap deliberately exceeds the palette length so the cmap's
     # `i % len(palette)` wrap is exercised (colours reused, legend still 1:1).
     ps = make_pathset()
-    generate.cluster_data(
-        ps.input_root, "blobs", nclusters=nclusters, ndims=5, per=30
-    )
+    generate.cluster_data(ps.input_root, "blobs", nclusters=nclusters, ndims=5, per=30)
     return _run(
         ps,
         graphs.tsne,
@@ -811,6 +820,314 @@ def test_network_missing_input(make_pathset):
             title="t",
             layout="spring",
             medium=conftest.GRAPHML_MEDIUM,
+        )
+        is False
+    )
+
+
+# ===========================================================================
+# risk_coverage (selective risk)
+# ===========================================================================
+@pytest.mark.mpl_image_compare(baseline_dir=BASELINE, tolerance=TOL)
+@pytest.mark.parametrize(
+    "show_oracle,show_baseline", [(True, True), (False, False)], ids=["refs", "bare"]
+)
+def test_src_refs(make_pathset, show_oracle, show_baseline):
+    ps = make_pathset()
+    generate.risk_coverage_data(ps.input_root, "src", nclasses=4, per=60)
+    return _run(
+        ps,
+        graphs.risk_coverage,
+        input_stem="src",
+        output_stem="src",
+        title="Risk-Coverage Curve",
+        xlabel="Coverage (fraction answered)",
+        ylabel="Selective risk (error among answered)",
+        stats_center="mean",
+        truthcol="truth",
+        predcol="predicted",
+        confcol="confidence",
+        show_oracle=show_oracle,
+        show_baseline=show_baseline,
+    )
+
+
+@mpl("src-chance")
+def test_src_uninformative(make_pathset):
+    # margin=0 -> top-1 confidence carries no signal: the model curve should
+    # collapse onto the overall-error baseline instead of dipping toward oracle.
+    ps = make_pathset()
+    generate.risk_coverage_data(ps.input_root, "src", nclasses=4, per=60, margin=0.0)
+    return _run(
+        ps,
+        graphs.risk_coverage,
+        input_stem="src",
+        output_stem="src",
+        title="Uninformative confidence",
+        xlabel="Coverage (fraction answered)",
+        ylabel="Selective risk (error among answered)",
+        stats_center="mean",
+        truthcol="truth",
+        predcol="predicted",
+        confcol="confidence",
+        show_oracle=True,
+        show_baseline=True,
+    )
+
+
+@mpl("src-large_text")
+def test_src_large_text(make_pathset):
+    ps = make_pathset()
+    generate.risk_coverage_data(ps.input_root, "src", nclasses=4, per=50)
+    return _run(
+        ps,
+        graphs.risk_coverage,
+        input_stem="src",
+        output_stem="src",
+        title="Big text",
+        xlabel="Coverage (fraction answered)",
+        ylabel="Selective risk (error among answered)",
+        stats_center="mean",
+        truthcol="truth",
+        predcol="predicted",
+        confcol="confidence",
+        show_oracle=True,
+        show_baseline=True,
+        large_text=True,
+    )
+
+
+def test_src_missing_required_column(make_pathset):
+    # A named column absent from the frame -> returns False (required-columns
+    # guard), NOT a raise.
+    ps = make_pathset()
+    generate.risk_coverage_data(ps.input_root, "src", nclasses=3, per=20)
+    assert (
+        graphs.risk_coverage(
+            ps,
+            input_stem="src",
+            output_stem="src",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="missing col",
+            xlabel="coverage",
+            ylabel="risk",
+            stats_center="mean",
+            truthcol="truth",
+            predcol="predicted",
+            confcol="nope",
+            show_oracle=False,
+            show_baseline=False,
+        )
+        is False
+    )
+
+
+def test_src_missing_input(make_pathset):
+    ps = make_pathset()
+    assert (
+        graphs.risk_coverage(
+            ps,
+            input_stem="does_not_exist",
+            output_stem="x",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="t",
+            xlabel="coverage",
+            ylabel="risk",
+            stats_center="mean",
+            truthcol="truth",
+            predcol="predicted",
+            confcol="confidence",
+            show_oracle=False,
+            show_baseline=False,
+        )
+        is False
+    )
+
+
+# ===========================================================================
+# roc
+# ===========================================================================
+_ROC_SCORECOLS = {c: f"classconf_{c}" for c in range(4)}
+
+
+@pytest.mark.mpl_image_compare(baseline_dir=BASELINE, tolerance=TOL)
+@pytest.mark.parametrize(
+    "show_micro,show_diagonal", [(True, True), (False, False)], ids=["refs", "bare"]
+)
+def test_roc_refs(make_pathset, show_micro, show_diagonal):
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=4, per=60)
+    return _run(
+        ps,
+        graphs.roc,
+        input_stem="roc",
+        output_stem="roc",
+        title="Receiver Operating Characteristic",
+        xlabel="False Positive Rate (FPR)",
+        ylabel="True Positive Rate (TPR)",
+        stats_center="mean",
+        truthcol="truth",
+        scorecols=_ROC_SCORECOLS,
+        show_micro=show_micro,
+        show_diagonal=show_diagonal,
+    )
+
+
+@pytest.mark.mpl_image_compare(baseline_dir=BASELINE, tolerance=TOL)
+@pytest.mark.parametrize("nclasses", [3, _PALETTE_LEN + 2], ids=["k_small", "k_wrap"])
+def test_roc_nclass_wrap(make_pathset, nclasses):
+    # k_wrap exceeds the palette so the cmap `i % len(palette)` wrap is
+    # exercised: colours reused, one legend entry per class still.
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=nclasses, per=30)
+    return _run(
+        ps,
+        graphs.roc,
+        input_stem="roc",
+        output_stem="roc",
+        title=f"{nclasses}-class ROC",
+        xlabel="FPR",
+        ylabel="TPR",
+        stats_center="mean",
+        truthcol="truth",
+        scorecols={c: f"classconf_{c}" for c in range(nclasses)},
+        show_micro=True,
+        show_diagonal=True,
+    )
+
+
+@mpl("roc-legend")
+def test_roc_custom_legend(make_pathset):
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=3, per=50)
+    return _run(
+        ps,
+        graphs.roc,
+        input_stem="roc",
+        output_stem="roc",
+        title="Named classes",
+        xlabel="FPR",
+        ylabel="TPR",
+        stats_center="mean",
+        truthcol="truth",
+        scorecols={c: f"classconf_{c}" for c in range(3)},
+        show_micro=False,
+        show_diagonal=True,
+        legend=["alpha", "beta", "gamma"],
+    )
+
+
+@mpl("roc-large_text")
+def test_roc_large_text(make_pathset):
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=4, per=50)
+    return _run(
+        ps,
+        graphs.roc,
+        input_stem="roc",
+        output_stem="roc",
+        title="Big text",
+        xlabel="FPR",
+        ylabel="TPR",
+        stats_center="mean",
+        truthcol="truth",
+        scorecols=_ROC_SCORECOLS,
+        show_micro=True,
+        show_diagonal=True,
+        large_text=True,
+    )
+
+
+def test_roc_legend_length_mismatch(make_pathset):
+    # A custom legend that doesn't match the class count must fail loudly.
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=3, per=20)
+    with pytest.raises(ValueError):
+        graphs.roc(
+            ps,
+            input_stem="roc",
+            output_stem="roc",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="mismatch",
+            xlabel="FPR",
+            ylabel="TPR",
+            stats_center="mean",
+            truthcol="truth",
+            scorecols={c: f"classconf_{c}" for c in range(3)},
+            show_micro=False,
+            show_diagonal=False,
+            legend=["only", "two"],
+        )
+
+
+def test_roc_scorecol_label_gap(make_pathset):
+    # scorecols whose referenced columns all EXIST but which omit a class
+    # present in truthcol must raise -- distinct from the missing-column guard.
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=4, per=20)
+    with pytest.raises(ValueError):
+        graphs.roc(
+            ps,
+            input_stem="roc",
+            output_stem="roc",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="gap",
+            xlabel="FPR",
+            ylabel="TPR",
+            stats_center="mean",
+            truthcol="truth",
+            scorecols={c: f"classconf_{c}" for c in range(3)},  # omits class 3
+            show_micro=False,
+            show_diagonal=False,
+        )
+
+
+def test_roc_missing_scorecol_column(make_pathset):
+    # scorecols referencing a column absent from the frame -> returns False
+    # (the required-columns guard), NOT a raise.
+    ps = make_pathset()
+    generate.roc_data(ps.input_root, "roc", nclasses=3, per=20)
+    assert (
+        graphs.roc(
+            ps,
+            input_stem="roc",
+            output_stem="roc",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="missing col",
+            xlabel="FPR",
+            ylabel="TPR",
+            stats_center="mean",
+            truthcol="truth",
+            scorecols={0: "classconf_0", 1: "classconf_1", 2: "nope_2"},
+            show_micro=False,
+            show_diagonal=False,
+        )
+        is False
+    )
+
+
+def test_roc_missing_input(make_pathset):
+    ps = make_pathset()
+    assert (
+        graphs.roc(
+            ps,
+            input_stem="does_not_exist",
+            output_stem="x",
+            medium=conftest.CSV_MEDIUM,
+            backend="matplotlib",
+            title="t",
+            xlabel="FPR",
+            ylabel="TPR",
+            stats_center="mean",
+            truthcol="truth",
+            scorecols={0: "classconf_0"},
+            show_micro=False,
+            show_diagonal=False,
         )
         is False
     )

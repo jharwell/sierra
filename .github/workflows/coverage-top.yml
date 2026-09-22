@@ -91,7 +91,7 @@ jobs:
             xml \
             --ignore-errors
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: ci-integration-coverage-xml
           path: coverage.xml
@@ -152,7 +152,7 @@ jobs:
       # pypi-publish action is NOT supported inside a `container:` job, so the
       # actual TestPyPI upload happens in a dependent job which doesn't use a
       # container.
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: sierra-dev-dist
           path: dist/

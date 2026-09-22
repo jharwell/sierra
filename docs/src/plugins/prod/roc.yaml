@@ -1,0 +1,24 @@
+mycategory:
+  - src_stem: 'somesubdir/foo'
+    backend: "matplotlib"
+    title: 'My Title'
+    dest_stem: 'bar'
+
+    # The type of graph. Must be 'truth'.
+    type: 'roc'
+
+    # Name of the column containing true labels for each datapoint. Defaults to
+    # 'truth' if omitted.
+    truthcol: truth
+
+    # Mapping of predicted label -> column name for that label's confidence, for
+    # all labels in 'truthcol'.
+    scorecols: myycol
+
+    # Show the micro curve: pooling every (score, is-this-class) decision into
+    # one ROC.
+    show micro: false
+
+    # Show the diagonal curve (random guessing) as the minimum curve any useful
+    # model should clear.
+    show_baseline: false

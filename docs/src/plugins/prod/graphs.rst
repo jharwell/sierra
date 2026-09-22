@@ -708,8 +708,8 @@ from the :xref:`YAMLSIM sample project <SIERRA_SAMPLE_PROJECT>`
                dest: confusion-matrix
                type: "confusion_matrix"
                title: "I'm A Little Confused"
-               truth_col: Actual_Class
-               predicted_col: Predicted_Class
+               truthcol: Actual_Class
+               predcol: Predicted_Class
 
 Intra-Experiment
 ----------------

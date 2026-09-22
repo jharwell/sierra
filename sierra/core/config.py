@@ -125,7 +125,15 @@ GRAPHS: types.GraphsConfig = {
         "legend_label": 32,
     },
     "points_size": {"bokeh": {"size": 8}, "matplotlib": {"s": 60}},
-    "curve_style": {"bokeh": {"line_dash": [6, 3]}, "matplotlib": {"linestyle": "--"}},
+    "curve_dashed": {"bokeh": {"line_dash": [6, 3]}, "matplotlib": {"linestyle": "--"}},
+    "curve_dotted": {
+        "bokeh": {"line_dottted": [6, 3]},
+        "matplotlib": {"linestyle": "dotted"},
+    },
+    "curve_width": {
+        "bokeh": {"line_width": 2},
+        "matplotlib": {"linewidth": 2},
+    },
 }
 
 

@@ -145,7 +145,7 @@ jobs:
           command: |
             uv run nox -p ${{ matrix.python-version }} -k "${{ matrix.slice.tags }}"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: ci-smoke-${{ matrix.slice.name }}-${{ matrix.python-version }}-coverage
           path: .coverage.*

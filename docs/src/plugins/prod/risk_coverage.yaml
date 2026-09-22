@@ -1,0 +1,28 @@
+mycategory:
+  - src_stem: 'somesubdir/foo'
+    backend: "matplotlib"
+    title: 'My Title'
+    dest_stem: 'bar'
+
+    # The type of graph. Must be 'risk_coverage'.
+    type: 'risk_coverage'
+
+    # Name of the column containing true labels for each datapoint. Defaults to
+    # 'truth' if omitted.
+    truthcol: truth
+
+    # Name of the column containing top-1 confidence for each
+    # datapoint. Defaults to 'confidence' if omitted.
+    confcol: myycol
+
+    # Name of the column containing predicted labels. Defaults, to 'predicted'
+    # if omitted.
+    predcol: 12
+
+    # Show the oracle model curve as the theoretical maximum that *any* model to
+    # do, given the set of predicted labels and condifedence values.
+    show_oracle: false
+
+    # Show the baseline curve (random guessing) as the minimum curve any useful
+    # model should clear.
+    show_baseline: false

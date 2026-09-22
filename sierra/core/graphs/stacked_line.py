@@ -245,7 +245,7 @@ def _plot_model(
     """
     # Plot models if they have been computed
     model_curves = {}
-    curve_style = tp.cast(dict[str, tp.Any], config.GRAPHS["curve_style"])
+    curve_style = tp.cast(dict[str, tp.Any], config.GRAPHS["curve_dashed"])
 
     for i, vdim in enumerate(model_info.dataset.vdims):
         model_curves[model_info.legend[i]] = hv.Curve(

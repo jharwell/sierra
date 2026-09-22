@@ -16,6 +16,8 @@ from .heatmap import generate_numeric as heatmap
 from .network import generate as network
 from .scatterplot import generate as scatterplot
 from .tsne import generate as tsne
+from .occ import generate_risk_coverage as risk_coverage
+from .occ import generate_roc as roc
 from .pathset import PathSet
 from . import schema, sections, bcbridge, gconfig
 
@@ -28,6 +30,8 @@ __all__ = [
     "heatmap",
     "histogram",
     "network",
+    "risk_coverage",
+    "roc",
     "scatterplot",
     "schema",
     "sections",

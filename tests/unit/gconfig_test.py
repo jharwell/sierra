@@ -168,6 +168,8 @@ class TestDispatchTables:
             minimal["cols"] = ["a"]
         elif gtype == "tsne":
             minimal["vcols"] = ["a", "b"]
+        elif gtype == "roc":
+            minimal["scorecols"] = {"a": "b"}
 
         validated = gconfig.validate(_cfg(minimal))["intra-exp"]["cat"][0]
 

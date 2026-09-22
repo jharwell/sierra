@@ -77,7 +77,7 @@ def generate(  # noqa: PLR0913,PLR0917
 
         logyscale: Should the Y axis be in the log2 domain ?
 
-        stats_sread: The type of spread statistics to include on the graph (from
+        stats_spread: The type of spread statistics to include on the graph (from
                      ``--spread``).
 
         stats_center: The measure of centeral tendency to use as the main data
@@ -204,7 +204,7 @@ def _plot_lines(
     if model_info.dataset:
         # TODO: This currently only works for a single model being put onto a
         # summary line graph.
-        curve_style = tp.cast(dict[str, tp.Any], config.GRAPHS["curve_style"])
+        curve_style = tp.cast(dict[str, tp.Any], config.GRAPHS["curve_dashed"])
         plot *= hv.Overlay(
             [
                 hv.Curve(

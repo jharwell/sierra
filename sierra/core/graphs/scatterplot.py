@@ -94,13 +94,7 @@ def generate(  # noqa: PLR0913,PLR0917
         )
         return False
 
-    text_size = (
-        config.GRAPHS["text_size_large"]
-        if large_text
-        else config.GRAPHS["text_size_small"]
-    )
     df = storage.df_read(input_fpath, medium)
-
     scatters = {}
     using_longform = {"exp", "x", "y"}.issubset(df.columns)
     colors = hv.Cycle().values
@@ -158,6 +152,12 @@ def generate(  # noqa: PLR0913,PLR0917
     plot.opts(title=title, xlabel=xlabel, ylabel=ylabel)
 
     # Set fontsizes
+    text_size = (
+        config.GRAPHS["text_size_large"]
+        if large_text
+        else config.GRAPHS["text_size_small"]
+    )
+
     plot.opts(
         fontsize={
             "title": text_size["title"],

@@ -74,12 +74,13 @@ confusion_matrix = strictyaml.Map(
         strictyaml.Optional("dest"): strictyaml.Str(),
         "type": strictyaml.Enum(["confusion_matrix"]),
         strictyaml.Optional("title", default=""): strictyaml.Str(),
-        strictyaml.Optional("truth_col", default="truth"): strictyaml.Str(),
-        strictyaml.Optional("predicted_col", default="predicted"): strictyaml.Str(),
+        strictyaml.Optional("truthcol", default="truth"): strictyaml.Str(),
+        strictyaml.Optional("predcol", default="predicted"): strictyaml.Str(),
         strictyaml.Optional("xlabels_rotate", default=False): strictyaml.Bool(),
         strictyaml.Optional("backend"): strictyaml.Str(),
     }
 )
+
 """
 Schema for :func:`~sierra.core.graphs.heatmap.generate_confusion` graphs.
 """
@@ -142,9 +143,6 @@ histogram = strictyaml.Map(
     }
 )
 
-"""
-Schema for :func:`~sierra.core.graphs.scatterplot.generate` graphs.
-"""
 scatterplot = strictyaml.Map(
     {
         # src and sources are mutually exclusive input spellings, both
@@ -167,10 +165,10 @@ scatterplot = strictyaml.Map(
         strictyaml.Optional("backend"): strictyaml.Str(),
     }
 )
+"""
+Schema for :func:`~sierra.core.graphs.scatterplot.generate` graphs.
+"""
 
-"""
-Schema for :func:`~sierra.core.graphs.tsne.generate` graphs.
-"""
 tsne = strictyaml.Map(
     {
         # src and sources are mutually exclusive input spellings, both
@@ -189,6 +187,72 @@ tsne = strictyaml.Map(
         strictyaml.Optional("backend"): strictyaml.Str(),
     }
 )
+
+"""
+Schema for :func:`~sierra.core.graphs.tsne.generate` graphs.
+"""
+
+risk_coverage = strictyaml.Map(
+    {
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. Multi-source is
+        # a natural fit here: the truth and predicted columns often live in
+        # different files (e.g. labels vs model output), joined per experiment.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
+        "type": strictyaml.Enum(["risk_coverage"]),
+        strictyaml.Optional("title", default="Risk-Coverage Curve"): strictyaml.Str(),
+        strictyaml.Optional(
+            "xlabel", default="Coverage (fraction processed)"
+        ): strictyaml.Str(),
+        strictyaml.Optional(
+            "ylabel", default="Selective Risk (error among processed)"
+        ): strictyaml.Str(),
+        strictyaml.Optional("truthcol", default="truth"): strictyaml.Str(),
+        strictyaml.Optional("predcol", default="predicted"): strictyaml.Str(),
+        strictyaml.Optional("confcol", default="confidence"): strictyaml.Str(),
+        strictyaml.Optional("show_oracle", default=False): strictyaml.Bool(),
+        strictyaml.Optional("show_baseline", default=False): strictyaml.Bool(),
+        strictyaml.Optional("backend"): strictyaml.Str(),
+    }
+)
+"""
+Schema for :func:`~sierra.core.graphs.occ.risk_coverage` graphs.
+"""
+
+roc = strictyaml.Map(
+    {
+        # src and sources are mutually exclusive input spellings, both
+        # optional at this level; gconfig enforces exactly-one. Multi-source is
+        # a natural fit here: the truth and predicted columns often live in
+        # different files (e.g. labels vs model output), joined per experiment.
+        strictyaml.Optional("src"): strictyaml.Str(),
+        strictyaml.Optional("sources"): strictyaml.Seq(sources_spec.source),
+        strictyaml.Optional("dest"): strictyaml.Str(),
+        "type": strictyaml.Enum(["roc"]),
+        strictyaml.Optional(
+            "title", default="Receive Operating Characteristic"
+        ): strictyaml.Str(),
+        strictyaml.Optional(
+            "xlabel", default="False Positive Rate (FPR)"
+        ): strictyaml.Str(),
+        strictyaml.Optional(
+            "ylabel", default="True Positive Rate (TPR)"
+        ): strictyaml.Str(),
+        strictyaml.Optional("truthcol", default="truth"): strictyaml.Str(),
+        strictyaml.Optional("scorecols"): strictyaml.MapPattern(
+            strictyaml.Str(), strictyaml.Str()
+        ),
+        strictyaml.Optional("show_micro", default=False): strictyaml.Bool(),
+        strictyaml.Optional("show_diagonal", default=False): strictyaml.Bool(),
+        strictyaml.Optional("backend"): strictyaml.Str(),
+    }
+)
+
+"""
+Schema for :func:`~sierra.core.graphs.occ.src` graphs.
+"""
 
 summary_line = strictyaml.Map(
     {
@@ -243,16 +307,22 @@ BY_TYPE = {
     "network": network,
     "scatterplot": scatterplot,
     "tsne": tsne,
+    "risk_coverage": risk_coverage,
+    "roc": roc,
 }
 
 __all__ = [
     "BY_TYPE",
     "HISTOGRAM_KINDS",
     "NETWORK_LAYOUTS",
+    "confusion_matrix",
     "heatmap",
     "histogram",
     "network",
+    "risk_coverage",
+    "roc",
     "scatterplot",
     "stacked_line",
     "summary_line",
+    "tsne",
 ]

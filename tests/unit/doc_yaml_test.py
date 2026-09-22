@@ -39,6 +39,8 @@ DOC_FILES = {
     "prod/summary_line.yaml": schema.summary_line,
     "prod/network.yaml": schema.network,
     "prod/tsne.yaml": schema.tsne,
+    "prod/risk_coverage.yaml": schema.tsne,
+    "prod/roc.yaml": schema.tsne,
     "compare/cc_and_sc.yaml": compareschema.comparison_line,
 }
 
