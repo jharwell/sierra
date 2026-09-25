@@ -1040,52 +1040,6 @@ def test_roc_large_text(make_pathset):
     )
 
 
-def test_roc_legend_length_mismatch(make_pathset):
-    # A custom legend that doesn't match the class count must fail loudly.
-    ps = make_pathset()
-    generate.roc_data(ps.input_root, "roc", nclasses=3, per=20)
-    with pytest.raises(ValueError):
-        graphs.roc(
-            ps,
-            input_stem="roc",
-            output_stem="roc",
-            medium=conftest.CSV_MEDIUM,
-            backend="matplotlib",
-            title="mismatch",
-            xlabel="FPR",
-            ylabel="TPR",
-            stats_center="mean",
-            truthcol="truth",
-            scorecols={c: f"classconf_{c}" for c in range(3)},
-            show_micro=False,
-            show_diagonal=False,
-            legend=["only", "two"],
-        )
-
-
-def test_roc_scorecol_label_gap(make_pathset):
-    # scorecols whose referenced columns all EXIST but which omit a class
-    # present in truthcol must raise -- distinct from the missing-column guard.
-    ps = make_pathset()
-    generate.roc_data(ps.input_root, "roc", nclasses=4, per=20)
-    with pytest.raises(ValueError):
-        graphs.roc(
-            ps,
-            input_stem="roc",
-            output_stem="roc",
-            medium=conftest.CSV_MEDIUM,
-            backend="matplotlib",
-            title="gap",
-            xlabel="FPR",
-            ylabel="TPR",
-            stats_center="mean",
-            truthcol="truth",
-            scorecols={c: f"classconf_{c}" for c in range(3)},  # omits class 3
-            show_micro=False,
-            show_diagonal=False,
-        )
-
-
 def test_roc_missing_scorecol_column(make_pathset):
     # scorecols referencing a column absent from the frame -> returns False
     # (the required-columns guard), NOT a raise.

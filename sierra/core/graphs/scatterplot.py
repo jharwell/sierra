@@ -101,6 +101,7 @@ def generate(  # noqa: PLR0913,PLR0917
 
     points_size = tp.cast(dict[str, tp.Any], config.GRAPHS["points_size"])
     if using_longform:
+        _logger.debug("Using longform for inter-exp")
         # LONG (inter-exp): one series per experiment
         by_exp = df.group_by("exp", maintain_order=True)
         exps = [e[0] for (e, _) in by_exp]
@@ -117,6 +118,7 @@ def generate(  # noqa: PLR0913,PLR0917
             )
 
     else:
+        _logger.debug("Using shortform for inter-exp")
         points_size = tp.cast(dict[str, tp.Any], config.GRAPHS["points_size"])
         # WIDE (intra-exp): one series per (xcol, ycol) pair
         xs = df[xcol].to_numpy()

@@ -74,7 +74,7 @@ class TestValidate:
 
     def test_missing_required_key_rejected(self):
         bad = _graph()
-        del bad["cols"]
+        del bad["type"]
 
         with pytest.raises(gconfig.ConfigError):
             gconfig.validate(_cfg(bad))

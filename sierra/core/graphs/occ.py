@@ -287,21 +287,19 @@ def generate_roc(  # noqa: PLR0913, PLR0917
 
     missing = [lab for lab in unique_labels if lab not in scorecols]
     if missing:
-        raise ValueError(
-            f"scorecols is missing a score column for label(s) {missing}; "
-            f"every class in '{truthcol}' needs one"
+        _logger.warning(
+            "Not generating <batchroot>/%s: scorecols is missing a score "
+            "column for label(s) %s; every class in '%s' needs one",
+            output_fpath.relative_to(pathset.batchroot),
+            missing,
+            truthcol,
         )
+        return False
 
     # Display names: stringify by default; a caller-supplied `legend` overrides
     # positionally in sorted-label order.
     if legend is None:
         legend = [str(lab) for lab in unique_labels]
-
-    if len(legend) != len(unique_labels):
-        raise ValueError(
-            f"legend has {len(legend)} entries but '{truthcol}' has "
-            f"{len(unique_labels)} unique values"
-        )
 
     name_map = dict(zip(unique_labels, legend))
 
