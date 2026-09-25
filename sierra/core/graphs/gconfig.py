@@ -258,13 +258,6 @@ _ROLE_COLUMNS = {
     "scatterplot": {"xcol": "xcol", "ycol": "ycol"},
 }
 
-#: Graph types whose schema historically *required* ``cols``. That requiredness
-#: moved from the schema into the validator when ``cols`` was relaxed to Optional
-#: to accommodate the ``sources`` spelling; it is re-enforced for the ``src``
-#: spelling here. (stacked_line is absent: its ``cols`` is genuinely optional for
-#: intra-exp, and its inter-exp requirement is enforced in the collate path.)
-_COLS_REQUIRED_WITH_STEM = {"histogram"}
-
 
 def _check_input_spelling(
     graph: dict, where: str, section: "sections.Section", problems: list[str]
@@ -294,23 +287,6 @@ def _check_input_spelling(
     if not has_stem and not has_sources:
         problems.append("{}: needs either 'src' or 'sources'".format(where))
         return False
-
-    if has_stem:
-        # 'cols' was required by these types' schemas before it was relaxed to
-        # Optional to accommodate the 'sources' spelling (where columns come from
-        # inside each source instead). Re-enforce it here for the src
-        # spelling so a single-source graph of these types still requires 'cols'.
-        # (stacked_line's inter-exp 'cols' requirement is enforced separately in
-        # the collate path, so it is intentionally not duplicated here.)
-        if graph["type"] in _COLS_REQUIRED_WITH_STEM and "cols" not in graph:
-            problems.append(
-                "{}: '{}' graphs require 'cols' when using 'src'".format(
-                    where, graph["type"]
-                )
-            )
-            return False
-
-        return True
 
     if has_sources:
         return _check_input_spelling_multi_source(graph, where, section, problems)
