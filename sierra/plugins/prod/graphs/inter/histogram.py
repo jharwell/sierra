@@ -72,7 +72,7 @@ def generate(
                 bins=None if graph.get("bins") is None else str(graph["bins"]),
                 kind=str(graph["kind"]),
                 legend=tp.cast(
-                    "tp.Optional[list[str]]", graph.get("legend", info.exp_names)
+                    "tp.Optional[list[str]]", graph.get("legend", info.legend)
                 ),
             )
 

@@ -31,8 +31,8 @@ class GraphInfo:
                            batch. Needed in calculating graphs for batch
                            criteria when ``--exp-range`` is used.
 
-        exp_names: The names of experiments as they should appear on graph
-                   legends.
+        legend: The names of experiments as they should appear on graph
+                legends, instead of c1-exp{i}.
 
         xticklabels: Labels for the xticks.
 
@@ -46,7 +46,7 @@ class GraphInfo:
 
     cmdopts: types.Cmdopts
     batch_output_root: tp.Optional[pathlib.Path] = None
-    exp_names: tp.Optional[list[str]] = None
+    legend: tp.Optional[list[str]] = None
     xticklabels: list[str] = dataclasses.field(default_factory=list)
     xticks: list[float] = dataclasses.field(default_factory=list)
     xlabel: str = ""
@@ -64,17 +64,17 @@ class IGraphable:
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[list[str]] = None,
+        legend: tp.Optional[list[str]] = None,
     ) -> GraphInfo:
         """
         Generate graph info for generating graphs from :term:`Batch Criteria`.
 
         Arguments:
 
-           exp_names: Needed as an optional for bivariate batch
-                      criteria.  When calculating say yticks using criteria2, if
-                      criteria2 uses ``populations()`` in the process,
-                      the criteria's OWN ``gen_exp_names()`` will be used, which
+           legend: Needed as an optional for bivariate batch
+                   criteria.  When calculating say yticks using criteria2, if
+                   criteria2 uses ``populations()`` in the process,
+                      the criteria's OWN ``gen_exp_dirnames()`` will be used, which
                       will result in bad directory name calculations.  This can
                       be overcome by passing the list of exp names to use at
                       THIS level, which should override the value otherwise

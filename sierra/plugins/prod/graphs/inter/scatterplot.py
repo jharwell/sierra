@@ -68,7 +68,7 @@ def generate(
                 show_best_fit=bool(graph["show_best_fit"]),
                 best_fit_kind=str(graph["best_fit_kind"]),
                 legend=tp.cast(
-                    "tp.Optional[list[str]]", graph.get("legend", info.exp_names)
+                    "tp.Optional[list[str]]", graph.get("legend", info.legend)
                 ),
             )
 

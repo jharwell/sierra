@@ -117,7 +117,7 @@ def _gen_stacked_linegraph(
         ylabel=str(graph["ylabel"]),
         logyscale=bool(graph.get("logy", cmdopts["plot_log_yscale"])),
         large_text=cmdopts["plot_large_text"],
-        legend=tp.cast("tp.Optional[list[str]]", graph.get("legend", info.exp_names)),
+        legend=tp.cast("tp.Optional[list[str]]", graph.get("legend", info.legend)),
     )
 
 

@@ -481,7 +481,7 @@ class XVarBatchCriteria(
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[list[str]] = None,
+        legend: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
@@ -499,14 +499,14 @@ class XVarBatchCriteria(
         if self.cardinality() == 1:
             info1 = self.criterias[0].graph_info(
                 cmdopts,
-                exp_names=None,
+                legend=None,
                 batch_output_root=batch_output_root,
             )
 
             info.xticks = info1.xticks
             info.xlabel = info1.xlabel
             info.xticklabels = info1.xticklabels
-            info.exp_names = info1.exp_names
+            info.legend = info1.legend
 
         elif self.cardinality() == 2:
             c1_xnames = [f"c1-exp{i}" for i in range(0, self.criterias[0].n_exp())]
@@ -515,10 +515,10 @@ class XVarBatchCriteria(
             ynames = [d for d in self.gen_exp_names() if any(y in d for y in c2_ynames)]
 
             info1 = self.criterias[0].graph_info(
-                cmdopts, exp_names=xnames, batch_output_root=batch_output_root
+                cmdopts, legend=xnames, batch_output_root=batch_output_root
             )
             info2 = self.criterias[1].graph_info(
-                cmdopts, exp_names=ynames, batch_output_root=batch_output_root
+                cmdopts, legend=ynames, batch_output_root=batch_output_root
             )
             info.xticks = info1.xticks
             info.xticklabels = info1.xticklabels
