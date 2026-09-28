@@ -89,17 +89,16 @@ class PopulationVariableDensity(vd.VariableDensity, bcbridge.IGraphable):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[list[str]] = None,
+        legend: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
             batch_output_root,
-            exp_names if exp_names else self.gen_exp_names(),
+            legend if legend else self.gen_exp_names(),
         )
 
         info.xticks = [
-            p / self.extent.area()
-            for p in self.populations(info.cmdopts, info.exp_names)
+            p / self.extent.area() for p in self.populations(info.cmdopts, info.legend)
         ]
         info.xticklabels = [str(round(x, 4)) for x in info.xticks]
         info.xlabel = "Population Density"

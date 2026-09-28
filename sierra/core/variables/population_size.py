@@ -30,10 +30,10 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path],
-        exp_names: list[str],
+        legend: list[str],
     ) -> list[float]:
 
-        ret = list(map(float, self.populations(cmdopts, exp_names)))
+        ret = list(map(float, self.populations(cmdopts, legend)))
 
         if cmdopts["plot_log_xscale"]:
             return [int(math.log2(x)) for x in ret]
@@ -47,13 +47,13 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path],
-        exp_names: tp.Optional[list[str]] = None,
+        legend: tp.Optional[list[str]] = None,
     ) -> list[str]:
 
-        if exp_names is None:
-            exp_names = self.gen_exp_names()
+        if legend is None:
+            legend = self.gen_exp_names()
 
-        ret = map(float, self.populations(cmdopts, exp_names))
+        ret = map(float, self.populations(cmdopts, legend))
 
         return [str(int(round(x, 4))) for x in ret]
 
@@ -67,22 +67,22 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[list[str]] = None,
+        legend: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         """Return graph info for base classes to use if they wish."""
         info = bcbridge.GraphInfo(
             cmdopts,
             batch_output_root,
-            exp_names if exp_names else self.gen_exp_names(),
+            legend if legend else self.gen_exp_names(),
         )
 
         info.xlabel = self.graph_xlabel(info.cmdopts)
-        assert info.exp_names is not None
+        assert info.legend is not None
         info.xticklabels = self.graph_xticklabels(
-            info.cmdopts, info.batch_output_root, info.exp_names
+            info.cmdopts, info.batch_output_root, info.legend
         )
         info.xticks = self.graph_xticks(
-            info.cmdopts, info.batch_output_root, info.exp_names
+            info.cmdopts, info.batch_output_root, info.legend
         )
         return info
 

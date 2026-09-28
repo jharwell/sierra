@@ -115,11 +115,11 @@ class PopulationConstantDensity(cd.ConstantDensity, bcbridge.IGraphable):
         else:
             info.xlabel = "Population Size"
 
-        tmp = map(float, self.populations(info.cmdopts, info.exp_names))
+        tmp = map(float, self.populations(info.cmdopts, info.legend))
 
         info.xticklabels = [str(int(round(x, 4))) for x in tmp]
 
-        tmp2 = list(map(float, self.populations(info.cmdopts, info.exp_names)))
+        tmp2 = list(map(float, self.populations(info.cmdopts, info.legend)))
 
         if info.cmdopts["plot_log_xscale"]:
             info.xticks = [int(math.log2(x)) for x in tmp2]
@@ -129,9 +129,7 @@ class PopulationConstantDensity(cd.ConstantDensity, bcbridge.IGraphable):
         return info
 
     def n_agents(self, exp_num: int) -> int:
-        n, _ = self._agents_for(
-            self.dimensions[exp_num].area(), self.target_density
-        )
+        n, _ = self._agents_for(self.dimensions[exp_num].area(), self.target_density)
         return n
 
 

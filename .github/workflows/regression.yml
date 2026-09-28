@@ -35,8 +35,21 @@ jobs:
           engine: jsonsim
 
       - name: Run nox (regression ${{ matrix.slice.name }})
+        env:
+          PYTEST_ADDOPTS: "--mpl-results-path=mpl-results --mpl-generate-summary=html"
+          # 2026-09-29 [JRH]: These are necessary to get deterministic
+          # renderings of some nx graphs.
+          OPENBLAS_CORETYPE: Haswell
+          OPENBLAS_NUM_THREADS: "1"
         run: |
           uv run nox -p ${{ matrix.python-version }} -k "${{ matrix.slice.tags }}"
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: mpl-results-${{ matrix.slice.name }}-${{ matrix.python-version }}
+          path: mpl-results/
+          if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v7
         with:

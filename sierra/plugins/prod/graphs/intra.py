@@ -281,8 +281,8 @@ def proc_batch_exp(
                    experiment.
     """
     info = criteria.graph_info(cmdopts, batch_output_root=pathset.output_root)
-    assert info.exp_names is not None
-    # 2026-08-07 [JRH]: We use gen_exp_names() here, instead of info.exp_names,
+    assert info.legend is not None
+    # 2026-08-07 [JRH]: We use gen_exp_names() here, instead of info.legend,
     # because the former is what is unconditionally used to generate the
     # directory structure in stage{1,2,3}.
     exp_to_gen = utils.exp_range_calc(

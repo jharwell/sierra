@@ -56,17 +56,17 @@ class MonteCarlo(bc.UnivarBatchCriteria, bcbridge.IGraphable):
         self,
         cmdopts: types.Cmdopts,
         batch_output_root: tp.Optional[pathlib.Path] = None,
-        exp_names: tp.Optional[list[str]] = None,
+        legend: tp.Optional[list[str]] = None,
     ) -> bcbridge.GraphInfo:
         info = bcbridge.GraphInfo(
             cmdopts,
             batch_output_root,
-            exp_names if exp_names else self.gen_exp_names(),
+            legend if legend else self.gen_exp_names(),
         )
 
-        assert info.exp_names is not None
-        info.xticks = list(range(0, len(info.exp_names)))
-        info.xticklabels = info.exp_names
+        assert info.legend is not None
+        info.xticks = list(range(0, len(info.legend)))
+        info.xticklabels = info.legend
         info.xlabel = "Experiment"
         return info
 
